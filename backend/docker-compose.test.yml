@@ -1,0 +1,214 @@
+version: '3.8'
+
+services:
+  # INFRASTRUCTURE
+  postgres:
+    image: postgres:15-alpine
+    container_name: test_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: postgres
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: test_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: test_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # MICROSERVICES
+  auth-service:
+    build: ./auth-service
+    container_name: test_auth
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - DB_HOST=postgres
+      - DB_PASSWORD=postgres123
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
+      - JWT_SECRET=testsecret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  user-service:
+    build: ./user-service
+    container_name: test_user
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - DB_HOST=postgres
+      - DB_PASSWORD=postgres123
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  post-service:
+    build: ./post-service
+    container_name: test_post
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - DB_HOST=postgres
+      - DB_PASSWORD=postgres123
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  comment-service:
+    build: ./comment-service
+    container_name: test_comment
+    ports:
+      - "5006:5006"
+    environment:
+      - PORT=5006
+      - DB_HOST=postgres
+      - DB_PASSWORD=postgres123
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  feed-service:
+    build: ./feed-service
+    container_name: test_feed
+    ports:
+      - "5007:5007"
+    environment:
+      - PORT=5007
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  notification-service:
+    build: ./notification-service
+    container_name: test_notification
+    ports:
+      - "5008:5008"
+    environment:
+      - PORT=5008
+      - DB_HOST=postgres
+      - DB_PASSWORD=postgres123
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  message-service:
+    build: ./message-service
+    container_name: test_message
+    ports:
+      - "5010:5010"
+    environment:
+      - PORT=5010
+      - DB_HOST=postgres
+      - DB_PASSWORD=postgres123
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  socket-service:
+    build: ./socket-service
+    container_name: test_socket
+    ports:
+      - "5011:5011"
+    environment:
+      - PORT=5011
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
+      - JWT_SECRET=testsecret
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
+      - JWT_SECRET=testsecret
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  media-service:
+    build: ./media-service
+    container_name: test_media
+    ports:
+      - "5013:5013"
+    environment:
+      - PORT=5013
+      - UPLOAD_DIR=uploads
+    volumes:
+      - ./media-service/uploads:/app/uploads
+
+  gateway:
+    build: ./gateway
+    container_name: test_gateway
+    ports:
+      - "8000:5000"
+    environment:
+      - PORT=5000
+      - JWT_SECRET=testsecret
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - USER_SERVICE_URL=http://user-service:5002
+      - POST_SERVICE_URL=http://post-service:5003
+      - COMMENT_SERVICE_URL=http://comment-service:5006
+      - FEED_SERVICE_URL=http://feed-service:5007
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5008
+      - MESSAGE_SERVICE_URL=http://message-service:5010
+      - STORY_SERVICE_URL=http://story-service:5004
+      - SEARCH_SERVICE_URL=http://search-service:5009
+      - MEDIA_SERVICE_URL=http://media-service:5013
+      - SOCKET_SERVICE_URL=http://socket-service:5011
+    depends_on:
+      - auth-service
+      - user-service
+      - media-service
+      - socket-service
+    deploy:
+      resources:
+        limits:
+          memory: 350M

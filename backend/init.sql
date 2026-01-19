@@ -1,0 +1,11 @@
+CREATE DATABASE auth_db;
+CREATE DATABASE user_db;
+CREATE DATABASE post_db;
+CREATE DATABASE story_db;
+CREATE DATABASE reel_db;
+CREATE DATABASE comment_db;
+CREATE DATABASE feed_db;
+CREATE DATABASE notification_db;
+CREATE DATABASE search_db;
+CREATE DATABASE message_db;
+CREATE DATABASE media_db;

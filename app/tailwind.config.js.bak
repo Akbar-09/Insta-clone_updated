@@ -1,0 +1,33 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+    content: [
+        "./index.html",
+        "./src/**/*.{js,ts,jsx,tsx}",
+    ],
+    theme: {
+        extend: {
+            colors: {
+                primary: '#ffffff',
+                secondary: '#fafafa',
+                'text-primary': '#000000',
+                'text-secondary': '#737373',
+                border: '#dbdbdb',
+                separator: '#efefef',
+                'blue-btn': '#0095f6',
+                'blue-btn-hover': '#1877f2',
+                link: '#00376b',
+                error: '#ed4956',
+                like: '#ed4956',
+            },
+            fontFamily: {
+                sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+            },
+            spacing: {
+                'sidebar': '245px',
+                'sidebar-narrow': '72px',
+                'content': '630px',
+            }
+        },
+    },
+    plugins: [],
+}
