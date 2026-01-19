@@ -1,0 +1,275 @@
+openapi: 3.0.0
+info:
+  title: Instagram Microservices API
+  version: 1.0.0
+  description: API Documentation for the Instagram Clone Microservices
+servers:
+  - url: http://localhost:5000
+    description: API Gateway
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  # --- Auth Service ---
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                fullName:
+                  type: string
+      responses:
+        201:
+          description: User created
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: Login success
+  
+  # --- User Service ---
+  /users/{username}:
+    get:
+      tags: [User]
+      summary: Get user profile
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User profile
+  
+  # --- Post Service ---
+  /posts:
+    get:
+      tags: [Post]
+      summary: Get all posts
+      responses:
+        200:
+          description: List of posts
+    post:
+      tags: [Post]
+      summary: Create a post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                username:
+                  type: string
+                caption:
+                  type: string
+                mediaUrl:
+                  type: string
+      responses:
+        201:
+          description: Post created
+
+  # --- Feed Service ---
+  /feed:
+    get:
+      tags: [Feed]
+      summary: Get user feed
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Feed items
+
+  # --- Media Service ---
+  /media/upload:
+    post:
+      tags: [Media]
+      summary: Upload file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: File uploaded
+  
+  # --- Comment Service ---
+  /comments:
+    get:
+      tags: [Comment]
+      parameters:
+        - name: postId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Comments list
+    post:
+      tags: [Comment]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                postId:
+                  type: integer
+                userId:
+                  type: integer
+                username:
+                  type: string
+                text:
+                  type: string
+      responses:
+        201:
+          description: Comment created
+
+  # --- Notification Service ---
+  /notifications:
+    get:
+      tags: [Notification]
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of notifications
+
+  # --- Story Service ---
+  /stories:
+    get:
+      tags: [Story]
+      responses:
+        200:
+          description: Active stories
+    post:
+      tags: [Story]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                username:
+                  type: string
+                mediaUrl:
+                  type: string
+      responses:
+        201:
+          description: Story created
+
+  # --- Reel Service ---
+  /reels:
+    get:
+      tags: [Reel]
+      responses:
+        200:
+          description: List of reels
+    post:
+      tags: [Reel]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                username:
+                  type: string
+                videoUrl:
+                  type: string
+      responses:
+        201:
+          description: Reel created
+
+  # --- Search Service ---
+  /search:
+    get:
+      tags: [Search]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Search results
+
+  # --- Message Service ---
+  /messages:
+    get:
+      tags: [Message]
+      parameters:
+        - name: userId1
+          in: query
+        - name: userId2
+          in: query
+      responses:
+        200:
+          description: Chat history
+    post:
+      tags: [Message]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                senderId:
+                  type: integer
+                recipientId:
+                  type: integer
+                text:
+                  type: string
+      responses:
+        201:
+          description: Message sent
+

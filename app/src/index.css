@@ -1,0 +1,119 @@
+@import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Glassmorphism Variables */
+  --glass-bg: linear-gradient(135deg, #a7d0e4, #e2c2dd, #f5d3d3, #ffe8cc);
+
+  /* Primary background: Semi-transparent white + blur */
+  --color-primary: rgba(255, 255, 255, 0.4);
+  /* Secondary: Slightly more opaque */
+  --color-secondary: rgba(255, 255, 255, 0.6);
+
+  --color-text-primary: #000000;
+  --color-text-secondary: #404040;
+  --color-border: rgba(255, 255, 255, 0.5);
+  /* Soft white border */
+  --color-separator: rgba(0, 0, 0, 0.1);
+
+  --color-blue-btn: #0095f6;
+  --color-blue-btn-hover: #1877f2;
+  --color-link: #00376b;
+  --color-error: #ed4956;
+  --color-like: #ed4956;
+
+  /* Glass shadow */
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+
+  --spacing-sidebar: 245px;
+  --spacing-sidebar-narrow: 72px;
+  --spacing-content: 630px;
+}
+
+.dark {
+  /* Dark Glass Variables */
+  --glass-bg: linear-gradient(135deg, #09122c, #260527, #1f0808, #2e1a06);
+
+  --color-primary: rgba(0, 0, 0, 0.25);
+  --color-secondary: rgba(255, 255, 255, 0.08);
+  /* Lighter emphasis */
+
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #a8a8a8;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-separator: rgba(255, 255, 255, 0.1);
+  --color-hover-overlay: rgba(255, 255, 255, 0.1);
+
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-border: var(--color-border);
+  --color-separator: var(--color-separator);
+  --color-blue-btn: var(--color-blue-btn);
+  --color-blue-btn-hover: var(--color-blue-btn-hover);
+  --color-link: var(--color-link);
+  --color-error: var(--color-error);
+  --color-like: var(--color-like);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --spacing-sidebar: var(--spacing-sidebar);
+  --spacing-sidebar-narrow: var(--spacing-sidebar-narrow);
+  --spacing-content: var(--spacing-content);
+}
+
+@layer base {
+  body {
+    background: var(--glass-bg);
+    background-attachment: fixed;
+    /* Keep background static while scrolling */
+    background-size: 400% 400%;
+    /* For animation if desired, but static is fine */
+    /* Add animation class if you want movement */
+    @apply text-text-primary antialiased overflow-hidden min-h-screen;
+  }
+
+  /* Glass Utils */
+  .glass {
+    background: var(--color-primary);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-border);
+  }
+
+  /* Apply glass effect to main containers globally if they use bg-primary */
+  .bg-primary {
+    background-color: var(--color-primary);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    /* border-right: 1px solid var(--color-border); Sidebar uses this */
+  }
+
+  .bg-white {
+    /* Force override standard bg-white to be glass in this theme if desired, 
+        or rely on replacing classes. 
+        For this task, I'll assume usage of bg-primary in Layout is correct. 
+     */
+  }
+
+  input {
+    @apply border border-border bg-secondary rounded-[3px] px-2 py-[9px] outline-none text-text-primary focus:border-[#a8a8a8] backdrop-blur-sm;
+  }
+
+  /* Utility for hiding scrollbar */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
