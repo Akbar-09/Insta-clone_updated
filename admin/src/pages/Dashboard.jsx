@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Users, FileText, Video, Image, TrendingUp, TrendingDown, Globe, Hash } from 'lucide-react';
 import { LineChart, Line, PieChart, Pie, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Dashboard = () => {
+    const navigate = useNavigate();
     const [selectedYear, setSelectedYear] = useState(2026);
 
     // Mock Data
@@ -170,7 +172,7 @@ const Dashboard = () => {
                 <div className="glass-card p-6 rounded-2xl">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Latest Users</h3>
-                        <button className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
+                        <button onClick={() => navigate('/users')} className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
                     </div>
                     <div className="space-y-3">
                         {latestUsers.map((user, idx) => (
@@ -199,7 +201,7 @@ const Dashboard = () => {
                 <div className="glass-card p-6 rounded-2xl">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Users by Countries</h3>
-                        <button className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
+                        <button onClick={() => navigate('/country-wise-users')} className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
                     </div>
                     <div className="space-y-3">
                         {usersByCountry.map((country, idx) => (
@@ -221,7 +223,7 @@ const Dashboard = () => {
                 <div className="glass-card p-6 rounded-2xl">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Post Summary</h3>
-                        <button className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
+                        <button onClick={() => navigate('/posts')} className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         {postSummary.map((post, idx) => (
@@ -245,7 +247,7 @@ const Dashboard = () => {
                 <div className="glass-card p-6 rounded-2xl">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Popular Hashtags</h3>
-                        <button className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
+                        <button onClick={() => navigate('/hashtags')} className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
                     </div>
                     <div className="space-y-3">
                         {popularHashtags.map((hashtag, idx) => (
