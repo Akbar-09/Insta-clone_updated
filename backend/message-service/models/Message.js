@@ -4,29 +4,34 @@ const sequelize = require('../config/database');
 const Message = sequelize.define('Message', {
     id: {
         type: DataTypes.INTEGER,
-        autoIncrement: true,
         primaryKey: true,
+        autoIncrement: true
+    },
+    conversationId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     senderId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: false
     },
-    recipientId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    text: {
+    content: {
         type: DataTypes.TEXT,
-        allowNull: true,
+        allowNull: false
     },
-    isRead: {
+    isSeen: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
-    },
-    createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-    },
+        defaultValue: false
+    }
+}, {
+    indexes: [
+        {
+            fields: ['conversationId']
+        },
+        {
+            fields: ['createdAt']
+        }
+    ]
 });
 
 module.exports = Message;

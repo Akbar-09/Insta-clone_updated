@@ -1,9 +1,10 @@
 const express = require('express');
-const { createPost, getPosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost } = require('../controllers/postController');
+const { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost } = require('../controllers/postController');
 
 const router = express.Router();
 
 router.post('/', createPost);
+router.get('/explore', getExplorePosts);
 router.get('/', getPosts);
 router.post('/:id/like', likePost);
 router.delete('/:id/like', unlikePost);

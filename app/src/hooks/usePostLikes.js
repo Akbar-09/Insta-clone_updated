@@ -45,11 +45,31 @@ export const usePostLikes = (post, onLikeUpdate) => {
             }
         } catch (error) {
             console.error('Like toggle failed', error);
-            // Revert on error
-            setIsLiked(previousLiked);
-            setLikesCount(previousCount);
-            if (onLikeUpdate) {
-                onLikeUpdate(post.id, previousLiked, previousCount);
+
+            // Handle synchronization issues (e.g. "Already liked")
+            // If we tried to LIKE and got "Already liked" (400), keep it LIKED (don't revert)
+            const isAlreadyLikedError = error.response?.status === 400 &&
+                (error.response?.data?.message?.includes('already liked') || error.response?.data?.message?.includes('duplicate'));
+
+            // If we tried to UNLIKE and got "Like not found" (404), keep it UNLIKED (don't revert)
+            const isLikeNotFoundError = error.response?.status === 404 &&
+                error.response?.data?.message?.includes('not found');
+
+            if (isAlreadyLikedError) {
+                // We wanted it to be true, and server says it's already true.
+                // Ensure state matches desired state (true)
+                if (!newIsLiked) setIsLiked(true); // Should already be true from optimistic, but ensure.
+            } else if (isLikeNotFoundError) {
+                // We wanted it false, server says not found (so it is false).
+                // Ensure state is false
+                if (newIsLiked) setIsLiked(false);
+            } else {
+                // Genuine error, revert
+                setIsLiked(previousLiked);
+                setLikesCount(previousCount);
+                if (onLikeUpdate) {
+                    onLikeUpdate(post.id, previousLiked, previousCount);
+                }
             }
         } finally {
             isRequesting.current = false;

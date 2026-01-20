@@ -1,6 +1,7 @@
 const Post = require('../models/Post');
 const Like = require('../models/Like');
 const { publishEvent } = require('../config/rabbitmq');
+const sequelize = require('../config/database');
 
 const createPost = async (req, res) => {
     try {
@@ -20,6 +21,55 @@ const createPost = async (req, res) => {
         res.status(201).json({ status: 'success', data: post });
     } catch (error) {
         console.error('Create Post Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const getExplorePosts = async (req, res) => {
+    try {
+        const { limit = 20, offset = 0 } = req.query;
+        const currentUserId = req.headers['x-user-id'] || req.query.userId;
+
+        // Fetch posts
+        let posts = [];
+        try {
+            posts = await Post.findAll({
+                order: [
+                    ['likesCount', 'DESC'],
+                    ['commentsCount', 'DESC'],
+                    ['createdAt', 'DESC']
+                ],
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                raw: true
+            });
+        } catch (dbError) {
+            console.error('DB FindAll Error:', dbError);
+            posts = [];
+        }
+
+        if (!posts || !Array.isArray(posts)) {
+            posts = [];
+        }
+
+        // Add isLiked status if user is logged in
+        let likedPostIds = new Set();
+        if (currentUserId && posts.length > 0) {
+            const likes = await Like.findAll({
+                where: { userId: currentUserId, postId: posts.map(p => p.id) },
+                attributes: ['postId']
+            });
+            likedPostIds = new Set(likes.map(l => l.postId));
+        }
+
+        const data = posts.map(post => ({
+            ...post,
+            isLiked: likedPostIds.has(post.id)
+        }));
+
+        res.json({ status: 'success', data });
+    } catch (error) {
+        console.error('Explore Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
@@ -355,4 +405,4 @@ const reportPost = async (req, res) => {
     }
 };
 
-module.exports = { createPost, getPosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost };
+module.exports = { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost };

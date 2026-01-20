@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Feed from './pages/Feed';
-import Explore from './pages/Explore';
+import ExplorePage from './pages/ExplorePage';
 import Reels from './pages/Reels';
 import Messages from './pages/Messages';
 import Profile from './pages/profile/ProfilePage';
@@ -63,7 +63,7 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route path="/feed" element={<Feed />} />
-                <Route path="/explore" element={<Explore />} />
+                <Route path="/explore" element={<ExplorePage />} />
                 <Route path="/reels" element={<Reels />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/profile/:id" element={<Profile />} />
