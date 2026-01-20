@@ -1,49 +1,39 @@
 const socketIo = require('socket.io');
-const jwt = require('jsonwebtoken');
 
 let io;
-const userSockets = new Map(); // userId -> socketId
 
 const initSocket = (server) => {
     io = socketIo(server, {
         cors: {
-            origin: "*", // Adjust for production
+            origin: "*", // Allow all for dev, restrict in prod
             methods: ["GET", "POST"]
         }
     });
 
-    io.use((socket, next) => {
-        // Auth Middleware
-        const token = socket.handshake.query.token;
-        if (token) {
-            jwt.verify(token, process.env.JWT_SECRET || 'secret', (err, decoded) => {
-                if (err) return next(new Error('Authentication error'));
-                socket.user = decoded;
-                next();
-            });
-        } else {
-            next(new Error('Authentication error'));
-        }
-    });
-
     io.on('connection', (socket) => {
-        console.log(`User connected: ${socket.user.id}`);
-        userSockets.set(socket.user.id, socket.id);
+        console.log('New client connected:', socket.id);
+
+        // Join user to their personal room
+        socket.on('join', (userId) => {
+            if (userId) {
+                socket.join(`user:${userId}`);
+                console.log(`User ${userId} joined room user:${userId}`);
+            }
+        });
 
         socket.on('disconnect', () => {
-            console.log(`User disconnected: ${socket.user.id}`);
-            userSockets.delete(socket.user.id);
+            console.log('Client disconnected:', socket.id);
         });
     });
+
+    return io;
 };
 
-const emitToUser = (userId, event, data) => {
-    if (!io) return;
-    const socketId = userSockets.get(userId);
-    if (socketId) {
-        io.to(socketId).emit(event, data);
-        console.log(`Emitted ${event} to user ${userId}`);
+const getIO = () => {
+    if (!io) {
+        throw new Error("Socket.io not initialized!");
     }
+    return io;
 };
 
-module.exports = { initSocket, emitToUser };
+module.exports = { initSocket, getIO };

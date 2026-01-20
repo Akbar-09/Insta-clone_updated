@@ -43,12 +43,12 @@ const PostPage = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const postData = await fetchPostById(id);
-                setPost(postData);
+                const response = await fetchPostById(id);
+                setPost(response.data || response);
 
                 // Fetch full comments
                 const commentsRes = await getComments(id);
-                setComments(commentsRes.data || []);
+                setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
             } catch (error) {
                 console.error("Failed to load post", error);
             } finally {
@@ -123,7 +123,14 @@ const PostPage = () => {
                 <div className="flex-1 bg-black flex items-center justify-center relative border-r border-[#262626]" onDoubleClick={handleDoubleTap}>
                     <HeartOverlay visible={isAnimating} onAnimationEnd={() => setIsAnimating(false)} />
                     {post.mediaType === 'VIDEO' ? (
-                        <video src={getMediaUrl(post.mediaUrl)} controls className="max-w-full max-h-full object-contain" />
+                        <video
+                            src={getMediaUrl(post.mediaUrl)}
+                            controls
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            loop
+                            muted // Start muted to avoid autoplay blocks, user can unmute
+                        />
                     ) : (
                         <img src={getMediaUrl(post.mediaUrl || post.imageUrl)} alt="Post" className="max-w-full max-h-full object-contain" />
                     )}
@@ -168,7 +175,7 @@ const PostPage = () => {
                         )}
 
                         {/* Comments List */}
-                        {comments.map(comment => (
+                        {Array.isArray(comments) && comments.map(comment => (
                             <div key={comment.id} className="flex gap-3 mb-4">
                                 <div className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${comment.userId || comment.User?.id}`)}>
                                     {/* Avatar handling */}
@@ -219,7 +226,7 @@ const PostPage = () => {
                                 id="comment-input"
                                 type="text"
                                 placeholder="Add a comment..."
-                                className="bg-transparent text-white text-sm w-full focus:outline-none placeholder-gray-500"
+                                className="bg-transparent !text-white text-sm w-full focus:outline-none placeholder-gray-500"
                                 value={commentText}
                                 onChange={(e) => setCommentText(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}

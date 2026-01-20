@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { Grid, Clapperboard, UserSquare2, Heart, MessageCircle, Settings } from 'lucide-react';
+import { Grid, Clapperboard, UserSquare2, Heart, MessageCircle, Settings, UserPlus, ChevronDown, Link as LinkIcon, MoreHorizontal } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 
@@ -93,53 +93,105 @@ const Profile = () => {
 
                 {/* Profile Info */}
                 <div className="flex-grow-[2] flex-basis-[30px] flex flex-col pt-2 max-md:pt-0">
-                    {/* Row 1: Username & Buttons */}
-                    <div className="flex items-center mb-5 max-md:flex-col max-md:items-start max-md:mb-3">
-                        <div className="flex items-center max-md:mb-3">
-                            <h2 className="text-[20px] font-normal mr-2 leading-8">{profile.username}</h2>
-                            {profile.isVerified && <VerifiedBadge />}
+                    {/* Row 1: Username & Options */}
+                    <div className="flex items-center mb-4 max-md:mb-3">
+                        <h2 className="text-[20px] font-normal mr-4 leading-8">{profile.username}</h2>
+                        {profile.isVerified && <VerifiedBadge />}
 
-                            <div className="ml-5 flex gap-2 max-md:hidden">
-                                {isOwnProfile ? (
-                                    <>
-                                        <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">Edit Profile</button>
-                                        <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">View Archive</button>
-                                        <Settings size={28} className="ml-2 cursor-pointer" />
-                                    </>
-                                ) : (
+                        <div className="flex items-center gap-2 max-md:hidden ml-4">
+                            {isOwnProfile ? (
+                                <>
+                                    <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">Edit Profile</button>
+                                    <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">View Archive</button>
+                                    <Settings size={24} className="ml-2 cursor-pointer" />
+                                </>
+                            ) : (
+                                <div className="flex gap-2">
+                                    {/* Follow/Following Button */}
                                     <button
                                         onClick={handleFollowToggle}
-                                        className={`${isFollowing ? 'bg-[#efefef] text-black' : 'bg-blue-btn text-white'} px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors`}
+                                        className={`${isFollowing ? 'bg-[#efefef] text-black' : 'bg-[#0095f6] text-white hover:bg-[#1877F2]'} px-5 py-[7px] rounded-lg font-semibold text-sm transition-colors flex items-center gap-1`}
                                     >
-                                        {isFollowing ? 'Following' : 'Follow'}
+                                        {isFollowing ? (
+                                            <>
+                                                Following <ChevronDown size={16} />
+                                            </>
+                                        ) : 'Follow'}
                                     </button>
-                                )}
-                            </div>
+
+                                    {/* Message Button */}
+                                    <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm text-black transition-colors">
+                                        Message
+                                    </button>
+
+                                    {/* Suggested Users Button */}
+                                    <button className="bg-[#efefef] hover:bg-[#dbdbdb] p-[7px] rounded-lg text-black transition-colors flex items-center justify-center">
+                                        <UserPlus size={18} />
+                                    </button>
+
+                                    <button className="ml-2">
+                                        <MoreHorizontal size={24} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Row 2: Stats (Desktop) */}
-                    <div className="flex mb-5 text-base max-md:hidden">
+                    <div className="flex mb-4 text-base max-md:hidden">
                         <span className="mr-10"><span className="font-semibold">{posts.length}</span> posts</span>
                         <span className="mr-10 cursor-pointer"><span className="font-semibold">{profile.followersCount || 0}</span> followers</span>
                         <span className="cursor-pointer"><span className="font-semibold">{profile.followingCount || 0}</span> following</span>
                     </div>
 
-                    {/* Row 3: Name & Bio */}
-                    <div className="text-sm leading-5">
+                    {/* Row 3: Name, Category, Bio */}
+                    <div className="text-sm leading-5 mb-4">
                         <span className="font-semibold block">{profile.fullname}</span>
+                        <span className="text-gray-500 block text-xs font-medium mb-1">Public Figure</span> {/* Mock Category */}
                         <p className="whitespace-pre-wrap">{profile.bio}</p>
+                        {/* Mock Website Link */}
+                        <a href="#" className="font-semibold text-[#00376b] hover:underline flex items-center gap-1 mt-1">
+                            <LinkIcon size={14} className="rotate-45" />
+                            bit.ly/example-link
+                        </a>
                     </div>
+
+                    {/* Row 4: Followed By (Mock) */}
+                    {!isOwnProfile && (
+                        <div className="flex items-center gap-2 text-[12px] text-text-secondary cursor-pointer">
+                            <div className="flex -space-x-2">
+                                <div className="w-5 h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50&h=50&fit=crop" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="w-5 h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=50&h=50&fit=crop" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="w-5 h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=50&h=50&fit=crop" className="w-full h-full object-cover" />
+                                </div>
+                            </div>
+                            <span>
+                                Followed by <span className="font-semibold text-black">user_one</span>, <span className="font-semibold text-black">user_two</span> + 12 more
+                            </span>
+                        </div>
+                    )}
                 </div>
             </header>
 
             {/* Navigation Tabs */}
             <div className="border-t border-border flex justify-center uppercase tracking-[1px] text-xs font-semibold">
-                <div onClick={() => setActiveTab('posts')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors ${activeTab === 'posts' ? 'border-t border-text-primary text-text-primary' : 'text-text-secondary border-t border-transparent hover:text-text-primary'}`}>
+                <div onClick={() => setActiveTab('posts')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t ${activeTab === 'posts' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}>
                     <Grid size={12} strokeWidth={activeTab === 'posts' ? 3 : 2} />
                     <span>Posts</span>
                 </div>
-                {/* Additional tabs can be added here */}
+                <div className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t border-transparent text-gray-500 hover:text-black`}>
+                    <Clapperboard size={12} strokeWidth={2} />
+                    <span>Reels</span>
+                </div>
+                <div className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t border-transparent text-gray-500 hover:text-black`}>
+                    <UserSquare2 size={12} strokeWidth={2} />
+                    <span>Tagged</span>
+                </div>
             </div>
 
             {/* Post Grid */}

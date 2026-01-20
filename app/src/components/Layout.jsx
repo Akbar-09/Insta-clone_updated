@@ -18,8 +18,8 @@ const Layout = () => {
             <Sidebar />
 
             {/* Main Content Area (Offset by sidebar width) */}
-            <main className={`flex-grow flex justify-center h-screen overflow-hidden transition-[margin] duration-200 ease-in-out max-md:ml-0
-                ${isMessages ? 'ml-[72px]' : 'ml-[245px] max-[1264px]:ml-[72px]'}
+            <main className={`flex-grow flex h-screen overflow-hidden transition-[margin] duration-200 ease-in-out max-md:ml-0
+                ${isMessages ? 'ml-[72px]' : 'ml-[245px] max-[1264px]:ml-[72px] justify-center'}
                 ${isReels ? 'bg-black' : ''} 
             `}>
                 <div className={`flex w-full h-full max-md:pt-0

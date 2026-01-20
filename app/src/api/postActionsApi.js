@@ -64,6 +64,10 @@ export const likePost = async (postId) => {
     return api.post(`/posts/${postId}/like`);
 };
 
+export const getExplorePosts = async () => {
+    return api.get('/posts/explore');
+};
+
 export const unlikePost = async (postId) => {
     return api.delete(`/posts/${postId}/like`);
 };

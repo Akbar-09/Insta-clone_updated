@@ -18,13 +18,9 @@ app.use(helmet({
 app.use(morgan('dev'));
 
 const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-try {
-    const swaggerDocument = YAML.load('./swagger.yaml');
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-} catch (e) {
-    console.log('Swagger file not found, skipping docs.');
-}
+const swaggerSpec = require('./src/swagger/swaggerConfig');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -92,6 +88,7 @@ const services = [
     { route: '/notifications', target: process.env.NOTIFICATION_SERVICE_URL || 'http://127.0.0.1:5008' },
     { route: '/search', target: process.env.SEARCH_SERVICE_URL || 'http://127.0.0.1:5009' },
     { route: '/messages', target: process.env.MESSAGE_SERVICE_URL || 'http://127.0.0.1:5010' },
+    { route: '/reels', target: process.env.REEL_SERVICE_URL || 'http://127.0.0.1:5005' },
     { route: '/media', target: process.env.MEDIA_SERVICE_URL || 'http://127.0.0.1:5013' },
     { route: '/socket.io', target: process.env.SOCKET_SERVICE_URL || 'http://127.0.0.1:5011', ws: true },
 ];

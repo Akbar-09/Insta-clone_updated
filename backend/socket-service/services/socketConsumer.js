@@ -1,41 +1,46 @@
 const amqp = require('amqplib');
-const { emitToUser } = require('./socketManager');
+const { getIO } = require('./socketManager'); // Need to export getIO or pass it
+
+let channel;
 
 const connectRabbitMQ = async () => {
     try {
-        const connection = await amqp.connect(process.env.RABBITMQ_URI || 'amqp://guest:guest@localhost:5672');
-        const channel = await connection.createChannel();
-        const exchange = 'instagram-events';
+        const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
+        channel = await connection.createChannel();
+        await channel.assertQueue('socket_events');
 
-        await channel.assertExchange(exchange, 'topic', { durable: true });
+        console.log('Socket Service connected to RabbitMQ');
 
-        const q = await channel.assertQueue('socket-service-queue', { durable: true });
-
-        await channel.bindQueue(q.queue, exchange, 'MESSAGE_SENT');
-        await channel.bindQueue(q.queue, exchange, 'NOTIFICATION_NEW'); // Needed if Notification Service emits this
-        // We can also bind to COMMENT_ADDED and construct a notification here if Notification Service doesn't emit one
-        // For now, let's assume we want to push DMs.
-
-        console.log('Listening for Socket events...');
-
-        channel.consume(q.queue, async (msg) => {
-            if (msg.content) {
-                const data = JSON.parse(msg.content.toString());
-                const routingKey = msg.fields.routingKey;
-
-                console.log(`Received ${routingKey} in Socket Service`);
-
-                if (routingKey === 'MESSAGE_SENT') {
-                    // Send to recipient
-                    emitToUser(data.recipientId, 'new_message', data);
-                }
-
-                channel.ack(msg);
+        channel.consume('socket_events', (data) => {
+            if (data) {
+                const event = JSON.parse(data.content.toString());
+                handleEvent(event);
+                channel.ack(data);
             }
         });
-
     } catch (error) {
-        console.error('RabbitMQ Connection Failed', error);
+        console.error('RabbitMQ connect error:', error);
+        setTimeout(connectRabbitMQ, 5000);
+    }
+};
+
+const handleEvent = (event) => {
+    const io = getIO();
+    if (!io) return;
+
+    switch (event.type) {
+        case 'MESSAGE_SENT':
+            // payload: { message, receiverId }
+            // Emit to receiver's room
+            io.to(`user:${event.payload.receiverId}`).emit('message:receive', event.payload.message);
+            // Optionally emit to sender for confirmation if not optimistic
+            break;
+        case 'MESSAGES_SEEN':
+            // payload: { conversationId, seenBy, receiverId }
+            io.to(`user:${event.payload.receiverId}`).emit('message:seen', event.payload);
+            break;
+        default:
+            console.warn('Unknown event type:', event.type);
     }
 };
 
