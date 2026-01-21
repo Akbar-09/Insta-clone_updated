@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import {
     reportPost, unfollowUser, deletePost, copyLink, favoriteUser,
-    hideLikeCount, toggleComments
+    hideLikeCount, toggleComments, getEmbedCode
 } from '../api/postActionsApi';
 
 const PostOptionsMenu = ({
@@ -13,8 +13,9 @@ const PostOptionsMenu = ({
     onDeleteSuccess,
     onEdit,
     onShare,
-    onUpdatePost, // To update local state like comment count, etc if changed
-    onReport
+    onUpdatePost,
+    onReport,
+    isFollowing = false // New prop to determine if user is following the post owner
 }) => {
     const navigate = useNavigate();
     const menuRef = useRef(null);
@@ -27,7 +28,6 @@ const PostOptionsMenu = ({
                 onClose();
             }
         };
-        // ... existing escape logic ...
         const handleEscape = (event) => {
             if (event.key === 'Escape' && !loading) onClose();
         };
@@ -57,7 +57,11 @@ const PostOptionsMenu = ({
                 return;
             case 'goToPost':
                 navigate(`/post/${post.id}`);
-                onClose(); // Close menu
+                onClose();
+                return;
+            case 'aboutAccount':
+                navigate(`/profile/${post.username}`);
+                onClose();
                 return;
             case 'cancel':
                 onClose();
@@ -89,13 +93,11 @@ const PostOptionsMenu = ({
                     break;
                 case 'favorites':
                     await favoriteUser(post.userId);
-                    alert('Added to favorites!');
+                    alert('Removed from favorites!');
                     onClose();
                     break;
                 case 'hideLikes':
                     await hideLikeCount(post.id);
-                    // Update local post state if needed, or refresh?
-                    // Ideally call onUpdatePost to toggle hideLikes
                     if (onUpdatePost) onUpdatePost({ ...post, hideLikes: !post.hideLikes });
                     onClose();
                     break;
@@ -106,7 +108,30 @@ const PostOptionsMenu = ({
                     break;
                 case 'copyLink':
                     const success = await copyLink(post.id);
-                    if (success) alert('Link copied to clipboard.');
+                    if (success) {
+                        // Show a temporary success message
+                        const msg = document.createElement('div');
+                        msg.textContent = 'Link copied to clipboard';
+                        msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
+                        document.body.appendChild(msg);
+                        setTimeout(() => msg.remove(), 2000);
+                    }
+                    onClose();
+                    break;
+                case 'embed':
+                    try {
+                        const embedData = await getEmbedCode(post.id);
+                        // Copy embed code to clipboard
+                        await navigator.clipboard.writeText(embedData.data.embedHtml);
+                        const msg = document.createElement('div');
+                        msg.textContent = 'Embed code copied to clipboard';
+                        msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
+                        document.body.appendChild(msg);
+                        setTimeout(() => msg.remove(), 2000);
+                    } catch (error) {
+                        console.error('Embed failed:', error);
+                        alert('Failed to get embed code');
+                    }
                     onClose();
                     break;
                 default:
@@ -116,7 +141,8 @@ const PostOptionsMenu = ({
         } catch (error) {
             console.error(`Action ${label} failed:`, error);
             alert('Something went wrong. Please try again.');
-            setLoading(false); // Only stop loading if error or not closing
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -136,7 +162,14 @@ const PostOptionsMenu = ({
                 ref={menuRef}
                 className="bg-[#262626] w-full max-w-[400px] rounded-xl flex flex-col items-center overflow-hidden shadow-2xl animate-zoom-in text-white"
             >
-                {loading && <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">Processing...</div>}
+                {loading && (
+                    <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            <span className="text-sm">Processing...</span>
+                        </div>
+                    </div>
+                )}
 
                 {isOwnPost ? (
                     <>
@@ -147,16 +180,20 @@ const PostOptionsMenu = ({
                         <ActionButton label="Go to post" action="goToPost" />
                         <ActionButton label="Share to..." action="share" />
                         <ActionButton label="Copy link" action="copyLink" />
+                        <ActionButton label="Embed" action="embed" />
+                        <ActionButton label="About this account" action="aboutAccount" />
                         <ActionButton label="Cancel" action="cancel" />
                     </>
                 ) : (
                     <>
                         <ActionButton label="Report" action="report" color="text-[#ed4956]" isBold />
-                        <ActionButton label="Unfollow" action="unfollow" color="text-[#ed4956]" isBold />
-                        <ActionButton label="Add to favorites" action="favorites" />
+                        {isFollowing && <ActionButton label="Unfollow" action="unfollow" color="text-[#ed4956]" isBold />}
+                        <ActionButton label="Remove from favorites" action="favorites" />
                         <ActionButton label="Go to post" action="goToPost" />
                         <ActionButton label="Share to..." action="share" />
                         <ActionButton label="Copy link" action="copyLink" />
+                        <ActionButton label="Embed" action="embed" />
+                        <ActionButton label="About this account" action="aboutAccount" />
                         <ActionButton label="Cancel" action="cancel" />
                     </>
                 )}

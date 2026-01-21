@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
 const Like = require('../models/Like');
+const Report = require('../models/Report');
 const { publishEvent } = require('../config/rabbitmq');
 const sequelize = require('../config/database');
 
@@ -76,9 +77,12 @@ const getExplorePosts = async (req, res) => {
 
 const getPosts = async (req, res) => {
     try {
-        const { username } = req.query;
+        const { username, authorId } = req.query;
+        console.log(`[PostService] getPosts query: username=${username}, authorId=${authorId}`);
         const userId = req.headers['x-user-id'] || req.query.userId;
-        const whereClause = username ? { username } : {};
+        const whereClause = {};
+        if (username) whereClause.username = username;
+        if (authorId) whereClause.userId = parseInt(authorId);
 
         const posts = await Post.findAll({
             where: whereClause,
@@ -393,16 +397,83 @@ const reportPost = async (req, res) => {
         const { reason, details } = req.body;
         const userId = req.headers['x-user-id'] || req.body.userId;
 
-        // In a real app, save to Report model
-        console.log(`[Report] Post ${postId} reported by User ${userId}`);
-        console.log(`[Report] Reason: ${reason}, Details: ${details}`);
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID required' });
+        }
 
-        // Simulate success
-        res.json({ status: 'success', message: 'Report received' });
+        // Check if post exists
+        const post = await Post.findByPk(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        // Prevent users from reporting their own posts
+        if (String(post.userId) === String(userId)) {
+            return res.status(400).json({ message: 'You cannot report your own post' });
+        }
+
+        // Validate reason
+        const validReasons = ['spam', 'violence', 'hate', 'nudity', 'scam', 'false_information', 'bullying', 'other'];
+        if (!reason || !validReasons.includes(reason)) {
+            return res.status(400).json({ message: 'Invalid report reason' });
+        }
+
+        // Check if user already reported this post
+        const existingReport = await Report.findOne({
+            where: { postId, reportedBy: userId }
+        });
+
+        if (existingReport) {
+            return res.status(400).json({ message: 'You have already reported this post' });
+        }
+
+        // Create report
+        const report = await Report.create({
+            postId,
+            reportedBy: userId,
+            reason,
+            details: details || null
+        });
+
+        console.log(`[Report] Post ${postId} reported by User ${userId} for ${reason}`);
+
+        res.json({
+            status: 'success',
+            message: 'Report submitted successfully',
+            data: { reportId: report.id }
+        });
     } catch (error) {
         console.error('Report Post Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
 
-module.exports = { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost };
+const getEmbedCode = async (req, res) => {
+    try {
+        const postId = req.params.id;
+
+        const post = await Post.findByPk(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        // Generate embed HTML
+        const embedUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/embed/post/${postId}`;
+        const embedHtml = `<iframe src="${embedUrl}" width="400" height="480" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
+
+        res.json({
+            status: 'success',
+            data: {
+                embedUrl,
+                embedHtml,
+                postId: post.id,
+                username: post.username
+            }
+        });
+    } catch (error) {
+        console.error('Get Embed Code Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+module.exports = { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost, getEmbedCode };

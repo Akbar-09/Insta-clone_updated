@@ -1,4 +1,5 @@
 import { Heart, MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // Grid icon for the empty state
 const Grid = ({ size }) => (
@@ -6,6 +7,8 @@ const Grid = ({ size }) => (
 );
 
 const ProfileGrid = ({ posts }) => {
+    const navigate = useNavigate();
+
     if (posts.length === 0) {
         return (
             <div className="py-20 flex flex-col items-center text-center text-gray-400">
@@ -28,7 +31,11 @@ const ProfileGrid = ({ posts }) => {
     return (
         <div className="grid grid-cols-3 gap-1">
             {posts.map((post) => (
-                <div key={post.id} className="relative aspect-square group cursor-pointer bg-black/20">
+                <div
+                    key={post.id}
+                    onClick={() => navigate(`/post/${post.id}`)}
+                    className="relative aspect-square group cursor-pointer bg-black/20"
+                >
                     {post.mediaType === 'VIDEO' ? (
                         <video src={getMediaUrl(post.mediaUrl)} className="w-full h-full object-cover" />
                     ) : (

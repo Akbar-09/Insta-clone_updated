@@ -1,6 +1,6 @@
 import { MoreHorizontal, X, Volume2, Pause, Play } from 'lucide-react';
 
-const StoryHeader = ({ user, timestamp, onClose, isPaused, onTogglePause }) => {
+const StoryHeader = ({ user, timestamp, onClose, isPaused, onTogglePause, onOpenMenu }) => {
     const getMediaUrl = (url) => {
         if (!url) return undefined;
         if (url.startsWith('http') || url.startsWith('data:')) return url;
@@ -28,7 +28,10 @@ const StoryHeader = ({ user, timestamp, onClose, isPaused, onTogglePause }) => {
                 >
                     {isPaused ? <Play size={20} fill="white" /> : <Pause size={20} fill="white" />}
                 </button>
-                <button className="text-white hover:opacity-75 bg-transparent border-none cursor-pointer">
+                <button
+                    onClick={(e) => { e.stopPropagation(); onOpenMenu(); }}
+                    className="text-white hover:opacity-75 bg-transparent border-none cursor-pointer"
+                >
                     <MoreHorizontal size={24} />
                 </button>
                 <button

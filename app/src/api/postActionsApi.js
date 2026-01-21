@@ -71,3 +71,9 @@ export const getExplorePosts = async () => {
 export const unlikePost = async (postId) => {
     return api.delete(`/posts/${postId}/like`);
 };
+
+export const getEmbedCode = async (postId) => {
+    const response = await api.get(`/posts/${postId}/embed`);
+    return response.data;
+};
+

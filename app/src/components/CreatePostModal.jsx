@@ -80,7 +80,7 @@ const CreatePostModal = ({ onClose }) => {
             if (postRes.data.status === 'success') {
                 console.log('Post created successfully!');
                 onClose();
-                window.location.reload(); // Simple refresh to show new post for now
+                window.location.reload(); // Reload to show new post on Feed (and Profile if visited)
             } else {
                 throw new Error('Post creation failed');
             }
