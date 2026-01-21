@@ -1,5 +1,5 @@
 const express = require('express');
-const { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost } = require('../controllers/postController');
+const { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost, getEmbedCode } = require('../controllers/postController');
 
 const router = express.Router();
 
@@ -13,6 +13,7 @@ router.get('/saved', getSavedPosts);
 router.post('/check-likes', checkLikes);
 
 // Post Management
+router.get('/:id/embed', getEmbedCode);
 router.get('/:id', getPostById);
 router.delete('/:id', deletePost);
 router.put('/:id', updatePost);

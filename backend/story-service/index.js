@@ -3,6 +3,15 @@ const cors = require('cors');
 const { connectRabbitMQ } = require('./config/rabbitmq');
 const sequelize = require('./config/database');
 const storyRoutes = require('./routes/storyRoutes');
+const highlightRoutes = require('./routes/highlightRoutes');
+
+// Import models to ensure they're registered
+const Story = require('./models/Story');
+const StoryView = require('./models/StoryView');
+const StoryReport = require('./models/StoryReport');
+const Highlight = require('./models/Highlight');
+const HighlightStory = require('./models/HighlightStory');
+
 require('dotenv').config();
 
 const app = express();
@@ -13,10 +22,11 @@ app.use(express.json());
 
 // Routes
 app.use('/', storyRoutes);
+app.use('/', highlightRoutes);
 
 const startServer = async () => {
     try {
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
         await connectRabbitMQ();
         app.listen(PORT, () => {
             console.log(`Story Service running on port ${PORT}`);

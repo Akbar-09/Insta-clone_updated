@@ -1,6 +1,6 @@
 const express = require('express');
 const { sendMessage, getMessages, getConversations, markAsSeen } = require('../controllers/messageController');
-const { verifyToken } = require('../middleware/authMiddleware'); // Assuming we have or need this
+
 
 const router = express.Router();
 

@@ -1,4 +1,4 @@
-const GATEWAY_URL = 'http://localhost:5000/api/v1';
+const GATEWAY_URL = '/api/v1';
 
 export const searchUsers = async (query) => {
     try {

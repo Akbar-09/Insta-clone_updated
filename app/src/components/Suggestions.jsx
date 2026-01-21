@@ -1,14 +1,9 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Play, Heart, UserPlus, Hash, Sparkles } from 'lucide-react';
+import UserCard from './UserCard';
+import { searchUsers } from '../services/searchApi';
 
-const MOCK_SUGGESTIONS = [
-    { username: 'mohammad_anas', name: 'Mohammad Anas', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Followed by user_123 + 2 more' },
-    { username: 'ravi_kumar', name: 'Ravi Kumar', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'New to Jaadoe' },
-    { username: 'ahlam_ansari', name: 'Ahlam Ansari', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Followed by tech_guru' },
-    { username: 'ayaan_ansari', name: 'Ayaan Ansari', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Followed by nature_lover + 1 more' },
-    { username: 'prajakta_j', name: 'Prajakta J', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Suggested for you' },
-    { username: 'vikram.s', name: 'Vikram Singh', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Follows you' },
-];
+
 
 const TRENDING_HASHTAGS = [
     '#fitness', '#travel', '#inspiration', '#codinglife', '#photography', '#nature', '#art', '#foodie'
@@ -21,6 +16,37 @@ const RECENT_ACTIVITY = [
 ];
 
 const Suggestions = () => {
+    const [suggestions, setSuggestions] = useState([]);
+
+    useEffect(() => {
+        // Fetch real users so Follow functionality works
+        const fetchSuggestions = async () => {
+            // Temporary strategy: search for common term to get users
+            // In production, this should be a dedicated /users/suggestions endpoint
+            // that uses graph logic (friends of friends).
+            try {
+                // Using 'a' to get some users. 
+                const users = await searchUsers('a');
+                // Filter out current user if possible (requires auth context, but search might return self)
+                // Map to required format
+                const mapped = users
+                    .filter(u => u.type === 'USER')
+                    .slice(0, 5)
+                    .map(u => ({
+                        id: u.referenceId, // IMPORTANT: Real UUID for FollowButton
+                        username: u.content,
+                        name: u.metadata?.fullName || u.content,
+                        avatar: u.metadata?.profilePicture || 'https://placehold.co/150',
+                        mutual: 'Suggested for you'
+                    }));
+                setSuggestions(mapped);
+            } catch (e) {
+                console.error("Failed to fetch suggestions", e);
+            }
+        };
+        fetchSuggestions();
+    }, []);
+
     return (
         <div className="w-[319px] pl-3 h-full flex flex-col overflow-y-auto scrollbar-none pb-4">
             {/* Current User */}
@@ -48,18 +74,17 @@ const Suggestions = () => {
             </div>
 
             <div className="flex flex-col mb-6">
-                {MOCK_SUGGESTIONS.map((user, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-2 px-2 hover:bg-white/5 rounded-lg transition-colors group">
-                        <div className="flex items-center">
-                            <img src={user.avatar} alt={user.username} className="w-8 h-8 rounded-full mr-3 object-cover cursor-pointer" />
-                            <div className="flex flex-col">
-                                <span className="font-semibold text-sm text-text-primary cursor-pointer hover:opacity-80">{user.username}</span>
-                                <span className="text-xs text-text-secondary truncate max-w-[140px]">{user.mutual}</span>
-                            </div>
-                        </div>
-                        <button className="text-blue-btn text-xs font-bold bg-transparent border-none cursor-pointer hover:text-[#00376b] transition-colors">Follow</button>
-                    </div>
-                ))}
+                {suggestions.length > 0 ? (
+                    suggestions.map((user) => (
+                        <UserCard
+                            key={user.id}
+                            user={user}
+                            subtitle={user.mutual}
+                        />
+                    ))
+                ) : (
+                    <div className="text-xs text-text-secondary px-2">Loading suggestions...</div>
+                )}
             </div>
 
             {/* Chat with AI Widget */}

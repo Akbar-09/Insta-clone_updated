@@ -1,3 +1,4 @@
+// User Service Entry Point - Force Restart 2
 const express = require('express');
 const cors = require('cors');
 const { connectRabbitMQ } = require('./config/rabbitmq');
@@ -12,19 +13,22 @@ app.use(cors());
 app.use(express.json());
 
 const { publishEvent } = require('./config/rabbitmq');
+const followRoutes = require('./routes/followRoutes');
+const profileRoutes = require('./routes/profileRoutes');
 
-// Basic Route to get profile
-app.get('/:username', async (req, res) => {
-    try {
-        const user = await UserProfile.findOne({ where: { username: req.params.username } });
-        if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
-        res.json({ status: 'success', data: user });
-    } catch (err) {
-        res.status(500).json({ status: 'error', message: err.message });
-    }
+// Health check
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', service: 'User Service' });
 });
 
-// Get User by ID
+
+// Use Profile Routes FIRST (most specific)
+app.use('/profile', profileRoutes);
+
+// Use Follow Routes
+app.use('/', followRoutes); // Gateway rewrites /api/v1/users to / so we mount at root
+
+// Get User by ID (more specific than /:username)
 app.get('/users/:id', async (req, res) => {
     try {
         const user = await UserProfile.findOne({ where: { userId: req.params.id } });
@@ -35,7 +39,7 @@ app.get('/users/:id', async (req, res) => {
     }
 });
 
-// Update Profile
+// Update Profile (more specific)
 app.put('/:id', async (req, res) => {
     try {
         const userId = req.params.id;
@@ -70,31 +74,18 @@ app.put('/:id', async (req, res) => {
     }
 });
 
-// Follow User
-app.post('/users/:id/follow', async (req, res) => {
+// Basic Route to get profile by username (LAST - catch-all)
+app.get('/:username', async (req, res) => {
     try {
-        const targetUserId = req.params.id;
-        const { currentUserId } = req.body;
-
-        if (!currentUserId) return res.status(400).json({ status: 'error', message: 'currentUserId body param required' });
-
-        const targetUser = await UserProfile.findOne({ where: { userId: targetUserId } });
-        if (!targetUser) return res.status(404).json({ status: 'error', message: 'User not found' });
-
-        await targetUser.increment('followersCount');
-
-        await publishEvent('USER_FOLLOWED', {
-            followerId: currentUserId,
-            followedId: targetUserId,
-            timestamp: new Date()
-        });
-
-        res.json({ status: 'success', message: 'User followed' });
+        const user = await UserProfile.findOne({ where: { username: req.params.username } });
+        if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
+        res.json({ status: 'success', data: user });
     } catch (err) {
-        console.error(err);
         res.status(500).json({ status: 'error', message: err.message });
     }
 });
+
+
 
 const startServer = async () => {
     try {

@@ -9,24 +9,29 @@ const Conversation = sequelize.define('Conversation', {
     },
     user1Id: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        field: 'user1_id'
     },
     user2Id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        field: 'user2_id'
     },
     // We can store a snippet or ID of the last message for quick preview
     lastMessageId: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
+        field: 'last_message_id'
     },
     lastMessageContent: {
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
+        field: 'last_message_content'
     },
     lastMessageSenderId: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
+        field: 'last_message_sender_id'
     },
     lastMessageAt: {
         type: DataTypes.DATE,

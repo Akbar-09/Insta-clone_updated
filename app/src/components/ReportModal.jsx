@@ -4,16 +4,17 @@ import { reportPost } from '../api/reportApi';
 
 const REPORT_CATEGORIES = [
     {
-        id: 'dislike',
-        label: "I just don't like it",
+        id: 'spam',
+        label: "Spam",
         subcategories: [
-            "I'm not interested in this author",
-            "I don't like to see this on Jaadoe"
+            "Fake engagement",
+            "Repetitive content",
+            "Misleading links"
         ]
     },
     {
         id: 'bullying',
-        label: "Bullying or unwanted contact",
+        label: "Bullying or harassment",
         subcategories: [
             "Being harassed",
             "Threats",
@@ -23,30 +24,21 @@ const REPORT_CATEGORIES = [
         ]
     },
     {
-        id: 'self_injury',
-        label: "Suicide, self-injury or eating disorders",
-        subcategories: [
-            "Self-injury",
-            "Suicide",
-            "Eating disorders"
-        ]
-    },
-    {
         id: 'violence',
-        label: "Violence, hate or exploitation",
+        label: "Violence or dangerous organizations",
         subcategories: [
             "Violence",
-            "Hate speech",
-            "Exploitation"
+            "Dangerous organizations",
+            "Terrorist content"
         ]
     },
     {
-        id: 'restricted',
-        label: "Selling or promoting restricted items",
+        id: 'hate',
+        label: "Hate speech or symbols",
         subcategories: [
-            "Drugs",
-            "Weapons",
-            "Regulated goods"
+            "Hate speech",
+            "Hateful symbols",
+            "Discrimination"
         ]
     },
     {
@@ -60,26 +52,35 @@ const REPORT_CATEGORIES = [
     },
     {
         id: 'scam',
-        label: "Scam, fraud or spam",
+        label: "Scam or fraud",
         subcategories: [
             "Fake giveaway",
-            "Misleading info",
-            "Spam behavior",
-            "Phishing attempt"
+            "Phishing attempt",
+            "Financial scam",
+            "Impersonation"
         ]
     },
     {
-        id: 'false_info',
+        id: 'false_information',
         label: "False information",
         subcategories: [
-            "Health",
-            "Politics",
-            "Social issues"
+            "Health misinformation",
+            "Political misinformation",
+            "Manipulated media"
+        ]
+    },
+    {
+        id: 'other',
+        label: "Something else",
+        subcategories: [
+            "Intellectual property violation",
+            "Sale of illegal goods",
+            "Other concern"
         ]
     }
 ];
 
-const ReportModal = ({ postId, onClose }) => {
+const ReportModal = ({ postId, onClose, onReport }) => {
     const [step, setStep] = useState('categories'); // categories, subcategories, submitted
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -117,11 +118,16 @@ const ReportModal = ({ postId, onClose }) => {
     const handleSubmit = async (detail) => {
         setLoading(true);
         try {
-            await reportPost(postId, selectedCategory.label, detail);
+            // Send category.id (enum value) instead of label
+            if (onReport) {
+                await onReport(selectedCategory.id, detail);
+            } else {
+                await reportPost(postId, selectedCategory.id, detail);
+            }
             setStep('submitted');
         } catch (error) {
             console.error("Report failed", error);
-            // Optionally show error
+            alert('Failed to submit report. Please try again.');
         } finally {
             setLoading(false);
         }

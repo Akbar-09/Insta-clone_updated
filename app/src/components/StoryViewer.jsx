@@ -1,16 +1,25 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useContext, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import StoryHeader from './stories/StoryHeader';
 import StoryProgressBar from './stories/StoryProgressBar';
 import StoryNavigation from './stories/StoryNavigation';
 import StoryFooter from './stories/StoryFooter';
+import StoryOptionsMenu from './stories/StoryOptionsMenu';
+import ReportModal from './ReportModal';
 import { groupStoriesByUser } from '../utils/storyUtils';
+import { AuthContext } from '../context/AuthContext';
+import { deleteStory, reportStory, viewStory } from '../api/storyApi';
 import jaadoeLogo from '../assets/jaadoe_logo.svg';
 
 const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
+    const { user: currentUserData } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const [deletedStoryIds, setDeletedStoryIds] = useState(new Set());
 
     // --- 1. Data Preparation: Group stories by User ---
-    const groupedStories = useMemo(() => groupStoriesByUser(stories), [stories]);
+    const activeStories = useMemo(() => stories.filter(s => !deletedStoryIds.has(s.id)), [stories, deletedStoryIds]);
+    const groupedStories = useMemo(() => groupStoriesByUser(activeStories), [activeStories]);
 
     // Initial State Calculation
     // Find which group/item the activeIndex points to in the flat list
@@ -32,9 +41,41 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
     const [currentUserIndex, setCurrentUserIndex] = useState(initState.userIdx);
     const [currentStoryIndex, setCurrentStoryIndex] = useState(initState.itemIdx);
     const [isPaused, setIsPaused] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const videoRef = useRef(null);
 
     const currentUserGroup = groupedStories[currentUserIndex];
     const currentStory = currentUserGroup?.stories[currentStoryIndex];
+
+    // Sync video playback with pause state
+    useEffect(() => {
+        if (videoRef.current) {
+            if (isPaused) {
+                videoRef.current.pause();
+            } else {
+                videoRef.current.play().catch(e => { }); // Ignore play-interruption errors
+            }
+        }
+    }, [isPaused, currentStoryIndex, currentUserIndex]);
+
+    // Mark as viewed
+    useEffect(() => {
+        if (currentStory && !currentStory.seen) {
+            viewStory(currentStory.id).catch(err => console.error("View mark failed", err));
+            // Optionally update local seen state if needed
+        }
+    }, [currentStory]);
+
+    // Auto-pause when menu is open or tab switch
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden) setIsPaused(true);
+            // else setIsPaused(false); // Optional: Auto resume? UX decision. Instagram keeps paused.
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, []);
 
     // Navigation Logic
     const goToNext = useCallback(() => {
@@ -184,12 +225,17 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
                         onClose={onClose}
                         isPaused={isPaused}
                         onTogglePause={() => setIsPaused(p => !p)}
+                        onOpenMenu={() => {
+                            setIsPaused(true);
+                            setShowMenu(true);
+                        }}
                     />
 
                     {/* Media */}
                     <div className="flex-grow flex items-center justify-center bg-[#262626] relative h-full w-full">
                         {currentStory.mediaType === 'VIDEO' ? (
                             <video
+                                ref={videoRef}
                                 src={getMediaUrl(currentStory.mediaUrl)}
                                 className="w-full h-full object-cover"
                                 autoPlay
@@ -215,6 +261,51 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
                 </div>
 
             </div>
+
+            {/* Options Menu */}
+            <StoryOptionsMenu
+                isOpen={showMenu}
+                isOwner={currentUserData && (String(currentUserData.id) === String(currentStory?.userId) || String(currentUserData.userId) === String(currentStory?.userId))}
+                onClose={() => {
+                    setShowMenu(false);
+                    setIsPaused(false);
+                }}
+                onDelete={async () => {
+                    if (window.confirm("Delete this story?")) {
+                        await deleteStory(currentStory.id);
+                        setDeletedStoryIds(prev => new Set(prev).add(currentStory.id));
+                        setShowMenu(false);
+                        setIsPaused(false);
+                        // Navigation handling is automatic due to useMemo re-calc or might need manual nudge
+                        // If group becomes empty, we need to handle that.
+                        // Ideally goToNext() but data changed.
+                    }
+                }}
+                onReport={() => {
+                    setShowMenu(false);
+                    setShowReportModal(true);
+                    // Keep paused
+                }}
+                onAbout={() => {
+                    navigate(`/profile/${currentStory.userId}`);
+                    onClose();
+                }}
+            />
+
+            {showReportModal && (
+                <ReportModal
+                    postId={currentStory.id} // Reusing prop name though it's storyId
+                    onClose={() => {
+                        setShowReportModal(false);
+                        setIsPaused(false);
+                    }}
+                    onReport={async (category, detail) => {
+                        await reportStory(currentStory.id, `${category}: ${detail}`);
+                    }}
+                />
+            )}
+
+
         </div>,
         document.body
     );

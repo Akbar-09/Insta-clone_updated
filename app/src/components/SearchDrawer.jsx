@@ -2,6 +2,7 @@ import { forwardRef, useState, useEffect } from 'react';
 import { X, XCircle } from 'lucide-react';
 import { searchUsers } from '../services/searchApi';
 import { useNavigate } from 'react-router-dom';
+import UserCard from './UserCard';
 
 const SearchDrawer = forwardRef(({ isOpen, onClose }, ref) => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ const SearchDrawer = forwardRef(({ isOpen, onClose }, ref) => {
                         id: item.referenceId,
                         username: item.content,
                         name: item.metadata?.fullName || item.content,
-                        avatar: item.metadata?.profilePicture || 'https://via.placeholder.com/150'
+                        avatar: item.metadata?.profilePicture || 'https://placehold.co/150'
                     }));
                     setResults(mapped);
                 } catch (err) {
@@ -93,20 +94,14 @@ const SearchDrawer = forwardRef(({ isOpen, onClose }, ref) => {
                             </div>
                         ) : (
                             results.map(user => (
-                                <div
+                                <UserCard
                                     key={user.id}
-                                    className="flex items-center px-6 py-2 cursor-pointer hover:bg-secondary"
-                                    onClick={() => {
+                                    user={user}
+                                    onUserClick={() => {
                                         navigate(`/profile/${user.username}`);
                                         onClose();
                                     }}
-                                >
-                                    <img src={user.avatar} alt={user.username} className="w-11 h-11 rounded-full mr-3 object-cover" />
-                                    <div className="flex-grow flex flex-col">
-                                        <span className="font-semibold text-sm text-text-primary">{user.username}</span>
-                                        <span className="text-text-secondary text-sm">{user.name}</span>
-                                    </div>
-                                </div>
+                                />
                             ))
                         )}
                     </>

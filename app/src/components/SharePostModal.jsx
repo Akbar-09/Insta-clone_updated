@@ -99,7 +99,7 @@ const SharePostModal = ({ postId, mediaUrl, onClose }) => {
                                         <div key={user.userId || user.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#303030] transition-colors cursor-pointer" onClick={() => !isSent && handleSend(user)}>
                                             <div className="flex items-center gap-3">
                                                 <img
-                                                    src={user.profilePicture || 'https://via.placeholder.com/150'}
+                                                    src={user.profilePicture || 'https://placehold.co/150'}
                                                     alt={user.username}
                                                     className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                                                 />
@@ -110,8 +110,8 @@ const SharePostModal = ({ postId, mediaUrl, onClose }) => {
                                             </div>
                                             <button
                                                 className={`px-4 py-1.5 rounded text-sm font-semibold transition-all ${isSent
-                                                        ? 'bg-transparent text-gray-400 border border-gray-300 dark:border-gray-600 cursor-default'
-                                                        : 'bg-[#0095f6] hover:bg-[#1877f2] text-white shadow-sm'
+                                                    ? 'bg-transparent text-gray-400 border border-gray-300 dark:border-gray-600 cursor-default'
+                                                    : 'bg-[#0095f6] hover:bg-[#1877f2] text-white shadow-sm'
                                                     }`}
                                                 onClick={(e) => {
                                                     e.stopPropagation();

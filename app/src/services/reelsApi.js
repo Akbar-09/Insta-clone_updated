@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api/v1'; // Hardcoded for now based on gateway port
+const API_BASE_URL = '/api/v1'; // Uses Vite Proxy
 
 const getReels = async () => {
     try {

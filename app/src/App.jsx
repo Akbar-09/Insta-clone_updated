@@ -9,6 +9,7 @@ import Profile from './pages/profile/ProfilePage';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import PostPage from './pages/PostPage';
+import ArchivePage from './pages/profile/ArchivePage';
 
 import SettingsLayout from './pages/SettingsLayout';
 import EditProfile from './components/settings/EditProfile';
@@ -69,6 +70,7 @@ function App() {
                 <Route path="/profile/:id" element={<Profile />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/post/:id" element={<PostPage />} />
+                <Route path="/archive/stories" element={<ArchivePage />} />
 
                 {/* Settings Routes */}
                 <Route path="/settings" element={<SettingsLayout />}>

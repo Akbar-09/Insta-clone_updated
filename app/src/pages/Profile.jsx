@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Grid, Clapperboard, UserSquare2, Heart, MessageCircle, Settings, UserPlus, ChevronDown, Link as LinkIcon, MoreHorizontal } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import ProfileHeader from '../components/profile/ProfileHeader';
 
 const VerifiedBadge = () => (
     <svg aria-label="Verified" className="ml-2 w-[18px] h-[18px] text-[#0095f6]" fill="rgb(0, 149, 246)" height="18" role="img" viewBox="0 0 40 40" width="18">
@@ -18,7 +19,6 @@ const Profile = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('posts');
-    const [isFollowing, setIsFollowing] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -50,22 +50,7 @@ const Profile = () => {
         }
     }, [id, currentUser]);
 
-    const handleFollowToggle = async () => {
-        if (!profile) return;
-        try {
-            if (isFollowing) {
-                await api.delete(`/users/${profile.id}/follow`);
-                setIsFollowing(false);
-                setProfile(prev => ({ ...prev, followersCount: prev.followersCount - 1 }));
-            } else {
-                await api.post(`/users/${profile.id}/follow`);
-                setIsFollowing(true);
-                setProfile(prev => ({ ...prev, followersCount: prev.followersCount + 1 }));
-            }
-        } catch (error) {
-            console.error('Follow toggle error:', error);
-        }
-    };
+
 
     if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
     if (!profile) return <div className="flex justify-center items-center h-screen">User not found</div>;
@@ -81,102 +66,12 @@ const Profile = () => {
     return (
         <div className="max-w-[935px] w-full mx-auto pt-[30px] pb-12 px-5 max-md:px-0 max-md:pt-0">
             {/* Header */}
-            <header className="flex mb-11 px-0 max-md:px-4 max-md:mb-6 max-md:mt-4">
-                {/* Avatar */}
-                <div className="flex-grow flex-basis-0 mr-[30px] flex justify-center max-md:flex-grow-0 max-md:mr-5">
-                    <div className="w-[150px] h-[150px] rounded-full p-[2px] border bg-gradient-to-tr from-[#FFD600] via-[#FF0169] to-[#D300C5] max-md:w-[77px] max-md:h-[77px] max-md:border-none">
-                        <div className="w-full h-full rounded-full p-[2px] bg-white">
-                            <img src={getMediaUrl(profile.avatar) || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+'} alt={profile.username} className="w-full h-full rounded-full object-cover" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Profile Info */}
-                <div className="flex-grow-[2] flex-basis-[30px] flex flex-col pt-2 max-md:pt-0">
-                    {/* Row 1: Username & Options */}
-                    <div className="flex items-center mb-4 max-md:mb-3">
-                        <h2 className="text-[20px] font-normal mr-4 leading-8">{profile.username}</h2>
-                        {profile.isVerified && <VerifiedBadge />}
-
-                        <div className="flex items-center gap-2 max-md:hidden ml-4">
-                            {isOwnProfile ? (
-                                <>
-                                    <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">Edit Profile</button>
-                                    <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">View Archive</button>
-                                    <Settings size={24} className="ml-2 cursor-pointer" />
-                                </>
-                            ) : (
-                                <div className="flex gap-2">
-                                    {/* Follow/Following Button */}
-                                    <button
-                                        onClick={handleFollowToggle}
-                                        className={`${isFollowing ? 'bg-[#efefef] text-black' : 'bg-[#0095f6] text-white hover:bg-[#1877F2]'} px-5 py-[7px] rounded-lg font-semibold text-sm transition-colors flex items-center gap-1`}
-                                    >
-                                        {isFollowing ? (
-                                            <>
-                                                Following <ChevronDown size={16} />
-                                            </>
-                                        ) : 'Follow'}
-                                    </button>
-
-                                    {/* Message Button */}
-                                    <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm text-black transition-colors">
-                                        Message
-                                    </button>
-
-                                    {/* Suggested Users Button */}
-                                    <button className="bg-[#efefef] hover:bg-[#dbdbdb] p-[7px] rounded-lg text-black transition-colors flex items-center justify-center">
-                                        <UserPlus size={18} />
-                                    </button>
-
-                                    <button className="ml-2">
-                                        <MoreHorizontal size={24} />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Row 2: Stats (Desktop) */}
-                    <div className="flex mb-4 text-base max-md:hidden">
-                        <span className="mr-10"><span className="font-semibold">{posts.length}</span> posts</span>
-                        <span className="mr-10 cursor-pointer"><span className="font-semibold">{profile.followersCount || 0}</span> followers</span>
-                        <span className="cursor-pointer"><span className="font-semibold">{profile.followingCount || 0}</span> following</span>
-                    </div>
-
-                    {/* Row 3: Name, Category, Bio */}
-                    <div className="text-sm leading-5 mb-4">
-                        <span className="font-semibold block">{profile.fullname}</span>
-                        <span className="text-gray-500 block text-xs font-medium mb-1">Public Figure</span> {/* Mock Category */}
-                        <p className="whitespace-pre-wrap">{profile.bio}</p>
-                        {/* Mock Website Link */}
-                        <a href="#" className="font-semibold text-[#00376b] hover:underline flex items-center gap-1 mt-1">
-                            <LinkIcon size={14} className="rotate-45" />
-                            bit.ly/example-link
-                        </a>
-                    </div>
-
-                    {/* Row 4: Followed By (Mock) */}
-                    {!isOwnProfile && (
-                        <div className="flex items-center gap-2 text-[12px] text-text-secondary cursor-pointer">
-                            <div className="flex -space-x-2">
-                                <div className="w-5 h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50&h=50&fit=crop" className="w-full h-full object-cover" />
-                                </div>
-                                <div className="w-5 h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=50&h=50&fit=crop" className="w-full h-full object-cover" />
-                                </div>
-                                <div className="w-5 h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=50&h=50&fit=crop" className="w-full h-full object-cover" />
-                                </div>
-                            </div>
-                            <span>
-                                Followed by <span className="font-semibold text-black">user_one</span>, <span className="font-semibold text-black">user_two</span> + 12 more
-                            </span>
-                        </div>
-                    )}
-                </div>
-            </header>
+            <ProfileHeader
+                key={profile.id} // Important to reset state when profile changes
+                profile={profile}
+                postsCount={posts.length}
+                isOwnProfile={isOwnProfile}
+            />
 
             {/* Navigation Tabs */}
             <div className="border-t border-border flex justify-center uppercase tracking-[1px] text-xs font-semibold">

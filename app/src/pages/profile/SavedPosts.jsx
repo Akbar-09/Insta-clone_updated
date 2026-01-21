@@ -1,57 +1,106 @@
-import { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../../context/AuthContext';
-import { getSavedPosts } from '../../api/bookmarkApi';
-import ProfileGrid from './ProfileGrid';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getMySavedPosts } from '../../api/profileApi';
+import { MessageCircle, Heart } from 'lucide-react';
 
 const SavedPosts = () => {
-    const { user } = useContext(AuthContext);
-    const [posts, setPosts] = useState([]);
+    const navigate = useNavigate();
+    const [savedPosts, setSavedPosts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchSaved = async () => {
-            // In a real app, 'me' or user.id would be used.
-            // Our API expects userId as query param or we can update it to infer from token.
-            // For now passing user.id explicitly as per our previous backend implementation.
-            if (!user) return;
-            try {
-                const data = await getSavedPosts(user.id || user.userId);
-                if (data.status === 'success') {
-                    setPosts(data.data);
-                } else if (Array.isArray(data)) {
-                    // Fallback in case API returns array directly
-                    setPosts(data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch saved posts", error);
-            } finally {
-                setLoading(false);
+        fetchSavedPosts();
+    }, []);
+
+    const fetchSavedPosts = async () => {
+        setLoading(true);
+        try {
+            const response = await getMySavedPosts();
+            if (response.status === 'success') {
+                setSavedPosts(response.data);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching saved posts:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchSaved();
-    }, [user]);
+    const handlePostClick = (postId) => {
+        navigate(`/post/${postId}`);
+    };
 
-    if (loading) return <div className="flex justify-center py-20 text-text-primary">Loading...</div>;
-
-    if (posts.length === 0) {
+    if (loading) {
         return (
-            <div className="py-20 flex flex-col items-center text-center text-text-secondary">
-                <div className="w-[62px] h-[62px] border-2 border-text-primary rounded-full flex items-center justify-center mb-4">
-                    <svg aria-label="Save" className="_ab6-" color="currentColor" fill="currentColor" height="30" role="img" viewBox="0 0 24 24" width="30">
-                        <polygon fill="none" points="20 21 12 13.44 4 21 4 3 20 3 20 21" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></polygon>
-                    </svg>
+            <div className="flex justify-center items-center py-20">
+                <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    if (savedPosts.length === 0) {
+        return (
+            <div className="py-20 text-center text-text-secondary">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full border-2 border-gray-600 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-semibold mb-1">Save</h3>
+                        <p className="text-sm">Save photos and videos that you want to see again.</p>
+                        <p className="text-sm">No one is notified, and only you can see what you've saved.</p>
+                    </div>
                 </div>
-                <h2 className="text-xl font-extrabold mb-2 text-text-primary">Save</h2>
-                <p className="text-sm max-w-[350px]">Save photos and videos that you want to see again. No one is notified, and only you can see what you've saved.</p>
             </div>
         );
     }
 
     return (
-        <div>
-            <div className="text-xs text-text-secondary font-semibold mb-4 mt-2">Only you can see what you've saved</div>
-            <ProfileGrid posts={posts} />
+        <div className="grid grid-cols-3 gap-1 md:gap-7">
+            {savedPosts.map((post) => (
+                <div
+                    key={post.id}
+                    onClick={() => handlePostClick(post.id)}
+                    className="relative aspect-square cursor-pointer group overflow-hidden bg-gray-900"
+                >
+                    {/* Post Image/Video */}
+                    {post.mediaType === 'VIDEO' ? (
+                        <video
+                            src={post.mediaUrl}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <img
+                            src={post.mediaUrl || post.imageUrl}
+                            alt="Saved post"
+                            className="w-full h-full object-cover"
+                        />
+                    )}
+
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6">
+                        <div className="flex items-center gap-2 text-white">
+                            <Heart size={24} fill="white" />
+                            <span className="font-semibold">{post.likesCount || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-white">
+                            <MessageCircle size={24} fill="white" />
+                            <span className="font-semibold">{post.commentsCount || 0}</span>
+                        </div>
+                    </div>
+
+                    {/* Video/Multiple indicator */}
+                    {post.mediaType === 'VIDEO' && (
+                        <div className="absolute top-2 right-2">
+                            <svg className="w-5 h-5 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </div>
+                    )}
+                </div>
+            ))}
         </div>
     );
 };
