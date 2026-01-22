@@ -188,7 +188,7 @@ exports.updateMyProfile = async (req, res) => {
             return res.status(401).json({ status: 'error', message: 'Unauthorized' });
         }
 
-        const { fullName, bio, website, gender, profilePicture, username, isPrivate, showAccountSuggestions } = req.body;
+        const { fullName, bio, website, gender, profilePicture, username, isPrivate, showAccountSuggestions, allowSearchIndexing } = req.body;
 
         const profile = await UserProfile.findOne({ where: { userId } });
 
@@ -225,6 +225,9 @@ exports.updateMyProfile = async (req, res) => {
         if (showAccountSuggestions !== undefined && showAccountSuggestions !== profile.showAccountSuggestions) {
             // No specific history log required for this preference, or we can add one.
             profile.showAccountSuggestions = showAccountSuggestions;
+        }
+        if (allowSearchIndexing !== undefined && allowSearchIndexing !== profile.allowSearchIndexing) {
+            profile.allowSearchIndexing = allowSearchIndexing;
         }
 
         // Handle username update (check uniqueness)
@@ -276,12 +279,25 @@ exports.updateMyProfile = async (req, res) => {
 exports.getUserPosts = async (req, res) => {
     try {
         const { userId } = req.params;
+        const currentUserId = req.headers['x-user-id'] || req.query.currentUserId;
 
-        // Get user profile to get username
+        // Get user profile
         const profile = await UserProfile.findOne({ where: { userId } });
 
         if (!profile) {
             return res.status(404).json({ status: 'error', message: 'User not found' });
+        }
+
+        // Privacy Check
+        if (profile.isPrivate && (!currentUserId || parseInt(currentUserId) !== parseInt(userId))) {
+            // Check if following
+            const isFollowing = await Follow.findOne({
+                where: { followerId: currentUserId, followingId: userId }
+            });
+
+            if (!isFollowing) {
+                return res.json({ status: 'success', data: [], message: 'Account is private' });
+            }
         }
 
         // Fetch posts from post-service

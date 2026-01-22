@@ -1,4 +1,5 @@
 const Notification = require('../models/Notification');
+const NotificationSettings = require('../models/NotificationSettings');
 
 const getNotifications = async (req, res) => {
     try {
@@ -79,4 +80,53 @@ const getUnreadCount = async (req, res) => {
     }
 };
 
-module.exports = { getNotifications, markRead, markAllRead, getUnreadCount };
+const getSettings = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        let settings = await NotificationSettings.findOne({ where: { userId } });
+
+        if (!settings) {
+            // Auto-create default settings
+            settings = await NotificationSettings.create({ userId });
+        }
+
+        res.json({ status: 'success', data: settings });
+    } catch (error) {
+        console.error('Get Settings Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const updateSettings = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        const updates = req.body;
+
+        let settings = await NotificationSettings.findOne({ where: { userId } });
+
+        if (!settings) {
+            settings = await NotificationSettings.create({ userId, ...updates });
+        } else {
+            // Partial update
+            await settings.update(updates);
+        }
+
+        res.json({ status: 'success', data: settings });
+    } catch (error) {
+        console.error('Update Settings Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+module.exports = {
+    getNotifications,
+    markRead,
+    markAllRead,
+    getUnreadCount,
+    getSettings,
+    updateSettings
+};

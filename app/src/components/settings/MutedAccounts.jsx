@@ -1,31 +1,89 @@
-import { VolumeX } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getMutedAccounts, unmuteUser } from '../../api/settingsApi';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const MutedAccounts = () => {
+    const [loading, setLoading] = useState(true);
+    const [users, setUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        getMutedAccounts()
+            .then(res => setUsers(res.data.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleUnmute = async (id) => {
+        const old = [...users];
+        setUsers(prev => prev.filter(u => u.userId !== id));
+        try {
+            await unmuteUser(id);
+        } catch (err) {
+            console.error(err);
+            setUsers(old);
+        }
+    };
+
+    const filteredUsers = users.filter(u =>
+        u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (u.fullName && u.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
+
     return (
-        <div className="flex flex-col w-full text-text-primary max-w-[600px]">
-            <h2 className="text-xl font-bold mb-6">Muted Accounts</h2>
-
-            <div className="mb-6">
-                <p className="text-sm text-text-secondary mb-4">
-                    Here are all the accounts you've muted. They won't know that you've muted them.
-                </p>
+        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl h-full pb-10">
+            <div className="flex items-center mb-6 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
+                    <ArrowLeft />
+                </button>
+                <h2 className="text-xl font-bold">Muted accounts</h2>
             </div>
 
-            {/* List Header */}
-            <div className="flex gap-4 border-b border-border pb-2 mb-4">
-                <div className="px-4 py-2 border-b-2 border-text-primary font-semibold text-sm cursor-pointer">Posts</div>
-                <div className="px-4 py-2 text-text-secondary font-semibold text-sm cursor-pointer hover:text-text-primary transition-colors">Stories</div>
-                <div className="px-4 py-2 text-text-secondary font-semibold text-sm cursor-pointer hover:text-text-primary transition-colors">Notes</div>
+            <div className="relative mb-6">
+                {/* Search could be added more robustly, focusing on key elements */}
+                <input
+                    type="text"
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-[#efefef] dark:bg-[#262626] rounded-lg py-2 px-4 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                />
             </div>
 
-            {/* Empty State */}
-            <div className="flex flex-col items-center justify-center py-20 text-text-secondary">
-                <div className="w-16 h-16 rounded-full border-2 border-text-primary flex items-center justify-center mb-4 opacity-40">
-                    <VolumeX size={32} />
+            {users.length === 0 ? (
+                <div className="text-center text-text-secondary py-10 font-medium">
+                    You haven't muted anyone.
                 </div>
-                <h3 className="text-lg font-bold mb-2">No muted accounts</h3>
-                <p className="text-sm">You haven't muted anyone's posts.</p>
-            </div>
+            ) : filteredUsers.length === 0 ? (
+                <div className="text-center text-text-secondary py-10 font-medium">
+                    No users found.
+                </div>
+            ) : (
+                <div className="flex flex-col space-y-4">
+                    {filteredUsers.map(user => (
+                        <div key={user.userId} className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                <img
+                                    src={user.profilePicture || '/default-avatar.png'}
+                                    alt={user.username}
+                                    className="w-10 h-10 rounded-full object-cover mr-3"
+                                />
+                                <div className="font-semibold text-sm">{user.username}</div>
+                            </div>
+                            <button
+                                onClick={() => handleUnmute(user.userId)}
+                                className="bg-[#efefef] dark:bg-[#363636] px-4 py-1.5 rounded-lg text-sm font-semibold hover:opacity-80 transition-opacity"
+                            >
+                                Unmute
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

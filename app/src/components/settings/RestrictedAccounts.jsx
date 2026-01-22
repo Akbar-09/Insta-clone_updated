@@ -1,41 +1,72 @@
-import { AlertCircle, UserX } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getRestrictedAccounts, unrestrictUser } from '../../api/settingsApi';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const RestrictedAccounts = () => {
+    const [loading, setLoading] = useState(true);
+    const [users, setUsers] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        getRestrictedAccounts()
+            .then(res => setUsers(res.data.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleUnrestrict = async (id) => {
+        const old = [...users];
+        setUsers(prev => prev.filter(u => u.userId !== id));
+        try {
+            await unrestrictUser(id);
+        } catch (err) {
+            console.error(err);
+            setUsers(old);
+        }
+    };
+
+    if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
+
     return (
-        <div className="flex flex-col w-full text-text-primary max-w-[600px]">
-            <h2 className="text-xl font-bold mb-6">Restricted Accounts</h2>
-
-            <div className="bg-[#EFEFEF] dark:bg-[#262626] p-6 rounded-xl flex flex-col items-center text-center mb-8">
-                <div className="w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                    <UserX size={28} className="text-text-primary" />
-                </div>
-                <h3 className="text-lg font-bold mb-2">Protect yourself from unwanted interactions</h3>
-                <p className="text-sm text-text-secondary mb-6 max-w-[400px]">
-                    Restricting someone limits what they can see and do on your posts, without blocking them. They won't know you've restricted them.
-                </p>
-                <button className="text-blue-500 font-bold hover:text-text-primary transition-colors mb-4">
-                    Learn more about restricting
+        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl h-full pb-10">
+            <div className="flex items-center mb-6 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
+                    <ArrowLeft />
                 </button>
+                <h2 className="text-xl font-bold">Restricted accounts</h2>
             </div>
 
-            <div className="mb-6">
-                <h3 className="text-base font-bold mb-4">Search</h3>
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Search"
-                        className="w-full bg-[#EFEFEF] dark:bg-[#262626] rounded-xl px-4 py-3 pl-10 focus:outline-none"
-                    />
-                    <div className="absolute left-3 top-3.5 text-text-secondary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    </div>
+            <p className="text-sm text-text-secondary mb-6">
+                Protect yourself from unwanted interactions without blocking people. You can restrict someone to hide their comments and messages.
+            </p>
+
+            {users.length === 0 ? (
+                <div className="text-center text-text-secondary py-10 font-medium">
+                    You haven't restricted anyone.
                 </div>
-            </div>
-
-            {/* Empty State / List */}
-            <div className="flex flex-col items-center justify-center py-20 text-text-secondary opacity-60">
-                <p>You haven't restricted anyone yet.</p>
-            </div>
+            ) : (
+                <div className="flex flex-col space-y-4">
+                    {users.map(user => (
+                        <div key={user.userId} className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                <img
+                                    src={user.profilePicture || '/default-avatar.png'}
+                                    alt={user.username}
+                                    className="w-10 h-10 rounded-full object-cover mr-3"
+                                />
+                                <div className="font-semibold text-sm">{user.username}</div>
+                            </div>
+                            <button
+                                onClick={() => handleUnrestrict(user.userId)}
+                                className="bg-[#efefef] dark:bg-[#363636] px-4 py-1.5 rounded-lg text-sm font-semibold hover:opacity-80 transition-opacity"
+                            >
+                                Unrestrict
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
