@@ -132,7 +132,9 @@ const SettingsLayout = () => {
                 {/* WHAT YOU SEE */}
                 <SidebarSection title="What you see">
                     <SidebarItem icon={VolumeX} label="Muted accounts" path="/settings/muted_accounts" />
+                    <SidebarItem icon={FileText} label="Content preferences" path="/settings/content_preferences" />
                     <SidebarItem icon={Heart} label="Like and share counts" path="/settings/like_counts" />
+                    <SidebarItem icon={CreditCard} label="Subscriptions" path="/settings/subscriptions" />
                 </SidebarSection>
 
                 {/* YOUR APP AND MEDIA */}

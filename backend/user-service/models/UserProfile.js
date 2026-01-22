@@ -40,6 +40,10 @@ const UserProfile = sequelize.define('UserProfile', {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
     },
+    allowSearchIndexing: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+    },
     followersCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0,

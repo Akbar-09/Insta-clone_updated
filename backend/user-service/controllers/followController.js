@@ -74,3 +74,46 @@ exports.getFollowing = async (req, res) => {
         res.status(500).json({ status: 'error', message: err.message });
     }
 };
+
+exports.getFollowRequests = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        const requests = await followService.getFollowRequests(userId);
+        res.json({ status: 'success', data: requests });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+};
+
+exports.acceptRequest = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { requesterId } = req.body; // or params
+
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        await followService.acceptRequest(userId, requesterId);
+        res.json({ status: 'success', message: 'Request accepted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+};
+
+exports.rejectRequest = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { requesterId } = req.body;
+
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        await followService.rejectRequest(userId, requesterId);
+        res.json({ status: 'success', message: 'Request rejected' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+};
