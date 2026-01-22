@@ -10,6 +10,7 @@ router.delete('/profile-photo', profileController.removeProfilePhoto);
 router.get('/me/saved', profileController.getMySavedPosts);
 router.get('/suggestions', profileController.getSuggestions);
 router.post('/batch', profileController.getBatchProfiles);
+router.get('/activity/account-history', profileController.getAccountHistory);
 router.get('/:username', profileController.getUserProfile);
 router.get('/:userId/posts', profileController.getUserPosts);
 router.get('/:userId/followers', profileController.getFollowersList);

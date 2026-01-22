@@ -25,10 +25,40 @@ export const getUserById = async (userId) => {
 
 export const updateUserProfile = async (userId, data) => {
     try {
-        // user-service route: PUT /:id
-        // Gateway: /api/v1/users -> strips /api/v1/users
-        // Request: /api/v1/users/${userId} -> /${userId}
-        const response = await api.put(`/users/${userId}`, data);
+        // Use the controller endpoint that handles history and events
+        const response = await api.put('/users/profile/me', { ...data, userId });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const uploadMedia = async (file) => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        // Direct upload to media service via gateway
+        const response = await api.post('/media/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateProfilePhoto = async (photoUrl) => {
+    try {
+        const response = await api.post('/users/profile/profile-photo', { profilePicture: photoUrl });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const removeProfilePhoto = async () => {
+    try {
+        const response = await api.delete('/users/profile/profile-photo');
         return response.data;
     } catch (error) {
         throw error;

@@ -1,6 +1,5 @@
 const express = require('express');
-const { sendMessage, getMessages, getConversations, markAsSeen } = require('../controllers/messageController');
-
+const { sendMessage, getMessages, getConversations, markAsSeen, getActivityStoryReplies } = require('../controllers/messageController');
 
 const router = express.Router();
 
@@ -21,6 +20,7 @@ const extractUser = (req, res, next) => {
 
 router.use(extractUser);
 
+router.get('/activity/story-replies', getActivityStoryReplies);
 router.get('/conversations', getConversations);
 router.get('/conversations/:conversationId', getMessages); // Match requirement: Get messages for a conversation
 router.post('/send', sendMessage); // Match requirement: Send a message

@@ -1,12 +1,16 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { updateUserProfile, getUserById } from '../../api/userApi';
+import { updateUserProfile, getUserById, uploadMedia, updateProfilePhoto, removeProfilePhoto } from '../../api/userApi';
+import { X, Loader2 } from 'lucide-react';
 
 const EditProfile = () => {
     const { user, setUser } = useContext(AuthContext); // Assuming setUser updates context if needed
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [showPhotoModal, setShowPhotoModal] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [message, setMessage] = useState(null); // { type: 'success' | 'error', text: '' }
+    const fileInputRef = useRef(null);
 
     const [formData, setFormData] = useState({
         username: '',
@@ -15,7 +19,7 @@ const EditProfile = () => {
         bio: '',
         gender: 'Male',
         showAccountSuggestions: true,
-        // showThreadsBadge: true // Not in backend yet
+        profilePicture: ''
     });
 
     const [bioCount, setBioCount] = useState(0);
@@ -35,6 +39,7 @@ const EditProfile = () => {
                             bio: data.bio || '',
                             gender: data.gender || 'Male',
                             showAccountSuggestions: data.showAccountSuggestions !== undefined ? data.showAccountSuggestions : true,
+                            profilePicture: data.profilePicture || ''
                         });
                         setBioCount(data.bio ? data.bio.length : 0);
                     }
@@ -84,12 +89,61 @@ const EditProfile = () => {
         }
     };
 
+    const handlePhotoClick = () => {
+        setShowPhotoModal(true);
+    };
+
+    const handleFileChange = async (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setIsUploading(true);
+            setShowPhotoModal(false); // Close modal during upload/optimistic
+            try {
+                // 1. Upload to Media Service
+                const mediaRes = await uploadMedia(file);
+                const photoUrl = mediaRes.data.url;
+
+                // 2. Update Profile with new URL
+                await updateProfilePhoto(photoUrl);
+
+                // 3. Update State
+                setFormData(prev => ({ ...prev, profilePicture: photoUrl }));
+                // Update context if needed
+                if (setUser) setUser(prev => ({ ...prev, profilePicture: photoUrl }));
+
+                setMessage({ type: 'success', text: 'Profile photo updated.' });
+            } catch (error) {
+                console.error('Photo upload failed', error);
+                setMessage({ type: 'error', text: 'Failed to upload photo.' });
+            } finally {
+                setIsUploading(false);
+            }
+        }
+    };
+
+    const handleRemovePhoto = async () => {
+        if (!formData.profilePicture) return;
+        setIsUploading(true);
+        setShowPhotoModal(false);
+        try {
+            await removeProfilePhoto();
+            setFormData(prev => ({ ...prev, profilePicture: '' }));
+            if (setUser) setUser(prev => ({ ...prev, profilePicture: '' }));
+            setMessage({ type: 'success', text: 'Profile photo removed.' });
+        } catch (error) {
+            console.error('Remove photo failed', error);
+            setMessage({ type: 'error', text: 'Failed to remove photo.' });
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     if (isLoading) {
         return <div className="p-8 text-center text-text-secondary">Loading profile...</div>;
     }
 
     return (
-        <div className="flex flex-col w-full text-text-primary">
+        <div className="flex flex-col w-full text-text-primary px-4 md:px-0">
             <h2 className="text-xl font-bold mb-8 mt-1">Edit profile</h2>
 
             {message && (
@@ -102,19 +156,29 @@ const EditProfile = () => {
             <div className="flex items-center bg-[#EFEFEF] dark:bg-[#262626] rounded-[20px] p-4 mb-8 justify-between">
                 <div className="flex items-center">
                     <img
-                        src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=50&h=50&fit=crop"
+                        src={formData.profilePicture || "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"}
                         alt="Profile"
                         className="w-[56px] h-[56px] rounded-full object-cover mr-4"
                     />
                     <div>
-                        <div className="font-bold text-base leading-5">{formData.username}</div>
-                        <div className="text-sm text-text-secondary leading-5">{formData.fullName}</div>
+                        <div className="font-bold text-base leading-5">{formData.username || user?.username}</div>
+                        <div className="text-sm text-text-secondary leading-5">{formData.fullName || user?.fullName}</div>
                     </div>
                 </div>
                 <div>
-                    <button className="bg-[#0095f6] hover:bg-[#1877f2] text-white px-4 py-[7px] rounded-[8px] text-sm font-semibold transition-colors">
+                    <button
+                        onClick={handlePhotoClick}
+                        className="bg-[#0095f6] hover:bg-[#1877f2] text-white px-4 py-[7px] rounded-[8px] text-sm font-semibold transition-colors"
+                    >
                         Change photo
                     </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        hidden
+                        accept="image/jpeg,image/png,image/webp"
+                    />
                 </div>
             </div>
 
@@ -132,6 +196,19 @@ const EditProfile = () => {
             </div>
 
             <div className="mb-6">
+                <h3 className="font-bold text-base mb-2">Username</h3>
+                <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="Username"
+                    className="w-full border border-[#dbdbdb] dark:border-[#363636] rounded-[12px] px-4 py-3 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-[#a8a8a8] bg-transparent"
+                />
+            </div>
+
+            {/* Website */}
+            <div className="mb-6">
                 <h3 className="font-bold text-base mb-2">Website</h3>
                 <input
                     type="text"
@@ -139,21 +216,19 @@ const EditProfile = () => {
                     value={formData.website}
                     onChange={handleChange}
                     placeholder="Website"
-                    className="w-full bg-[#EFEFEF] dark:bg-[#262626] border border-[#dbdbdb] dark:border-[#363636] rounded-[12px] px-4 py-3 text-base text-text-secondary placeholder:text-text-secondary focus:outline-none cursor-not-allowed"
-                    disabled
+                    className="w-full bg-[#EFEFEF] dark:bg-[#262626] border border-[#dbdbdb] dark:border-[#363636] rounded-[12px] px-4 py-3 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-[#a8a8a8]"
                 />
-                <p className="text-xs text-text-secondary mt-3 leading-4 max-w-[90%]">
-                    Editing your links is only available on mobile. Visit the Jaadoe app and edit your profile to change the websites in your bio.
-                </p>
             </div>
 
             <div className="mb-6">
                 <h3 className="font-bold text-base mb-2">Bio</h3>
-                <div className="relative">
+                {/* Bio */}
+                <div className="mb-4">
                     <textarea
                         name="bio"
                         value={formData.bio}
                         onChange={handleChange}
+                        placeholder="Bio"
                         className="w-full border border-[#dbdbdb] dark:border-[#363636] rounded-[12px] px-4 py-2 text-base text-text-primary focus:outline-none focus:border-[#a8a8a8] min-h-[84px] resize-none bg-transparent block"
                     />
                     <div className="text-xs text-text-secondary mt-2 text-right">
@@ -161,6 +236,35 @@ const EditProfile = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Photo Modal */}
+            {showPhotoModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65" onClick={() => setShowPhotoModal(false)}>
+                    <div className="bg-[#262626] rounded-xl w-[400px] overflow-hidden flex flex-col items-center" onClick={e => e.stopPropagation()}>
+                        <div className="w-full py-6 border-b border-[#363636] text-center">
+                            <h3 className="text-xl font-normal text-white">Change Profile Photo</h3>
+                        </div>
+                        <button
+                            className="w-full py-3 border-b border-[#363636] text-sm font-bold text-[#0095f6] active:bg-[#1a1a1a]"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            Upload Photo
+                        </button>
+                        <button
+                            className="w-full py-3 border-b border-[#363636] text-sm font-bold text-[#ed4956] active:bg-[#1a1a1a]"
+                            onClick={handleRemovePhoto}
+                        >
+                            Remove Current Photo
+                        </button>
+                        <button
+                            className="w-full py-3 text-sm text-white active:bg-[#1a1a1a]"
+                            onClick={() => setShowPhotoModal(false)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="mb-6">
                 <h3 className="font-bold text-base mb-2">Gender</h3>

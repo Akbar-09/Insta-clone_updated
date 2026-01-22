@@ -1,5 +1,5 @@
 const express = require('express');
-const { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost, getEmbedCode } = require('../controllers/postController');
+const { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost, getEmbedCode, getActivityLikes, getActivityPosts } = require('../controllers/postController');
 
 const router = express.Router();
 
@@ -11,6 +11,8 @@ router.delete('/:id/like', unlikePost);
 // Define specific routes before generic :id routes if necessary, but here structure is fine
 router.get('/saved', getSavedPosts);
 router.post('/check-likes', checkLikes);
+router.get('/activity/likes', getActivityLikes);
+router.get('/activity/posts', getActivityPosts);
 
 // Post Management
 router.get('/:id/embed', getEmbedCode);

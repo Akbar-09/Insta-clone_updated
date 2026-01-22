@@ -1,4 +1,5 @@
 const Story = require('../models/Story');
+const StoryReply = require('../models/StoryReply');
 const StoryView = require('../models/StoryView');
 const StoryReport = require('../models/StoryReport');
 const { publishEvent } = require('../config/rabbitmq');
@@ -49,14 +50,22 @@ const getStories = async (req, res) => {
 const getArchivedStories = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'] || req.query.userId;
+        const { sort = 'newest', startDate, endDate } = req.query;
 
         if (!userId) {
             return res.status(401).json({ status: 'error', message: 'Unauthorized' });
         }
 
+        const whereClause = { userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
         const stories = await Story.findAll({
-            where: { userId },
-            order: [['createdAt', 'DESC']]
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
         });
 
         res.json({ status: 'success', data: stories });
@@ -152,11 +161,40 @@ const viewStory = async (req, res) => {
     }
 };
 
+const getStoryReplies = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { sort = 'newest', startDate, endDate } = req.query;
+
+        if (!userId) {
+            return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        }
+
+        const whereClause = { senderId: userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        const replies = await StoryReply.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+
+        res.json({ status: 'success', data: replies });
+    } catch (error) {
+        console.error('Get Story Replies Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     createStory,
     getStories,
     getArchivedStories,
     deleteStory,
     reportStory,
-    viewStory
+    viewStory,
+    getStoryReplies
 };

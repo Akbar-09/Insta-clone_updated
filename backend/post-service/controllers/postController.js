@@ -3,6 +3,11 @@ const Like = require('../models/Like');
 const Report = require('../models/Report');
 const { publishEvent } = require('../config/rabbitmq');
 const sequelize = require('../config/database');
+const { Op } = require('sequelize');
+
+// Set up associations
+Post.hasMany(Like, { foreignKey: 'postId' });
+Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
 
 const createPost = async (req, res) => {
     try {
@@ -505,4 +510,108 @@ const getEmbedCode = async (req, res) => {
     }
 };
 
-module.exports = { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost, getEmbedCode };
+const getActivityLikes = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { sort = 'newest', startDate, endDate } = req.query;
+
+        // If no user ID found, check token or try to decode if not handled by gateway
+        // For now, let's log what we received
+        // console.log("getActivityLikes headers:", req.headers);
+
+        if (!userId) {
+             // Fallback: if we are in dev mode and skipping gateway, maybe we need to parse token?
+             // But simpler is to fix frontend to send x-user-id header or backend to trust token
+             return res.status(400).json({ message: 'User ID required' });
+        }
+
+        const whereClause = { userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        // Get IDs of liked posts, sorted by LIKE creation time
+        const likes = await Like.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+        
+        const postIds = likes.map(like => like.postId);
+
+        // Fetch posts
+        // Note: We want to maintain the order of likes, not post creation
+        // So we can't just order by Post.createdAt
+        const posts = await Post.findAll({
+            where: { id: postIds }
+        });
+
+        // Map posts back to the order of likes
+        const postsMap = new Map(posts.map(p => [p.id, p]));
+        const orderedPosts = [];
+        
+        for (const like of likes) {
+            const post = postsMap.get(like.postId);
+            if (post) {
+                orderedPosts.push({
+                    ...post.toJSON(),
+                    likedAt: like.createdAt, // useful for UI
+                    isLiked: true
+                });
+            }
+        }
+
+        res.json({ status: 'success', data: orderedPosts });
+    } catch (error) {
+        console.error('Get Activity Likes Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const getActivityPosts = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { sort = 'newest', startDate, endDate } = req.query;
+
+        if (!userId) return res.status(400).json({ message: 'User ID required' });
+
+        const whereClause = { userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        const posts = await Post.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+
+        res.json({ status: 'success', data: posts });
+    } catch (error) {
+        console.error('Get Activity Posts Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+module.exports = {
+    createPost,
+    getPosts,
+    getExplorePosts,
+    getPostById,
+    likePost,
+    unlikePost,
+    bookmarkPost,
+    unbookmarkPost,
+    getSavedPosts,
+    checkLikes,
+    deletePost,
+    updatePost,
+    toggleHideLikes,
+    toggleComments,
+    reportPost,
+    getEmbedCode,
+    getActivityLikes,
+    getActivityPosts
+};

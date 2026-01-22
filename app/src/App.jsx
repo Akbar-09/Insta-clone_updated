@@ -108,8 +108,8 @@ function App() {
                 <Route path="/your_activity" element={<YourActivityLayout />}>
                   <Route index element={<Navigate to="interactions" replace />} />
                   <Route path="interactions" element={<Interactions />} />
-                  <Route path="photos" element={<PhotosAndVideos />} />
-                  <Route path="history" element={<AccountHistory />} />
+                  <Route path="photos_and_videos" element={<PhotosAndVideos />} />
+                  <Route path="account_history" element={<AccountHistory />} />
                 </Route>
               </Route>
             </Route>
