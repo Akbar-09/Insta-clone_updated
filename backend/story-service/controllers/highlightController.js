@@ -270,4 +270,48 @@ exports.updateHighlight = async (req, res) => {
     }
 };
 
+/**
+ * Get activity highlights
+ * GET /activity/highlights
+ */
+exports.getActivityHighlights = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { sort = 'newest', startDate, endDate } = req.query;
+
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        const whereClause = { userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        const highlights = await Highlight.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+
+        // Enrich with cover story
+        const highlightsWithDetails = await Promise.all(
+            highlights.map(async (highlight) => {
+                const coverStory = highlight.coverStoryId
+                    ? await Story.findByPk(highlight.coverStoryId)
+                    : null;
+                return {
+                    ...highlight.toJSON(),
+                    coverStory
+                };
+            })
+        );
+
+
+        res.json({ status: 'success', data: highlightsWithDetails });
+    } catch (error) {
+        console.error('Get Activity Highlights Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 module.exports = exports;

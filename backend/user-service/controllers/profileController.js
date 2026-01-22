@@ -1,5 +1,6 @@
 const UserProfile = require('../models/UserProfile');
 const Follow = require('../models/Follow');
+const AccountHistory = require('../models/AccountHistory');
 const { publishEvent } = require('../config/rabbitmq');
 const axios = require('axios');
 const { Op } = require('sequelize');
@@ -187,7 +188,7 @@ exports.updateMyProfile = async (req, res) => {
             return res.status(401).json({ status: 'error', message: 'Unauthorized' });
         }
 
-        const { fullName, bio, website, gender, profilePicture, username, isPrivate } = req.body;
+        const { fullName, bio, website, gender, profilePicture, username, isPrivate, showAccountSuggestions } = req.body;
 
         const profile = await UserProfile.findOne({ where: { userId } });
 
@@ -195,13 +196,36 @@ exports.updateMyProfile = async (req, res) => {
             return res.status(404).json({ status: 'error', message: 'Profile not found' });
         }
 
-        // Update fields if provided
-        if (fullName !== undefined) profile.fullName = fullName;
-        if (bio !== undefined) profile.bio = bio;
-        if (website !== undefined) profile.website = website;
-        if (gender !== undefined) profile.gender = gender;
-        if (profilePicture !== undefined) profile.profilePicture = profilePicture;
-        if (isPrivate !== undefined) profile.isPrivate = isPrivate;
+        const historyLogs = [];
+        // Update fields if provided and log changes
+        if (fullName !== undefined && fullName !== profile.fullName) {
+            historyLogs.push({ userId, action: 'NAME_CHANGE', oldValue: profile.fullName, newValue: fullName });
+            profile.fullName = fullName;
+        }
+        if (bio !== undefined && bio !== profile.bio) {
+            historyLogs.push({ userId, action: 'BIO_CHANGE', oldValue: profile.bio, newValue: bio });
+            profile.bio = bio;
+        }
+        if (website !== undefined && website !== profile.website) {
+            historyLogs.push({ userId, action: 'WEBSITE_CHANGE', oldValue: profile.website, newValue: website });
+            profile.website = website;
+        }
+        if (gender !== undefined && gender !== profile.gender) {
+            historyLogs.push({ userId, action: 'GENDER_CHANGE', oldValue: profile.gender, newValue: gender });
+            profile.gender = gender;
+        }
+        if (profilePicture !== undefined && profilePicture !== profile.profilePicture) {
+            historyLogs.push({ userId, action: 'PROFILE_PHOTO_CHANGE', oldValue: profile.profilePicture, newValue: profilePicture });
+            profile.profilePicture = profilePicture;
+        }
+        if (isPrivate !== undefined && isPrivate !== profile.isPrivate) {
+            historyLogs.push({ userId, action: 'PRIVACY_CHANGE', oldValue: profile.isPrivate ? 'PRIVATE' : 'PUBLIC', newValue: isPrivate ? 'PRIVATE' : 'PUBLIC' });
+            profile.isPrivate = isPrivate;
+        }
+        if (showAccountSuggestions !== undefined && showAccountSuggestions !== profile.showAccountSuggestions) {
+            // No specific history log required for this preference, or we can add one.
+            profile.showAccountSuggestions = showAccountSuggestions;
+        }
 
         // Handle username update (check uniqueness)
         if (username && username !== profile.username) {
@@ -209,10 +233,16 @@ exports.updateMyProfile = async (req, res) => {
             if (existing) {
                 return res.status(400).json({ status: 'error', message: 'Username already taken' });
             }
+            historyLogs.push({ userId, action: 'USERNAME_CHANGE', oldValue: profile.username, newValue: username });
             profile.username = username;
         }
 
         await profile.save();
+
+        // Save history logs
+        if (historyLogs.length > 0) {
+            await AccountHistory.bulkCreate(historyLogs);
+        }
 
         // Publish profile update event
         await publishEvent('PROFILE_UPDATED', {
@@ -233,6 +263,11 @@ exports.updateMyProfile = async (req, res) => {
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
+
+/**
+ * Delete profile photo
+ * DELETE /api/v1/profile/photo
+ */
 
 /**
  * Get user's posts
@@ -455,6 +490,10 @@ exports.removeFollower = async (req, res) => {
  * Update Profile Photo
  * POST /api/v1/profile/profile-photo
  */
+/**
+ * Update Profile Photo
+ * POST /api/v1/profile/profile-photo
+ */
 exports.updateProfilePhoto = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'] || req.body.userId;
@@ -469,8 +508,26 @@ exports.updateProfilePhoto = async (req, res) => {
             return res.status(404).json({ status: 'error', message: 'Profile not found' });
         }
 
+        const oldPhoto = profile.profilePicture;
         profile.profilePicture = profilePicture;
         await profile.save();
+
+        // Log history
+        await AccountHistory.create({
+            userId,
+            action: 'PROFILE_PHOTO_CHANGE',
+            oldValue: oldPhoto,
+            newValue: profilePicture
+        });
+
+        // Publish event
+        await publishEvent('PROFILE_UPDATED', {
+            userId: profile.userId,
+            username: profile.username,
+            fullName: profile.fullName,
+            profilePicture: profile.profilePicture,
+            timestamp: new Date()
+        });
 
         res.json({
             status: 'success',
@@ -500,8 +557,26 @@ exports.removeProfilePhoto = async (req, res) => {
             return res.status(404).json({ status: 'error', message: 'Profile not found' });
         }
 
+        const oldPhoto = profile.profilePicture;
         profile.profilePicture = '';
         await profile.save();
+
+        // Log History
+        await AccountHistory.create({
+            userId,
+            action: 'PROFILE_PHOTO_REMOVED',
+            oldValue: oldPhoto,
+            newValue: ''
+        });
+
+        // Publish Event
+        await publishEvent('PROFILE_UPDATED', {
+            userId: profile.userId,
+            username: profile.username,
+            fullName: profile.fullName,
+            profilePicture: '',
+            timestamp: new Date()
+        });
 
         res.json({
             status: 'success',
@@ -533,6 +608,30 @@ exports.getBatchProfiles = async (req, res) => {
         res.json({ status: 'success', data: profiles });
     } catch (error) {
         console.error('Batch Profile Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+/**
+ * Get Account History
+ * GET /api/v1/profile/activity/account-history
+ */
+exports.getAccountHistory = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        const history = await AccountHistory.findAll({
+            where: { userId },
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.json({
+            status: 'success',
+            data: history
+        });
+    } catch (error) {
+        console.error('Get Account History Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };

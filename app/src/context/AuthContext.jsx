@@ -1,17 +1,23 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 
 export const AuthContext = createContext();
 
+export const useAuth = () => {
+    return useContext(AuthContext);
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                const token = localStorage.getItem('token');
-                if (token) {
+                const storedToken = localStorage.getItem('token');
+                if (storedToken) {
+                    setToken(storedToken);
                     // Using /auth/me to get current user details
                     const { data } = await api.get('/auth/me');
                     if (data.status === 'success') {
@@ -34,6 +40,7 @@ export const AuthProvider = ({ children }) => {
             const { data } = await api.post('/auth/login', { email, password });
             if (data.status === 'success') {
                 localStorage.setItem('token', data.data.token);
+                setToken(data.data.token);
                 setUser(data.data.user);
                 return { success: true };
             }
@@ -51,6 +58,7 @@ export const AuthProvider = ({ children }) => {
             const { data } = await api.post('/auth/signup', userData);
             if (data.status === 'success') {
                 localStorage.setItem('token', data.data.token);
+                setToken(data.data.token);
                 setUser(data.data.user);
                 return { success: true };
             }
@@ -65,6 +73,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
+        setToken(null);
         setUser(null);
     };
 
@@ -73,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loading, updateUser }}>
+        <AuthContext.Provider value={{ user, token, login, signup, logout, loading, updateUser }}>
             {!loading && children}
         </AuthContext.Provider>
     );

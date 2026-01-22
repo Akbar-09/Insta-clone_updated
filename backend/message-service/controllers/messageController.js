@@ -205,6 +205,39 @@ const sendMessage = async (req, res) => {
     }
 };
 
+const getActivityStoryReplies = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id']; // Correctly get from headers in direct call scenarios or ensure middleware populates it.
+        const { sort, startDate, endDate } = req.query;
+
+        // Fallback for userId if not in headers (e.g. if using req.user approach)
+        const currentUserId = userId || (req.user && req.user.id);
+
+        if (!currentUserId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        const whereClause = {
+            senderId: currentUserId,
+            type: 'story_reply'
+        };
+
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        const replies = await Message.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+
+        res.json({ status: 'success', data: replies });
+    } catch (error) {
+        console.error('Get Activity Story Replies Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 const markAsSeen = async (req, res) => {
     try {
         const { conversationId } = req.params;
@@ -248,5 +281,7 @@ module.exports = {
     getConversations,
     getMessages,
     sendMessage,
-    markAsSeen
+    markAsSeen,
+    getActivityStoryReplies
 };
+

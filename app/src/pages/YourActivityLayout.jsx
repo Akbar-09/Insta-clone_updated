@@ -39,18 +39,18 @@ const YourActivityLayout = () => {
                         active={isActive('/interactions')}
                     />
                     <MenuLink
-                        to="/your_activity/photos"
+                        to="/your_activity/photos_and_videos"
                         icon={Image}
                         label="Photos and videos"
                         subtitle="View, archive or delete photos and videos you've shared"
-                        active={isActive('/photos')}
+                        active={isActive('/photos_and_videos')}
                     />
                     <MenuLink
-                        to="/your_activity/history"
+                        to="/your_activity/account_history"
                         icon={Timer}
                         label="Account history"
                         subtitle="Review changes that you've made to your account since you created it"
-                        active={isActive('/history')}
+                        active={isActive('/account_history')}
                     />
                     {/* <MenuLink
                         to="#"

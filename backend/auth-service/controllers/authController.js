@@ -23,6 +23,15 @@ const register = async (req, res) => {
             password: hashedPassword,
         });
 
+        // Add Account History Entry
+        await AccountHistory.create({
+            userId: user.id,
+            action: 'account_created',
+            title: 'Account Created',
+            description: 'You created your account.',
+            icon: 'UserPlus'
+        });
+
         // Generate Token
         const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET || 'secret', {
             expiresIn: '7d',
@@ -125,4 +134,41 @@ const getMe = async (req, res) => {
     }
 };
 
-module.exports = { register, login, checkUsername, checkEmail, requestPasswordReset, verifyPasswordReset, logout, getMe };
+const getAccountHistory = async (req, res) => {
+    try {
+        const userId = req.userId || req.query.userId || req.headers['x-user-id'];
+        const { sort = 'newest', startDate, endDate } = req.query;
+
+        if (!userId) {
+            return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        }
+
+        const whereClause = { userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        const history = await AccountHistory.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+        res.json({ status: 'success', data: history });
+    } catch (error) {
+        console.error('Get History Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+module.exports = {
+    register,
+    login,
+    checkUsername,
+    checkEmail,
+    requestPasswordReset,
+    verifyPasswordReset,
+    logout,
+    getMe,
+    getAccountHistory
+};
