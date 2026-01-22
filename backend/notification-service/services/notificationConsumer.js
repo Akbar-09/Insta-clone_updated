@@ -29,21 +29,77 @@ const connectRabbitMQ = async () => {
 
                 try {
                     if (routingKey === 'COMMENT_ADDED') {
-                        // Logic for comment notification
-                        console.log(`[NOTIFICATION_CREATED] Comment on post ${data.postId} by ${data.username}`);
+                        // Data: { id, text, postId, userId, username, postOwnerId, parentId... }
+                        // If it's your own post, don't notify (unless reply?)
+                        if (String(data.userId) !== String(data.postOwnerId)) {
+                            const actor = await fetchActorDetails(data.userId);
+                            const post = await fetchPostDetails(data.postId);
+                            await Notification.create({
+                                userId: data.postOwnerId,
+                                fromUserId: data.userId,
+                                fromUsername: actor.username || data.username || 'User',
+                                fromUserAvatar: actor.profilePicture || '',
+                                type: data.parentId ? 'REPLY' : 'COMMENT', // Logic for REPLY if data supports it
+                                resourceId: data.postId,
+                                resourceImage: post.mediaUrl || '',
+                                isRead: false
+                            });
+                        }
                     } else if (routingKey === 'POST_LIKED') {
-                        // Logic for like notification
-                        console.log(`[NOTIFICATION_CREATED] Like on post ${data.postId} by user ${data.userId}`);
-                    } else if (routingKey === 'USER_FOLLOWED') {
-                        // Logic for follow notification
-                        console.log(`[NOTIFICATION_CREATED] User ${data.followedId} followed by ${data.followerId}`);
-                    } else if (routingKey === 'MESSAGE_SENT') {
-                        // Logic for DM notification
-                        console.log(`[NOTIFICATION_CREATED] Message to ${data.recipientId} from ${data.senderId}`);
-                    }
+                        // Data: { postId, userId, postOwnerId, timestamp }
+                        if (String(data.userId) !== String(data.postOwnerId)) {
+                            const actor = await fetchActorDetails(data.userId);
+                            // Check if duplicate like notification exists?
+                            // For MVP, just create. (Or findOne first to avoid spam if user unlike/like)
+                            const existing = await Notification.findOne({
+                                where: {
+                                    userId: data.postOwnerId,
+                                    fromUserId: data.userId,
+                                    type: 'LIKE',
+                                    resourceId: data.postId
+                                }
+                            });
 
-                    // In a real implementation, we would save to DB here:
-                    // await Notification.create({ ... });
+                            if (!existing) {
+                                const post = await fetchPostDetails(data.postId);
+                                await Notification.create({
+                                    userId: data.postOwnerId,
+                                    fromUserId: data.userId,
+                                    fromUsername: actor.username || 'User',
+                                    fromUserAvatar: actor.profilePicture || '',
+                                    type: 'LIKE',
+                                    resourceId: data.postId,
+                                    resourceImage: post.mediaUrl || '',
+                                    isRead: false
+                                });
+                            }
+                        }
+                    } else if (routingKey === 'USER_FOLLOWED') {
+                        // Data: { followerId, followedId, timestamp }
+                        const actor = await fetchActorDetails(data.followerId);
+
+                        // Avoid duplicates
+                        const existing = await Notification.findOne({
+                            where: {
+                                userId: data.followedId,
+                                fromUserId: data.followerId,
+                                type: 'FOLLOW'
+                            }
+                        });
+
+                        if (!existing) {
+                            await Notification.create({
+                                userId: data.followedId,
+                                fromUserId: data.followerId,
+                                fromUsername: actor.username || 'User',
+                                fromUserAvatar: actor.profilePicture || '',
+                                type: 'FOLLOW',
+                                resourceId: 0, // No resource for follow
+                                isRead: false
+                            });
+                        }
+
+                    }
 
                 } catch (err) {
                     console.error('Error processing notification:', err);
@@ -58,5 +114,33 @@ const connectRabbitMQ = async () => {
         console.error('RabbitMQ Connection Failed', error);
     }
 };
+
+const axios = require('axios');
+
+async function fetchActorDetails(userId) {
+    try {
+        const response = await axios.get(`http://localhost:5002/users/${userId}`);
+        if (response.data.status === 'success') {
+            return response.data.data;
+        }
+        return {};
+    } catch (error) {
+        console.error(`Failed to fetch actor details for ${userId}:`, error.message);
+        return {};
+    }
+}
+
+async function fetchPostDetails(postId) {
+    try {
+        const response = await axios.get(`http://localhost:5003/posts/${postId}`);
+        if (response.data.status === 'success') {
+            return response.data.data;
+        }
+        return {};
+    } catch (error) {
+        console.error(`Failed to fetch post details for ${postId}:`, error.message);
+        return {};
+    }
+}
 
 module.exports = { connectRabbitMQ };

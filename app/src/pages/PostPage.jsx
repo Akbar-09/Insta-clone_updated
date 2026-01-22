@@ -36,8 +36,14 @@ const PostPage = () => {
         handleDoubleTap,
         isAnimating,
         setIsAnimating,
-        syncPostLike // Manually sync if needed
-    } = usePostLikes(post, (updated) => setPost(prev => ({ ...prev, ...updated })));
+        syncPostLike
+    } = usePostLikes(post, (postId, isLiked, likesCount) => {
+        setPost(prev => ({
+            ...prev,
+            isLiked,
+            likesCount
+        }));
+    });
 
     // Fetch Data
     useEffect(() => {
@@ -199,7 +205,7 @@ const PostPage = () => {
                     <div className="border-t border-[#262626] p-4 pb-2 bg-black z-10">
                         <div className="flex justify-between mb-2">
                             <div className="flex gap-4">
-                                <button onClick={toggleLike} className={`hover:opacity-60 active:scale-125 transition-transform ${isLiked ? 'text-[#ed4956]' : 'text-white'}`}>
+                                <button onClick={toggleLike} className={`hover:opacity-60 active:scale-125 transition-transform ${isLiked ? 'text-red-600' : 'text-white'}`}>
                                     <Heart size={24} fill={isLiked ? 'currentColor' : 'none'} className={isLiked && isAnimating ? 'animate-bounce' : ''} />
                                 </button>
                                 <button className="text-white hover:opacity-60" onClick={() => document.getElementById('comment-input').focus()}>

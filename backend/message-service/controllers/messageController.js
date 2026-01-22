@@ -2,27 +2,65 @@ const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
 const { getRabbitMQChannel } = require('../config/rabbitmq');
 const { Op } = require('sequelize');
+const axios = require('axios');
 
 // Fetch all conversations for the logged-in user
 const getConversations = async (req, res) => {
     try {
-        const userId = req.user.id; // From middleware
-        // Find conversations where user1Id or user2Id is the current user
-        const conversations = await Conversation.findAll({
+        const userId = req.user.id;
+
+        // Find conversations
+        const conversationsRaw = await Conversation.findAll({
             where: {
                 [Op.or]: [{ user1Id: userId }, { user2Id: userId }]
             },
-            order: [['updatedAt', 'DESC']]
+            order: [['lastMessageAt', 'DESC']]
         });
 
-        // In a real app, we would fetch User details (avatar, username) from user-service for the OTHER user
-        // efficiently. For now, we will return the conversation data and let frontend fetch user details
-        // or helper function here if we can call user-service.
-        // Assuming frontend will handle user details fetching or we mock it for now.
+        if (conversationsRaw.length === 0) {
+            return res.json({ status: 'success', data: [] });
+        }
+
+        // Identify other users to fetch profiles
+        const otherUserIds = conversationsRaw.map(c =>
+            c.user1Id === userId ? c.user2Id : c.user1Id
+        );
+
+        // Fetch user profiles from user-service
+        let profilesMap = {};
+        try {
+            const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+            const response = await axios.post(`${userServiceUrl}/profile/batch`, { userIds: otherUserIds });
+            if (response.data.status === 'success') {
+                response.data.data.forEach(p => {
+                    profilesMap[p.userId] = p;
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching batch profiles:', error.message);
+        }
+
+        // Fetch unread counts for each conversation
+        const hydratedConversations = await Promise.all(conversationsRaw.map(async (conv) => {
+            const otherUserId = conv.user1Id === userId ? conv.user2Id : conv.user1Id;
+            const unreadCount = await Message.count({
+                where: {
+                    conversationId: conv.id,
+                    senderId: otherUserId,
+                    isSeen: false
+                }
+            });
+
+            return {
+                ...conv.toJSON(),
+                otherUser: profilesMap[otherUserId] || { userId: otherUserId, username: 'User' },
+                unreadCount
+            };
+        }));
 
         res.json({
             status: 'success',
-            data: conversations
+            data: hydratedConversations
         });
     } catch (error) {
         console.error('Error fetching conversations:', error);
@@ -34,10 +72,41 @@ const getConversations = async (req, res) => {
 const getMessages = async (req, res) => {
     try {
         const { conversationId } = req.params;
+        const userId = req.user.id;
+
         const messages = await Message.findAll({
             where: { conversationId },
             order: [['createdAt', 'ASC']]
         });
+
+        // Mark messages from OTHER user as seen
+        await Message.update(
+            { isSeen: true },
+            {
+                where: {
+                    conversationId,
+                    senderId: { [Op.ne]: userId },
+                    isSeen: false
+                }
+            }
+        );
+
+        // Notify via socket (asynchronously)
+        const conversation = await Conversation.findByPk(conversationId);
+        if (conversation) {
+            const channel = getRabbitMQChannel();
+            if (channel) {
+                const event = {
+                    type: 'MESSAGES_SEEN',
+                    payload: {
+                        conversationId,
+                        seenBy: userId,
+                        receiverId: conversation.user1Id === userId ? conversation.user2Id : conversation.user1Id
+                    }
+                };
+                channel.sendToQueue('socket_events', Buffer.from(JSON.stringify(event)));
+            }
+        }
 
         res.json({
             status: 'success',
@@ -52,16 +121,14 @@ const getMessages = async (req, res) => {
 // Send a new message
 const sendMessage = async (req, res) => {
     try {
-        const { conversationId } = req.params;
-        const { content, receiverId } = req.body; // receiverId needed if creating new conversation
         const senderId = req.user.id;
+        const { conversationId, receiverId, content, type, mediaUrl, replyToStoryId } = req.body;
 
         let convId = conversationId;
         let conversation;
 
-        // 1. If "new" or explicit creation needed, handle conversation find/create
-        if (convId === 'new' && receiverId) {
-            // Check if conversation exists
+        // 1. Handle conversation find/create
+        if ((!convId || convId === 'new') && receiverId) {
             conversation = await Conversation.findOne({
                 where: {
                     [Op.or]: [
@@ -89,24 +156,34 @@ const sendMessage = async (req, res) => {
         const message = await Message.create({
             conversationId: convId,
             senderId,
-            content
+            content,
+            type: type || 'text',
+            mediaUrl,
+            replyToStoryId,
+            isSeen: false
         });
 
-        // 3. Update Conversation (last message)
+        // 3. Update Conversation snippet
+        let snippet = content;
+        if (type === 'image') snippet = '📷 Image';
+        else if (type === 'video') snippet = '🎥 Video';
+        else if (type === 'story_reply') snippet = '✉️ Replied to your story';
+
         await conversation.update({
-            lastMessageContent: content.substring(0, 50),
+            lastMessageContent: snippet ? snippet.substring(0, 50) : '',
             lastMessageSenderId: senderId,
             lastMessageAt: new Date()
         });
 
-        // 4. Publish Event to RabbitMQ for Socket Service
+        // 4. Publish to RabbitMQ
         const channel = getRabbitMQChannel();
         if (channel) {
+            const otherUserId = conversation.user1Id === senderId ? conversation.user2Id : conversation.user1Id;
             const event = {
                 type: 'MESSAGE_SENT',
                 payload: {
                     message,
-                    receiverId: conversation.user1Id === senderId ? conversation.user2Id : conversation.user1Id
+                    receiverId: otherUserId
                 }
             };
             channel.sendToQueue('socket_events', Buffer.from(JSON.stringify(event)));
@@ -115,22 +192,24 @@ const sendMessage = async (req, res) => {
         res.status(201).json({
             status: 'success',
             data: message,
-            conversationId: convId // Return ID in case it was 'new'
+            conversationId: convId
         });
 
     } catch (error) {
         console.error('Error sending message:', error);
-        res.status(500).json({ status: 'error', message: 'Failed to send message' });
+        if (error.name === 'SequelizeDatabaseError') {
+            console.error('SQL:', error.sql);
+            console.error('Message:', error.message);
+        }
+        res.status(500).json({ status: 'error', message: 'Failed to send message', debug: error.message });
     }
 };
 
-// Mark conversation as seen
 const markAsSeen = async (req, res) => {
     try {
         const { conversationId } = req.params;
         const userId = req.user.id;
 
-        // Update all messages in this conversation sent by the OTHER user as seen
         await Message.update(
             { isSeen: true },
             {
@@ -142,7 +221,6 @@ const markAsSeen = async (req, res) => {
             }
         );
 
-        // Notify via socket that messages were seen
         const conversation = await Conversation.findByPk(conversationId);
         if (conversation) {
             const channel = getRabbitMQChannel();

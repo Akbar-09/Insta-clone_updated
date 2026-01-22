@@ -8,6 +8,8 @@ router.put('/me', profileController.updateMyProfile);
 router.post('/profile-photo', profileController.updateProfilePhoto);
 router.delete('/profile-photo', profileController.removeProfilePhoto);
 router.get('/me/saved', profileController.getMySavedPosts);
+router.get('/suggestions', profileController.getSuggestions);
+router.post('/batch', profileController.getBatchProfiles);
 router.get('/:username', profileController.getUserProfile);
 router.get('/:userId/posts', profileController.getUserPosts);
 router.get('/:userId/followers', profileController.getFollowersList);

@@ -57,6 +57,14 @@ export const getMySavedPosts = async () => {
 };
 
 /**
+ * Get suggested users
+ */
+export const getSuggestions = async () => {
+    const response = await api.get('/users/profile/suggestions');
+    return response.data;
+};
+
+/**
  * Get user's followers list
  */
 export const getFollowersList = async (userId) => {
@@ -115,5 +123,6 @@ export default {
     removeFollower,
     followUser,
     unfollowUser,
-    checkFollowStatus
+    checkFollowStatus,
+    getSuggestions
 };

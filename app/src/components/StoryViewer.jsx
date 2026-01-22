@@ -11,11 +11,29 @@ import { groupStoriesByUser } from '../utils/storyUtils';
 import { AuthContext } from '../context/AuthContext';
 import { deleteStory, reportStory, viewStory } from '../api/storyApi';
 import jaadoeLogo from '../assets/jaadoe_logo.svg';
+import { sendMessage } from '../api/messageApi';
 
 const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
     const { user: currentUserData } = useContext(AuthContext);
     const navigate = useNavigate();
     const [deletedStoryIds, setDeletedStoryIds] = useState(new Set());
+
+    const handleReply = async (content) => {
+        if (!currentStory) return;
+        try {
+            await sendMessage({
+                receiverId: currentStory.userId,
+                content,
+                type: 'story_reply',
+                mediaUrl: currentStory.mediaUrl,
+                replyToStoryId: currentStory.id
+            });
+            onClose();
+        } catch (error) {
+            console.error('Failed to reply to story:', error);
+            alert('Failed to send reply');
+        }
+    };
 
     // --- 1. Data Preparation: Group stories by User ---
     const activeStories = useMemo(() => stories.filter(s => !deletedStoryIds.has(s.id)), [stories, deletedStoryIds]);
@@ -256,6 +274,7 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
                         username={currentStory.username}
                         onFocus={() => setIsPaused(true)}
                         onBlur={() => setIsPaused(false)}
+                        onSend={handleReply}
                     />
 
                 </div>

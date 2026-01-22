@@ -1,10 +1,31 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import api from '../api/axios';
 
-export const useFollow = (userId, initialIsFollowing = false, initialFollowersCount = 0) => {
-    const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
+export const useFollow = (userId, initialIsFollowing = null, initialFollowersCount = 0) => {
+    // If null, we don't know yet. If boolean, we know.
+    // We default state to false but load if null.
+    const [isFollowing, setIsFollowing] = useState(initialIsFollowing === null ? false : initialIsFollowing);
     const [followersCount, setFollowersCount] = useState(initialFollowersCount);
     const [loading, setLoading] = useState(false);
+
+    // Fetch status if unknown
+    useEffect(() => {
+        if (initialIsFollowing === null && userId) {
+            const checkStatus = async () => {
+                try {
+                    const res = await api.get(`/users/${userId}/follow/status`);
+                    if (res.data.status === 'success') {
+                        setIsFollowing(res.data.data.isFollowing);
+                    }
+                } catch (error) {
+                    console.error('Failed to checked follow status', error);
+                }
+            };
+            checkStatus();
+        } else if (initialIsFollowing !== null) {
+            setIsFollowing(initialIsFollowing);
+        }
+    }, [userId, initialIsFollowing]);
 
     const toggleFollow = useCallback(async () => {
         if (loading || !userId) return;

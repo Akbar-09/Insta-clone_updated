@@ -16,7 +16,7 @@ app.use('/', notificationRoutes);
 
 const startServer = async () => {
     try {
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
         await connectRabbitMQ();
         app.listen(PORT, () => {
             console.log(`Notification Service running on port ${PORT}`);

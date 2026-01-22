@@ -100,8 +100,8 @@ export const useMessages = (socket, userId, initialConversationId) => {
         };
     }, [socket, selectedConversation]);
 
-    const handleSendMessage = async (content) => {
-        if (!selectedConversation || !content.trim()) return;
+    const handleSendMessage = async (content, type = 'text', metadata = {}) => {
+        if (!selectedConversation || (!content?.trim() && !metadata.mediaUrl)) return;
 
         const tempId = Date.now();
         const optimisticMessage = {
@@ -109,6 +109,8 @@ export const useMessages = (socket, userId, initialConversationId) => {
             conversationId: selectedConversation.id,
             senderId: userId,
             content,
+            type,
+            ...metadata,
             createdAt: new Date().toISOString(),
             isSeen: false,
             isOptimistic: true
@@ -117,29 +119,30 @@ export const useMessages = (socket, userId, initialConversationId) => {
         // Optimistic update
         setMessages(prev => [...prev, optimisticMessage]);
 
-        // Update list preview
+        // Update list preview (simplified)
         setConversations(prev => {
             const existingIndex = prev.findIndex(c => c.id === selectedConversation.id);
+            if (existingIndex === -1) return prev;
             let newConvs = [...prev];
-            if (existingIndex > -1) {
-                const updated = {
-                    ...newConvs[existingIndex],
-                    lastMessageContent: content,
-                    lastMessageSenderId: userId,
-                    lastMessageAt: new Date().toISOString()
-                };
-                newConvs.splice(existingIndex, 1);
-                newConvs.unshift(updated);
-            }
+            const updated = {
+                ...newConvs[existingIndex],
+                lastMessageContent: type === 'text' ? content : `[${type}]`,
+                lastMessageSenderId: userId,
+                lastMessageAt: new Date().toISOString()
+            };
+            newConvs.splice(existingIndex, 1);
+            newConvs.unshift(updated);
             return newConvs;
         });
 
         try {
-            const result = await sendMessage(
-                selectedConversation.id === 'new' ? 'new' : selectedConversation.id,
+            const result = await sendMessage({
+                conversationId: selectedConversation.id === 'new' ? null : selectedConversation.id,
+                receiverId: selectedConversation.id === 'new' ? selectedConversation.otherUser?.userId : selectedConversation.otherUser?.userId,
                 content,
-                selectedConversation.user2Id // Assuming user2Id is the other person when 'new' or valid conv
-            );
+                type,
+                ...metadata
+            });
 
             // Replace optimistic
             setMessages(prev => prev.map(m => m.id === tempId ? result.data : m));
@@ -148,13 +151,11 @@ export const useMessages = (socket, userId, initialConversationId) => {
             if (selectedConversation.id === 'new' && result.conversationId) {
                 const realId = result.conversationId;
                 setSelectedConversation(prev => ({ ...prev, id: realId }));
-                // Also update in list
                 setConversations(prev => prev.map(c => c.id === 'new' ? { ...c, id: realId } : c));
             }
 
         } catch (error) {
             console.error("Send failed", error);
-            // Revert optimistic or show error
             setMessages(prev => prev.filter(m => m.id !== tempId));
         }
     };

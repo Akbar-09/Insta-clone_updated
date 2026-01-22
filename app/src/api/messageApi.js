@@ -13,7 +13,7 @@ export const getConversations = async () => {
 // Fetch messages for a specific conversation
 export const getMessages = async (conversationId) => {
     try {
-        const response = await api.get(`/messages/conversations/${conversationId}/messages`);
+        const response = await api.get(`/messages/conversations/${conversationId}`);
         return response.data.data;
     } catch (error) {
         throw error;
@@ -21,13 +21,10 @@ export const getMessages = async (conversationId) => {
 };
 
 // Send a new message
-export const sendMessage = async (conversationId, content, receiverId) => {
+export const sendMessage = async (data) => {
     try {
-        // receiverId is optional if conversationId is established, but needed for 'new'
-        const response = await api.post(`/messages/conversations/${conversationId}/messages`, {
-            content,
-            receiverId
-        });
+        // data: { conversationId, receiverId, content, type, mediaUrl, replyToStoryId }
+        const response = await api.post('/messages/send', data);
         return response.data; // Includes .data (message) and .conversationId
     } catch (error) {
         throw error;
@@ -37,7 +34,7 @@ export const sendMessage = async (conversationId, content, receiverId) => {
 // Mark conversation as seen
 export const markAsSeen = async (conversationId) => {
     try {
-        await api.post(`/messages/conversations/${conversationId}/seen`);
+        await api.post('/messages/seen', { conversationId });
     } catch (error) {
         console.error("Failed to mark seen", error);
     }

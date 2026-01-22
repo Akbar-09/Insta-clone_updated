@@ -8,7 +8,7 @@ const followController = require('../controllers/followController');
 
 router.post('/:userId/follow', followController.followUser);
 router.delete('/:userId/follow', followController.unfollowUser);
-router.get('/:userId/follow-status', followController.checkFollowStatus);
+router.get('/:userId/follow/status', followController.checkFollowStatus);
 router.get('/:userId/followers', followController.getFollowers);
 router.get('/:userId/following', followController.getFollowing);
 
