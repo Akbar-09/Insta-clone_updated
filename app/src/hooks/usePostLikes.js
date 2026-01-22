@@ -56,15 +56,18 @@ export const usePostLikes = (post, onLikeUpdate) => {
                 error.response?.data?.message?.includes('not found');
 
             if (isAlreadyLikedError) {
-                // We wanted it to be true, and server says it's already true.
-                // Ensure state matches desired state (true)
-                if (!newIsLiked) setIsLiked(true); // Should already be true from optimistic, but ensure.
+                // We tried to LIKE but it was already liked. State is true (correct), 
+                // but our optimistic count increment was wrong because it was already incremented on server.
+                setIsLiked(true);
+                setLikesCount(previousCount);
             } else if (isLikeNotFoundError) {
-                // We wanted it false, server says not found (so it is false).
-                // Ensure state is false
-                if (newIsLiked) setIsLiked(false);
+                // We tried to UNLIKE but it was already unliked (not found). State is false (correct),
+                // but our optimistic count decrement was wrong because it was already at the unliked count.
+                setIsLiked(false);
+                setLikesCount(previousCount);
             } else {
-                // Genuine error, revert
+                // Genuine error (404 for post itself, 500, etc.), revert everything
+                console.error('Like toggle failed: Reverting state');
                 setIsLiked(previousLiked);
                 setLikesCount(previousCount);
                 if (onLikeUpdate) {

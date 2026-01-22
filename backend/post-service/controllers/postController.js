@@ -6,7 +6,12 @@ const sequelize = require('../config/database');
 
 const createPost = async (req, res) => {
     try {
-        const { userId, username, caption, mediaUrl, mediaType } = req.body;
+        const userId = req.headers['x-user-id'] || req.body.userId;
+        const { username, caption, mediaUrl, mediaType } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
 
         const post = await Post.create({
             userId,
@@ -107,7 +112,6 @@ const getPosts = async (req, res) => {
 
         res.json({ status: 'success', data: postsWithLikeStatus });
     } catch (error) {
-        console.error('Get Posts Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
@@ -324,11 +328,12 @@ const unbookmarkPost = async (req, res) => {
 
 const getSavedPosts = async (req, res) => {
     try {
-        const { userId } = req.query;
+        const userId = req.query.userId || req.headers['x-user-id'];
         if (!userId) return res.status(400).json({ message: 'User ID required' });
 
+        // 1. Get SavedPosts ID list (Preserves Order)
         const saved = await SavedPost.findAll({
-            where: { userId },
+            where: { userId: parseInt(userId) },
             order: [['createdAt', 'DESC']]
         });
 
@@ -338,11 +343,35 @@ const getSavedPosts = async (req, res) => {
             return res.json({ status: 'success', data: [] });
         }
 
+        // 2. Fetch Posts (Unordered)
         const posts = await Post.findAll({
-            where: { id: postIds }
+            where: { id: postIds },
+            raw: true
         });
 
-        res.json({ status: 'success', data: posts });
+        // 3. Fetch Likes for these posts (for isLiked status)
+        let likedPostIds = new Set();
+        if (userId) {
+            const likes = await Like.findAll({
+                where: { userId, postId: postIds },
+                attributes: ['postId']
+            });
+            likedPostIds = new Set(likes.map(l => l.postId));
+        }
+
+        // 4. Map and Reorder
+        const postsMap = new Map(posts.map(p => [p.id, p]));
+
+        const orderedPosts = postIds
+            .map(id => postsMap.get(id))
+            .filter(post => post) // Filter out nulls (if post was deleted but saved ref exists)
+            .map(post => ({
+                ...post,
+                isLiked: likedPostIds.has(post.id),
+                isSaved: true
+            }));
+
+        res.json({ status: 'success', data: orderedPosts });
     } catch (error) {
         console.error('Get Saved Posts Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });

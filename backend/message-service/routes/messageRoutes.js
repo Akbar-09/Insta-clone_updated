@@ -22,8 +22,8 @@ const extractUser = (req, res, next) => {
 router.use(extractUser);
 
 router.get('/conversations', getConversations);
-router.get('/conversations/:conversationId/messages', getMessages);
-router.post('/conversations/:conversationId/messages', sendMessage);
-router.post('/conversations/:conversationId/seen', markAsSeen);
+router.get('/conversations/:conversationId', getMessages); // Match requirement: Get messages for a conversation
+router.post('/send', sendMessage); // Match requirement: Send a message
+router.post('/seen', markAsSeen); // Match requirement: Mark messages as seen
 
 module.exports = router;

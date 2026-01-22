@@ -1,65 +1,94 @@
-import { useRef, useState, useEffect } from 'react';
-import { Play, Heart, UserPlus, Hash, Sparkles } from 'lucide-react';
+import { useState, useEffect, useContext } from 'react';
+import { Play, Heart, UserPlus, Hash, Sparkles, MessageCircle } from 'lucide-react';
 import UserCard from './UserCard';
-import { searchUsers } from '../services/searchApi';
-
-
+import { getSuggestions } from '../api/profileApi';
+import { getNotifications } from '../api/notificationApi';
+import { AuthContext } from '../context/AuthContext';
+import { formatDistanceToNowStrict } from 'date-fns';
 
 const TRENDING_HASHTAGS = [
     '#fitness', '#travel', '#inspiration', '#codinglife', '#photography', '#nature', '#art', '#foodie'
 ];
 
-const RECENT_ACTIVITY = [
-    { type: 'like', text: 'Your post got 12 likes', time: '2m' },
-    { type: 'follow', text: 'nehal990 started following you', time: '1h' },
-    { type: 'mention', text: 'You were mentioned in a comment', time: '3h' },
-];
-
 const Suggestions = () => {
+    const { user: currentUser } = useContext(AuthContext);
     const [suggestions, setSuggestions] = useState([]);
+    const [activities, setActivities] = useState([]);
 
     useEffect(() => {
-        // Fetch real users so Follow functionality works
-        const fetchSuggestions = async () => {
-            // Temporary strategy: search for common term to get users
-            // In production, this should be a dedicated /users/suggestions endpoint
-            // that uses graph logic (friends of friends).
+        const fetchData = async () => {
             try {
-                // Using 'a' to get some users. 
-                const users = await searchUsers('a');
-                // Filter out current user if possible (requires auth context, but search might return self)
-                // Map to required format
-                const mapped = users
-                    .filter(u => u.type === 'USER')
-                    .slice(0, 5)
-                    .map(u => ({
-                        id: u.referenceId, // IMPORTANT: Real UUID for FollowButton
-                        username: u.content,
-                        name: u.metadata?.fullName || u.content,
-                        avatar: u.metadata?.profilePicture || 'https://placehold.co/150',
-                        mutual: 'Suggested for you'
+                // Fetch Suggestions
+                const suggestionsRes = await getSuggestions();
+                if (suggestionsRes.status === 'success') {
+                    const mapped = suggestionsRes.data.map(u => ({
+                        id: u.userId,
+                        username: u.username,
+                        name: u.fullName || u.username,
+                        avatar: u.profilePicture,
+                        mutual: 'Suggested for you',
+                        type: 'USER'
                     }));
-                setSuggestions(mapped);
+                    setSuggestions(mapped);
+                }
+
+                // Fetch Latest Activity
+                const notifRes = await getNotifications(3); // Limit 3
+                if (notifRes.data.status === 'success') {
+                    setActivities(notifRes.data.data);
+                }
             } catch (e) {
-                console.error("Failed to fetch suggestions", e);
+                console.error("Failed to fetch sidebar data", e);
             }
         };
-        fetchSuggestions();
-    }, []);
+
+        if (currentUser) {
+            fetchData();
+        }
+    }, [currentUser]);
+
+    const getActivityIcon = (type) => {
+        switch (type) {
+            case 'LIKE': return <Heart size={14} className="text-red-500" />;
+            case 'FOLLOW': return <UserPlus size={14} className="text-blue-500" />;
+            case 'COMMENT': return <MessageCircle size={14} className="text-green-500" />;
+            case 'MENTION': return <Hash size={14} />;
+            default: return <Sparkles size={14} />;
+        }
+    };
+
+    const getActivityText = (act) => {
+        switch (act.type) {
+            case 'LIKE': return `${act.fromUsername} liked your post`;
+            case 'FOLLOW': return `${act.fromUsername} started following you`;
+            case 'COMMENT': return `${act.fromUsername} commented on your post`;
+            case 'MENTION': return `${act.fromUsername} mentioned you`;
+            case 'REPLY': return `${act.fromUsername} replied to your comment`;
+            default: return 'New activity';
+        }
+    };
+
+    if (!currentUser) return null; // Or skeleton
 
     return (
         <div className="w-[319px] pl-3 h-full flex flex-col overflow-y-auto scrollbar-none pb-4">
             {/* Current User */}
             <div className="flex items-center justify-between mb-2 mt-2 px-2">
                 <div className="flex items-center cursor-pointer">
-                    <img
-                        src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+"
-                        alt="My Profile"
-                        className="w-12 h-12 rounded-full mr-3 object-cover border border-white/20"
-                    />
+                    {currentUser.profilePicture ? (
+                        <img
+                            src={currentUser.profilePicture}
+                            alt="My Profile"
+                            className="w-12 h-12 rounded-full mr-3 object-cover border border-white/20"
+                        />
+                    ) : (
+                        <div className="w-12 h-12 rounded-full mr-3 bg-gray-700 flex items-center justify-center text-white font-bold">
+                            {currentUser.username[0].toUpperCase()}
+                        </div>
+                    )}
                     <div className="flex flex-col">
-                        <span className="font-semibold text-sm text-text-primary">khan_akbar_09</span>
-                        <span className="text-sm text-text-secondary">Akbar Khan</span>
+                        <span className="font-semibold text-sm text-text-primary">{currentUser.username}</span>
+                        <span className="text-sm text-text-secondary">{currentUser.fullName || currentUser.username}</span>
                     </div>
                 </div>
                 <button className="text-blue-btn text-xs font-semibold cursor-pointer hover:text-link transition-colors">Switch</button>
@@ -83,7 +112,7 @@ const Suggestions = () => {
                         />
                     ))
                 ) : (
-                    <div className="text-xs text-text-secondary px-2">Loading suggestions...</div>
+                    <div className="text-xs text-text-secondary px-2">No suggestions available</div>
                 )}
             </div>
 
@@ -122,19 +151,21 @@ const Suggestions = () => {
             <div className="mb-6 px-2">
                 <span className="font-semibold text-text-secondary text-sm block mb-3">Latest Activity</span>
                 <div className="flex flex-col gap-3">
-                    {RECENT_ACTIVITY.map((activity, i) => (
+                    {activities.length > 0 ? activities.map((act, i) => (
                         <div key={i} className="flex items-start gap-3 text-xs text-text-primary">
                             <div className="mt-0.5 text-text-secondary">
-                                {activity.type === 'like' && <Heart size={14} />}
-                                {activity.type === 'follow' && <UserPlus size={14} />}
-                                {activity.type === 'mention' && <Hash size={14} />}
+                                {getActivityIcon(act.type)}
                             </div>
                             <div>
-                                <p>{activity.text}</p>
-                                <span className="text-text-secondary text-[10px]">{activity.time} ago</span>
+                                <p>{getActivityText(act)}</p>
+                                <span className="text-text-secondary text-[10px]">
+                                    {formatDistanceToNowStrict(new Date(act.createdAt))} ago
+                                </span>
                             </div>
                         </div>
-                    ))}
+                    )) : (
+                        <div className="text-xs text-text-secondary">No recent activity</div>
+                    )}
                 </div>
             </div>
 

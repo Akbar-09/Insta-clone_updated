@@ -19,13 +19,21 @@ const Notification = sequelize.define('Notification', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    fromUserAvatar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     type: {
-        type: DataTypes.ENUM('LIKE', 'COMMENT', 'FOLLOW'),
+        type: DataTypes.ENUM('LIKE', 'COMMENT', 'FOLLOW', 'REPLY', 'MENTION'),
         allowNull: false,
     },
     resourceId: { // postId, commentId, etc.
         type: DataTypes.INTEGER,
         defaultValue: 0,
+    },
+    resourceImage: {
+        type: DataTypes.STRING,
+        allowNull: true,
     },
     isRead: {
         type: DataTypes.BOOLEAN,

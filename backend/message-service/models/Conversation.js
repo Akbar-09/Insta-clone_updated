@@ -40,7 +40,8 @@ const Conversation = sequelize.define('Conversation', {
 }, {
     indexes: [
         {
-            fields: ['user1Id', 'user2Id']
+            name: 'conversations_user1_user2_idx',
+            fields: ['user1_id', 'user2_id']
         },
         {
             fields: ['updatedAt']

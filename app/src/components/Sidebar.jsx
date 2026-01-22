@@ -1,4 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { getUnreadNotificationCount } from '../api/notificationApi';
 import { Link, useLocation } from 'react-router-dom';
 import {
     Home, Search, Compass, Clapperboard, MessageCircle,
@@ -24,6 +26,32 @@ const Sidebar = () => {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
 
+    const { user } = useContext(AuthContext);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Fetch unread count
+    useEffect(() => {
+        const fetchUnread = async () => {
+            if (user?.userId) {
+                try {
+                    const res = await getUnreadNotificationCount(user.userId);
+                    if (res.data.status === 'success') {
+                        setUnreadCount(res.data.data.count);
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch unread count', e);
+                }
+            }
+        };
+
+        fetchUnread();
+
+        // Optional: Poll every 30s
+        const interval = setInterval(fetchUnread, 30000);
+        return () => clearInterval(interval);
+
+    }, [user, activeDrawer]); // Re-fetch when drawer closes (might have read)
+
     // Refs
     const sidebarRef = useRef(null);
     const createButtonRef = useRef(null);
@@ -33,6 +61,8 @@ const Sidebar = () => {
     const drawerRef = useRef(null);
 
     const isActive = (path) => location.pathname === path;
+
+    // ... (rest of useEffects) 
 
     // Close drawers on route change
     useEffect(() => {
@@ -80,6 +110,14 @@ const Sidebar = () => {
     }, [showCreateMenu, showMoreMenu, activeDrawer]);
 
     const toggleDrawer = (drawerName) => {
+        if (drawerName === 'notifications' && activeDrawer !== 'notifications') {
+            // Opening notifications, should we clear badge immediately or wait for read status?
+            // Usually wait for individual items to be read or "mark all read". 
+            // In NotificationsDrawer we call markAllRead on open.
+            // So we can optimistically clear count here.
+            setUnreadCount(0);
+        }
+
         if (activeDrawer === drawerName) {
             setActiveDrawer(null);
         } else {
@@ -199,7 +237,7 @@ const Sidebar = () => {
                         drawerName="notifications"
                         icon={Heart}
                         label="Notifications"
-                        badge="2"
+                        badge={unreadCount > 0 ? (unreadCount > 9 ? '9+' : unreadCount) : null}
                     />
                     <NavItem
                         onClick={toggleCreateMenu}

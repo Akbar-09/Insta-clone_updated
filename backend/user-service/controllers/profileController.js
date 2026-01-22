@@ -2,6 +2,61 @@ const UserProfile = require('../models/UserProfile');
 const Follow = require('../models/Follow');
 const { publishEvent } = require('../config/rabbitmq');
 const axios = require('axios');
+const { Op } = require('sequelize');
+const sequelize = require('../config/database');
+
+/**
+ * Get suggested users for follow
+ * GET /api/v1/profile/suggestions
+ */
+exports.getSuggestions = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        const currentUserId = userId; // Alias for clarity
+
+        if (!userId) {
+            return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        }
+
+        // 1. Get List of users I already follow
+        const following = await Follow.findAll({
+            where: { followerId: userId },
+            attributes: ['followingId']
+        });
+        const followingIds = following.map(f => f.followingId);
+
+        // 2. Exclude myself and following
+        const excludeIds = [...followingIds, parseInt(userId)];
+
+        // 3. Find recent or random users not in exclude list
+        const suggestions = await UserProfile.findAll({
+            where: {
+                userId: {
+                    [Op.notIn]: excludeIds
+                }
+            },
+            limit: 5,
+            order: sequelize.random() // Postgres/SQLite specific usually works
+        });
+
+        // 4. Transform result
+        const data = suggestions.map(user => ({
+            userId: user.userId,
+            username: user.username,
+            fullName: user.fullName,
+            profilePicture: user.profilePicture,
+            isFollowing: false // By definition
+        }));
+
+        res.json({ status: 'success', data });
+
+    } catch (error) {
+        console.error('Get Suggestions Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+
 
 /**
  * Get current user's profile with counts
@@ -28,7 +83,7 @@ exports.getMyProfile = async (req, res) => {
         // Get posts count from post-service
         let postsCount = 0;
         try {
-            const postsRes = await axios.get(`http://localhost:5001/posts?authorId=${profile.userId}`);
+            const postsRes = await axios.get(`http://localhost:5003/?authorId=${profile.userId}`);
             if (postsRes.data.status === 'success') {
                 postsCount = postsRes.data.data.length;
             }
@@ -80,7 +135,7 @@ exports.getUserProfile = async (req, res) => {
         // Get posts count
         let postsCount = 0;
         try {
-            const postsRes = await axios.get(`http://localhost:5001/posts?authorId=${profile.userId}`);
+            const postsRes = await axios.get(`http://localhost:5003/?authorId=${profile.userId}`);
             if (postsRes.data.status === 'success') {
                 postsCount = postsRes.data.data.length;
             }
@@ -196,7 +251,7 @@ exports.getUserPosts = async (req, res) => {
 
         // Fetch posts from post-service
         try {
-            const url = `http://localhost:5001/posts?authorId=${profile.userId}`;
+            const url = `http://localhost:5003/?authorId=${profile.userId}`;
             console.log(`[UserService] Fetching posts from: ${url}`);
             const postsRes = await axios.get(url);
 
@@ -232,7 +287,7 @@ exports.getMySavedPosts = async (req, res) => {
 
         // Fetch saved posts from post-service
         try {
-            const savedRes = await axios.get(`http://localhost:5001/posts/saved?userId=${userId}`);
+            const savedRes = await axios.get(`http://localhost:5003/saved?userId=${userId}`);
 
             if (savedRes.data.status === 'success') {
                 res.json({
@@ -455,6 +510,29 @@ exports.removeProfilePhoto = async (req, res) => {
         });
     } catch (error) {
         console.error('Remove Profile Photo Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+/**
+ * Get multiple profiles by IDs
+ * POST /api/v1/profile/batch
+ */
+exports.getBatchProfiles = async (req, res) => {
+    try {
+        const { userIds } = req.body;
+        if (!userIds || !Array.isArray(userIds)) {
+            return res.status(400).json({ status: 'error', message: 'userIds array required' });
+        }
+
+        const profiles = await UserProfile.findAll({
+            where: { userId: userIds },
+            attributes: ['userId', 'username', 'fullName', 'profilePicture']
+        });
+
+        res.json({ status: 'success', data: profiles });
+    } catch (error) {
+        console.error('Batch Profile Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };

@@ -17,9 +17,23 @@ const Message = sequelize.define('Message', {
         allowNull: false,
         field: 'sender_id'
     },
+    type: {
+        type: DataTypes.ENUM('text', 'image', 'video', 'story_reply'),
+        defaultValue: 'text'
+    },
     content: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true // Allow null for media-only messages
+    },
+    mediaUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: 'media_url'
+    },
+    replyToStoryId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'reply_to_story_id'
     },
     isSeen: {
         type: DataTypes.BOOLEAN,

@@ -46,7 +46,7 @@ exports.checkFollowStatus = async (req, res) => {
         }
 
         const isFollowing = await followService.isFollowing(followerId, followingId);
-        res.json({ status: 'success', isFollowing });
+        res.json({ status: 'success', data: { isFollowing } });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: err.message });
