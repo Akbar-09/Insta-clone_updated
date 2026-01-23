@@ -29,3 +29,13 @@ export const viewStory = async (storyId) => {
     const response = await api.post(`/stories/${storyId}/view`);
     return response.data;
 };
+
+export const reactToStory = async (storyId) => {
+    const response = await api.post(`/stories/${storyId}/react`, { type: 'LIKE' });
+    return response.data;
+};
+
+export const unreactToStory = async (storyId) => {
+    const response = await api.delete(`/stories/${storyId}/react`);
+    return response.data;
+};

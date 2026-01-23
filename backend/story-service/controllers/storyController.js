@@ -30,22 +30,100 @@ const createStory = async (req, res) => {
     }
 };
 
+const StoryReaction = require('../models/StoryReaction');
+
+// ... existing imports
+
 const getStories = async (req, res) => {
     try {
+        const userId = req.headers['x-user-id'];
+
         // Get all valid stories
         const stories = await Story.findAll({
             where: {
                 expiresAt: {
-                    [Op.gt]: new Date() // Only stories that haven't expired
+                    [Op.gt]: new Date()
                 }
             },
             order: [['createdAt', 'DESC']]
         });
+
+        // If user logged in, enrich with seen/liked status
+        if (userId) {
+            const storyIds = stories.map(s => s.id);
+
+            // Get Views
+            const views = await StoryView.findAll({
+                where: {
+                    storyId: storyIds,
+                    viewerId: userId
+                }
+            });
+            const viewedStoryIds = new Set(views.map(v => v.storyId));
+
+            // Get Reactions
+            const reactions = await StoryReaction.findAll({
+                where: {
+                    storyId: storyIds,
+                    reactorId: userId
+                }
+            });
+            const reactedStoryIds = new Set(reactions.map(r => r.storyId));
+
+            const enrichedStories = stories.map(s => ({
+                ...s.toJSON(),
+                seen: viewedStoryIds.has(s.id),
+                isLiked: reactedStoryIds.has(s.id)
+            }));
+
+            return res.json({ status: 'success', data: enrichedStories });
+        }
+
         res.json({ status: 'success', data: stories });
     } catch (error) {
+        console.error("Get Stories Error", error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
+
+const reactToStory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.headers['x-user-id'];
+        const { type = 'LIKE' } = req.body;
+
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        await StoryReaction.findOrCreate({
+            where: { storyId: id, reactorId: userId },
+            defaults: { storyId: id, reactorId: userId, type }
+        });
+
+        res.json({ status: 'success', message: 'Reaction added' });
+    } catch (error) {
+        console.error('React Story Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const unreactToStory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.headers['x-user-id'];
+
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        await StoryReaction.destroy({
+            where: { storyId: id, reactorId: userId }
+        });
+
+        res.json({ status: 'success', message: 'Reaction removed' });
+    } catch (error) {
+        console.error('Unreact Story Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 
 const getArchivedStories = async (req, res) => {
     try {
@@ -196,5 +274,7 @@ module.exports = {
     deleteStory,
     reportStory,
     viewStory,
-    getStoryReplies
+    getStoryReplies,
+    reactToStory,
+    unreactToStory
 };

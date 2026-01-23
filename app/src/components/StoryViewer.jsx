@@ -9,14 +9,26 @@ import StoryOptionsMenu from './stories/StoryOptionsMenu';
 import ReportModal from './ReportModal';
 import { groupStoriesByUser } from '../utils/storyUtils';
 import { AuthContext } from '../context/AuthContext';
-import { deleteStory, reportStory, viewStory } from '../api/storyApi';
+import { deleteStory, reportStory, viewStory, reactToStory, unreactToStory } from '../api/storyApi';
 import jaadoeLogo from '../assets/jaadoe_logo.svg';
+import AboutAccountModal from './AboutAccountModal';
+import ShareModal from './ShareModal';
 import { sendMessage } from '../api/messageApi';
 
-const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
+const StoryViewer = ({ stories: initialStories, activeIndex = 0, onClose }) => {
     const { user: currentUserData } = useContext(AuthContext);
     const navigate = useNavigate();
     const [deletedStoryIds, setDeletedStoryIds] = useState(new Set());
+
+    // Maintain internal state for reaction updates
+    const [stories, setStories] = useState(initialStories);
+    const [showAboutModal, setShowAboutModal] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
+
+    // Update internal stories if prop changes (e.g. initial load)
+    useEffect(() => {
+        setStories(initialStories);
+    }, [initialStories]);
 
     const handleReply = async (content) => {
         if (!currentStory) return;
@@ -31,7 +43,38 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
             onClose();
         } catch (error) {
             console.error('Failed to reply to story:', error);
-            alert('Failed to send reply');
+        }
+    };
+
+    const handleToggleLike = async () => {
+        if (!currentStory) return;
+
+        const isLiked = currentStory.isLiked;
+        const storyId = currentStory.id;
+
+        // Optimistic Update
+        setStories(prevStories => prevStories.map(s => {
+            if (s.id === storyId) {
+                return { ...s, isLiked: !isLiked };
+            }
+            return s;
+        }));
+
+        try {
+            if (isLiked) {
+                await unreactToStory(storyId);
+            } else {
+                await reactToStory(storyId);
+            }
+        } catch (error) {
+            console.error('Reaction failed:', error);
+            // Revert
+            setStories(prevStories => prevStories.map(s => {
+                if (s.id === storyId) {
+                    return { ...s, isLiked: isLiked };
+                }
+                return s;
+            }));
         }
     };
 
@@ -40,9 +83,6 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
     const groupedStories = useMemo(() => groupStoriesByUser(activeStories), [activeStories]);
 
     // Initial State Calculation
-    // Find which group/item the activeIndex points to in the flat list
-    // OR if passed index is purely flat, we need to map it. 
-    // Optimization: Just finding the user of stories[activeIndex]
     const getInitialState = () => {
         if (!stories[activeIndex]) return { userIdx: 0, itemIdx: 0 };
         const targetUserId = stories[activeIndex].userId;
@@ -81,7 +121,7 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
     useEffect(() => {
         if (currentStory && !currentStory.seen) {
             viewStory(currentStory.id).catch(err => console.error("View mark failed", err));
-            // Optionally update local seen state if needed
+            // Local Seen update could happen here but usually handled by refreshed fetch
         }
     }, [currentStory]);
 
@@ -89,7 +129,6 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.hidden) setIsPaused(true);
-            // else setIsPaused(false); // Optional: Auto resume? UX decision. Instagram keeps paused.
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -126,8 +165,7 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
                 // Go to LAST story of previous user
                 setCurrentStoryIndex(groupedStories[prevUserIdx].stories.length - 1);
             } else {
-                // Start of all stories (could close or stay)
-                // Stay at 0,0
+                // Start of all stories
             }
         }
     }, [currentStoryIndex, currentUserIndex, groupedStories]);
@@ -185,7 +223,7 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
                 <img src={jaadoeLogo} alt="Jaadoe" className="w-[120px] h-auto object-contain" />
             </div>
 
-            {/* Close Button (Top Right Fallback) */}
+            {/* Close Button */}
             <button
                 onClick={onClose}
                 className="absolute top-4 right-4 text-white hover:opacity-75 z-[10000] bg-transparent border-none cursor-pointer p-2"
@@ -269,17 +307,32 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
                         )}
                     </div>
 
-                    {/* Footer */}
                     <StoryFooter
                         username={currentStory.username}
                         onFocus={() => setIsPaused(true)}
                         onBlur={() => setIsPaused(false)}
                         onSend={handleReply}
+                        isLiked={currentStory.isLiked}
+                        onToggleLike={handleToggleLike}
+                        onShare={() => {
+                            setIsPaused(true);
+                            setShowShareModal(true);
+                        }}
                     />
 
                 </div>
 
             </div>
+
+            {showShareModal && (
+                <ShareModal
+                    story={currentStory}
+                    onClose={() => {
+                        setShowShareModal(false);
+                        setIsPaused(false);
+                    }}
+                />
+            )}
 
             {/* Options Menu */}
             <StoryOptionsMenu
@@ -295,25 +348,21 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
                         setDeletedStoryIds(prev => new Set(prev).add(currentStory.id));
                         setShowMenu(false);
                         setIsPaused(false);
-                        // Navigation handling is automatic due to useMemo re-calc or might need manual nudge
-                        // If group becomes empty, we need to handle that.
-                        // Ideally goToNext() but data changed.
                     }
                 }}
                 onReport={() => {
                     setShowMenu(false);
                     setShowReportModal(true);
-                    // Keep paused
                 }}
                 onAbout={() => {
-                    navigate(`/profile/${currentStory.userId}`);
-                    onClose();
+                    setShowMenu(false);
+                    setShowAboutModal(true);
                 }}
             />
 
             {showReportModal && (
                 <ReportModal
-                    postId={currentStory.id} // Reusing prop name though it's storyId
+                    postId={currentStory.id}
                     onClose={() => {
                         setShowReportModal(false);
                         setIsPaused(false);
@@ -324,6 +373,16 @@ const StoryViewer = ({ stories, activeIndex = 0, onClose }) => {
                 />
             )}
 
+            {showAboutModal && (
+                <AboutAccountModal
+                    userId={currentStory.userId}
+                    username={currentStory.username}
+                    onClose={() => {
+                        setShowAboutModal(false);
+                        setIsPaused(false);
+                    }}
+                />
+            )}
 
         </div>,
         document.body

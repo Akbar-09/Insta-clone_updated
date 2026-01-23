@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { searchUsers, sendMessage } from '../api/postActionsApi';
 import { X } from 'lucide-react';
 
-const ShareModal = ({ post, onClose }) => {
+const ShareModal = ({ post, onClose, ...props }) => {
     const [query, setQuery] = useState('');
     const [users, setUsers] = useState([]); // In real app, init with recent suggestions
     const [selectedUsers, setSelectedUsers] = useState(new Set());
@@ -38,9 +38,15 @@ const ShareModal = ({ post, onClose }) => {
         setSending(true);
         try {
             const userIds = Array.from(selectedUsers);
-            const link = `${window.location.origin}/post/${post.id}`;
+            let content = '';
+            if (post) {
+                content = `Check out this post: ${window.location.origin}/post/${post.id}`;
+            } else if (props.story) { // assuming passed as props
+                content = `Check out this story: ${window.location.origin}/stories/${props.story.username}/${props.story.id}`;
+            }
+
             // Send to each user
-            await Promise.all(userIds.map(uid => sendMessage(uid, `Check out this post: ${link}`)));
+            await Promise.all(userIds.map(uid => sendMessage(uid, content)));
             alert('Sent!');
             onClose();
         } catch (e) {

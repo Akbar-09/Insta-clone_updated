@@ -76,7 +76,8 @@ const ProfilePage = ({ section }) => {
                 }
             } else {
                 // Get other user's profile
-                const response = await getUserProfile(id);
+                const currentUserId = currentUser?.id || currentUser?.userId;
+                const response = await getUserProfile(id, currentUserId);
                 if (response.status === 'success') {
                     profileData = response.data;
                     setIsFollowing(response.data.isFollowing || false);
