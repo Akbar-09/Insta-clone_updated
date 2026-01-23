@@ -11,8 +11,12 @@ export const getMyProfile = async () => {
 /**
  * Get user profile by username
  */
-export const getUserProfile = async (username) => {
-    const response = await api.get(`/users/profile/${username}`);
+export const getUserProfile = async (username, currentUserId) => {
+    let url = `/users/profile/${username}`;
+    if (currentUserId) {
+        url += `?currentUserId=${currentUserId}`;
+    }
+    const response = await api.get(url);
     return response.data;
 };
 

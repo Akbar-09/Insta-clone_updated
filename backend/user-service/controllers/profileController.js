@@ -170,9 +170,12 @@ exports.getUserProfile = async (req, res) => {
 
         // Check if current user is following this profile
         let isFollowing = false;
-        if (currentUserId && currentUserId !== profile.userId.toString()) {
+        if (currentUserId && (currentUserId.toString() !== profile.userId.toString())) {
             const follow = await Follow.findOne({
-                where: { followerId: currentUserId, followingId: profile.userId }
+                where: {
+                    followerId: currentUserId,
+                    followingId: profile.userId
+                }
             });
             isFollowing = !!follow;
         }
@@ -635,7 +638,7 @@ exports.removeProfilePhoto = async (req, res) => {
  */
 exports.getBatchProfiles = async (req, res) => {
     try {
-        const { userIds } = req.body;
+        const { userIds, currentUserId } = req.body;
         if (!userIds || !Array.isArray(userIds)) {
             return res.status(400).json({ status: 'error', message: 'userIds array required' });
         }
@@ -645,7 +648,26 @@ exports.getBatchProfiles = async (req, res) => {
             attributes: ['userId', 'username', 'fullName', 'profilePicture']
         });
 
-        res.json({ status: 'success', data: profiles });
+        let followingMap = {};
+        if (currentUserId) {
+            const following = await Follow.findAll({
+                where: {
+                    followerId: currentUserId,
+                    followingId: userIds
+                },
+                attributes: ['followingId']
+            });
+            following.forEach(f => {
+                followingMap[f.followingId] = true;
+            });
+        }
+
+        const result = profiles.map(p => ({
+            ...p.toJSON(),
+            isFollowing: !!followingMap[p.userId]
+        }));
+
+        res.json({ status: 'success', data: result });
     } catch (error) {
         console.error('Batch Profile Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
