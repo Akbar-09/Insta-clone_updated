@@ -1,5 +1,6 @@
 import { forwardRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
     Settings, Activity, Bookmark, Moon, AlertTriangle, LogOut, ChevronLeft, Check, Sun
 } from 'lucide-react';
@@ -8,13 +9,15 @@ import { useTheme } from '../context/ThemeContext';
 const MENU_ITEMS = [
     { icon: Settings, label: 'Settings', to: '/settings/edit-profile' },
     { icon: Activity, label: 'Your activity', to: '/your_activity/interactions' },
-    { icon: Bookmark, label: 'Saved' },
+    { icon: Bookmark, label: 'Saved', to: '/profile/me/saved' },
     { icon: Moon, label: 'Switch appearance', action: 'appearance' },
     { icon: AlertTriangle, label: 'Report a problem', action: 'report' },
 ];
 
 const MoreMenu = forwardRef(({ isOpen, onClose, onReportClick }, ref) => {
     const { theme, setTheme } = useTheme();
+    const { logout } = useAuth();
+    const navigate = useNavigate();
     const [view, setView] = useState('main'); // 'main' | 'appearance'
 
     if (!isOpen) return null;
@@ -29,6 +32,11 @@ const MoreMenu = forwardRef(({ isOpen, onClose, onReportClick }, ref) => {
 
     // Calculate height or use auto to let content dictate size, but fixed width
     // Instagram More menu is usually fixed width.
+
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login');
+    };
 
     return (
         <div
@@ -75,7 +83,10 @@ const MoreMenu = forwardRef(({ isOpen, onClose, onReportClick }, ref) => {
 
                     <div className="h-[6px] border-b-[6px] border-secondary dark:border-[#363636] my-1"></div>
 
-                    <div className="flex items-center px-4 py-3 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer transition-colors">
+                    <div
+                        className="flex items-center px-4 py-3 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer transition-colors"
+                        onClick={handleLogout}
+                    >
                         <span className="text-sm text-text-primary font-normal">Log out</span>
                     </div>
                 </div>

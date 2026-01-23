@@ -26,18 +26,42 @@ exports.getSuggestions = async (req, res) => {
         });
         const followingIds = following.map(f => f.followingId);
 
-        // 2. Exclude myself and following
-        const excludeIds = [...followingIds, parseInt(userId)];
+        // 2. Get Blocked Users (I blocked them OR they blocked me)
+        const BlockedUser = require('../models/BlockedUser');
+        const blocked = await BlockedUser.findAll({
+            where: {
+                [Op.or]: [
+                    { blockerId: userId },
+                    { blockedId: userId }
+                ]
+            },
+            attributes: ['blockerId', 'blockedId']
+        });
 
-        // 3. Find recent or random users not in exclude list
+        const blockedIds = blocked.reduce((acc, b) => {
+            acc.push(b.blockerId);
+            acc.push(b.blockedId);
+            return acc;
+        }, []);
+
+
+        // 3. Exclude myself, following, and blocked users
+        const excludeIds = [...new Set([...followingIds, parseInt(userId), ...blockedIds])]; // Unique IDs
+
+        // 4. Find recent or random users not in exclude list
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const offset = (page - 1) * limit;
+
         const suggestions = await UserProfile.findAll({
             where: {
                 userId: {
                     [Op.notIn]: excludeIds
                 }
             },
-            limit: 5,
-            order: sequelize.random() // Postgres/SQLite specific usually works
+            limit: limit,
+            offset: offset,
+            order: sequelize.random()
         });
 
         // 4. Transform result

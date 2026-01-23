@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import FollowButton from './FollowButton';
 import { AuthContext } from '../context/AuthContext';
 
-const UserCard = ({ user, showFollowButton = true, subtitle, onUserClick }) => {
+const UserCard = ({ user, showFollowButton = true, subtitle, onUserClick, followButtonVariant = 'standard' }) => {
     const navigate = useNavigate();
     const { user: currentUser } = useContext(AuthContext);
 
@@ -40,8 +40,7 @@ const UserCard = ({ user, showFollowButton = true, subtitle, onUserClick }) => {
                     <FollowButton
                         userId={user.id || user.userId}
                         initialIsFollowing={user.isFollowing}
-                        // Using a smaller simpler style for lists
-                        className="!bg-transparent !text-[#0095f6] !px-0 !py-0 hover:!text-[#00376b] hover:!bg-transparent text-xs font-bold"
+                        variant={followButtonVariant}
                     />
                 </div>
             )}

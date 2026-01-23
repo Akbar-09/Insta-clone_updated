@@ -1,7 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/UserModel');
+const UserSession = require('../models/UserSession'); // Added Import
 const { publishEvent } = require('../config/rabbitmq');
+const { Op } = require('sequelize');
+const AccountHistory = require('../models/AccountHistory'); // Assuming this exists based on read file
 
 const register = async (req, res) => {
     try {
@@ -57,7 +60,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, deviceId } = req.body; // Expect deviceId
 
         const user = await User.findOne({ where: { email } });
         if (!user) {
@@ -70,8 +73,18 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET || 'secret', {
-            expiresIn: '7d',
+            expiresIn: '7d', // Long-lived for session
         });
+
+        // Create or Update Session
+        if (deviceId) {
+            await UserSession.create({
+                userId: user.id,
+                deviceId: deviceId,
+                token: token,
+                isActive: true
+            }).catch(err => console.error("Session creation failed", err)); // Non-blocking
+        }
 
         res.json({
             status: 'success',
@@ -120,8 +133,29 @@ const verifyPasswordReset = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-    // For JWT, client handles clearing. Optional: Blacklist token.
-    res.json({ status: 'success', message: 'Logged out successfully' });
+    try {
+        const userId = req.userId; // Middleware should populate this if authenticated
+        const deviceId = req.body.deviceId;
+
+        if (userId && deviceId) {
+            await UserSession.update({ isActive: false }, {
+                where: { userId, deviceId }
+            }).catch(err => console.error("Session update failed", err));
+        }
+
+        // Clear any auth cookies (if used in future)
+        res.clearCookie('token');
+        res.clearCookie('refreshToken');
+
+        // Return success even if no token found (idempotent)
+        res.status(200).json({
+            status: 'success',
+            message: 'Logged out successfully'
+        });
+    } catch (error) {
+        console.error("Logout error:", error);
+        res.status(500).json({ status: 'error', message: 'Logout failed' });
+    }
 };
 
 const getMe = async (req, res) => {
