@@ -8,7 +8,7 @@ import ProfileTabs from './ProfileTabs';
 import ProfileGrid from './ProfileGrid';
 import SavedPosts from './SavedPosts';
 
-const ProfilePage = () => {
+const ProfilePage = ({ section }) => {
     const { id } = useParams();
     const { user: currentUser, updateUser } = useContext(AuthContext);
 
@@ -35,14 +35,24 @@ const ProfilePage = () => {
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState(initialTab);
+    // Prioritize 'section' prop if passed (from Routes), else use URL search param
+    const [activeTab, setActiveTab] = useState(section || initialTab);
     const [isFollowing, setIsFollowing] = useState(false);
 
-    // Update activeTab if URL changes
+    // Update activeTab when route prop changes (e.g. clicking /saved link)
     useEffect(() => {
-        const tab = searchParams.get('tab');
-        if (tab) setActiveTab(tab);
-    }, [location.search]);
+        if (section) {
+            setActiveTab(section);
+        }
+    }, [section]);
+
+    // Handle tab switching in UI: update URL without full reload if just params
+    // But if we use Routes like /profile/:id/saved, we should navigate
+    // Wait, the Tabs component probably just calls setActiveTab.
+    // If we want accurate URL reflection for non-route tabs, we can use history.pushState or just rely on local state.
+    // But for "Saved" specifically, user wants redirection.
+
+    // If 'section' is present (meaning we are on a specific route like /saved), keep it in sync.
 
     useEffect(() => {
         if (currentUser) {
@@ -160,7 +170,15 @@ const ProfilePage = () => {
                     isOwnProfile={isOwnProfile}
                 />
 
-                <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+                <ProfileTabs
+                    activeTab={activeTab}
+                    setActiveTab={(tab) => {
+                        setActiveTab(tab);
+                        // Optional: Update URL shallowly if not using routes for all tabs, 
+                        // or navigate to route if needed. 
+                        // For this task, "redirect" implies route change was desired, which we handled in App.jsx routes.
+                    }}
+                />
 
                 {/* Tab Content */}
                 {activeTab === 'posts' && <ProfileGrid posts={posts} />}

@@ -1,9 +1,10 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { Grid, Clapperboard, UserSquare2, Heart, MessageCircle, Settings, UserPlus, ChevronDown, Link as LinkIcon, MoreHorizontal } from 'lucide-react';
+import { Grid, Clapperboard, UserSquare2, Heart, MessageCircle, Settings, UserPlus, ChevronDown, Link as LinkIcon, MoreHorizontal, Bookmark } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import ProfileHeader from '../components/profile/ProfileHeader';
+import { getSavedPosts } from '../api/bookmarkApi';
 
 const VerifiedBadge = () => (
     <svg aria-label="Verified" className="ml-2 w-[18px] h-[18px] text-[#0095f6]" fill="rgb(0, 149, 246)" height="18" role="img" viewBox="0 0 40 40" width="18">
@@ -12,13 +13,19 @@ const VerifiedBadge = () => (
     </svg>
 );
 
-const Profile = () => {
+const Profile = ({ section }) => {
     const { id } = useParams(); // Using :id as username or userId based on route
     const { user: currentUser } = useContext(AuthContext);
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('posts');
+    const [activeTab, setActiveTab] = useState(section || 'posts');
+
+    useEffect(() => {
+        if (section) {
+            setActiveTab(section);
+        }
+    }, [section]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -30,13 +37,6 @@ const Profile = () => {
                 const userRes = await api.get(`/users/${targetId}`);
                 if (userRes.data.status === 'success') {
                     setProfile(userRes.data.data);
-                    // Check if following (mock logic or from API if available)
-                    // setIsFollowing(userRes.data.data.isFollowing); 
-                }
-
-                const postsRes = await api.get(`/posts?username=${targetId}`);
-                if (postsRes.data.status === 'success') {
-                    setPosts(postsRes.data.data);
                 }
             } catch (error) {
                 console.error('Error fetching profile:', error);
@@ -49,6 +49,42 @@ const Profile = () => {
             fetchProfile();
         }
     }, [id, currentUser]);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            if (!profile) return;
+
+            try {
+                let data = [];
+                if (activeTab === 'saved') {
+                    // Saved posts are private, only fetch if it's the current user
+                    // The check isOwnProfile will be derived from profile props, handling here for data safety
+                    const targetId = id === 'me' ? currentUser?.id : profile?.id;
+                    // We can only see saved posts for ourselves
+                    if (currentUser?.id === targetId || id === 'me') {
+                        const res = await getSavedPosts(targetId);
+                        if (res.status === 'success') {
+                            data = res.data;
+                        } else if (Array.isArray(res)) {
+                            data = res;
+                        }
+                    }
+                } else if (activeTab === 'posts') {
+                    const postsRes = await api.get(`/posts?username=${profile.username}`);
+                    if (postsRes.data.status === 'success') {
+                        data = postsRes.data.data;
+                    }
+                }
+                // Extend for other tabs like Reels if needed
+
+                setPosts(data);
+            } catch (error) {
+                console.error("Error fetching posts for tab:", activeTab, error);
+            }
+        };
+
+        fetchPosts();
+    }, [activeTab, profile, id, currentUser]);
 
 
 
@@ -79,12 +115,18 @@ const Profile = () => {
                     <Grid size={12} strokeWidth={activeTab === 'posts' ? 3 : 2} />
                     <span>Posts</span>
                 </div>
-                <div className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t border-transparent text-gray-500 hover:text-black`}>
-                    <Clapperboard size={12} strokeWidth={2} />
+                {isOwnProfile && (
+                    <div onClick={() => setActiveTab('saved')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t ${activeTab === 'saved' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}>
+                        <Bookmark size={12} strokeWidth={activeTab === 'saved' ? 3 : 2} />
+                        <span>Saved</span>
+                    </div>
+                )}
+                <div onClick={() => setActiveTab('reels')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t ${activeTab === 'reels' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}>
+                    <Clapperboard size={12} strokeWidth={activeTab === 'reels' ? 3 : 2} />
                     <span>Reels</span>
                 </div>
-                <div className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t border-transparent text-gray-500 hover:text-black`}>
-                    <UserSquare2 size={12} strokeWidth={2} />
+                <div onClick={() => setActiveTab('tagged')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t ${activeTab === 'tagged' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}>
+                    <UserSquare2 size={12} strokeWidth={activeTab === 'tagged' ? 3 : 2} />
                     <span>Tagged</span>
                 </div>
             </div>

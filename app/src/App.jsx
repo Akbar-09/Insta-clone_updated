@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Feed from './pages/Feed';
 import ExplorePage from './pages/ExplorePage';
+import SuggestedPeoplePage from './pages/SuggestedPeoplePage';
 import Reels from './pages/Reels';
 import Messages from './pages/Messages';
 import Profile from './pages/profile/ProfilePage';
@@ -80,9 +81,13 @@ function App() {
               <Route element={<Layout />}>
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/explore" element={<ExplorePage />} />
+                <Route path="/explore/people" element={<SuggestedPeoplePage />} />
                 <Route path="/reels" element={<Reels />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/profile/:id" element={<Profile />} />
+                <Route path="/profile/:id/saved" element={<Profile section="saved" />} />
+                <Route path="/profile/:id/reels" element={<Profile section="reels" />} />
+                <Route path="/profile/:id/tagged" element={<Profile section="tagged" />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/post/:id" element={<PostPage />} />
                 <Route path="/archive/stories" element={<ArchivePage />} />

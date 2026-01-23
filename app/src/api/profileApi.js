@@ -59,8 +59,8 @@ export const getMySavedPosts = async () => {
 /**
  * Get suggested users
  */
-export const getSuggestions = async () => {
-    const response = await api.get('/users/profile/suggestions');
+export const getSuggestions = async (limit = 5, page = 1) => {
+    const response = await api.get(`/users/profile/suggestions?limit=${limit}&page=${page}`);
     return response.data;
 };
 

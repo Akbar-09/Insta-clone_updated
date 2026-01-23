@@ -5,6 +5,8 @@ import { getSuggestions } from '../api/profileApi';
 import { getNotifications } from '../api/notificationApi';
 import { AuthContext } from '../context/AuthContext';
 import { formatDistanceToNowStrict } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import SwitchAccountModal from './SwitchAccountModal';
 
 const TRENDING_HASHTAGS = [
     '#fitness', '#travel', '#inspiration', '#codinglife', '#photography', '#nature', '#art', '#foodie'
@@ -14,6 +16,8 @@ const Suggestions = () => {
     const { user: currentUser } = useContext(AuthContext);
     const [suggestions, setSuggestions] = useState([]);
     const [activities, setActivities] = useState([]);
+    const [showSwitchModal, setShowSwitchModal] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -27,7 +31,8 @@ const Suggestions = () => {
                         name: u.fullName || u.username,
                         avatar: u.profilePicture,
                         mutual: 'Suggested for you',
-                        type: 'USER'
+                        type: 'USER',
+                        isFollowing: u.isFollowing // Backend returns this as false for suggestions
                     }));
                     setSuggestions(mapped);
                 }
@@ -68,13 +73,17 @@ const Suggestions = () => {
         }
     };
 
-    if (!currentUser) return null; // Or skeleton
+    if (!currentUser) return null;
 
     return (
         <div className="w-[319px] pl-3 h-full flex flex-col overflow-y-auto scrollbar-none pb-4">
+            {showSwitchModal && (
+                <SwitchAccountModal onClose={() => setShowSwitchModal(false)} />
+            )}
+
             {/* Current User */}
             <div className="flex items-center justify-between mb-2 mt-2 px-2">
-                <div className="flex items-center cursor-pointer">
+                <div className="flex items-center cursor-pointer" onClick={() => navigate(`/profile/${currentUser.id}`)}>
                     {currentUser.profilePicture ? (
                         <img
                             src={currentUser.profilePicture}
@@ -91,7 +100,12 @@ const Suggestions = () => {
                         <span className="text-sm text-text-secondary">{currentUser.fullName || currentUser.username}</span>
                     </div>
                 </div>
-                <button className="text-blue-btn text-xs font-semibold cursor-pointer hover:text-link transition-colors">Switch</button>
+                <button
+                    className="text-blue-btn text-xs font-semibold cursor-pointer hover:text-link transition-colors"
+                    onClick={() => setShowSwitchModal(true)}
+                >
+                    Switch
+                </button>
             </div>
 
             <div className="border-b border-border/40 my-3 mx-2"></div>
@@ -99,7 +113,12 @@ const Suggestions = () => {
             {/* Suggested For You */}
             <div className="flex justify-between mb-3 px-2">
                 <span className="font-semibold text-text-secondary text-sm">Suggested for you</span>
-                <button className="text-xs font-semibold text-text-primary cursor-pointer hover:text-text-secondary transition-colors">See All</button>
+                <button
+                    className="text-xs font-semibold text-text-primary cursor-pointer hover:text-text-secondary transition-colors"
+                    onClick={() => navigate('/explore/people')}
+                >
+                    See All
+                </button>
             </div>
 
             <div className="flex flex-col mb-6">
@@ -109,6 +128,7 @@ const Suggestions = () => {
                             key={user.id}
                             user={user}
                             subtitle={user.mutual}
+                            followButtonVariant="text"
                         />
                     ))
                 ) : (
