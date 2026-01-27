@@ -173,7 +173,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
                     {/* Like */}
                     <button
                         onClick={toggleLike}
-                        className={`cursor-pointer hover:opacity-60 transition-transform active:scale-125 ${isLiked ? 'text-[#ed4956]' : 'text-text-primary'}`}
+                        className={`cursor-pointer hover:opacity-60 transition-transform active:scale-125 ${isLiked ? 'text-like' : 'text-text-primary'}`}
                     >
                         <Heart size={24} fill={isLiked ? 'currentColor' : 'none'} className={isLiked && isAnimating ? 'animate-bounce' : ''} />
                     </button>

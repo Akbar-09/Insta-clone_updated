@@ -1,8 +1,10 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { Grid, Clapperboard, UserSquare2, Heart, MessageCircle, Settings } from 'lucide-react';
+import { Grid, Clapperboard, UserSquare2, Heart, MessageCircle, Settings, UserPlus, ChevronDown, Link as LinkIcon, MoreHorizontal, Bookmark } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import ProfileHeader from '../components/profile/ProfileHeader';
+import { getSavedPosts } from '../api/bookmarkApi';
 
 const VerifiedBadge = () => (
     <svg aria-label="Verified" className="ml-2 w-[18px] h-[18px] text-[#0095f6]" fill="rgb(0, 149, 246)" height="18" role="img" viewBox="0 0 40 40" width="18">
@@ -11,14 +13,19 @@ const VerifiedBadge = () => (
     </svg>
 );
 
-const Profile = () => {
+const Profile = ({ section }) => {
     const { id } = useParams(); // Using :id as username or userId based on route
     const { user: currentUser } = useContext(AuthContext);
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('posts');
-    const [isFollowing, setIsFollowing] = useState(false);
+    const [activeTab, setActiveTab] = useState(section || 'posts');
+
+    useEffect(() => {
+        if (section) {
+            setActiveTab(section);
+        }
+    }, [section]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -30,13 +37,6 @@ const Profile = () => {
                 const userRes = await api.get(`/users/${targetId}`);
                 if (userRes.data.status === 'success') {
                     setProfile(userRes.data.data);
-                    // Check if following (mock logic or from API if available)
-                    // setIsFollowing(userRes.data.data.isFollowing); 
-                }
-
-                const postsRes = await api.get(`/posts?username=${targetId}`);
-                if (postsRes.data.status === 'success') {
-                    setPosts(postsRes.data.data);
                 }
             } catch (error) {
                 console.error('Error fetching profile:', error);
@@ -50,22 +50,43 @@ const Profile = () => {
         }
     }, [id, currentUser]);
 
-    const handleFollowToggle = async () => {
-        if (!profile) return;
-        try {
-            if (isFollowing) {
-                await api.delete(`/users/${profile.id}/follow`);
-                setIsFollowing(false);
-                setProfile(prev => ({ ...prev, followersCount: prev.followersCount - 1 }));
-            } else {
-                await api.post(`/users/${profile.id}/follow`);
-                setIsFollowing(true);
-                setProfile(prev => ({ ...prev, followersCount: prev.followersCount + 1 }));
+    useEffect(() => {
+        const fetchPosts = async () => {
+            if (!profile) return;
+
+            try {
+                let data = [];
+                if (activeTab === 'saved') {
+                    // Saved posts are private, only fetch if it's the current user
+                    // The check isOwnProfile will be derived from profile props, handling here for data safety
+                    const targetId = id === 'me' ? currentUser?.id : profile?.id;
+                    // We can only see saved posts for ourselves
+                    if (currentUser?.id === targetId || id === 'me') {
+                        const res = await getSavedPosts(targetId);
+                        if (res.status === 'success') {
+                            data = res.data;
+                        } else if (Array.isArray(res)) {
+                            data = res;
+                        }
+                    }
+                } else if (activeTab === 'posts') {
+                    const postsRes = await api.get(`/posts?username=${profile.username}`);
+                    if (postsRes.data.status === 'success') {
+                        data = postsRes.data.data;
+                    }
+                }
+                // Extend for other tabs like Reels if needed
+
+                setPosts(data);
+            } catch (error) {
+                console.error("Error fetching posts for tab:", activeTab, error);
             }
-        } catch (error) {
-            console.error('Follow toggle error:', error);
-        }
-    };
+        };
+
+        fetchPosts();
+    }, [activeTab, profile, id, currentUser]);
+
+
 
     if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
     if (!profile) return <div className="flex justify-center items-center h-screen">User not found</div>;
@@ -81,65 +102,33 @@ const Profile = () => {
     return (
         <div className="max-w-[935px] w-full mx-auto pt-[30px] pb-12 px-5 max-md:px-0 max-md:pt-0">
             {/* Header */}
-            <header className="flex mb-11 px-0 max-md:px-4 max-md:mb-6 max-md:mt-4">
-                {/* Avatar */}
-                <div className="flex-grow flex-basis-0 mr-[30px] flex justify-center max-md:flex-grow-0 max-md:mr-5">
-                    <div className="w-[150px] h-[150px] rounded-full p-[2px] border bg-gradient-to-tr from-[#FFD600] via-[#FF0169] to-[#D300C5] max-md:w-[77px] max-md:h-[77px] max-md:border-none">
-                        <div className="w-full h-full rounded-full p-[2px] bg-white">
-                            <img src={getMediaUrl(profile.avatar) || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+'} alt={profile.username} className="w-full h-full rounded-full object-cover" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Profile Info */}
-                <div className="flex-grow-[2] flex-basis-[30px] flex flex-col pt-2 max-md:pt-0">
-                    {/* Row 1: Username & Buttons */}
-                    <div className="flex items-center mb-5 max-md:flex-col max-md:items-start max-md:mb-3">
-                        <div className="flex items-center max-md:mb-3">
-                            <h2 className="text-[20px] font-normal mr-2 leading-8">{profile.username}</h2>
-                            {profile.isVerified && <VerifiedBadge />}
-
-                            <div className="ml-5 flex gap-2 max-md:hidden">
-                                {isOwnProfile ? (
-                                    <>
-                                        <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">Edit Profile</button>
-                                        <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">View Archive</button>
-                                        <Settings size={28} className="ml-2 cursor-pointer" />
-                                    </>
-                                ) : (
-                                    <button
-                                        onClick={handleFollowToggle}
-                                        className={`${isFollowing ? 'bg-[#efefef] text-black' : 'bg-blue-btn text-white'} px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors`}
-                                    >
-                                        {isFollowing ? 'Following' : 'Follow'}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Row 2: Stats (Desktop) */}
-                    <div className="flex mb-5 text-base max-md:hidden">
-                        <span className="mr-10"><span className="font-semibold">{posts.length}</span> posts</span>
-                        <span className="mr-10 cursor-pointer"><span className="font-semibold">{profile.followersCount || 0}</span> followers</span>
-                        <span className="cursor-pointer"><span className="font-semibold">{profile.followingCount || 0}</span> following</span>
-                    </div>
-
-                    {/* Row 3: Name & Bio */}
-                    <div className="text-sm leading-5">
-                        <span className="font-semibold block">{profile.fullname}</span>
-                        <p className="whitespace-pre-wrap">{profile.bio}</p>
-                    </div>
-                </div>
-            </header>
+            <ProfileHeader
+                key={profile.id} // Important to reset state when profile changes
+                profile={profile}
+                postsCount={posts.length}
+                isOwnProfile={isOwnProfile}
+            />
 
             {/* Navigation Tabs */}
             <div className="border-t border-border flex justify-center uppercase tracking-[1px] text-xs font-semibold">
-                <div onClick={() => setActiveTab('posts')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors ${activeTab === 'posts' ? 'border-t border-text-primary text-text-primary' : 'text-text-secondary border-t border-transparent hover:text-text-primary'}`}>
+                <div onClick={() => setActiveTab('posts')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t ${activeTab === 'posts' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}>
                     <Grid size={12} strokeWidth={activeTab === 'posts' ? 3 : 2} />
                     <span>Posts</span>
                 </div>
-                {/* Additional tabs can be added here */}
+                {isOwnProfile && (
+                    <div onClick={() => setActiveTab('saved')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t ${activeTab === 'saved' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}>
+                        <Bookmark size={12} strokeWidth={activeTab === 'saved' ? 3 : 2} />
+                        <span>Saved</span>
+                    </div>
+                )}
+                <div onClick={() => setActiveTab('reels')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t ${activeTab === 'reels' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}>
+                    <Clapperboard size={12} strokeWidth={activeTab === 'reels' ? 3 : 2} />
+                    <span>Reels</span>
+                </div>
+                <div onClick={() => setActiveTab('tagged')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-1 cursor-pointer transition-colors border-t ${activeTab === 'tagged' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}>
+                    <UserSquare2 size={12} strokeWidth={activeTab === 'tagged' ? 3 : 2} />
+                    <span>Tagged</span>
+                </div>
             </div>
 
             {/* Post Grid */}

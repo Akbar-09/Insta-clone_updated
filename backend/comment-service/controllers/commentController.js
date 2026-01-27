@@ -1,6 +1,8 @@
 const Comment = require('../models/Comment');
 const CommentLike = require('../models/CommentLikes');
 const { publishEvent } = require('../config/rabbitmq');
+const { Op } = require('sequelize');
+const Review = require('../models/Review');
 
 const createComment = async (req, res) => {
     try {
@@ -179,4 +181,65 @@ const checkComments = async (req, res) => {
     }
 };
 
-module.exports = { createComment, getComments, deleteComment, likeComment, unlikeComment, checkComments };
+const getActivityComments = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { sort = 'newest', startDate, endDate } = req.query;
+
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        const whereClause = { userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        const comments = await Comment.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+
+        res.json({ status: 'success', data: comments });
+    } catch (error) {
+        console.error('Get Activity Comments Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const getReviews = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { sort = 'newest', startDate, endDate } = req.query;
+
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        const whereClause = { userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        const reviews = await Review.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+
+        res.json({ status: 'success', data: reviews });
+    } catch (error) {
+        console.error('Get Reviews Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+module.exports = {
+    createComment,
+    getComments,
+    deleteComment,
+    likeComment,
+    unlikeComment,
+    checkComments,
+    getActivityComments,
+    getReviews
+};

@@ -2,17 +2,21 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Feed from './pages/Feed';
-import Explore from './pages/Explore';
+import ExplorePage from './pages/ExplorePage';
+import SuggestedPeoplePage from './pages/SuggestedPeoplePage';
 import Reels from './pages/Reels';
 import Messages from './pages/Messages';
 import Profile from './pages/profile/ProfilePage';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import PostPage from './pages/PostPage';
+import ArchivePage from './pages/profile/ArchivePage';
 
 import SettingsLayout from './pages/SettingsLayout';
 import EditProfile from './components/settings/EditProfile';
 import NotificationsSettings from './components/settings/NotificationsSettings';
+import PushNotifications from './components/settings/notifications/PushNotifications';
+import EmailNotifications from './components/settings/notifications/EmailNotifications';
 import PrivacySettings from './components/settings/PrivacySettings';
 import GenericSettings from './components/settings/GenericSettings';
 import YourActivityLayout from './pages/YourActivityLayout';
@@ -35,13 +39,26 @@ import LikeCounts from './components/settings/LikeCounts';
 import CloseFriends from './components/settings/CloseFriends';
 import BlockedAccounts from './components/settings/BlockedAccounts';
 import StoryHighlights from './components/settings/StoryHighlights';
+import StoryAndLiveSettings from './components/settings/StoryAndLiveSettings';
+import HideStoryFrom from './components/settings/HideStoryFrom';
 import MessagesReplies from './components/settings/MessagesReplies';
+import MessageControls from './components/settings/MessageControls';
+import StoryReplies from './components/settings/StoryReplies';
+import ActivityStatus from './components/settings/ActivityStatus';
 import TagsMentions from './components/settings/TagsMentions';
+import ContentPreferences from './components/settings/ContentPreferences';
+import SensitiveContentControl from './components/settings/SensitiveContentControl';
+import Subscriptions from './components/settings/Subscriptions';
 import ArchivingDownloading from './components/settings/ArchivingDownloading';
 import Accessibility from './components/settings/Accessibility';
 import Language from './components/settings/Language';
 import WebsitePermissions from './components/settings/WebsitePermissions';
+import AppsWebsites from './components/settings/AppsWebsites';
 import FamilyCentre from './components/settings/FamilyCentre';
+import HelpCentre from './components/settings/HelpCentre';
+import RemovedContent from './components/settings/RemovedContent';
+import FeatureLimits from './components/settings/FeatureLimits';
+import SupportRequests from './components/settings/SupportRequests';
 import Help from './components/settings/Help';
 import PrivacyCenter from './components/settings/PrivacyCenter';
 
@@ -63,40 +80,60 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route path="/feed" element={<Feed />} />
-                <Route path="/explore" element={<Explore />} />
+                <Route path="/explore" element={<ExplorePage />} />
+                <Route path="/explore/people" element={<SuggestedPeoplePage />} />
                 <Route path="/reels" element={<Reels />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/profile/:id" element={<Profile />} />
+                <Route path="/profile/:id/saved" element={<Profile section="saved" />} />
+                <Route path="/profile/:id/reels" element={<Profile section="reels" />} />
+                <Route path="/profile/:id/tagged" element={<Profile section="tagged" />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/post/:id" element={<PostPage />} />
+                <Route path="/archive/stories" element={<ArchivePage />} />
 
                 {/* Settings Routes */}
                 <Route path="/settings" element={<SettingsLayout />}>
                   <Route index element={<Navigate to="edit-profile" replace />} />
                   <Route path="edit-profile" element={<EditProfile />} />
                   <Route path="notifications" element={<NotificationsSettings />} />
+                  <Route path="notifications/push" element={<PushNotifications />} />
+                  <Route path="notifications/email" element={<EmailNotifications />} />
                   <Route path="professional_account" element={<ProfessionalAccount />} />
                   <Route path="creator_tools" element={<CreatorTools />} />
                   <Route path="privacy" element={<PrivacySettings />} />
                   <Route path="close_friends" element={<CloseFriends />} />
                   <Route path="blocked" element={<BlockedAccounts />} />
                   <Route path="story_highlights" element={<StoryHighlights />} />
+                  <Route path="story_and_live" element={<StoryAndLiveSettings />} />
+                  <Route path="story_and_live/hide_from" element={<HideStoryFrom />} />
                   <Route path="messages_replies" element={<MessagesReplies />} />
+                  <Route path="messages_replies/controls" element={<MessageControls />} />
+                  <Route path="messages_replies/story_replies" element={<StoryReplies />} />
+                  <Route path="messages_replies/activity_status" element={<ActivityStatus />} />
                   <Route path="tags_mentions" element={<TagsMentions />} />
                   <Route path="comments" element={<CommentsSettings />} />
                   <Route path="sharing" element={<SharingSettings />} />
                   <Route path="restricted_accounts" element={<RestrictedAccounts />} />
                   <Route path="hidden_words" element={<HiddenWords />} />
                   <Route path="muted_accounts" element={<MutedAccounts />} />
+                  <Route path="content_preferences" element={<ContentPreferences />} />
+                  <Route path="content_preferences/sensitive" element={<SensitiveContentControl />} />
                   <Route path="like_counts" element={<LikeCounts />} />
+                  <Route path="subscriptions" element={<Subscriptions />} />
                   <Route path="archiving" element={<ArchivingDownloading />} />
                   <Route path="accessibility" element={<Accessibility />} />
                   <Route path="language" element={<Language />} />
                   <Route path="website_permissions" element={<WebsitePermissions />} />
+                  <Route path="website_permissions/apps" element={<AppsWebsites />} />
                   <Route path="supervision" element={<FamilyCentre />} />
                   <Route path="help" element={<Help />} />
+                  <Route path="help/help_centre" element={<HelpCentre />} />
+                  <Route path="help/support_requests" element={<SupportRequests />} />
                   <Route path="privacy_center" element={<PrivacyCenter />} />
                   <Route path="account_status" element={<AccountStatus />} />
+                  <Route path="account_status/removed_content" element={<RemovedContent />} />
+                  <Route path="account_status/features" element={<FeatureLimits />} />
                   <Route path="meta_verified" element={<MetaVerified />} />
                   <Route path="about" element={<About />} />
                   <Route path="*" element={<GenericSettings />} />
@@ -106,8 +143,8 @@ function App() {
                 <Route path="/your_activity" element={<YourActivityLayout />}>
                   <Route index element={<Navigate to="interactions" replace />} />
                   <Route path="interactions" element={<Interactions />} />
-                  <Route path="photos" element={<PhotosAndVideos />} />
-                  <Route path="history" element={<AccountHistory />} />
+                  <Route path="photos_and_videos" element={<PhotosAndVideos />} />
+                  <Route path="account_history" element={<AccountHistory />} />
                 </Route>
               </Route>
             </Route>

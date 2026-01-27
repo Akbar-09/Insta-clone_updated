@@ -1,10 +1,22 @@
 const Post = require('../models/Post');
 const Like = require('../models/Like');
+const Report = require('../models/Report');
 const { publishEvent } = require('../config/rabbitmq');
+const sequelize = require('../config/database');
+const { Op } = require('sequelize');
+
+// Set up associations
+Post.hasMany(Like, { foreignKey: 'postId' });
+Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
 
 const createPost = async (req, res) => {
     try {
-        const { userId, username, caption, mediaUrl, mediaType } = req.body;
+        const userId = req.headers['x-user-id'] || req.body.userId;
+        const { username, caption, mediaUrl, mediaType } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
 
         const post = await Post.create({
             userId,
@@ -24,11 +36,63 @@ const createPost = async (req, res) => {
     }
 };
 
+const getExplorePosts = async (req, res) => {
+    try {
+        const { limit = 20, offset = 0 } = req.query;
+        const currentUserId = req.headers['x-user-id'] || req.query.userId;
+
+        // Fetch posts
+        let posts = [];
+        try {
+            posts = await Post.findAll({
+                order: [
+                    ['likesCount', 'DESC'],
+                    ['commentsCount', 'DESC'],
+                    ['createdAt', 'DESC']
+                ],
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                raw: true
+            });
+        } catch (dbError) {
+            console.error('DB FindAll Error:', dbError);
+            posts = [];
+        }
+
+        if (!posts || !Array.isArray(posts)) {
+            posts = [];
+        }
+
+        // Add isLiked status if user is logged in
+        let likedPostIds = new Set();
+        if (currentUserId && posts.length > 0) {
+            const likes = await Like.findAll({
+                where: { userId: currentUserId, postId: posts.map(p => p.id) },
+                attributes: ['postId']
+            });
+            likedPostIds = new Set(likes.map(l => l.postId));
+        }
+
+        const data = posts.map(post => ({
+            ...post,
+            isLiked: likedPostIds.has(post.id)
+        }));
+
+        res.json({ status: 'success', data });
+    } catch (error) {
+        console.error('Explore Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 const getPosts = async (req, res) => {
     try {
-        const { username } = req.query;
+        const { username, authorId } = req.query;
+        console.log(`[PostService] getPosts query: username=${username}, authorId=${authorId}`);
         const userId = req.headers['x-user-id'] || req.query.userId;
-        const whereClause = username ? { username } : {};
+        const whereClause = {};
+        if (username) whereClause.username = username;
+        if (authorId) whereClause.userId = parseInt(authorId);
 
         const posts = await Post.findAll({
             where: whereClause,
@@ -53,7 +117,6 @@ const getPosts = async (req, res) => {
 
         res.json({ status: 'success', data: postsWithLikeStatus });
     } catch (error) {
-        console.error('Get Posts Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
@@ -270,11 +333,12 @@ const unbookmarkPost = async (req, res) => {
 
 const getSavedPosts = async (req, res) => {
     try {
-        const { userId } = req.query;
+        const userId = req.query.userId || req.headers['x-user-id'];
         if (!userId) return res.status(400).json({ message: 'User ID required' });
 
+        // 1. Get SavedPosts ID list (Preserves Order)
         const saved = await SavedPost.findAll({
-            where: { userId },
+            where: { userId: parseInt(userId) },
             order: [['createdAt', 'DESC']]
         });
 
@@ -284,11 +348,35 @@ const getSavedPosts = async (req, res) => {
             return res.json({ status: 'success', data: [] });
         }
 
+        // 2. Fetch Posts (Unordered)
         const posts = await Post.findAll({
-            where: { id: postIds }
+            where: { id: postIds },
+            raw: true
         });
 
-        res.json({ status: 'success', data: posts });
+        // 3. Fetch Likes for these posts (for isLiked status)
+        let likedPostIds = new Set();
+        if (userId) {
+            const likes = await Like.findAll({
+                where: { userId, postId: postIds },
+                attributes: ['postId']
+            });
+            likedPostIds = new Set(likes.map(l => l.postId));
+        }
+
+        // 4. Map and Reorder
+        const postsMap = new Map(posts.map(p => [p.id, p]));
+
+        const orderedPosts = postIds
+            .map(id => postsMap.get(id))
+            .filter(post => post) // Filter out nulls (if post was deleted but saved ref exists)
+            .map(post => ({
+                ...post,
+                isLiked: likedPostIds.has(post.id),
+                isSaved: true
+            }));
+
+        res.json({ status: 'success', data: orderedPosts });
     } catch (error) {
         console.error('Get Saved Posts Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
@@ -343,16 +431,187 @@ const reportPost = async (req, res) => {
         const { reason, details } = req.body;
         const userId = req.headers['x-user-id'] || req.body.userId;
 
-        // In a real app, save to Report model
-        console.log(`[Report] Post ${postId} reported by User ${userId}`);
-        console.log(`[Report] Reason: ${reason}, Details: ${details}`);
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID required' });
+        }
 
-        // Simulate success
-        res.json({ status: 'success', message: 'Report received' });
+        // Check if post exists
+        const post = await Post.findByPk(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        // Prevent users from reporting their own posts
+        if (String(post.userId) === String(userId)) {
+            return res.status(400).json({ message: 'You cannot report your own post' });
+        }
+
+        // Validate reason
+        const validReasons = ['spam', 'violence', 'hate', 'nudity', 'scam', 'false_information', 'bullying', 'other'];
+        if (!reason || !validReasons.includes(reason)) {
+            return res.status(400).json({ message: 'Invalid report reason' });
+        }
+
+        // Check if user already reported this post
+        const existingReport = await Report.findOne({
+            where: { postId, reportedBy: userId }
+        });
+
+        if (existingReport) {
+            return res.status(400).json({ message: 'You have already reported this post' });
+        }
+
+        // Create report
+        const report = await Report.create({
+            postId,
+            reportedBy: userId,
+            reason,
+            details: details || null
+        });
+
+        console.log(`[Report] Post ${postId} reported by User ${userId} for ${reason}`);
+
+        res.json({
+            status: 'success',
+            message: 'Report submitted successfully',
+            data: { reportId: report.id }
+        });
     } catch (error) {
         console.error('Report Post Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
 
-module.exports = { createPost, getPosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost };
+const getEmbedCode = async (req, res) => {
+    try {
+        const postId = req.params.id;
+
+        const post = await Post.findByPk(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        // Generate embed HTML
+        const embedUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/embed/post/${postId}`;
+        const embedHtml = `<iframe src="${embedUrl}" width="400" height="480" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
+
+        res.json({
+            status: 'success',
+            data: {
+                embedUrl,
+                embedHtml,
+                postId: post.id,
+                username: post.username
+            }
+        });
+    } catch (error) {
+        console.error('Get Embed Code Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const getActivityLikes = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { sort = 'newest', startDate, endDate } = req.query;
+
+        // If no user ID found, check token or try to decode if not handled by gateway
+        // For now, let's log what we received
+        // console.log("getActivityLikes headers:", req.headers);
+
+        if (!userId) {
+             // Fallback: if we are in dev mode and skipping gateway, maybe we need to parse token?
+             // But simpler is to fix frontend to send x-user-id header or backend to trust token
+             return res.status(400).json({ message: 'User ID required' });
+        }
+
+        const whereClause = { userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        // Get IDs of liked posts, sorted by LIKE creation time
+        const likes = await Like.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+        
+        const postIds = likes.map(like => like.postId);
+
+        // Fetch posts
+        // Note: We want to maintain the order of likes, not post creation
+        // So we can't just order by Post.createdAt
+        const posts = await Post.findAll({
+            where: { id: postIds }
+        });
+
+        // Map posts back to the order of likes
+        const postsMap = new Map(posts.map(p => [p.id, p]));
+        const orderedPosts = [];
+        
+        for (const like of likes) {
+            const post = postsMap.get(like.postId);
+            if (post) {
+                orderedPosts.push({
+                    ...post.toJSON(),
+                    likedAt: like.createdAt, // useful for UI
+                    isLiked: true
+                });
+            }
+        }
+
+        res.json({ status: 'success', data: orderedPosts });
+    } catch (error) {
+        console.error('Get Activity Likes Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const getActivityPosts = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { sort = 'newest', startDate, endDate } = req.query;
+
+        if (!userId) return res.status(400).json({ message: 'User ID required' });
+
+        const whereClause = { userId };
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        const posts = await Post.findAll({
+            where: whereClause,
+            order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
+        });
+
+        res.json({ status: 'success', data: posts });
+    } catch (error) {
+        console.error('Get Activity Posts Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+module.exports = {
+    createPost,
+    getPosts,
+    getExplorePosts,
+    getPostById,
+    likePost,
+    unlikePost,
+    bookmarkPost,
+    unbookmarkPost,
+    getSavedPosts,
+    checkLikes,
+    deletePost,
+    updatePost,
+    toggleHideLikes,
+    toggleComments,
+    reportPost,
+    getEmbedCode,
+    getActivityLikes,
+    getActivityPosts
+};

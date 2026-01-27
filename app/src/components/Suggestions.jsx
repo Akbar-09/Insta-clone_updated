@@ -1,42 +1,111 @@
-import { useRef } from 'react';
-import { Play, Heart, UserPlus, Hash, Sparkles } from 'lucide-react';
-
-const MOCK_SUGGESTIONS = [
-    { username: 'mohammad_anas', name: 'Mohammad Anas', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Followed by user_123 + 2 more' },
-    { username: 'ravi_kumar', name: 'Ravi Kumar', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'New to Jaadoe' },
-    { username: 'ahlam_ansari', name: 'Ahlam Ansari', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Followed by tech_guru' },
-    { username: 'ayaan_ansari', name: 'Ayaan Ansari', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Followed by nature_lover + 1 more' },
-    { username: 'prajakta_j', name: 'Prajakta J', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Suggested for you' },
-    { username: 'vikram.s', name: 'Vikram Singh', avatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+', mutual: 'Follows you' },
-];
+import { useState, useEffect, useContext } from 'react';
+import { Play, Heart, UserPlus, Hash, Sparkles, MessageCircle } from 'lucide-react';
+import UserCard from './UserCard';
+import { getSuggestions } from '../api/profileApi';
+import { getNotifications } from '../api/notificationApi';
+import { AuthContext } from '../context/AuthContext';
+import { formatDistanceToNowStrict } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import SwitchAccountModal from './SwitchAccountModal';
 
 const TRENDING_HASHTAGS = [
     '#fitness', '#travel', '#inspiration', '#codinglife', '#photography', '#nature', '#art', '#foodie'
 ];
 
-const RECENT_ACTIVITY = [
-    { type: 'like', text: 'Your post got 12 likes', time: '2m' },
-    { type: 'follow', text: 'nehal990 started following you', time: '1h' },
-    { type: 'mention', text: 'You were mentioned in a comment', time: '3h' },
-];
-
 const Suggestions = () => {
+    const { user: currentUser } = useContext(AuthContext);
+    const [suggestions, setSuggestions] = useState([]);
+    const [activities, setActivities] = useState([]);
+    const [showSwitchModal, setShowSwitchModal] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch Suggestions
+                const suggestionsRes = await getSuggestions();
+                if (suggestionsRes.status === 'success') {
+                    const mapped = suggestionsRes.data.map(u => ({
+                        id: u.userId,
+                        username: u.username,
+                        name: u.fullName || u.username,
+                        avatar: u.profilePicture,
+                        mutual: 'Suggested for you',
+                        type: 'USER',
+                        isFollowing: u.isFollowing // Backend returns this as false for suggestions
+                    }));
+                    setSuggestions(mapped);
+                }
+
+                // Fetch Latest Activity
+                const notifRes = await getNotifications(3); // Limit 3
+                if (notifRes.data.status === 'success') {
+                    setActivities(notifRes.data.data);
+                }
+            } catch (e) {
+                console.error("Failed to fetch sidebar data", e);
+            }
+        };
+
+        if (currentUser) {
+            fetchData();
+        }
+    }, [currentUser]);
+
+    const getActivityIcon = (type) => {
+        switch (type) {
+            case 'LIKE': return <Heart size={14} className="text-red-500" />;
+            case 'FOLLOW': return <UserPlus size={14} className="text-blue-500" />;
+            case 'COMMENT': return <MessageCircle size={14} className="text-green-500" />;
+            case 'MENTION': return <Hash size={14} />;
+            default: return <Sparkles size={14} />;
+        }
+    };
+
+    const getActivityText = (act) => {
+        switch (act.type) {
+            case 'LIKE': return `${act.fromUsername} liked your post`;
+            case 'FOLLOW': return `${act.fromUsername} started following you`;
+            case 'COMMENT': return `${act.fromUsername} commented on your post`;
+            case 'MENTION': return `${act.fromUsername} mentioned you`;
+            case 'REPLY': return `${act.fromUsername} replied to your comment`;
+            default: return 'New activity';
+        }
+    };
+
+    if (!currentUser) return null;
+
     return (
         <div className="w-[319px] pl-3 h-full flex flex-col overflow-y-auto scrollbar-none pb-4">
+            {showSwitchModal && (
+                <SwitchAccountModal onClose={() => setShowSwitchModal(false)} />
+            )}
+
             {/* Current User */}
             <div className="flex items-center justify-between mb-2 mt-2 px-2">
-                <div className="flex items-center cursor-pointer">
-                    <img
-                        src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+"
-                        alt="My Profile"
-                        className="w-12 h-12 rounded-full mr-3 object-cover border border-white/20"
-                    />
+                <div className="flex items-center cursor-pointer" onClick={() => navigate(`/profile/${currentUser.id}`)}>
+                    {currentUser.profilePicture ? (
+                        <img
+                            src={currentUser.profilePicture}
+                            alt="My Profile"
+                            className="w-12 h-12 rounded-full mr-3 object-cover border border-white/20"
+                        />
+                    ) : (
+                        <div className="w-12 h-12 rounded-full mr-3 bg-gray-700 flex items-center justify-center text-white font-bold">
+                            {currentUser.username[0].toUpperCase()}
+                        </div>
+                    )}
                     <div className="flex flex-col">
-                        <span className="font-semibold text-sm text-text-primary">khan_akbar_09</span>
-                        <span className="text-sm text-text-secondary">Akbar Khan</span>
+                        <span className="font-semibold text-sm text-text-primary">{currentUser.username}</span>
+                        <span className="text-sm text-text-secondary">{currentUser.fullName || currentUser.username}</span>
                     </div>
                 </div>
-                <button className="text-blue-btn text-xs font-semibold cursor-pointer hover:text-link transition-colors">Switch</button>
+                <button
+                    className="text-blue-btn text-xs font-semibold cursor-pointer hover:text-link transition-colors"
+                    onClick={() => setShowSwitchModal(true)}
+                >
+                    Switch
+                </button>
             </div>
 
             <div className="border-b border-border/40 my-3 mx-2"></div>
@@ -44,22 +113,27 @@ const Suggestions = () => {
             {/* Suggested For You */}
             <div className="flex justify-between mb-3 px-2">
                 <span className="font-semibold text-text-secondary text-sm">Suggested for you</span>
-                <button className="text-xs font-semibold text-text-primary cursor-pointer hover:text-text-secondary transition-colors">See All</button>
+                <button
+                    className="text-xs font-semibold text-text-primary cursor-pointer hover:text-text-secondary transition-colors"
+                    onClick={() => navigate('/explore/people')}
+                >
+                    See All
+                </button>
             </div>
 
             <div className="flex flex-col mb-6">
-                {MOCK_SUGGESTIONS.map((user, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-2 px-2 hover:bg-white/5 rounded-lg transition-colors group">
-                        <div className="flex items-center">
-                            <img src={user.avatar} alt={user.username} className="w-8 h-8 rounded-full mr-3 object-cover cursor-pointer" />
-                            <div className="flex flex-col">
-                                <span className="font-semibold text-sm text-text-primary cursor-pointer hover:opacity-80">{user.username}</span>
-                                <span className="text-xs text-text-secondary truncate max-w-[140px]">{user.mutual}</span>
-                            </div>
-                        </div>
-                        <button className="text-blue-btn text-xs font-bold bg-transparent border-none cursor-pointer hover:text-[#00376b] transition-colors">Follow</button>
-                    </div>
-                ))}
+                {suggestions.length > 0 ? (
+                    suggestions.map((user) => (
+                        <UserCard
+                            key={user.id}
+                            user={user}
+                            subtitle={user.mutual}
+                            followButtonVariant="text"
+                        />
+                    ))
+                ) : (
+                    <div className="text-xs text-text-secondary px-2">No suggestions available</div>
+                )}
             </div>
 
             {/* Chat with AI Widget */}
@@ -97,19 +171,21 @@ const Suggestions = () => {
             <div className="mb-6 px-2">
                 <span className="font-semibold text-text-secondary text-sm block mb-3">Latest Activity</span>
                 <div className="flex flex-col gap-3">
-                    {RECENT_ACTIVITY.map((activity, i) => (
+                    {activities.length > 0 ? activities.map((act, i) => (
                         <div key={i} className="flex items-start gap-3 text-xs text-text-primary">
                             <div className="mt-0.5 text-text-secondary">
-                                {activity.type === 'like' && <Heart size={14} />}
-                                {activity.type === 'follow' && <UserPlus size={14} />}
-                                {activity.type === 'mention' && <Hash size={14} />}
+                                {getActivityIcon(act.type)}
                             </div>
                             <div>
-                                <p>{activity.text}</p>
-                                <span className="text-text-secondary text-[10px]">{activity.time} ago</span>
+                                <p>{getActivityText(act)}</p>
+                                <span className="text-text-secondary text-[10px]">
+                                    {formatDistanceToNowStrict(new Date(act.createdAt))} ago
+                                </span>
                             </div>
                         </div>
-                    ))}
+                    )) : (
+                        <div className="text-xs text-text-secondary">No recent activity</div>
+                    )}
                 </div>
             </div>
 

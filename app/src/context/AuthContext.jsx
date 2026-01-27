@@ -1,17 +1,30 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 
 export const AuthContext = createContext();
 
+export const useAuth = () => {
+    return useContext(AuthContext);
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
+    const [sessions, setSessions] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('sessions')) || [];
+        } catch {
+            return [];
+        }
+    });
 
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                const token = localStorage.getItem('token');
-                if (token) {
+                const storedToken = localStorage.getItem('token');
+                if (storedToken) {
+                    setToken(storedToken);
                     // Using /auth/me to get current user details
                     const { data } = await api.get('/auth/me');
                     if (data.status === 'success') {
@@ -34,7 +47,23 @@ export const AuthProvider = ({ children }) => {
             const { data } = await api.post('/auth/login', { email, password });
             if (data.status === 'success') {
                 localStorage.setItem('token', data.data.token);
+                setToken(data.data.token);
                 setUser(data.data.user);
+
+                // Add to sessions list
+                setSessions(prev => {
+                    const exists = prev.find(s => s.userId === data.data.user.id);
+                    if (exists) {
+                        // Update token/info
+                        const updated = prev.map(s => s.userId === data.data.user.id ? { ...s, token: data.data.token, ...data.data.user } : s);
+                        localStorage.setItem('sessions', JSON.stringify(updated));
+                        return updated;
+                    }
+                    const newSessions = [...prev, { ...data.data.user, userId: data.data.user.id, token: data.data.token }];
+                    localStorage.setItem('sessions', JSON.stringify(newSessions));
+                    return newSessions;
+                });
+
                 return { success: true };
             }
             return { success: false, message: 'Invalid response format' };
@@ -51,6 +80,7 @@ export const AuthProvider = ({ children }) => {
             const { data } = await api.post('/auth/signup', userData);
             if (data.status === 'success') {
                 localStorage.setItem('token', data.data.token);
+                setToken(data.data.token);
                 setUser(data.data.user);
                 return { success: true };
             }
@@ -63,13 +93,40 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        setUser(null);
+    const logout = async () => {
+        try {
+            // Include deviceId if we had one
+            await api.post('/auth/logout');
+        } catch (error) {
+            console.error("Logout API failed", error);
+        } finally {
+            // Remove current session from list
+            const currentSessions = sessions.filter(s => s.userId !== (user?.id || user?.userId));
+            setSessions(currentSessions);
+            localStorage.setItem('sessions', JSON.stringify(currentSessions));
+
+            localStorage.removeItem('token');
+            setToken(null);
+            setUser(null);
+        }
+    };
+
+    const switchAccount = (userId) => {
+        const session = sessions.find(s => s.userId === userId);
+        if (session) {
+            localStorage.setItem('token', session.token);
+            setToken(session.token);
+            setUser(session);
+            window.location.reload(); // Reload to refresh all state cleanly
+        }
+    };
+
+    const updateUser = (updates) => {
+        setUser(prev => ({ ...prev, ...updates }));
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+        <AuthContext.Provider value={{ user, token, sessions, login, signup, logout, switchAccount, loading, updateUser }}>
             {!loading && children}
         </AuthContext.Provider>
     );

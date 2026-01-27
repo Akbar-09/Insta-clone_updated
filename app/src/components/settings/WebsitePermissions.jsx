@@ -1,23 +1,31 @@
-import { Monitor } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getConnectedApps, revokeAppAccess } from '../../api/settingsApi';
+import { Loader2, ArrowLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const WebsitePermissions = () => {
-    return (
-        <div className="flex flex-col w-full text-text-primary max-w-[600px]">
-            <h2 className="text-xl font-bold mb-6">Website permissions</h2>
+    const navigate = useNavigate();
 
-            <div className="mb-8">
-                <div className="flex justify-between items-center py-4 border-b border-border cursor-pointer">
-                    <div>
-                        <div className="text-base font-medium">Apps and websites</div>
-                        <div className="text-sm text-text-secondary">View and manage apps and websites you've connected to your Jaadoe account.</div>
-                    </div>
-                    <div className="w-4 h-4 text-text-secondary rotate-[-90deg]">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
-                </div>
+    return (
+        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl h-full pb-10">
+            <div className="flex items-center mb-6 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
+                    <ArrowLeft />
+                </button>
+                <h2 className="text-xl font-bold">Website permissions</h2>
             </div>
 
-            {/* Empty State visual if needed, or just the main entry point as per IG */}
+            <p className="text-sm text-text-secondary mb-6">
+                View apps and websites you've connected to your Instagram account.
+            </p>
+
+            <div
+                onClick={() => navigate('/settings/website_permissions/apps')}
+                className="flex items-center justify-between py-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 -mx-2 px-2 rounded-lg transition-colors"
+            >
+                <span className="text-base text-text-primary">Apps and websites</span>
+                <ChevronRight size={20} className="text-text-secondary" />
+            </div>
         </div>
     );
 };

@@ -45,11 +45,34 @@ export const usePostLikes = (post, onLikeUpdate) => {
             }
         } catch (error) {
             console.error('Like toggle failed', error);
-            // Revert on error
-            setIsLiked(previousLiked);
-            setLikesCount(previousCount);
-            if (onLikeUpdate) {
-                onLikeUpdate(post.id, previousLiked, previousCount);
+
+            // Handle synchronization issues (e.g. "Already liked")
+            // If we tried to LIKE and got "Already liked" (400), keep it LIKED (don't revert)
+            const isAlreadyLikedError = error.response?.status === 400 &&
+                (error.response?.data?.message?.includes('already liked') || error.response?.data?.message?.includes('duplicate'));
+
+            // If we tried to UNLIKE and got "Like not found" (404), keep it UNLIKED (don't revert)
+            const isLikeNotFoundError = error.response?.status === 404 &&
+                error.response?.data?.message?.includes('not found');
+
+            if (isAlreadyLikedError) {
+                // We tried to LIKE but it was already liked. State is true (correct), 
+                // but our optimistic count increment was wrong because it was already incremented on server.
+                setIsLiked(true);
+                setLikesCount(previousCount);
+            } else if (isLikeNotFoundError) {
+                // We tried to UNLIKE but it was already unliked (not found). State is false (correct),
+                // but our optimistic count decrement was wrong because it was already at the unliked count.
+                setIsLiked(false);
+                setLikesCount(previousCount);
+            } else {
+                // Genuine error (404 for post itself, 500, etc.), revert everything
+                console.error('Like toggle failed: Reverting state');
+                setIsLiked(previousLiked);
+                setLikesCount(previousCount);
+                if (onLikeUpdate) {
+                    onLikeUpdate(post.id, previousLiked, previousCount);
+                }
             }
         } finally {
             isRequesting.current = false;

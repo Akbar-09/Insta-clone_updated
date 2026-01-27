@@ -1,69 +1,201 @@
 
-import { forwardRef } from 'react';
-
-const NOTIFICATIONS = [
-    {
-        section: 'This week', items: [
-            { id: 1, type: 'like', user: { username: 'faiz_09_fz', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=56&h=56&fit=crop' }, text: 'ramiz_shaikh44 and 53 others liked your post.', time: '3d', postImage: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=50&h=50&fit=crop' },
-            { id: 2, type: 'follow', user: { username: 'faiz_09_fz', avatar: 'https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=56&h=56&fit=crop' }, text: 'started following you.', time: '3d', isFollowing: true },
-            { id: 3, type: 'comment_like', user: { username: 'ayuu.rx_2405', avatar: 'https://images.unsplash.com/photo-1615109398623-88346a601842?w=56&h=56&fit=crop' }, text: 'liked your comment: Back conditioning 🔥🔥', time: '4d', postImage: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=50&h=50&fit=crop' },
-            { id: 4, type: 'reply', user: { username: 'qasim__fitness', avatar: 'https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=56&h=56&fit=crop' }, text: 'replied to your comment on qasim__fitness\'s post: @khan_akbar__09 txy', time: '5d', postImage: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=50&h=50&fit=crop' }
-        ]
-    },
-    {
-        section: 'This month', items: [
-            { id: 5, type: 'suggested_follow', user: { username: 'shaikhmuhammad', name: 'shaikhmuhammadsiddiquie', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=56&h=56&fit=crop' }, text: 'who you might know, is on Jaadoe.', time: '26 Dec' },
-            { id: 6, type: 'follow', user: { username: 'khurshidfitnees', avatar: 'https://images.unsplash.com/photo-1583864697784-a0efc8379f70?w=56&h=56&fit=crop' }, text: 'started following you.', time: '25 Dec', isFollowing: true },
-            { id: 7, type: 'comment_like', user: { username: 'vajidansari_', avatar: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=56&h=56&fit=crop' }, text: 'liked your comment: 🔥💯', time: '14 Dec', postImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50&h=50&fit=crop' }
-        ]
-    },
-    {
-        section: 'Earlier', items: [
-            { id: 8, type: 'comment_like', user: { username: 'fit.x_vazid', avatar: 'https://images.unsplash.com/photo-1521119989659-a83eee488058?w=56&h=56&fit=crop' }, text: 'and vajidansari_ liked your comment: Back 🔥🔥', time: '09 Dec', postImage: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=50&h=50&fit=crop' }
-        ]
-    }
-];
+import { forwardRef, useEffect, useState, useContext } from 'react';
+import { getNotifications, markAllNotificationsRead, markNotificationRead } from '../api/notificationApi';
+import { AuthContext } from '../context/AuthContext';
+import { isThisWeek, isThisMonth, parseISO, formatDistanceToNowStrict } from 'date-fns';
+import FollowButton from './FollowButton';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
+    const { user } = useContext(AuthContext);
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (isOpen && user) {
+            fetchNotifications();
+            // Mark all as read after a short delay or immediately
+            markAllRead();
+        }
+    }, [isOpen, user]);
+
+    const fetchNotifications = async () => {
+        setLoading(true);
+        try {
+            const res = await getNotifications();
+            if (res.data.status === 'success') {
+                setNotifications(res.data.data);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const markAllRead = async () => {
+        try {
+            await markAllNotificationsRead(user.userId);
+            // Optimistically update local state?
+            // Actually, backend updates it.
+        } catch (err) {
+            console.error("Failed to mark read", err);
+        }
+    };
+
+    const handleItemClick = async (item) => {
+        if (!item.isRead) {
+            try {
+                await markNotificationRead(item.id);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        // Navigate based on type
+        if (item.type === 'FOLLOW') {
+            navigate(`/profile/${item.fromUsername}`);
+        } else if (item.resourceId) {
+            navigate(`/post/${item.resourceId}`);
+        }
+    };
+
+    // Grouping logic (More like Instagram's "Today", "This Week", "This Month", "Earlier")
+    const grouped = {
+        'Today': [],
+        'This week': [],
+        'This month': [],
+        'Earlier': []
+    };
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+
+    notifications.forEach(item => {
+        const date = parseISO(item.createdAt);
+        if (date >= startOfToday) {
+            grouped['Today'].push(item);
+        } else if (date >= startOfWeek) {
+            grouped['This week'].push(item);
+        } else if (isThisMonth(date)) {
+            grouped['This month'].push(item);
+        } else {
+            grouped['Earlier'].push(item);
+        }
+    });
+
+    // Remove empty groups for rendering
+    const sections = Object.keys(grouped).filter(key => grouped[key].length > 0);
+
     if (!isOpen) return null;
 
     return (
-        <div ref={ref} className="absolute top-0 left-[72px] bottom-0 w-[397px] bg-primary border-r border-border rounded-r-2xl p-0 z-[99] shadow-[4px_0_24px_rgba(0,0,0,0.15)] flex flex-col transition-all duration-300">
-            <div className="px-6 pt-6 pb-3">
-                <h2 className="text-2xl font-bold">Notifications</h2>
+        <div ref={ref} className="absolute top-0 left-[72px] bottom-0 w-[397px] bg-primary/95 backdrop-blur-2xl border-r border-border rounded-r-3xl p-0 z-[99] shadow-[10px_0_30px_rgba(0,0,0,0.1)] flex flex-col transition-all duration-300 animate-in slide-in-from-left">
+            <div className="px-6 pt-8 pb-4">
+                <h2 className="text-2xl font-extrabold tracking-tight">Notifications</h2>
             </div>
 
-            <div className="flex-grow overflow-y-auto pb-5">
-                {NOTIFICATIONS.map((group, idx) => (
-                    <div key={idx} className="flex flex-col border-b border-border last:border-b-0">
-                        <h3 className="text-base font-bold px-6 pt-5 pb-3">{group.section}</h3>
-                        {group.items.map(item => (
-                            <div key={item.id} className="flex items-center px-6 py-3 cursor-pointer hover:bg-secondary">
-                                <div className="mr-3.5 shrink-0">
-                                    <img src={item.user.avatar} className="w-11 h-11 rounded-full object-cover" alt={item.user.username} />
-                                </div>
-
-                                <div className="flex-grow mr-3 text-sm leading-[1.4]">
-                                    <span className="text-text-primary">
-                                        <span className="font-semibold text-text-primary">{item.user.username}</span>
-                                        {' '}{item.text}
-                                        <span className="text-text-secondary"> {item.time}</span>
-                                    </span>
-                                </div>
-
-                                <div className="shrink-0">
-                                    {item.isFollowing ? (
-                                        <button className="bg-secondary text-text-primary border-none px-4 py-[7px] rounded-lg font-semibold text-sm cursor-pointer hover:bg-[#dbdbdb] transition-colors">Following</button>
-                                    ) : item.type === 'suggested_follow' ? (
-                                        <button className="bg-blue-btn text-white border-none px-5 py-[7px] rounded-lg font-semibold text-sm cursor-pointer hover:bg-blue-btn-hover transition-colors">Follow</button>
-                                    ) : item.postImage ? (
-                                        <img src={item.postImage} className="w-11 h-11 object-cover rounded" alt="Post" />
-                                    ) : null}
-                                </div>
-                            </div>
-                        ))}
+            <div className="flex-grow overflow-y-auto pb-5 scrollbar-none hover:scrollbar-thin scrollbar-thumb-white/20">
+                {loading && notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-40 text-text-secondary">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-text-primary mb-4"></div>
+                        <span>Loading...</span>
                     </div>
-                ))}
+                ) : (
+                    sections.length > 0 ? (
+                        sections.map((section) => (
+                            <div key={section} className="flex flex-col">
+                                <div className="flex items-center justify-between px-6 pt-5 pb-2">
+                                    <h3 className="text-base font-bold text-text-primary">{section}</h3>
+                                    {section === 'Today' && (
+                                        <button className="text-xs font-semibold text-blue-btn hover:text-blue-btn-hover">
+                                            Clear all
+                                        </button>
+                                    )}
+                                </div>
+                                {grouped[section].map(item => (
+                                    <div
+                                        key={item.id}
+                                        className={`flex items-center px-6 py-3.5 cursor-pointer hover:bg-secondary/50 transition-colors group ${!item.isRead ? 'relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:bg-blue-btn before:rounded-full bg-blue-50/5' : ''}`}
+                                        onClick={() => handleItemClick(item)}
+                                    >
+                                        <div className="mr-3.5 shrink-0 relative">
+                                            <div className="w-[46px] h-[46px] rounded-full p-[1.5px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600">
+                                                <img
+                                                    src={item.fromUserAvatar || `https://ui-avatars.com/api/?name=${item.fromUsername}&background=random`}
+                                                    className="w-full h-full rounded-full object-cover border-2 border-primary"
+                                                    alt={item.fromUsername}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex-grow mr-3 text-[14px] leading-[1.3]">
+                                            <p className="text-text-primary">
+                                                <span className="font-bold hover:underline cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/profile/${item.fromUsername}`); }}>
+                                                    {item.fromUsername}
+                                                </span>
+                                                {' '}
+                                                <span className="text-text-primary font-medium">
+                                                    {item.type === 'LIKE' && 'liked your post.'}
+                                                    {item.type === 'COMMENT' && 'commented on your post.'}
+                                                    {item.type === 'REPLY' && 'replied to your comment.'}
+                                                    {item.type === 'FOLLOW' && 'started following you.'}
+                                                    {item.type === 'MENTION' && 'mentioned you.'}
+                                                </span>
+                                                <span className="text-text-secondary ml-1.5 whitespace-nowrap">
+                                                    {formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })
+                                                        .replace(' seconds', 's')
+                                                        .replace(' second', 's')
+                                                        .replace(' minutes', 'm')
+                                                        .replace(' minute', 'm')
+                                                        .replace(' hours', 'h')
+                                                        .replace(' hour', 'h')
+                                                        .replace(' days', 'd')
+                                                        .replace(' day', 'd')
+                                                        .replace(' weeks', 'w')
+                                                        .replace(' week', 'w')
+                                                    }
+                                                </span>
+                                            </p>
+                                        </div>
+
+                                        <div className="shrink-0 ml-auto">
+                                            {item.type === 'FOLLOW' ? (
+                                                <div onClick={(e) => e.stopPropagation()}>
+                                                    <FollowButton
+                                                        userId={item.fromUserId}
+                                                        initialIsFollowing={null}
+                                                        className="px-4 py-1.5 text-xs font-bold rounded-lg"
+                                                    />
+                                                </div>
+                                            ) : item.resourceImage ? (
+                                                <div className="w-11 h-11 relative rounded-md overflow-hidden border border-border group-hover:border-text-secondary transition-colors">
+                                                    <img src={item.resourceImage} className="w-full h-full object-cover" alt="Post" />
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="flex flex-col items-center justify-center mt-20 px-10 text-center">
+                            <div className="w-16 h-16 rounded-full border-2 border-text-primary flex items-center justify-center mb-4 opacity-20">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+                                    <path d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                                    <path d="M10.5 13.5l1.5-1.5 1.5 1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M12 12v3" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">No notifications yet</h3>
+                            <p className="text-text-secondary text-sm">
+                                When someone likes or comments on one of your posts, or follows you, you'll see it here.
+                            </p>
+                        </div>
+                    )
+                )}
             </div>
         </div>
     );
@@ -72,3 +204,5 @@ const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
 NotificationsDrawer.displayName = 'NotificationsDrawer';
 
 export default NotificationsDrawer;
+
+
