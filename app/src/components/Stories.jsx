@@ -1,54 +1,133 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../api/axios';
 import CreateStoryModal from './CreateStoryModal';
 import StoryViewer from './StoryViewer';
 import { groupStoriesByUser } from '../utils/storyUtils';
 import StoryBubble from './stories/StoryBubble';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Stories = () => {
     const [stories, setStories] = useState([]);
+    const [userProfiles, setUserProfiles] = useState({});
+    const scrollContainerRef = useRef(null);
+    const [showLeftArrow, setShowLeftArrow] = useState(false);
+    const [showRightArrow, setShowRightArrow] = useState(true);
 
     useEffect(() => {
-        const fetchStories = async () => {
+        const fetchStoriesAndProfiles = async () => {
             try {
+                // 1. Fetch Stories
                 const response = await api.get('/stories');
                 if (response.data.status === 'success') {
-                    setStories(response.data.data);
+                    const fetchedStories = response.data.data;
+                    setStories(fetchedStories);
+
+                    // 2. Extract unique user IDs
+                    const userIds = [...new Set(fetchedStories.map(s => s.userId))];
+
+                    if (userIds.length > 0) {
+                        try {
+                            // 3. Fetch Profiles for these users
+                            const profilesRes = await api.post('/users/profile/batch', { userIds });
+
+                            if (profilesRes.data.status === 'success') {
+                                const profilesMap = {};
+                                profilesRes.data.data.forEach(p => {
+                                    profilesMap[p.userId] = p;
+                                });
+                                setUserProfiles(profilesMap);
+                            }
+                        } catch (profileErr) {
+                            console.error("Failed to fetch profiles for stories", profileErr);
+                        }
+                    }
                 }
             } catch (error) {
                 console.error("Failed to fetch stories", error);
             }
         };
 
-        fetchStories();
+        fetchStoriesAndProfiles();
     }, []);
 
-    // Group stories for display
-    const groupedStories = useMemo(() => groupStoriesByUser(stories), [stories]);
+    // Scroll Handlers
+    const scroll = (direction) => {
+        if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            const scrollAmount = 300;
+            const newScrollLeft = direction === 'left'
+                ? container.scrollLeft - scrollAmount
+                : container.scrollLeft + scrollAmount;
+
+            container.scrollTo({
+                left: newScrollLeft,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    const handleScroll = () => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            setShowLeftArrow(scrollLeft > 0);
+            setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+        }
+    };
+
+    useEffect(() => {
+        // Initial check
+        handleScroll();
+    }, [stories]);
+
+    // Group stories and merge with profile data
+    const groupedStories = useMemo(() => {
+        const grouped = groupStoriesByUser(stories);
+        // Enrich with profile data
+        const enriched = grouped.map(group => {
+            // Check both string and number keys to be safe
+            const profile = userProfiles[group.userId] || userProfiles[String(group.userId)];
+
+            if (profile) {
+                return {
+                    ...group,
+                    userAvatar: profile.profilePicture || group.userAvatar, // Prefer fetched profile picture
+                    username: profile.username || group.username
+                };
+            }
+            return group;
+        });
+        return enriched;
+    }, [stories, userProfiles]);
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [activeStory, setActiveStory] = useState(null);
 
     const handleStoryClick = (group) => {
-        // We pass the index of the FIRST story of this user in the flat list
-        // logic: find index in flat list where story.id === group.stories[0].id
         const index = stories.findIndex(s => s.id === group.stories[0].id);
         setActiveStory(index !== -1 ? index : 0);
     };
 
-    const getMediaUrl = (url) => {
-        if (!url) return undefined;
-        if (url.startsWith('http') || url.startsWith('data:')) return url;
-        return url;
-    };
-
     return (
         <>
-            <div className="mb-0 overflow-hidden max-w-[630px] mx-auto">
-                <ul className="flex gap-[14px] overflow-x-auto p-1 scrollbar-none scroll-smooth">
+            <div className="relative mb-6 max-w-[630px] mx-auto group/scroll">
+                {/* Left Scroll Button */}
+                {showLeftArrow && (
+                    <button
+                        onClick={() => scroll('left')}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 rounded-full p-1 shadow-md opacity-90 hover:opacity-100 hidden md:block"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                )}
+
+                <ul
+                    ref={scrollContainerRef}
+                    onScroll={handleScroll}
+                    className="flex gap-[14px] overflow-x-auto p-1 scrollbar-none scroll-smooth items-center"
+                >
                     {/* Always show "Your Story" first */}
                     <li
-                        className="flex flex-col items-center cursor-pointer min-w-[66px]"
+                        className="flex flex-col items-center cursor-pointer min-w-[66px] flex-shrink-0"
                         onClick={() => setIsCreateModalOpen(true)}
                     >
                         <div className="w-[66px] h-[66px] rounded-full bg-white dark:bg-black p-[2px] flex justify-center items-center mb-1.5 border border-border">
@@ -69,6 +148,16 @@ const Stories = () => {
                         />
                     ))}
                 </ul>
+
+                {/* Right Scroll Button */}
+                {showRightArrow && (
+                    <button
+                        onClick={() => scroll('right')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 rounded-full p-1 shadow-md opacity-90 hover:opacity-100 hidden md:block"
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                )}
             </div>
 
             {isCreateModalOpen && (

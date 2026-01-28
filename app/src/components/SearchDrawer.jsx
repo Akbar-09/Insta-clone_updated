@@ -26,7 +26,7 @@ const SearchDrawer = forwardRef(({ isOpen, onClose }, ref) => {
                         id: item.referenceId,
                         username: item.content,
                         name: item.metadata?.fullName || item.content,
-                        avatar: item.metadata?.profilePicture || 'https://placehold.co/150',
+                        avatar: item.metadata?.profilePicture || `https://ui-avatars.com/api/?name=${item.content}&background=random`,
                         isFollowing: item.isFollowing
                     }));
                     setResults(mapped);

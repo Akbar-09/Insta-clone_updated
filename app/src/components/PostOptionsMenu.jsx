@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import {
     reportPost, unfollowUser, deletePost, copyLink, favoriteUser,
-    hideLikeCount, toggleComments, getEmbedCode
+    hideLikeCount, toggleComments, getEmbedCode, followUser
 } from '../api/postActionsApi';
 
 const PostOptionsMenu = ({
@@ -84,6 +84,11 @@ const PostOptionsMenu = ({
                         onClose();
                     }
                     break;
+                case 'follow':
+                    await followUser(post.userId);
+                    alert(`Following @${post.username}`);
+                    onClose();
+                    break;
                 case 'unfollow':
                     if (window.confirm(`Unfollow @${post.username}?`)) {
                         await unfollowUser(post.userId);
@@ -93,7 +98,7 @@ const PostOptionsMenu = ({
                     break;
                 case 'favorites':
                     await favoriteUser(post.userId);
-                    alert('Removed from favorites!');
+                    alert('Updated favorites!');
                     onClose();
                     break;
                 case 'hideLikes':
@@ -146,11 +151,11 @@ const PostOptionsMenu = ({
         }
     };
 
-    const ActionButton = ({ label, action, color = 'text-white', isBold = false }) => (
+    const ActionButton = ({ label, action, color = 'text-black dark:text-white', isBold = false }) => (
         <button
             onClick={() => handleAction(action, label)}
             disabled={loading}
-            className={`w-full py-3.5 text-sm border-t border-[#363636] first:border-t-0 hover:bg-white/5 active:bg-white/10 transition-colors ${color} ${isBold ? 'font-bold' : 'font-normal'} disabled:opacity-50`}
+            className={`w-full py-3.5 text-sm border-t border-gray-200 dark:border-[#363636] first:border-t-0 hover:bg-gray-100 dark:hover:bg-white/5 active:bg-gray-200 dark:active:bg-white/10 transition-colors ${color} ${isBold ? 'font-bold' : 'font-normal'} disabled:opacity-50`}
         >
             {label}
         </button>
@@ -160,7 +165,7 @@ const PostOptionsMenu = ({
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
             <div
                 ref={menuRef}
-                className="bg-[#262626] w-full max-w-[400px] rounded-xl flex flex-col items-center overflow-hidden shadow-2xl animate-zoom-in text-white"
+                className="bg-white dark:bg-[#262626] w-full max-w-[400px] rounded-xl flex flex-col items-center overflow-hidden shadow-2xl animate-zoom-in text-black dark:text-white"
             >
                 {loading && (
                     <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
@@ -187,8 +192,12 @@ const PostOptionsMenu = ({
                 ) : (
                     <>
                         <ActionButton label="Report" action="report" color="text-[#ed4956]" isBold />
-                        {isFollowing && <ActionButton label="Unfollow" action="unfollow" color="text-[#ed4956]" isBold />}
-                        <ActionButton label="Remove from favorites" action="favorites" />
+                        {isFollowing ? (
+                            <ActionButton label="Unfollow" action="unfollow" color="text-[#ed4956]" isBold />
+                        ) : (
+                            <ActionButton label="Follow" action="follow" color="text-[#0095f6]" isBold />
+                        )}
+                        <ActionButton label="Add to favorites" action="favorites" />
                         <ActionButton label="Go to post" action="goToPost" />
                         <ActionButton label="Share to..." action="share" />
                         <ActionButton label="Copy link" action="copyLink" />

@@ -26,6 +26,10 @@ const Reel = sequelize.define('Reel', {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
+    commentsCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
     createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,

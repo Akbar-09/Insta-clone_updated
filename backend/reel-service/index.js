@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { connectRabbitMQ } = require('./config/rabbitmq');
+const { connectRabbitMQ: connectRabbitPublisher } = require('./config/rabbitmq');
+const { connectRabbitMQ: connectRabbitConsumer } = require('./services/reelConsumer');
 const sequelize = require('./config/database');
 const reelRoutes = require('./routes/reelRoutes');
 require('dotenv').config();
@@ -16,8 +17,9 @@ app.use('/', reelRoutes);
 
 const startServer = async () => {
     try {
-        await sequelize.sync();
-        await connectRabbitMQ();
+        await sequelize.sync({ alter: true });
+        await connectRabbitPublisher();
+        await connectRabbitConsumer();
         app.listen(PORT, () => {
             console.log(`Reel Service running on port ${PORT}`);
         });
