@@ -41,8 +41,8 @@ const ExplorePage = () => {
     }, [offset]);
 
     return (
-        <div className="w-full min-h-screen bg-primary transition-all duration-300">
-            <div className="pt-8 px-4 w-full">
+        <div className="w-full min-h-screen bg-white dark:bg-primary transition-all duration-300">
+            <div className="pt-4 w-full flex flex-col items-center">
                 <ExploreGrid posts={posts} />
 
                 {/* Infinite Scroll Trigger / Loading Indicator */}
