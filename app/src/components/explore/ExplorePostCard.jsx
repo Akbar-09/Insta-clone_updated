@@ -1,12 +1,12 @@
 import { Heart, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const ExplorePostCard = ({ post }) => {
+const ExplorePostCard = ({ post, isLarge }) => {
     const navigate = useNavigate();
 
     return (
         <div
-            className="relative group cursor-pointer aspect-square overflow-hidden bg-secondary"
+            className={`relative group cursor-pointer overflow-hidden bg-secondary w-full h-full ${!isLarge ? 'aspect-square' : ''}`}
             onClick={() => navigate(`/post/${post.id}`)}
         >
             {post.mediaType === 'VIDEO' ? (
