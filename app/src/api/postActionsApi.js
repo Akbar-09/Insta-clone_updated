@@ -1,7 +1,16 @@
 import api from './axios';
 
 export const deletePost = async (postId) => {
-    return api.delete(`/posts/${postId}`);
+    try {
+        return await api.delete(`/posts/${postId}`);
+    } catch (error) {
+        // If post already deleted (404), treat as success
+        if (error.response && error.response.status === 404) {
+            console.warn(`Post ${postId} not found (404), treating as deleted.`);
+            return { status: 'success', data: { message: 'Post already deleted' } };
+        }
+        throw error;
+    }
 };
 
 export const editPost = async (postId, data) => {
@@ -19,6 +28,10 @@ export const toggleComments = async (postId) => {
 
 export const reportPost = async (postId, reason) => {
     return api.post(`/posts/${postId}/report`, { reason });
+};
+
+export const followUser = async (userId) => {
+    return api.post(`/follow/${userId}`);
 };
 
 export const unfollowUser = async (userId) => {

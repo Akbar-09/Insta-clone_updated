@@ -66,7 +66,7 @@ const CommentItem = ({ comment, postId, onDelete }) => {
         >
             <div className="flex items-start gap-3 w-full max-w-[90%]">
                 <img
-                    src={comment.userAvatar || 'https://via.placeholder.com/150'}
+                    src={comment.userAvatar || `https://ui-avatars.com/api/?name=${comment.username}&background=random`}
                     alt={comment.username}
                     className="w-8 h-8 rounded-full object-cover shrink-0 cursor-pointer"
                 />

@@ -638,7 +638,8 @@ exports.removeProfilePhoto = async (req, res) => {
  */
 exports.getBatchProfiles = async (req, res) => {
     try {
-        const { userIds, currentUserId } = req.body;
+        const { userIds } = req.body;
+        const currentUserId = req.body.currentUserId || req.headers['x-user-id'];
         if (!userIds || !Array.isArray(userIds)) {
             return res.status(400).json({ status: 'error', message: 'userIds array required' });
         }

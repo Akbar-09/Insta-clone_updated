@@ -20,7 +20,7 @@ const Layout = () => {
             {/* Main Content Area (Offset by sidebar width) */}
             <main className={`flex-grow flex h-screen overflow-hidden transition-[margin] duration-200 ease-in-out max-md:ml-0
                 ${isMessages ? 'ml-[72px]' : 'ml-[245px] max-[1264px]:ml-[72px] justify-center'}
-                ${isReels ? 'bg-black' : ''} 
+                ${isReels ? 'bg-transparent' : ''} 
             `}>
                 <div className={`flex w-full h-full max-md:pt-0
                     ${isMessages || isReels ? '' : 'max-w-[1024px] justify-center'} 
@@ -29,7 +29,7 @@ const Layout = () => {
                         <>
                             {/* Feed Column - CENTER SCROLLABLE */}
                             {/* This div becomes the ONLY scrollable area for the feed. */}
-                            <div className="w-full max-w-[630px] flex flex-col mr-8 max-[1160px]:mr-0 max-[1160px]:max-w-[600px] shrink-0 h-full overflow-y-auto scrollbar-none pb-20">
+                            <div className="w-full max-w-[630px] flex flex-col mr-[50px] max-[1160px]:mr-0 max-[1160px]:max-w-[600px] shrink-0 h-full overflow-y-auto scrollbar-none pb-20">
                                 <div className="pt-[30px]">
                                     <Outlet />
                                 </div>

@@ -29,11 +29,18 @@ const FollowButton = ({ userId, initialIsFollowing, className, showChevron = fal
     const textFollow = "bg-transparent text-[#0095f6] !p-0 hover:text-[#00376b]";
     const textFollowing = "bg-transparent text-gray-500 !p-0 hover:text-gray-700";
 
+    // Outline variant (for Reels)
+    const outlineFollow = "bg-transparent text-white border border-white/60 hover:bg-white/10";
+    const outlineFollowing = "bg-white/20 text-white border border-white/40 hover:bg-white/30";
+
     const getClasses = () => {
-        if (className && className.includes('!text-')) return className; // Fallback if custom overrides used
+        if (className && className.includes('!text-')) return className;
 
         if (variant === 'text') {
             return isFollowing ? textFollowing : textFollow;
+        }
+        if (variant === 'outline') {
+            return isFollowing ? outlineFollowing : outlineFollow;
         }
         return isFollowing ? standardFollowing : standardFollow;
     };

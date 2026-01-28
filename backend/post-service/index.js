@@ -1,7 +1,8 @@
 // Post Service Entry Point - Force Restart 2
 const express = require('express');
 const cors = require('cors');
-const { connectRabbitMQ } = require('./config/rabbitmq');
+const { connectRabbitMQ: connectRabbitPublisher } = require('./config/rabbitmq');
+const { connectRabbitMQ: connectRabbitConsumer } = require('./services/postConsumer');
 const sequelize = require('./config/database');
 const postRoutes = require('./routes/postRoutes');
 require('dotenv').config();
@@ -20,7 +21,8 @@ const startServer = async () => {
         // Initialize models
         require('./models/SavedPost');
         await sequelize.sync({ alter: true });
-        await connectRabbitMQ();
+        await connectRabbitPublisher();
+        await connectRabbitConsumer();
         app.listen(PORT, () => {
             console.log(`Post Service running on port ${PORT}`);
         });

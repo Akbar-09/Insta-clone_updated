@@ -21,9 +21,10 @@ const UserCard = ({ user, showFollowButton = true, subtitle, onUserClick, follow
         <div className="flex items-center justify-between py-2 px-4 hover:bg-white/5 transition-colors cursor-pointer group" onClick={handleProfileClick}>
             <div className="flex items-center">
                 <img
-                    src={user.avatar || user.profilePicture || 'https://placehold.co/150'}
+                    src={user.avatar || user.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
                     alt={user.username}
                     className="w-11 h-11 rounded-full mr-3 object-cover"
+                    onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${user.username}&background=random` }}
                 />
                 <div className="flex flex-col">
                     <span className="font-semibold text-sm text-text-primary group-hover:opacity-80">

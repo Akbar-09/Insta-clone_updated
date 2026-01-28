@@ -39,11 +39,23 @@ exports.search = async (req, res) => {
                     const data = await response.json();
                     if (data.status === 'success') {
                         const profileMap = {};
-                        data.data.forEach(p => { profileMap[p.userId] = p.isFollowing; });
+                        data.data.forEach(p => {
+                            profileMap[p.userId] = {
+                                isFollowing: p.isFollowing,
+                                username: p.username,
+                                fullName: p.fullName,
+                                profilePicture: p.profilePicture
+                            };
+                        });
 
                         plainResults.forEach(r => {
                             if (r.type === 'USER' && profileMap[r.referenceId] !== undefined) {
-                                r.isFollowing = profileMap[r.referenceId];
+                                const profile = profileMap[r.referenceId];
+                                r.isFollowing = profile.isFollowing;
+                                // Add these fields so frontend components (like Share modal) can find them easily
+                                r.username = profile.username;
+                                r.fullName = profile.fullName;
+                                r.profilePicture = profile.profilePicture;
                             }
                         });
                     }

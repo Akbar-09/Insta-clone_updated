@@ -154,7 +154,7 @@ const likePost = async (req, res) => {
         // Check if already liked
         const existingLike = await Like.findOne({ where: { userId, postId } });
         if (existingLike) {
-            return res.status(400).json({ message: 'Post already liked' });
+            return res.json({ status: 'success', message: 'Post already liked' });
         }
 
         const post = await Post.findByPk(postId);
@@ -186,7 +186,7 @@ const unlikePost = async (req, res) => {
 
         const like = await Like.findOne({ where: { userId, postId } });
         if (!like) {
-            return res.status(404).json({ message: 'Like not found' });
+            return res.json({ status: 'success', message: 'Like already removed' });
         }
 
         await like.destroy();
@@ -209,7 +209,10 @@ const deletePost = async (req, res) => {
         const userId = req.headers['x-user-id'] || req.body.userId;
 
         const post = await Post.findByPk(postId);
-        if (!post) return res.status(404).json({ message: 'Post not found' });
+        if (!post) {
+            // Idempotent success: post already gone
+            return res.status(200).json({ status: 'success', message: 'Post already deleted' });
+        }
 
         if (String(post.userId) !== String(userId)) {
             return res.status(403).json({ message: 'Unauthorized' });
@@ -520,9 +523,9 @@ const getActivityLikes = async (req, res) => {
         // console.log("getActivityLikes headers:", req.headers);
 
         if (!userId) {
-             // Fallback: if we are in dev mode and skipping gateway, maybe we need to parse token?
-             // But simpler is to fix frontend to send x-user-id header or backend to trust token
-             return res.status(400).json({ message: 'User ID required' });
+            // Fallback: if we are in dev mode and skipping gateway, maybe we need to parse token?
+            // But simpler is to fix frontend to send x-user-id header or backend to trust token
+            return res.status(400).json({ message: 'User ID required' });
         }
 
         const whereClause = { userId };
@@ -537,7 +540,7 @@ const getActivityLikes = async (req, res) => {
             where: whereClause,
             order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
         });
-        
+
         const postIds = likes.map(like => like.postId);
 
         // Fetch posts
@@ -550,7 +553,7 @@ const getActivityLikes = async (req, res) => {
         // Map posts back to the order of likes
         const postsMap = new Map(posts.map(p => [p.id, p]));
         const orderedPosts = [];
-        
+
         for (const like of likes) {
             const post = postsMap.get(like.postId);
             if (post) {

@@ -26,9 +26,29 @@ const createReel = async (req, res) => {
 
 const getReels = async (req, res) => {
     try {
+        const currentUserId = req.headers['x-user-id'];
         const reels = await Reel.findAll({ order: [['createdAt', 'DESC']] });
-        res.json({ status: 'success', data: reels });
+
+        let likedReelIds = new Set();
+        if (currentUserId && reels.length > 0) {
+            const likes = await ReelLike.findAll({
+                where: {
+                    userId: currentUserId,
+                    reelId: { [Op.in]: reels.map(r => r.id) }
+                }
+            });
+            likedReelIds = new Set(likes.map(l => l.reelId));
+        }
+
+        const enrichedReels = reels.map(reel => ({
+            ...reel.toJSON(),
+            isLiked: likedReelIds.has(reel.id),
+            comments: reel.commentsCount || 0 // Explicit mapping for frontend consistency
+        }));
+
+        res.json({ status: 'success', data: enrichedReels });
     } catch (error) {
+        console.error('Get Reels Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };

@@ -72,7 +72,7 @@ const AboutAccountModal = ({ userId, username, onClose }) => {
                     <div className="p-0">
                         <div className="flex flex-col items-center p-6 border-b border-gray-700">
                             <img
-                                src={profile.profilePicture || 'https://placehold.co/150'}
+                                src={profile.profilePicture || `https://ui-avatars.com/api/?name=${profile.username}&background=random`}
                                 alt={profile.username}
                                 className="w-20 h-20 rounded-full mb-4 object-cover"
                             />
