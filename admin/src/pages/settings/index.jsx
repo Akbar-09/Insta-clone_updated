@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Save, User, Shield, Bell, Moon, X } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const SettingsToggle = ({ label, description, checked, onChange }) => (
     <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-white/5 last:border-0">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, FileText, Video, Image, TrendingUp, TrendingDown, Globe, Hash } from 'lucide-react';
+import { Users, FileText, Video, Image, TrendingUp, TrendingDown, Globe, Hash, AlertTriangle } from 'lucide-react';
 import { LineChart, Line, PieChart, Pie, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Dashboard = () => {
@@ -11,8 +11,8 @@ const Dashboard = () => {
     const overviewStats = [
         { title: 'Total Users', count: '45,231', change: '+12.5%', isPositive: true, icon: Users, color: 'blue' },
         { title: 'Total Posts', count: '128,456', change: '+8.2%', isPositive: true, icon: FileText, color: 'green' },
-        { title: 'Total Reels', count: '32,891', change: '+15.7%', isPositive: true, icon: Video, color: 'purple' },
-        { title: 'Total Stories', count: '89,234', change: '-2.3%', isPositive: false, icon: Image, color: 'pink' },
+        { title: 'Pending Reports', count: '142', change: '+5.4%', isPositive: false, icon: AlertTriangle, color: 'orange' },
+        { title: 'Active Reels', count: '32,891', change: '+15.7%', isPositive: true, icon: Video, color: 'purple' },
     ];
 
     const userGrowthData = [
