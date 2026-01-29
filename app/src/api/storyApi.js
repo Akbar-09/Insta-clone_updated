@@ -21,21 +21,29 @@ export const deleteStory = async (storyId) => {
 };
 
 export const reportStory = async (storyId, reason) => {
+    // Avoid calling API for mock stories
+    if (String(storyId).startsWith('mock-')) return { status: 'success' };
     const response = await api.post(`/stories/${storyId}/report`, { reason });
     return response.data;
 };
 
 export const viewStory = async (storyId) => {
+    // Avoid calling API for mock stories
+    if (String(storyId).startsWith('mock-')) return { status: 'success' };
     const response = await api.post(`/stories/${storyId}/view`);
     return response.data;
 };
 
 export const reactToStory = async (storyId) => {
+    // Avoid calling API for mock stories
+    if (String(storyId).startsWith('mock-')) return { status: 'success' };
     const response = await api.post(`/stories/${storyId}/react`, { type: 'LIKE' });
     return response.data;
 };
 
 export const unreactToStory = async (storyId) => {
+    // Avoid calling API for mock stories
+    if (String(storyId).startsWith('mock-')) return { status: 'success' };
     const response = await api.delete(`/stories/${storyId}/react`);
     return response.data;
 };

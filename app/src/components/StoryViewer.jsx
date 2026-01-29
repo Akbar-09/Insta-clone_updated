@@ -255,15 +255,10 @@ const StoryViewer = ({ stories: initialStories, activeIndex = 0, onClose }) => {
                 ></div>
 
                 {/* ACTIVE STORY CARD */}
-                <div
-                    className="relative w-full md:w-[400px] h-full md:h-[90vh] bg-black md:rounded-xl overflow-hidden shadow-2xl flex flex-col mx-4 md:mx-0 z-30"
-                    onMouseDown={() => setIsPaused(true)}
-                    onMouseUp={() => setIsPaused(false)}
-                    onTouchStart={() => setIsPaused(true)}
-                    onTouchEnd={() => setIsPaused(false)}
-                >
+                <div className="relative w-full md:w-[400px] h-full md:h-[90vh] bg-black md:rounded-xl overflow-hidden shadow-2xl flex flex-col mx-4 md:mx-0 z-30">
                     {/* Progress */}
                     <StoryProgressBar
+                        key={currentUserIndex} // Reset on user change
                         duration={5000}
                         activeIndex={currentStoryIndex}
                         count={currentUserGroup.stories.length}
@@ -290,27 +285,45 @@ const StoryViewer = ({ stories: initialStories, activeIndex = 0, onClose }) => {
                     {/* Media */}
                     <div className="flex-grow flex items-center justify-center bg-[#262626] relative h-full w-full">
                         {currentStory.mediaType === 'VIDEO' ? (
-                            <video
-                                ref={videoRef}
-                                src={getMediaUrl(currentStory.mediaUrl)}
-                                className="w-full h-full object-cover"
-                                autoPlay
-                                playsInline
-                                onEnded={goToNext}
-                            />
+                            <div className="relative w-full h-full">
+                                <video
+                                    ref={videoRef}
+                                    src={getMediaUrl(currentStory.mediaUrl)}
+                                    className="w-full h-full object-cover"
+                                    autoPlay
+                                    playsInline
+                                    onEnded={goToNext}
+                                />
+                                {/* Touch Overlay for Video */}
+                                <div
+                                    className="absolute inset-0 z-10"
+                                    onMouseDown={() => setIsPaused(true)}
+                                    onMouseUp={() => setIsPaused(false)}
+                                    onTouchStart={() => setIsPaused(true)}
+                                    onTouchEnd={() => setIsPaused(false)}
+                                />
+                            </div>
                         ) : (
-                            <img
-                                src={getMediaUrl(currentStory.mediaUrl)}
-                                alt="Story"
-                                className="w-full h-full object-cover"
-                            />
+                            <div className="relative w-full h-full">
+                                <img
+                                    src={getMediaUrl(currentStory.mediaUrl)}
+                                    alt="Story"
+                                    className="w-full h-full object-cover"
+                                />
+                                {/* Touch Overlay for Image */}
+                                <div
+                                    className="absolute inset-0 z-10"
+                                    onMouseDown={() => setIsPaused(true)}
+                                    onMouseUp={() => setIsPaused(false)}
+                                    onTouchStart={() => setIsPaused(true)}
+                                    onTouchEnd={() => setIsPaused(false)}
+                                />
+                            </div>
                         )}
                     </div>
 
                     <StoryFooter
                         username={currentStory.username}
-                        onFocus={() => setIsPaused(true)}
-                        onBlur={() => setIsPaused(false)}
                         onSend={handleReply}
                         isLiked={currentStory.isLiked}
                         onToggleLike={handleToggleLike}

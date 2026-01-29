@@ -18,28 +18,54 @@ const Stories = () => {
             try {
                 // 1. Fetch Stories
                 const response = await api.get('/stories');
+                let allStories = [];
+
                 if (response.data.status === 'success') {
-                    const fetchedStories = response.data.data;
-                    setStories(fetchedStories);
+                    allStories = response.data.data;
+                }
 
-                    // 2. Extract unique user IDs
-                    const userIds = [...new Set(fetchedStories.map(s => s.userId))];
+                // --- MOCK DATA INJECTION FOR DEMO ---
+                // If we have fewer than 10 stories, add mock stories to demonstrate scrolling
+                if (allStories.length < 10) {
+                    const mockStories = Array.from({ length: 15 }).map((_, i) => ({
+                        id: `mock-story-${i}`,
+                        userId: `mock-user-${i}`,
+                        username: `user_test_${i + 1}`,
+                        userAvatar: `https://i.pravatar.cc/150?u=${i + 10}`,
+                        mediaUrl: `https://picsum.photos/seed/${i}/400/800`,
+                        mediaType: 'image',
+                        createdAt: new Date().toISOString()
+                    }));
+                    allStories = [...allStories, ...mockStories];
+                }
+                // ------------------------------------
 
-                    if (userIds.length > 0) {
-                        try {
-                            // 3. Fetch Profiles for these users
-                            const profilesRes = await api.post('/users/profile/batch', { userIds });
+                setStories(allStories);
 
-                            if (profilesRes.data.status === 'success') {
-                                const profilesMap = {};
-                                profilesRes.data.data.forEach(p => {
-                                    profilesMap[p.userId] = p;
-                                });
-                                setUserProfiles(profilesMap);
-                            }
-                        } catch (profileErr) {
-                            console.error("Failed to fetch profiles for stories", profileErr);
+                // 2. Extract unique user IDs (exclude mocks if they don't exist in DB)
+                const realUserIds = [...new Set(
+                    allStories
+                        .filter(s => {
+                            const uid = String(s.userId);
+                            return !uid.startsWith('mock-user');
+                        })
+                        .map(s => s.userId)
+                )];
+
+                if (realUserIds.length > 0) {
+                    try {
+                        // 3. Fetch Profiles for these users
+                        const profilesRes = await api.post('/users/profile/batch', { userIds: realUserIds });
+
+                        if (profilesRes.data.status === 'success') {
+                            const profilesMap = {};
+                            profilesRes.data.data.forEach(p => {
+                                profilesMap[p.userId] = p;
+                            });
+                            setUserProfiles(profilesMap);
                         }
+                    } catch (profileErr) {
+                        console.error("Failed to fetch profiles for stories", profileErr);
                     }
                 }
             } catch (error) {
