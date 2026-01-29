@@ -4,11 +4,14 @@ const sequelize = require('./config/database');
 const TARGET_USER_IDS = [51]; // Seed for 'akbar' (id 51)
 
 const ACTION_USERS = [
-    { id: 101, username: 'user_test_1', avatar: 'https://ui-avatars.com/api/?name=user_test_1&background=random' },
-    { id: 102, username: 'user_test_2', avatar: 'https://ui-avatars.com/api/?name=user_test_2&background=random' },
-    { id: 103, username: 'user_test_3', avatar: 'https://ui-avatars.com/api/?name=user_test_3&background=random' },
-    { id: 104, username: 'user_test_4', avatar: 'https://ui-avatars.com/api/?name=user_test_4&background=random' },
-    { id: 105, username: 'user_test_5', avatar: 'https://ui-avatars.com/api/?name=user_test_5&background=random' },
+    { id: 101, username: 'user_test_1', avatar: 'https://i.pravatar.cc/150?u=user_test_1' },
+    { id: 102, username: 'user_test_2', avatar: 'https://i.pravatar.cc/150?u=user_test_2' },
+    { id: 103, username: 'user_test_3', avatar: 'https://i.pravatar.cc/150?u=user_test_3' },
+    { id: 104, username: 'user_test_4', avatar: 'https://i.pravatar.cc/150?u=user_test_4' },
+    { id: 105, username: 'user_test_5', avatar: 'https://i.pravatar.cc/150?u=user_test_5' },
+    { id: 106, username: 'user_test_6', avatar: 'https://i.pravatar.cc/150?u=user_test_6' },
+    { id: 107, username: 'user_test_7', avatar: 'https://i.pravatar.cc/150?u=user_test_7' },
+    { id: 108, username: 'user_test_8', avatar: 'https://i.pravatar.cc/150?u=user_test_8' },
 ];
 
 const NOTIFICATION_TYPES = ['LIKE', 'COMMENT', 'FOLLOW', 'MENTION', 'REPLY'];
