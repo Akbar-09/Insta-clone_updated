@@ -46,7 +46,7 @@ const Layout = () => {
                         </>
                     ) : (
                         /* Full Width Content (Explore, Profile, etc) - SCROLLABLE */
-                        <div className={`w-full h-full overflow-y-auto scrollbar-none ${location.pathname === '/reels' ? 'snap-y snap-mandatory pt-0' : 'pt-[30px]'
+                        <div className={`w-full h-full overflow-y-auto scrollbar-none ${isReels ? 'snap-y snap-mandatory pt-0' : (isMessages ? 'pt-0' : 'pt-[30px]')
                             }`}>
                             <Outlet />
                         </div>

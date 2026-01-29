@@ -1,19 +1,11 @@
-const GATEWAY_URL = '/api/v1';
+import api from '../api/axios';
 
 export const searchUsers = async (query) => {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) return [];
+        const response = await api.get(`/search?q=${encodeURIComponent(query)}`);
 
-        const response = await fetch(`${GATEWAY_URL}/search?q=${encodeURIComponent(query)}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        const data = await response.json();
-        if (data.status === 'success') {
-            return data.data;
+        if (response.data.status === 'success') {
+            return response.data.data;
         }
         return [];
     } catch (error) {

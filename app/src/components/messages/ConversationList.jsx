@@ -15,21 +15,35 @@ const ConversationList = ({ conversations, selectedId, onSelect, currentUser }) 
     return (
         <div className="flex flex-col h-full w-full">
             {/* Header */}
-            <div className="h-[60px] flex items-center justify-between px-5 border-b border-[#dbdbdb] shrink-0">
-                <div className="flex items-center gap-1 cursor-pointer font-bold text-lg text-text-primary">
+            <div className="h-[75px] flex items-center justify-between px-5 pt-4 pb-2 shrink-0">
+                <div className="flex items-center gap-2 cursor-pointer font-bold text-xl text-text-primary">
                     <span>{currentUser?.username}</span>
-                    <svg className="w-4 h-4 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                 </div>
-                <Edit size={24} className="cursor-pointer text-text-primary" />
+                <div onClick={() => window.dispatchEvent(new CustomEvent('open-new-message-modal'))} className="cursor-pointer text-text-primary hover:opacity-50 transition-opacity">
+                    <Edit size={24} strokeWidth={1.5} />
+                </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="px-5 pb-3">
+                {/* Matches image 2 style: Gray background, rounded */}
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Search"
+                        className="w-full bg-[#efefef] dark:bg-[#262626] border-none rounded-lg px-4 py-2 text-sm outline-none placeholder:text-text-secondary"
+                    />
+                </div>
             </div>
 
             {/* List */}
             <div className="flex-1 overflow-y-auto scrollbar-none">
-                <div className="flex items-center justify-between px-5 py-3">
+                <div className="flex items-center justify-between px-5 pb-2 pt-2">
                     <h3 className="font-bold text-base text-text-primary">Messages</h3>
-                    <span className="text-[#0095F6] text-sm font-semibold cursor-pointer">Requests</span>
+                    {/* Requests removed as requested */}
                 </div>
 
                 {conversations.length === 0 ? (

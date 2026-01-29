@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom';
 import { searchUsers, sendMessage } from '../api/postActionsApi';
 import { X } from 'lucide-react';
 
-const ShareModal = ({ post, onClose, ...props }) => {
+const ShareModal = ({ post, onClose, title, actionLabel, onAction, ...props }) => {
     const [query, setQuery] = useState('');
     const [users, setUsers] = useState([]); // In real app, init with recent suggestions
-    const [selectedUsers, setSelectedUsers] = useState(new Set());
+    const [selectedUsersMap, setSelectedUsersMap] = useState(new Map());
     const [sending, setSending] = useState(false);
 
     useEffect(() => {
@@ -14,8 +14,12 @@ const ShareModal = ({ post, onClose, ...props }) => {
             if (query.trim()) {
                 try {
                     const res = await searchUsers(query);
-                    if (res.data.status === 'success') {
+                    // Handle Axios response structure: res.data.data contains the users array
+                    if (res.data && res.data.data) {
                         setUsers(res.data.data);
+                    } else if (Array.isArray(res)) {
+                        // Fallback in case the API utility was changed to return data directly
+                        setUsers(res);
                     }
                 } catch (e) {
                     console.error('Search failed', e);
@@ -27,20 +31,32 @@ const ShareModal = ({ post, onClose, ...props }) => {
         return () => clearTimeout(timeoutId);
     }, [query]);
 
-    const toggleUser = (userId) => {
-        const newSet = new Set(selectedUsers);
-        if (newSet.has(userId)) newSet.delete(userId);
-        else newSet.add(userId);
-        setSelectedUsers(newSet);
+    const toggleUser = (user) => {
+        const newMap = new Map(selectedUsersMap);
+        if (newMap.has(user.id)) {
+            newMap.delete(user.id);
+        } else {
+            newMap.set(user.id, user);
+        }
+        setSelectedUsersMap(newMap);
     };
 
     const handleSend = async () => {
         setSending(true);
         try {
-            const userIds = Array.from(selectedUsers);
+            const userIds = Array.from(selectedUsersMap.keys());
+            const selectedObjects = Array.from(selectedUsersMap.values());
+
+            // If custom action handler is provided
+            if (onAction) {
+                await onAction(userIds, selectedObjects);
+                onClose();
+                return;
+            }
+
             let content = '';
             if (post) {
-                content = `Check out this post: ${window.location.origin}/post/${post.id}`;
+                content = `Check out this post: ${window.location.origin}/post/${post.id} `;
             } else if (props.story) { // assuming passed as props
                 content = `Check out this story: ${window.location.origin}/stories/${props.story.username}/${props.story.id}`;
             }
@@ -62,7 +78,7 @@ const ShareModal = ({ post, onClose, ...props }) => {
             <div className="bg-white dark:bg-[#262626] w-full max-w-[500px] h-[70vh] rounded-xl flex flex-col overflow-hidden shadow-2xl animate-zoom-in">
                 <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-[#363636]">
                     <div className="w-8"></div>
-                    <h2 className="text-base font-bold text-black dark:text-white flex-1 text-center">Share</h2>
+                    <h2 className="text-base font-bold text-black dark:text-white flex-1 text-center">{title || 'Share'}</h2>
                     <button onClick={onClose} className="p-1 text-black dark:text-white hover:opacity-70 transition-opacity">
                         <X size={24} />
                     </button>
@@ -96,7 +112,7 @@ const ShareModal = ({ post, onClose, ...props }) => {
                     {users.map(u => (
                         <div
                             key={u.id}
-                            onClick={() => toggleUser(u.id)}
+                            onClick={() => toggleUser(u)}
                             className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#363636] cursor-pointer transition-colors"
                         >
                             <div className="flex items-center gap-3">
@@ -117,9 +133,9 @@ const ShareModal = ({ post, onClose, ...props }) => {
                             <div className={`
                                 w-6 h-6 rounded-full border border-gray-300 dark:border-gray-500 
                                 flex items-center justify-center transition-all
-                                ${selectedUsers.has(u.id) ? 'bg-[#0095f6] border-transparent' : 'bg-transparent'}
+                                ${selectedUsersMap.has(u.id) ? 'bg-[#0095f6] border-transparent' : 'bg-transparent'}
                             `}>
-                                {selectedUsers.has(u.id) && (
+                                {selectedUsersMap.has(u.id) && (
                                     <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="w-4 h-4"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 )}
                             </div>
@@ -130,10 +146,10 @@ const ShareModal = ({ post, onClose, ...props }) => {
                 <div className="p-4 border-t border-gray-100 dark:border-[#363636]">
                     <button
                         onClick={handleSend}
-                        disabled={selectedUsers.size === 0 || sending}
+                        disabled={selectedUsersMap.size === 0 || sending}
                         className="w-full py-2.5 bg-[#0095f6] text-white font-semibold rounded-lg disabled:opacity-50 hover:bg-[#1877f2] transition-colors"
                     >
-                        {sending ? 'Sending...' : (selectedUsers.size > 0 ? `Send to ${selectedUsers.size} ${selectedUsers.size === 1 ? 'person' : 'people'}` : 'Send')}
+                        {sending ? 'Processing...' : (actionLabel || (selectedUsersMap.size > 0 ? `Send to ${selectedUsersMap.size} ${selectedUsersMap.size === 1 ? 'person' : 'people'}` : 'Send'))}
                     </button>
                 </div>
             </div>
