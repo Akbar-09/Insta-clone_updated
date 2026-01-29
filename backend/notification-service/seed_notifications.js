@@ -1,83 +1,68 @@
 const Notification = require('./models/Notification');
 const sequelize = require('./config/database');
 
-const MOCK_NOTIFICATIONS = [
-    {
-        userId: 2,
-        fromUserId: 101,
-        fromUsername: 'faiz_09_fz',
-        fromUserAvatar: 'https://i.pravatar.cc/150?u=faiz_09_fz',
-        type: 'LIKE',
-        resourceId: 1,
-        resourceImage: 'https://picsum.photos/id/1/200/200',
-        isRead: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2) // 2 hours ago
-    },
-    {
-        userId: 2,
-        fromUserId: 102,
-        fromUsername: 'ramiz_shaikh44',
-        fromUserAvatar: 'https://i.pravatar.cc/150?u=ramiz_shaikh44',
-        type: 'FOLLOW',
-        resourceId: 0,
-        isRead: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
-    },
-    {
-        userId: 2,
-        fromUserId: 103,
-        fromUsername: 'ayuu.rx_2405',
-        fromUserAvatar: 'https://i.pravatar.cc/150?u=ayuu.rx_2405',
-        type: 'COMMENT',
-        resourceId: 1,
-        resourceImage: 'https://picsum.photos/id/1/200/200',
-        isRead: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48) // 2 days ago
-    },
-    {
-        userId: 2,
-        fromUserId: 104,
-        fromUsername: 'qasim___fitness',
-        fromUserAvatar: 'https://i.pravatar.cc/150?u=qasim___fitness',
-        type: 'REPLY',
-        resourceId: 1,
-        resourceImage: 'https://picsum.photos/id/1/200/200',
-        isRead: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5) // 5 days ago
-    },
-    {
-        userId: 2,
-        fromUserId: 105,
-        fromUsername: 'shaikhmhammadiddiquie',
-        fromUserAvatar: 'https://i.pravatar.cc/150?u=shaikhmhammadiddiquie',
-        type: 'FOLLOW',
-        resourceId: 0,
-        isRead: true,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10) // 10 days ago
-    },
-    {
-        userId: 2,
-        fromUserId: 106,
-        fromUsername: 'khurshidfitnees',
-        fromUserAvatar: 'https://i.pravatar.cc/150?u=khurshidfitnees',
-        type: 'LIKE',
-        resourceId: 2,
-        resourceImage: 'https://picsum.photos/id/10/200/200',
-        isRead: true,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15) // 15 days ago
-    },
-    {
-        userId: 2,
-        fromUserId: 107,
-        fromUsername: 'vajidansari_',
-        fromUserAvatar: 'https://i.pravatar.cc/150?u=vajidansari_',
-        type: 'COMMENT',
-        resourceId: 2,
-        resourceImage: 'https://picsum.photos/id/10/200/200',
-        isRead: true,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20) // 20 days ago
-    }
+const TARGET_USER_IDS = [51]; // Seed for 'akbar' (id 51)
+
+const ACTION_USERS = [
+    { id: 101, username: 'user_test_1', avatar: 'https://ui-avatars.com/api/?name=user_test_1&background=random' },
+    { id: 102, username: 'user_test_2', avatar: 'https://ui-avatars.com/api/?name=user_test_2&background=random' },
+    { id: 103, username: 'user_test_3', avatar: 'https://ui-avatars.com/api/?name=user_test_3&background=random' },
+    { id: 104, username: 'user_test_4', avatar: 'https://ui-avatars.com/api/?name=user_test_4&background=random' },
+    { id: 105, username: 'user_test_5', avatar: 'https://ui-avatars.com/api/?name=user_test_5&background=random' },
 ];
+
+const NOTIFICATION_TYPES = ['LIKE', 'COMMENT', 'FOLLOW', 'MENTION', 'REPLY'];
+
+function getRandomItem(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateNotifications(userId) {
+    const notifications = [];
+    const count = 10; // Generate 10 notifications per user
+
+    for (let i = 0; i < count; i++) {
+        const fromUser = getRandomItem(ACTION_USERS);
+        const type = getRandomItem(NOTIFICATION_TYPES);
+        const isRead = i > 5; // Half read, half unread
+        const timeOffset = Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 7); // Random time within last 7 days
+
+        let resourceId = null;
+        let resourceImage = null;
+
+        if (type !== 'FOLLOW') {
+            resourceId = Math.floor(Math.random() * 100) + 1;
+            resourceImage = `https://picsum.photos/seed/${resourceId}/200/200`;
+        }
+
+        notifications.push({
+            userId: userId,
+            fromUserId: fromUser.id,
+            fromUsername: fromUser.username,
+            fromUserAvatar: fromUser.avatar,
+            type: type,
+            resourceId: resourceId,
+            resourceImage: resourceImage,
+            isRead: isRead,
+            createdAt: new Date(Date.now() - timeOffset)
+        });
+    }
+
+    // Add a specific recent "Today" notification
+    notifications.push({
+        userId: userId,
+        fromUserId: 101,
+        fromUsername: 'user_test_1',
+        fromUserAvatar: 'https://ui-avatars.com/api/?name=user_test_1&background=random',
+        type: 'LIKE',
+        resourceId: 999,
+        resourceImage: 'https://picsum.photos/seed/999/200/200',
+        isRead: false,
+        createdAt: new Date()
+    });
+
+    return notifications;
+}
 
 async function seed() {
     try {
@@ -87,10 +72,21 @@ async function seed() {
         // Sync models
         await sequelize.sync();
 
-        // Check if user 2 exists or just seed anyway (UI will show what's in DB for that ID)
+        console.log('Seeding notifications...');
 
-        await Notification.bulkCreate(MOCK_NOTIFICATIONS);
-        console.log('Successfully seeded mock notifications for user ID 2.');
+        // Clear existing for these users to avoid duplicates piling up? 
+        // Optional, but safer for "empty" state reset if requested. 
+        // But user said "add some data", so maybe just add.
+        // Let's delete existing to be clean.
+        await Notification.destroy({ where: { userId: TARGET_USER_IDS } });
+
+        let allNotifications = [];
+        for (const userId of TARGET_USER_IDS) {
+            allNotifications = [...allNotifications, ...generateNotifications(userId)];
+        }
+
+        await Notification.bulkCreate(allNotifications);
+        console.log(`Successfully seeded ${allNotifications.length} mock notifications for users ${TARGET_USER_IDS.join(', ')}.`);
     } catch (error) {
         console.error('Seeding failed:', error);
     } finally {
