@@ -240,7 +240,7 @@ const getActivityStoryReplies = async (req, res) => {
 
 const markAsSeen = async (req, res) => {
     try {
-        const { conversationId } = req.params;
+        const { conversationId } = req.body;
         const userId = req.user.id;
 
         await Message.update(
