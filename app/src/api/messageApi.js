@@ -24,6 +24,20 @@ export const getMessages = async (conversationId) => {
 export const sendMessage = async (data) => {
     try {
         // data: { conversationId, receiverId, content, type, mediaUrl, replyToStoryId }
+
+        // INTERCEPT MOCK USERS for Story Replies and DMs
+        if (data.receiverId && String(data.receiverId).startsWith('mock-')) {
+            console.log("Mock message send intercepted", data);
+            return {
+                status: 'success',
+                data: {
+                    id: `mock-msg-${Date.now()}`,
+                    ...data,
+                    createdAt: new Date().toISOString()
+                }
+            };
+        }
+
         const response = await api.post('/messages/send', data);
         return response.data; // Includes .data (message) and .conversationId
     } catch (error) {

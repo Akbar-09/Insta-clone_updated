@@ -60,8 +60,8 @@ const UserManagement = () => {
                                     </td>
                                     <td className="p-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${user.status === 'Active' ? 'bg-green-500/10 text-green-600 dark:text-green-300 border-green-500/20' :
-                                                user.status === 'Banned' ? 'bg-red-500/10 text-red-600 dark:text-red-300 border-red-500/20' :
-                                                    'bg-yellow-500/10 text-yellow-600 dark:text-yellow-300 border-yellow-500/20'
+                                            user.status === 'Banned' ? 'bg-red-500/10 text-red-600 dark:text-red-300 border-red-500/20' :
+                                                'bg-yellow-500/10 text-yellow-600 dark:text-yellow-300 border-yellow-500/20'
                                             }`}>
                                             {user.status}
                                         </span>

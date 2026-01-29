@@ -58,12 +58,12 @@ const ShareModal = ({ post, onClose, ...props }) => {
     };
 
     return ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-[#262626] w-full max-w-[500px] h-[70vh] rounded-xl flex flex-col overflow-hidden shadow-2xl animate-zoom-in">
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#363636]">
-                    <span className="w-8"></span>
-                    <h2 className="text-black dark:text-white font-semibold flex-1 text-center">Share</h2>
-                    <button onClick={onClose} className="text-black dark:text-white hover:opacity-70 transition-opacity">
+                <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-[#363636]">
+                    <div className="w-8"></div>
+                    <h2 className="text-base font-bold text-black dark:text-white flex-1 text-center">Share</h2>
+                    <button onClick={onClose} className="p-1 text-black dark:text-white hover:opacity-70 transition-opacity">
                         <X size={24} />
                     </button>
                 </div>
@@ -82,7 +82,11 @@ const ShareModal = ({ post, onClose, ...props }) => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-2 scrollbar-none">
+                <div className="flex-1 overflow-y-auto p-0 scrollbar-none">
+                    {users.length > 0 && (
+                        <h3 className="px-4 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100">Suggested</h3>
+                    )}
+
                     {users.length === 0 && !query && (
                         <p className="text-gray-400 text-sm text-center p-8">Recent recipients will appear here.</p>
                     )}
@@ -93,10 +97,10 @@ const ShareModal = ({ post, onClose, ...props }) => {
                         <div
                             key={u.id}
                             onClick={() => toggleUser(u.id)}
-                            className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-[#363636] rounded-lg cursor-pointer transition-colors"
+                            className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#363636] cursor-pointer transition-colors"
                         >
                             <div className="flex items-center gap-3">
-                                <div className="w-11 h-11 rounded-full bg-gray-200 dark:bg-gray-600 overflow-hidden ring-1 ring-black/5">
+                                <div className="w-11 h-11 rounded-full bg-gray-200 dark:bg-gray-600 overflow-hidden relative">
                                     {u.avatar || u.profilePicture ? (
                                         <img src={u.avatar || u.profilePicture} className="w-full h-full object-cover" alt="" />
                                     ) : (
@@ -104,13 +108,19 @@ const ShareModal = ({ post, onClose, ...props }) => {
                                     )}
                                 </div>
                                 <div className="flex flex-col">
-                                    <div className="font-semibold text-sm text-black dark:text-white">{u.username}</div>
-                                    <div className="text-sm text-gray-500">{u.fullName}</div>
+                                    <div className="text-sm font-semibold text-black dark:text-white leading-tight">{u.username}</div>
+                                    <div className="text-sm text-gray-500 leading-tight">{u.fullName || u.username}</div>
                                 </div>
                             </div>
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedUsers.has(u.id) ? 'bg-[#0095f6] border-[#0095f6]' : 'border-gray-300 dark:border-gray-500'}`}>
+
+                            {/* Selection Radio/Checkbox */}
+                            <div className={`
+                                w-6 h-6 rounded-full border border-gray-300 dark:border-gray-500 
+                                flex items-center justify-center transition-all
+                                ${selectedUsers.has(u.id) ? 'bg-[#0095f6] border-transparent' : 'bg-transparent'}
+                            `}>
                                 {selectedUsers.has(u.id) && (
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="w-4 h-4"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 )}
                             </div>
                         </div>

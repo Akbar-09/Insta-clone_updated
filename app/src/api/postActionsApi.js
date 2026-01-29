@@ -62,7 +62,16 @@ export const searchUsers = async (query) => {
 };
 
 export const sendMessage = async (userId, content) => {
-    return api.post(`/messages/${userId}/send`, { content });
+    // Intercept Mock
+    if (String(userId).startsWith('mock-')) {
+        return { status: 'success' };
+    }
+    // Use the standardized message endpoint
+    return api.post('/messages/send', {
+        receiverId: userId,
+        content,
+        type: 'text'
+    });
 };
 
 export const addComment = async (postId, text) => {
