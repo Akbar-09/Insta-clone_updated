@@ -58,7 +58,7 @@ function App() {
                     <Route path="/signup" element={<Signup />} />
 
                     <Route path="/" element={<Layout />}>
-                        <Route index element={<Navigate to="/dashboard" replace />} />
+                        <Route index element={<Navigate to="/login" replace />} />
                         <Route path="dashboard" element={<Dashboard />} />
 
                         {/* User Management */}

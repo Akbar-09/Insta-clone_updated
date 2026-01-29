@@ -24,6 +24,8 @@ import {
     Layers
 } from 'lucide-react';
 
+import jaadoeLogo from '../assets/jaadoe_logo.svg';
+
 const Sidebar = () => {
     const location = useLocation();
 
@@ -112,8 +114,8 @@ const Sidebar = () => {
         <aside className="w-64 h-screen fixed left-0 top-0 z-50 glass-sidebar flex flex-col border-r border-gray-200 dark:border-white/10 bg-white/80 dark:bg-[#0f172a]/90 backdrop-blur-xl">
             <div className="p-6">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-violet-600 bg-clip-text text-transparent flex items-center gap-2">
-                    <Layers className="text-pink-600" />
-                    Jaadoe<span className="text-xs font-normal text-gray-500 uppercase tracking-widest mt-1">Admin</span>
+                    <img src={jaadoeLogo} alt="Jaadoe Logo" className="h-8 w-auto" />
+                    <span className="text-xs font-normal text-gray-500 uppercase tracking-widest mt-1">Admin</span>
                 </h1>
             </div>
 
