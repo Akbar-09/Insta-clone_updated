@@ -18,6 +18,8 @@ app.use('/', liveRoutes); // Gateway routes /api/v1/live to here
 // Check Health
 app.get('/health', (req, res) => res.send({ status: 'OK', service: 'Live Service' }));
 
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+
 // Node Media Server Config
 const nmsConfig = {
     rtmp: {
@@ -33,7 +35,7 @@ const nmsConfig = {
         mediaroot: './media', // Where to store HLS fragments
     },
     trans: {
-        ffmpeg: process.env.FFMPEG_PATH || 'ffmpeg', // Assumes in PATH
+        ffmpeg: ffmpegPath,
         tasks: [
             {
                 app: 'live',
@@ -100,3 +102,4 @@ const startServer = async () => {
 };
 
 startServer();
+// Trigger restart after DB creation

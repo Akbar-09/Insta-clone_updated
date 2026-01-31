@@ -3,8 +3,11 @@ const router = express.Router();
 const profileController = require('../controllers/profileController');
 const closeFriendController = require('../controllers/closeFriendController');
 const blockController = require('../controllers/blockController');
+const reportController = require('../controllers/reportController');
 
 // Static Routes FIRST (to avoid matching dynamic :username)
+router.post('/report-problem', reportController.submitReport);
+router.get('/reports/me', reportController.getMyReports);
 
 // Close Friends
 router.get('/close-friends', closeFriendController.getCloseFriends);

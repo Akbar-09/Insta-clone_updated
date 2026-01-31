@@ -44,7 +44,10 @@ const authenticateToken = (req, res, next) => {
         '/api/v1/auth/register',
         '/health',
         '/api-docs',
-        '/uploads'
+        '/uploads',
+        '/socket.io',
+        '/api/v1/socket.io',
+        '/api/v1/ads/active' // Ads are public
     ];
 
     // Check if path starts with any open path
@@ -127,6 +130,19 @@ services.forEach(({ route, target, ws }) => {
         })
     );
 });
+
+// Proxy for Socket.io (Root Level)
+app.use(
+    '/socket.io',
+    createProxyMiddleware({
+        target: process.env.SOCKET_SERVICE_URL || 'http://127.0.0.1:5011',
+        changeOrigin: true,
+        ws: true,
+        onError: (err, req, res) => {
+            console.error(`Error proxying socket.io:`, err);
+        }
+    })
+);
 
 // Proxy for Static Uploads (Media Service)
 app.use(

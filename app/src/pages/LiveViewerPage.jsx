@@ -31,19 +31,49 @@ const LiveViewerPage = () => {
     }, [id, navigate]);
 
     useEffect(() => {
-        if (session && session.hlsUrl && Hls.isSupported()) {
-            const hls = new Hls();
-            hls.loadSource(session.hlsUrl);
-            hls.attachMedia(videoRef.current);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                videoRef.current.play().catch(e => console.log("Autoplay failed", e));
-            });
-            return () => {
-                hls.destroy();
-            };
-        } else if (videoRef.current && session?.hlsUrl) {
-            // Native HLS support (Safari)
-            videoRef.current.src = session.hlsUrl;
+        if (session && session.hlsUrl) {
+            // Transform absolute URL to relative to use Vite proxy
+            // If backend returns http://localhost:8000/live/..., we want /live/...
+            const relativeUrl = session.hlsUrl.replace(/^https?:\/\/[^/]+/, '');
+            console.log("Loading HLS from:", relativeUrl);
+
+            if (Hls.isSupported()) {
+                const hls = new Hls({
+                    debug: true, // Enable debug logs
+                    manifestLoadingTimeOut: 20000, // Wait longer for initial manifest
+                });
+                hls.loadSource(relativeUrl);
+                hls.attachMedia(videoRef.current);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    console.log("Manifest parsed, playing...");
+                    videoRef.current.play().catch(e => console.log("Autoplay failed", e));
+                });
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    console.error("HLS Error:", data);
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.log("Network error, trying to recover...");
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.log("Media error, trying to recover...");
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                console.log("Fatal error, destroying...");
+                                hls.destroy();
+                                break;
+                        }
+                    }
+                });
+                return () => {
+                    hls.destroy();
+                };
+            } else if (videoRef.current) {
+                // Native HLS support (Safari)
+                videoRef.current.src = relativeUrl;
+            }
         }
     }, [session]);
 
@@ -52,7 +82,8 @@ const LiveViewerPage = () => {
         if (!session) return;
 
         // Connect to Gateway Socket endpoint
-        const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
+        // Connect using relative path so Vite proxy handles it
+        const socket = io('/', {
             path: '/socket.io/',
             query: { sessionId: id, userId: user?.id }
         });
@@ -107,6 +138,8 @@ const LiveViewerPage = () => {
                 <video
                     ref={videoRef}
                     controls
+                    muted // Auto-play requires muted often
+                    autoPlay
                     className="max-h-full max-w-full"
                     width="100%"
                     height="100%"
