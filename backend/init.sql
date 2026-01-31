@@ -9,3 +9,4 @@ CREATE DATABASE notification_db;
 CREATE DATABASE search_db;
 CREATE DATABASE message_db;
 CREATE DATABASE media_db;
+CREATE DATABASE ad_db;

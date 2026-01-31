@@ -21,6 +21,19 @@ const initSocket = (server) => {
             }
         });
 
+        socket.on('join-live', ({ sessionId }) => {
+            if (sessionId) {
+                socket.join(`live:${sessionId}`);
+                console.log(`Socket ${socket.id} joined live:${sessionId}`);
+            }
+        });
+
+        socket.on('leave-live', ({ sessionId }) => {
+            if (sessionId) {
+                socket.leave(`live:${sessionId}`);
+            }
+        });
+
         socket.on('disconnect', () => {
             console.log('Client disconnected:', socket.id);
         });

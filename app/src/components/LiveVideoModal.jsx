@@ -1,12 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Radio, ChevronDown } from 'lucide-react';
+import { X, Radio, ChevronDown, Loader2 } from 'lucide-react';
+import { createLiveSession, getLiveSession } from '../api/liveApi';
+import { useNavigate } from 'react-router-dom';
+
 
 const LiveVideoModal = ({ onClose }) => {
     const [title, setTitle] = useState('');
     const [audience, setAudience] = useState('public');
     const [step, setStep] = useState(1);
     const [showStreamKey, setShowStreamKey] = useState(false);
-    const [streamKey] = useState("1807974996525690?s_bl=1&s_fbp=hjh1-1&s_sw=0&s_t=p");
+    const [streamKey, setStreamKey] = useState("");
+    const [streamUrl, setStreamUrl] = useState("");
+    const [sessionId, setSessionId] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [isLive, setIsLive] = useState(false);
+    const navigate = useNavigate();
 
     const modalRef = useRef(null);
 
@@ -23,8 +31,49 @@ const LiveVideoModal = ({ onClose }) => {
 
     const isValid = title.trim().length > 0;
 
-    const handleNext = () => {
-        if (isValid) setStep(2);
+    const handleNext = async () => {
+        if (isValid) {
+            setLoading(true);
+            try {
+                const response = await createLiveSession({ title, audience });
+                if (response.data.status === 'success') {
+                    setStreamKey(response.data.data.streamKey);
+                    setStreamUrl(response.data.data.streamUrl);
+                    setSessionId(response.data.data.sessionId);
+                    setStep(2);
+                }
+            } catch (error) {
+                console.error("Failed to create live session", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+    // Poll for status when in step 2
+    useEffect(() => {
+        let interval;
+        if (step === 2 && sessionId && !isLive) {
+            interval = setInterval(async () => {
+                try {
+                    const res = await getLiveSession(sessionId);
+                    if (res.data.data.status === 'live') {
+                        setIsLive(true);
+                        // Optional: Navigate to Live Room immediately or enable button
+                    }
+                } catch (err) {
+                    console.error("Polling error", err);
+                }
+            }, 3000);
+        }
+        return () => clearInterval(interval);
+    }, [step, sessionId, isLive]);
+
+    const handleGoLive = () => {
+        if (sessionId) { // Fixed: used sessionId instead of requestId
+            onClose();
+            navigate(`/live/${sessionId}`);
+        }
     };
 
     const handleCopy = (text) => {
@@ -102,7 +151,7 @@ const LiveVideoModal = ({ onClose }) => {
                                 disabled={!isValid}
                                 onClick={handleNext}
                             >
-                                Next
+                                {loading ? <Loader2 className="animate-spin" size={20} /> : 'Next'}
                             </button>
                         </div>
                     </>
@@ -114,8 +163,12 @@ const LiveVideoModal = ({ onClose }) => {
                                 <ChevronDown size={24} className="rotate-90" />
                             </button>
                             <h2 className="text-base font-bold text-center">Live video</h2>
-                            <button className="text-blue-btn font-semibold text-sm opacity-50 cursor-not-allowed">
-                                Go Live
+                            <button
+                                className={`font-semibold text-sm ${isLive ? 'text-blue-btn cursor-pointer' : 'text-blue-btn/50 cursor-not-allowed'}`}
+                                disabled={!isLive}
+                                onClick={handleGoLive}
+                            >
+                                {isLive ? 'Go Live (Ready)' : 'Waiting for Video...'}
                             </button>
                         </div>
 
@@ -145,11 +198,11 @@ const LiveVideoModal = ({ onClose }) => {
                                             <input
                                                 type="text"
                                                 readOnly
-                                                value="rtmps://edgetee-upload-bom1-1.xx.fbcdn.net:443/rtmp/"
+                                                value={streamUrl}
                                                 className="flex-1 bg-secondary px-3 py-2 text-sm text-text-primary outline-none"
                                             />
                                             <button
-                                                onClick={() => handleCopy("rtmps://edgetee-upload-bom1-1.xx.fbcdn.net:443/rtmp/")}
+                                                onClick={() => handleCopy(streamUrl)}
                                                 className="px-4 text-sm font-semibold text-blue-btn bg-secondary border-l border-border hover:bg-gray-100"
                                             >
                                                 COPY

@@ -10,6 +10,7 @@ import {
 import SearchDrawer from './SearchDrawer';
 import NotificationsDrawer from './NotificationsDrawer';
 import CreatePostModal from './CreatePostModal';
+import CreateAdModal from './CreateAdModal';
 import MoreMenu from './MoreMenu';
 import ReportProblemModal from './ReportProblemModal';
 import LiveVideoModal from './LiveVideoModal';
@@ -23,6 +24,7 @@ const Sidebar = () => {
     const [showCreateMenu, setShowCreateMenu] = useState(false);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isAdModalOpen, setIsAdModalOpen] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
 
@@ -62,8 +64,6 @@ const Sidebar = () => {
 
     const isActive = (path) => location.pathname === path;
 
-    // ... (rest of useEffects) 
-
     // Close drawers on route change
     useEffect(() => {
         setActiveDrawer(null);
@@ -96,7 +96,7 @@ const Sidebar = () => {
                 if (drawerRef.current && drawerRef.current.contains(event.target)) {
                     return;
                 }
-                // If click is inside the sidebar (navigation), do nothing (nav/toggle logic handles it)
+                // If click is inside the sidebar (navigation), do nothing
                 if (sidebarRef.current && sidebarRef.current.contains(event.target)) {
                     return;
                 }
@@ -111,10 +111,6 @@ const Sidebar = () => {
 
     const toggleDrawer = (drawerName) => {
         if (drawerName === 'notifications' && activeDrawer !== 'notifications') {
-            // Opening notifications, should we clear badge immediately or wait for read status?
-            // Usually wait for individual items to be read or "mark all read". 
-            // In NotificationsDrawer we call markAllRead on open.
-            // So we can optimistically clear count here.
             setUnreadCount(0);
         }
 
@@ -123,14 +119,14 @@ const Sidebar = () => {
         } else {
             setActiveDrawer(drawerName);
         }
-        setShowCreateMenu(false); // Close create menu if opening drawer
+        setShowCreateMenu(false);
         setShowMoreMenu(false);
     };
 
     const toggleCreateMenu = () => {
         setShowCreateMenu(!showCreateMenu);
         setShowMoreMenu(false);
-        setActiveDrawer(null); // Close drawers if opening create menu
+        setActiveDrawer(null);
     };
 
     const toggleReportModal = () => {
@@ -147,6 +143,11 @@ const Sidebar = () => {
     const handleCreatePostClick = () => {
         setShowCreateMenu(false);
         setIsCreateModalOpen(true);
+    };
+
+    const handleAdClick = () => {
+        setShowCreateMenu(false);
+        setIsAdModalOpen(true);
     };
 
     const handleLiveVideoClick = () => {
@@ -201,7 +202,7 @@ const Sidebar = () => {
     return (
         <>
             <div
-                ref={sidebarRef} // Attach ref to sidebar container
+                ref={sidebarRef}
                 className={`fixed top-0 left-0 bottom-0 flex flex-col pt-2 px-3 pb-5 bg-primary border-r border-border z-[100] transition-[width] duration-200 ease-in-out
                 ${isNarrow ? 'w-[72px] items-center z-[101]' : 'w-[245px]'}
                 max-[1264px]:w-[72px] max-[1264px]:items-center max-[1264px]:z-[101]`}>
@@ -245,7 +246,6 @@ const Sidebar = () => {
                         label="Create"
                         isCreateBtn={true}
                     />
-                    {/* Dashboard was custom request, keeping it */}
                     <NavItem to="/dashboard" path="/dashboard" icon={BarChart2} label="Dashboard" />
 
                     <Link to="/profile/me" className="block mt-1 no-underline">
@@ -280,7 +280,7 @@ const Sidebar = () => {
                                 <span className="text-sm font-semibold">Live video</span>
                                 <Video size={20} className="text-text-primary" />
                             </div>
-                            <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between border-t border-border">
+                            <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between border-t border-border" onClick={handleAdClick}>
                                 <span className="text-sm font-semibold">Ad</span>
                                 <BarChart2 size={20} className="text-text-primary" />
                             </div>
@@ -319,7 +319,6 @@ const Sidebar = () => {
                 )}
             </div>
 
-            {/* Drawers */}
             <SearchDrawer
                 ref={drawerRef}
                 isOpen={activeDrawer === 'search'}
@@ -331,11 +330,9 @@ const Sidebar = () => {
                 onClose={() => setActiveDrawer(null)}
             />
 
-            {/* Create Post Modal */}
             {isCreateModalOpen && <CreatePostModal onClose={() => setIsCreateModalOpen(false)} />}
-
+            {isAdModalOpen && <CreateAdModal onClose={() => setIsAdModalOpen(false)} />}
             {isReportModalOpen && <ReportProblemModal onClose={() => setIsReportModalOpen(false)} />}
-
             {isLiveModalOpen && <LiveVideoModal onClose={() => setIsLiveModalOpen(false)} />}
         </>
     );

@@ -90,6 +90,8 @@ const services = [
     { route: '/messages', target: process.env.MESSAGE_SERVICE_URL || 'http://127.0.0.1:5010' },
     { route: '/reels', target: process.env.REEL_SERVICE_URL || 'http://127.0.0.1:5005' },
     { route: '/media', target: process.env.MEDIA_SERVICE_URL || 'http://127.0.0.1:5013' },
+    { route: '/ads', target: process.env.AD_SERVICE_URL || 'http://127.0.0.1:5014' },
+    { route: '/live', target: process.env.LIVE_SERVICE_URL || 'http://127.0.0.1:5015' },
     { route: '/socket.io', target: process.env.SOCKET_SERVICE_URL || 'http://127.0.0.1:5011', ws: true },
 ];
 

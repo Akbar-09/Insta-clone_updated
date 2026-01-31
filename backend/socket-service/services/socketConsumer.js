@@ -6,16 +6,19 @@ let channel;
 const connectRabbitMQ = async () => {
     try {
         const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
-        channel = await connection.createChannel();
-        await channel.assertQueue('socket_events');
+        const exchange = 'instagram-events';
+        await channel.assertExchange(exchange, 'topic', { durable: true });
+        const q = await channel.assertQueue('socket_events');
+        await channel.bindQueue(q.queue, exchange, '#'); // Receive all events
 
         console.log('Socket Service connected to RabbitMQ');
 
-        channel.consume('socket_events', (data) => {
-            if (data) {
-                const event = JSON.parse(data.content.toString());
-                handleEvent(event);
-                channel.ack(data);
+        channel.consume('socket_events', (msg) => {
+            if (msg) {
+                const content = JSON.parse(msg.content.toString());
+                const type = msg.fields.routingKey;
+                handleEvent({ type, payload: content });
+                channel.ack(msg);
             }
         });
     } catch (error) {
@@ -28,19 +31,23 @@ const handleEvent = (event) => {
     const io = getIO();
     if (!io) return;
 
+    // Check if event wraps data inside 'data' or 'payload'
+    const payload = event.payload || event.data || event;
+
     switch (event.type) {
         case 'MESSAGE_SENT':
-            // payload: { message, receiverId }
-            // Emit to receiver's room
-            io.to(`user:${event.payload.receiverId}`).emit('message:receive', event.payload.message);
-            // Optionally emit to sender for confirmation if not optimistic
+            io.to(`user:${payload.receiverId}`).emit('message:receive', payload.message);
             break;
         case 'MESSAGES_SEEN':
-            // payload: { conversationId, seenBy, receiverId }
-            io.to(`user:${event.payload.receiverId}`).emit('message:seen', event.payload);
+            io.to(`user:${payload.receiverId}`).emit('message:seen', payload);
+            break;
+        case 'LIVE_COMMENT':
+            // payload: { sessionId, comment }
+            io.to(`live:${payload.sessionId}`).emit('receive-comment', payload.comment);
             break;
         default:
-            console.warn('Unknown event type:', event.type);
+            // console.warn('Unknown event type:', event.type);
+            break;
     }
 };
 
