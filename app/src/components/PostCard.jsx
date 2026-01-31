@@ -46,8 +46,47 @@ const PostCard = ({ post, onLikeUpdate }) => {
     // Effect to update local state if prop changes (e.g. from parent refresh)
     useEffect(() => {
         setCurrentPost(post);
-        setIsSaved(post.isSaved || false); // Also update saved state if post prop changes
+        setIsSaved(post.isSaved || false);
+
+        // Ad Impression Tracking
+        if (post.isAd && post.trackImpression) {
+            const observer = new IntersectionObserver(
+                ([entry]) => {
+                    if (entry.isIntersecting) {
+                        post.trackImpression();
+                        observer.disconnect(); // Count once per render cycle/session
+                    }
+                },
+                { threshold: 0.5 } // 50% visible
+            );
+
+            // Assuming article ref would be better, but we don't have one exposed easily on root
+            // I'll grab by ID since I have it or just querySelector.
+            // Actually, I can use a ref on the article.
+
+            // Let's postpone this or use a simple timeout hack? No, let's add a Ref to the article.
+        }
     }, [post]);
+
+    // Create Ref
+    const cardRef = useRef(null);
+
+    useEffect(() => {
+        if (currentPost.isAd && currentPost.trackImpression && cardRef.current) {
+            const observer = new IntersectionObserver(
+                ([entry]) => {
+                    if (entry.isIntersecting) {
+                        currentPost.trackImpression();
+                        observer.disconnect();
+                    }
+                },
+                { threshold: 0.5 }
+            );
+            observer.observe(cardRef.current);
+            return () => observer.disconnect();
+        }
+    }, [currentPost.isAd, currentPost.trackImpression]);
+
 
     const commentInputRef = useRef(null);
     const commentSectionRef = useRef(null);
@@ -133,7 +172,8 @@ const PostCard = ({ post, onLikeUpdate }) => {
     };
 
     return (
-        <article className="bg-white dark:bg-black border-b border-border md:border md:border-border md:rounded-lg mb-4">
+        <article ref={cardRef} className="bg-white dark:bg-black border-b border-border md:border md:border-border md:rounded-lg mb-4">
+
             {/* Header */}
             <div className="flex items-center justify-between p-3">
                 <div className="flex items-center gap-3 cursor-pointer">
@@ -143,9 +183,14 @@ const PostCard = ({ post, onLikeUpdate }) => {
                     <div>
                         <div className="font-semibold text-sm text-text-primary flex items-center gap-1">
                             {currentPost.username}
-                            {/* Time */}
-                            <span className="text-text-secondary font-normal">• {formatTime(currentPost.createdAt)}</span>
+                            {/* Time / Ad Label */}
+                            {currentPost.isAd ? (
+                                <span className="text-text-secondary font-normal flex items-center gap-1">• Sponsored</span>
+                            ) : (
+                                <span className="text-text-secondary font-normal">• {formatTime(currentPost.createdAt)}</span>
+                            )}
                         </div>
+
                         {currentPost.location && <div className="text-xs text-text-secondary">{currentPost.location}</div>}
                     </div>
                 </div>
@@ -205,12 +250,26 @@ const PostCard = ({ post, onLikeUpdate }) => {
                 </button>
             </div>
 
+            {/* CTA Bar for Ads */}
+            {currentPost.isAd && (
+                <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900/10 flex justify-between items-center cursor-pointer mb-2"
+                    onClick={() => {
+                        // Track Click
+                        if (currentPost.trackClick) currentPost.trackClick();
+                        window.open(currentPost.linkUrl || '#', '_blank');
+                    }}>
+                    <span className="font-semibold text-sm text-blue-600 dark:text-blue-400">{currentPost.ctaText || 'Learn More'}</span>
+                    <span className="text-blue-600 dark:text-blue-400">›</span>
+                </div>
+            )}
+
             {/* Likes */}
             {!currentPost.hideLikes && (
                 <div className="font-semibold text-sm text-text-primary mb-2 px-4">
                     {likesCount.toLocaleString()} like{likesCount !== 1 ? 's' : ''}
                 </div>
             )}
+
 
             {/* Caption */}
             <div className="px-4 pb-2">

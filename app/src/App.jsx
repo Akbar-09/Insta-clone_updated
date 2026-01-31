@@ -66,6 +66,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import LiveViewerPage from './pages/LiveViewerPage';
+
 function App() {
   return (
     <AuthProvider>
@@ -76,8 +78,9 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
-            {/* Protected Routes (Wrapped in Layout) */}
+            {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
+              <Route path="/live/:id" element={<LiveViewerPage />} />
               <Route element={<Layout />}>
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/explore" element={<ExplorePage />} />
