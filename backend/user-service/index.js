@@ -4,6 +4,7 @@ const cors = require('cors');
 const { connectRabbitMQ } = require('./config/rabbitmq');
 const sequelize = require('./config/database');
 const UserProfile = require('./models/UserProfile');
+const Report = require('./models/Report'); // Ensure Report is synced
 require('dotenv').config();
 
 const app = express();

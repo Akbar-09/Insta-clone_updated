@@ -6,6 +6,7 @@ let channel;
 const connectRabbitMQ = async () => {
     try {
         const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
+        channel = await connection.createChannel();
         const exchange = 'instagram-events';
         await channel.assertExchange(exchange, 'topic', { durable: true });
         const q = await channel.assertQueue('socket_events');
