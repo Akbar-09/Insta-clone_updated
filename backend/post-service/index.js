@@ -16,6 +16,9 @@ app.use(express.json());
 // Routes
 app.use('/', postRoutes);
 
+const internalRoutes = require('./routes/internalRoutes');
+app.use('/internal', internalRoutes);
+
 const startServer = async () => {
     try {
         // Initialize models

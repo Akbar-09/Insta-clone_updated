@@ -10,7 +10,7 @@ const AdImpression = sequelize.define('AdImpression', {
     },
     adId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: Ad,
             key: 'id'

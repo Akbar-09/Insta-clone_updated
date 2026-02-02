@@ -12,7 +12,12 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+// Routes
+const internalRoutes = require('./routes/internalRoutes');
+app.use('/internal', internalRoutes);
 app.use('/', messageRoutes);
+
+
 
 const startServer = async () => {
     try {

@@ -9,22 +9,22 @@ const Report = sequelize.define('Report', {
     },
     postId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
     },
     reportedBy: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
     },
     reason: {
-        type: DataTypes.ENUM('spam', 'violence', 'hate', 'nudity', 'scam', 'false_information', 'bullying', 'other'),
-        allowNull: false,
+        type: DataTypes.STRING,
+        allowNull: true,
     },
     details: {
         type: DataTypes.TEXT,
         allowNull: true,
     },
     status: {
-        type: DataTypes.ENUM('pending', 'reviewed', 'resolved', 'dismissed'),
+        type: DataTypes.STRING,
         defaultValue: 'pending',
     },
     createdAt: {

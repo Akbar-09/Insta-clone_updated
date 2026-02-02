@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Save, Eye } from 'lucide-react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'quill/dist/quill.snow.css';
 
 const CMSPages = () => {
     const [selectedPage, setSelectedPage] = useState('about');
@@ -73,8 +73,8 @@ const CMSPages = () => {
                             key={key}
                             onClick={() => handlePageChange(key)}
                             className={`w-full p-4 rounded-xl text-left transition-all ${selectedPage === key
-                                    ? 'bg-gradient-to-r from-pink-500 to-violet-600 text-white shadow-lg shadow-pink-500/20'
-                                    : 'glass-card hover:bg-gray-50 dark:hover:bg-white/5'
+                                ? 'bg-gradient-to-r from-pink-500 to-violet-600 text-white shadow-lg shadow-pink-500/20'
+                                : 'glass-card hover:bg-gray-50 dark:hover:bg-white/5'
                                 }`}
                         >
                             <div className="flex items-center gap-3">

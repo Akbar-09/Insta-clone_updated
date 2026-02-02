@@ -38,8 +38,13 @@ const Message = sequelize.define('Message', {
     isSeen: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    flagged: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 }, {
+
     indexes: [
         {
             fields: ['conversation_id']

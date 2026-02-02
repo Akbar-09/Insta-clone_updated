@@ -42,6 +42,8 @@ const authenticateToken = (req, res, next) => {
         '/api/v1/auth/login',
         '/api/v1/auth/signup',
         '/api/v1/auth/register',
+        '/api/v1/admin/auth/login',
+        '/api/v1/admin/',
         '/health',
         '/api-docs',
         '/uploads',
@@ -95,6 +97,7 @@ const services = [
     { route: '/media', target: process.env.MEDIA_SERVICE_URL || 'http://127.0.0.1:5013' },
     { route: '/ads', target: process.env.AD_SERVICE_URL || 'http://127.0.0.1:5014' },
     { route: '/live', target: process.env.LIVE_SERVICE_URL || 'http://127.0.0.1:5015' },
+    { route: '/admin', target: process.env.ADMIN_SERVICE_URL || 'http://127.0.0.1:5016' },
     { route: '/socket.io', target: process.env.SOCKET_SERVICE_URL || 'http://127.0.0.1:5011', ws: true },
 ];
 

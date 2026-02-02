@@ -1,27 +1,80 @@
-import React, { useState } from 'react';
-import { Eye, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Eye, Trash2, X, Heart, MessageCircle, Bookmark } from 'lucide-react';
+import * as adminApi from '../../api/adminApi';
 
 const StoryManagement = () => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [stories, setStories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [viewModalOpen, setViewModalOpen] = useState(false);
+    const [modalActiveTab, setModalActiveTab] = useState('view');
+    const [modalData, setModalData] = useState({ views: [], likes: [] });
+    const [loadingModalData, setLoadingModalData] = useState(false);
 
-    const [stories, setStories] = useState([
-        { id: 1, username: 'jamesdeep', email: 's.jagt@admin.com', image: 'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=600', postedDate: 'January 02, 2026', postedTime: '02:22 pm', status: 'live', duration: '17d', views: 6, likes: 0 },
-        { id: 2, username: 'kathrine12', email: 'kathrine.wil@gmail.com', image: 'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?w=600', postedDate: 'July 03, 2025', postedTime: '04:50 pm', status: 'live', duration: '6M', views: 151, likes: 0 },
-        { id: 3, username: 'kathrine12', email: 'kathrine.wil@gmail.com', image: 'https://images.unsplash.com/photo-1682687221038-404cb8830901?w=600', postedDate: 'July 02, 2025', postedTime: '06:40 pm', status: 'live', duration: '6M', views: 99, likes: 0 },
-        { id: 4, username: 'johnbrook', email: 'john@admin.com', image: 'https://images.unsplash.com/photo-1682687220067-dced9a881b56?w=600', postedDate: 'June 30, 2025', postedTime: '03:44 pm', status: 'live', duration: '6M', views: 93, likes: 0 },
-        { id: 5, username: 'kathrine12', email: 'kathrine.wil@gmail.com', image: 'https://images.unsplash.com/photo-1682687220199-d0124f48f95b?w=600', postedDate: 'June 05, 2025', postedTime: '07:22 pm', status: 'expired', duration: '7M', views: 0, likes: 0 },
-        { id: 6, username: 'kathrine12', email: 'kathrine.wil@gmail.com', image: 'https://images.unsplash.com/photo-1682687220015-186f63b8850a?w=600', postedDate: 'June 02, 2025', postedTime: '07:30 pm', status: 'expired', duration: '7M', views: 0, likes: 0 },
-    ]);
+    useEffect(() => {
+        fetchStories();
+    }, [pagination.page, searchQuery, statusFilter]);
 
-    const handleDelete = (id) => {
-        if (confirm('Are you sure you want to delete this story?')) {
-            setStories(stories.filter(story => story.id !== id));
+    const fetchStories = async () => {
+        try {
+            setLoading(true);
+            const res = await adminApi.listStories({
+                page: pagination.page,
+                limit: pagination.limit,
+                search: searchQuery,
+                status: statusFilter === 'all' ? undefined : statusFilter
+            });
+            if (res.success) {
+                setStories(res.data);
+                setPagination(prev => ({
+                    ...prev,
+                    total: res.pagination?.total || 0,
+                    totalPages: res.pagination?.totalPages || 1
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching stories:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const filteredStories = stories.filter(story =>
-        story.username.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const handleDelete = async (id) => {
+        if (!confirm('Are you sure you want to delete this story?')) return;
+        try {
+            await adminApi.deleteStory(id);
+            fetchStories();
+        } catch (error) {
+            alert('Failed to delete story');
+        }
+    };
+
+    const handleViewDetails = async (story) => {
+        setSelectedItem(story);
+        setModalActiveTab('view');
+        setViewModalOpen(true);
+        try {
+            setLoadingModalData(true);
+            const res = await adminApi.getStoryInteractions(story.id);
+            if (res.success) {
+                setModalData(res.data);
+            }
+        } catch (error) {
+            console.error('Error fetching story interactions:', error);
+        } finally {
+            setLoadingModalData(false);
+        }
+    };
+
+    const formatDateShort = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' ' +
+            date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).toLowerCase();
+    };
+
 
     return (
         <div className="space-y-6">
@@ -32,14 +85,26 @@ const StoryManagement = () => {
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Dashboard • Stories List</p>
                 </div>
 
-                {/* Search */}
-                <input
-                    type="text"
-                    placeholder="Search by username..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="px-4 py-2 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
-                />
+                {/* Filters */}
+                <div className="flex items-center gap-3">
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-4 py-2 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none"
+                    >
+                        <option value="all">All Stories</option>
+                        <option value="live">Live Only</option>
+                        <option value="expired">Expired Only</option>
+                    </select>
+
+                    <input
+                        type="text"
+                        placeholder="Search by username..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="px-4 py-2 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+                    />
+                </div>
             </div>
 
             {/* Table */}
@@ -48,92 +113,300 @@ const StoryManagement = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-white/10">
                             <tr>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">S.L</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">STORY IMAGE</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">USERNAME</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">POSTED DATE/TIME</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">STATUS</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">VIEWS</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">LIKES</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">ACTIONS</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">S.L</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">STORY IMAGE</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">USERNAME</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">POSTED DATE/TIME</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">STATUS</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">VIEWS</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">LIKES</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">ACTIONS</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 dark:divide-white/5">
-                            {filteredStories.map((story, index) => (
-                                <tr key={story.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm font-medium text-gray-800 dark:text-white">{index + 1}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <img
-                                            src={story.image}
-                                            alt={`Story by ${story.username}`}
-                                            className="w-12 h-12 rounded-lg object-cover"
-                                        />
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs">
-                                                {story.username[0].toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-sm text-gray-800 dark:text-white">{story.username}</p>
-                                                <p className="text-xs text-gray-500">{story.email}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-800 dark:text-white">{story.postedDate}</p>
-                                            <p className="text-xs text-gray-500">{story.postedTime}</p>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${story.status === 'live'
-                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                                                : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
-                                            }`}>
-                                            {story.status === 'live' ? `Live(${story.duration})` : 'Expired'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                                            {story.views} View{story.views !== 1 ? 's' : ''}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                                            {story.likes} Like{story.likes !== 1 ? 's' : ''}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                className="p-2 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-600 dark:text-green-400 transition-colors"
-                                                title="View"
-                                            >
-                                                <Eye size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(story.id)}
-                                                className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 transition-colors"
-                                                title="Delete"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="8" className="px-6 py-12 text-center text-gray-500">Loading stories...</td>
                                 </tr>
-                            ))}
+                            ) : stories.map((story, index) => {
+                                const isLive = new Date(story.expiresAt) > new Date();
+                                return (
+                                    <tr key={story.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <span className="text-sm font-medium text-gray-800 dark:text-white">
+                                                {(pagination.page - 1) * pagination.limit + index + 1}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-white/5">
+                                                <img
+                                                    src={story.mediaUrl?.startsWith('http') ? story.mediaUrl : `http://localhost:5000/uploads/${story.mediaUrl}`}
+                                                    alt={`Story by ${story.username}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center overflow-hidden">
+                                                    <img
+                                                        src={`https://ui-avatars.com/api/?name=${story.username}&background=random`}
+                                                        alt={story.username}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm text-gray-800 dark:text-white">{story.username}</p>
+                                                    <p className="text-[11px] text-gray-400 font-medium lowercase">{story.username}@demo.com</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="space-y-0.5">
+                                                <p className="text-sm font-semibold text-gray-800 dark:text-white">
+                                                    {new Date(story.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                                </p>
+                                                <p className="text-[11px] text-gray-400 font-medium">
+                                                    {new Date(story.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).toLowerCase()}
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`text-xs font-bold ${isLive
+                                                ? 'text-green-500'
+                                                : 'text-red-500'
+                                                }`}>
+                                                {isLive ? `Live(${Math.ceil((new Date(story.expiresAt) - new Date()) / (1000 * 60 * 60))}h)` : 'Expired'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                            {story.viewsCount || 0} View
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                            {story.likesCount || 0} Like
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    className="p-2 rounded-full bg-green-50 text-green-500 hover:bg-green-100 transition-all"
+                                                    title="View"
+                                                    onClick={() => handleViewDetails(story)}
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button
+                                                    className="p-2 rounded-full bg-red-50 text-red-500 hover:bg-red-100 transition-all"
+                                                    title="Delete"
+                                                    onClick={() => handleDelete(story.id)}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination Controls */}
+                <div className="p-6 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="relative inline-block">
+                            <select
+                                value={pagination.limit}
+                                onChange={(e) => setPagination(p => ({ ...p, limit: parseInt(e.target.value), page: 1 }))}
+                                className="appearance-none px-4 py-1.5 pr-8 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1e293b] text-gray-700 dark:text-gray-300 font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/20 cursor-pointer shadow-sm"
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                        <span className="text-gray-400 font-medium whitespace-nowrap">
+                            Showing <span className="text-gray-900 dark:text-white font-bold">{pagination.total}</span> results
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            disabled={pagination.page === 1}
+                            onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
+                            className="px-3 py-1.5 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent transition-all font-semibold"
+                        >
+                            Previous
+                        </button>
+
+                        {Array.from({ length: Math.min(5, pagination.totalPages || 1) }, (_, i) => {
+                            const pageNum = i + 1;
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setPagination(p => ({ ...p, page: pageNum }))}
+                                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold transition-all ${pagination.page === pageNum
+                                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 dark:shadow-none'
+                                        : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5'
+                                        }`}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+
+                        <button
+                            disabled={pagination.page >= (pagination.totalPages || 1)}
+                            onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
+                            className="px-3 py-1.5 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent transition-all font-semibold"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            {filteredStories.length === 0 && (
+            {!loading && stories.length === 0 && (
                 <div className="glass-card p-12 rounded-2xl text-center">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">No Stories Found</h3>
                     <p className="text-sm text-gray-500">There are no stories matching your search.</p>
+                </div>
+            )}
+
+            {/* Story Detail Modal */}
+            {viewModalOpen && selectedItem && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-5xl h-[80vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:flex-row relative animate-in zoom-in-95 duration-300">
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setViewModalOpen(false)}
+                            className="absolute top-4 right-4 z-10 p-2 bg-black/10 hover:bg-black/20 rounded-full transition-colors hidden md:block"
+                        >
+                            <X size={20} className="text-gray-600" />
+                        </button>
+
+                        {/* Left: Media Content */}
+                        <div className="w-full md:w-1/2 bg-black flex items-center justify-center relative group">
+                            {selectedItem.mediaType === 'VIDEO' ? (
+                                <video
+                                    src={selectedItem.mediaUrl?.startsWith('http') ? selectedItem.mediaUrl : `http://localhost:5000/uploads/${selectedItem.mediaUrl}`}
+                                    className="max-w-full max-h-full object-contain"
+                                    controls
+                                    autoPlay
+                                />
+                            ) : (
+                                <img
+                                    src={selectedItem.mediaUrl?.startsWith('http') ? selectedItem.mediaUrl : `http://localhost:5000/uploads/${selectedItem.mediaUrl}`}
+                                    alt="Story content"
+                                    className="max-w-full max-h-full object-contain"
+                                />
+                            )}
+                        </div>
+
+                        {/* Right: Details */}
+                        <div className="w-full md:w-1/2 flex flex-col h-full bg-white dark:bg-[#1e293b]">
+                            {/* User Header */}
+                            <div className="p-6 border-b border-gray-100 dark:border-white/10 flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full border-2 border-purple-500 p-0.5 overflow-hidden">
+                                    <img
+                                        src={`https://ui-avatars.com/api/?name=${selectedItem.username}&background=random`}
+                                        alt={selectedItem.username}
+                                        className="w-full h-full rounded-full object-cover"
+                                    />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-900 dark:text-white text-lg">{selectedItem.username}</h3>
+                                    <p className="text-xs text-gray-500 mt-0.5">{formatDateShort(selectedItem.createdAt)}</p>
+                                </div>
+                            </div>
+
+                            {/* Interaction Tabs */}
+                            <div className="px-6 py-4 flex items-center gap-3">
+                                <button
+                                    onClick={() => setModalActiveTab('view')}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all border ${modalActiveTab === 'view'
+                                        ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:border-purple-500/30'
+                                        : 'border-gray-100 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-50 shadow-sm'
+                                        }`}
+                                >
+                                    <Eye size={18} /> View
+                                </button>
+                                <button
+                                    onClick={() => setModalActiveTab('like')}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all border ${modalActiveTab === 'like'
+                                        ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:border-purple-500/30'
+                                        : 'border-gray-100 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-50 shadow-sm'
+                                        }`}
+                                >
+                                    <Heart size={18} fill={modalActiveTab === 'like' ? 'currentColor' : 'none'} /> Like
+                                </button>
+                            </div>
+
+                            {/* Content / Interaction List */}
+                            <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4">
+                                {loadingModalData ? (
+                                    <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                                        Loading interactions...
+                                    </div>
+                                ) : (
+                                    <>
+                                        {modalActiveTab === 'view' && (
+                                            modalData.views?.length > 0 ? (
+                                                modalData.views.map((view, i) => (
+                                                    <div key={view.id || i} className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300">
+                                                        <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-white/10">
+                                                            <img
+                                                                src={view.profilePicture || `https://ui-avatars.com/api/?name=${view.username}&background=random`}
+                                                                alt={view.username}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 border-b border-gray-50 dark:border-white/5 pb-3">
+                                                            <h4 className="font-bold text-gray-900 dark:text-white text-sm capitalize">{view.username}</h4>
+                                                            <p className="text-[10px] text-gray-400">{new Date(view.viewedAt).toLocaleString()}</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="h-full flex flex-col items-center justify-center text-gray-400 py-12">
+                                                    <Eye size={32} className="mb-2 opacity-20" />
+                                                    <p className="text-sm font-medium">No views yet</p>
+                                                </div>
+                                            )
+                                        )}
+
+                                        {modalActiveTab === 'like' && (
+                                            modalData.likes?.length > 0 ? (
+                                                modalData.likes.map((like, i) => (
+                                                    <div key={like.id || i} className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300">
+                                                        <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-white/10">
+                                                            <img
+                                                                src={like.profilePicture || `https://ui-avatars.com/api/?name=${like.username}&background=random`}
+                                                                alt={like.username}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 border-b border-gray-50 dark:border-white/5 pb-3">
+                                                            <h4 className="font-bold text-gray-900 dark:text-white text-sm capitalize">{like.username}</h4>
+                                                            <p className="text-[10px] text-purple-500 font-medium">Liked this story</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="h-full flex flex-col items-center justify-center text-gray-400 py-12">
+                                                    <Heart size={32} className="mb-2 opacity-20" />
+                                                    <p className="text-sm font-medium">No likes yet</p>
+                                                </div>
+                                            )
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
