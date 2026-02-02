@@ -563,3 +563,253 @@
  *       200:
  *         description: Search results
  */
+
+// --- REPORTS ---
+
+/**
+ * @swagger
+ * tags:
+ *   name: Reports
+ *   description: Quality and safety reporting
+ */
+
+/**
+ * @swagger
+ * /users/profile/report-problem:
+ *   post:
+ *     summary: Submit a general problem report
+ *     tags: [Reports]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *               files:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               browserInfo:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Report submitted successfully
+ */
+
+// --- ADMIN ---
+
+/**
+ * @swagger
+ * tags:
+ *   name: Admin
+ *   description: Administrative governance and control (Admin Token Required)
+ */
+
+/**
+ * @swagger
+ * /admin/auth/login:
+ *   post:
+ *     summary: Admin panel login
+ *     tags: [Admin]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ */
+
+/**
+ * @swagger
+ * /admin/auth/roles:
+ *   get:
+ *     summary: Get all admin roles
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: List of roles
+ */
+
+/**
+ * @swagger
+ * /admin/dashboard/kpis:
+ *   get:
+ *     summary: Get platform performance indicators
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: List of statistics
+ */
+
+/**
+ * @swagger
+ * /admin/users:
+ *   get:
+ *     summary: List all users for management
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Success
+ */
+
+/**
+ * @swagger
+ * /admin/users/{userId}:
+ *   get:
+ *     summary: Get full user details for admin
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User details found
+ */
+
+/**
+ * @swagger
+ * /admin/users/{userId}/ban:
+ *   patch:
+ *     summary: Ban a user permanently
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User banned
+ */
+
+/**
+ * @swagger
+ * /admin/reports:
+ *   get:
+ *     summary: List all user reports
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Success
+ */
+
+/**
+ * @swagger
+ * /admin/moderation/posts:
+ *   get:
+ *     summary: List all posts for moderation
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Success
+ */
+
+/**
+ * @swagger
+ * /admin/moderation/posts/{postId}:
+ *   delete:
+ *     summary: Delete a post by admin
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Post deleted successfully
+ */
+
+/**
+ * @swagger
+ * /admin/hashtags:
+ *   get:
+ *     summary: List and manage hashtags
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Success
+ */
+
+/**
+ * @swagger
+ * /admin/analytics/countries:
+ *   get:
+ *     summary: Get regional user distribution
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Analytics data returned
+ */
+
+/**
+ * @swagger
+ * /admin/cms/pages:
+ *   get:
+ *     summary: List CMS pages
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Page list returned
+ */
+
+/**
+ * @swagger
+ * /admin/notifications/global:
+ *   post:
+ *     summary: Send a global system notification
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               message:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Notification broadcast successfully
+ */
+
+/**
+ * @swagger
+ * /admin/messages/reported:
+ *   get:
+ *     summary: Review reported direct messages
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Success
+ */
+
+/**
+ * @swagger
+ * /admin/audit:
+ *   get:
+ *     summary: View administrative audit logs
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Log history returned
+ */

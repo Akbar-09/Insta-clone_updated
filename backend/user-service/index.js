@@ -4,7 +4,9 @@ const cors = require('cors');
 const { connectRabbitMQ } = require('./config/rabbitmq');
 const sequelize = require('./config/database');
 const UserProfile = require('./models/UserProfile');
+const Avatar = require('./models/Avatar');
 const Report = require('./models/Report'); // Ensure Report is synced
+
 require('dotenv').config();
 
 const app = express();
@@ -25,6 +27,10 @@ app.get('/health', (req, res) => {
 
 // Use Profile Routes FIRST (most specific)
 app.use('/profile', profileRoutes);
+
+// Internal Analytics Routes
+const internalRoutes = require('./routes/internalRoutes');
+app.use('/internal', internalRoutes);
 
 // Use Follow Routes
 app.use('/', followRoutes); // Gateway rewrites /api/v1/users to / so we mount at root

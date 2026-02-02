@@ -30,7 +30,16 @@ const Comment = sequelize.define('Comment', {
     likesCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0
+    },
+    status: {
+        type: DataTypes.ENUM('pending', 'approved', 'flagged', 'removed'),
+        defaultValue: 'pending'
+    },
+    reportedCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 });
+
 
 module.exports = Comment;

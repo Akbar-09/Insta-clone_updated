@@ -2,23 +2,34 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import AuthLayout from '../../layouts/AuthLayout';
+import { login } from '../../api/adminApi';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
 
-        // Mock Auth
-        setTimeout(() => {
+        try {
+            const result = await login(email, password);
+            if (result.success) {
+                navigate('/dashboard');
+            } else {
+                setError(result.message || 'Login failed');
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Server error. Please check if backend is running.');
+            console.error('Login error:', err);
+        } finally {
             setLoading(false);
-            navigate('/dashboard');
-        }, 1500);
+        }
     };
 
     return (
@@ -27,6 +38,11 @@ const Login = () => {
             subtitle="Sign in to manage the platform"
         >
             <form onSubmit={handleLogin} className="space-y-5">
+                {error && (
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm font-medium animate-shake">
+                        {error}
+                    </div>
+                )}
                 <div className="space-y-1.5">
                     <label className="text-sm font-medium text-gray-700 ml-1">Email Address</label>
                     <div className="relative group">
@@ -39,7 +55,7 @@ const Login = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             required
                             className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-medium sm:text-sm"
-                            placeholder="admin@instagram.com"
+                            placeholder="admin@jaadoe.com"
                         />
                     </div>
                 </div>

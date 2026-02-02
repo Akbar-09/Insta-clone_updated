@@ -10,7 +10,7 @@ const AdClick = sequelize.define('AdClick', {
     },
     adId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: Ad,
             key: 'id'

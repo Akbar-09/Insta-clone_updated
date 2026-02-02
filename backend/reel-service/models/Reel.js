@@ -30,6 +30,14 @@ const Reel = sequelize.define('Reel', {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
+    viewsCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
+    isHidden: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,

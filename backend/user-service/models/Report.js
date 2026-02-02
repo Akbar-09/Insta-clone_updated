@@ -9,15 +9,15 @@ const Report = sequelize.define('Report', {
     },
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     username: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     text: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     },
     files: {
         type: DataTypes.JSONB, // Store array of file paths/URLs

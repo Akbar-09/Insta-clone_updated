@@ -7,66 +7,50 @@ const Ad = sequelize.define('Ad', {
         autoIncrement: true,
         primaryKey: true,
     },
-    userId: { // The advertiser
+    advertiserId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
     },
-    username: {
+    imageUrl: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     },
-    profileImage: {
+    targetUrl: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: true,
     },
-    caption: {
+    headline: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    description: {
         type: DataTypes.TEXT,
+        allowNull: true,
     },
-    mediaUrl: {
-        type: DataTypes.STRING,
-        allowNull: false,
+    type: {
+        type: DataTypes.ENUM('image', 'video', 'carousel'),
+        defaultValue: 'image',
     },
-    mediaType: {
-        type: DataTypes.ENUM('IMAGE', 'VIDEO'),
-        defaultValue: 'IMAGE',
-    },
-    linkUrl: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    ctaText: {
-        type: DataTypes.STRING, // Learn More, Shop Now, etc.
-        defaultValue: 'Learn More',
+    status: {
+        type: DataTypes.ENUM('pending', 'active', 'paused', 'completed', 'rejected'),
+        defaultValue: 'pending',
     },
     budget: {
-        type: DataTypes.FLOAT, // Total budget
-        defaultValue: 0.0,
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
     },
     spent: {
-        type: DataTypes.FLOAT,
-        defaultValue: 0.0,
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
     },
     startDate: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+        allowNull: true,
     },
     endDate: {
         type: DataTypes.DATE,
         allowNull: true,
-    },
-    status: {
-        type: DataTypes.ENUM('PENDING', 'APPROVED', 'ACTIVE', 'PAUSED', 'EXPIRED', 'REJECTED'),
-        defaultValue: 'PENDING',
-    },
-    // Metrics (Denormalized for speed)
-    impressionsCount: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-    },
-    clicksCount: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-    },
+    }
 });
 
 module.exports = Ad;

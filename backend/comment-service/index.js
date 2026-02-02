@@ -14,6 +14,10 @@ app.use(express.json());
 // Routes
 app.use('/', commentRoutes);
 
+const internalRoutes = require('./routes/internalRoutes');
+app.use('/internal', internalRoutes);
+
+
 const startServer = async () => {
     try {
         // Explicitly load models to ensure sync works
