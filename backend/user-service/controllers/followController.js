@@ -57,10 +57,10 @@ exports.getFollowers = async (req, res) => {
     try {
         const { userId } = req.params;
         const followers = await followService.getFollowers(userId);
-        res.json({ status: 'success', data: followers });
+        res.json({ success: true, data: followers });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: 'error', message: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
@@ -68,10 +68,10 @@ exports.getFollowing = async (req, res) => {
     try {
         const { userId } = req.params;
         const following = await followService.getFollowing(userId);
-        res.json({ status: 'success', data: following });
+        res.json({ success: true, data: following });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: 'error', message: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 

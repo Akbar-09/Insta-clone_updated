@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Trash2, X, Heart, MessageCircle, Bookmark } from 'lucide-react';
+import { Eye, Trash2, X, Heart, MessageCircle, Bookmark, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import * as adminApi from '../../api/adminApi';
 
 const StoryManagement = () => {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [stories, setStories] = useState([]);
@@ -75,6 +77,19 @@ const StoryManagement = () => {
             date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).toLowerCase();
     };
 
+    const navigateToUserProfile = (userId) => {
+        // Navigate to the new user profile page
+        navigate(`/user-list/user-profile/${userId}`);
+    };
+
+    const getMediaUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        const baseUrl = 'http://localhost:5000';
+        const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+        return `${baseUrl}${cleanUrl}`;
+    };
+
 
     return (
         <div className="space-y-6">
@@ -140,17 +155,23 @@ const StoryManagement = () => {
                                         <td className="px-6 py-4">
                                             <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-white/5">
                                                 <img
-                                                    src={story.mediaUrl?.startsWith('http') ? story.mediaUrl : `http://localhost:5000/uploads/${story.mediaUrl}`}
+                                                    src={story.mediaUrl?.startsWith('http') ? story.mediaUrl : story.mediaUrl?.startsWith('/') ? story.mediaUrl : `/uploads/${story.mediaUrl}`}
                                                     alt={`Story by ${story.username}`}
                                                     className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpolyline points="21 15 16 10 5 21"%3E%3C/polyline%3E%3C/svg%3E';
+                                                    }}
                                                 />
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center overflow-hidden">
+                                                <div
+                                                    className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center overflow-hidden cursor-pointer"
+                                                    onClick={() => navigateToUserProfile(story.userId)}
+                                                >
                                                     <img
-                                                        src={`https://ui-avatars.com/api/?name=${story.username}&background=random`}
+                                                        src={getMediaUrl(story.userProfilePicture) || `https://ui-avatars.com/api/?name=${story.username}&background=random`}
                                                         alt={story.username}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -292,16 +313,30 @@ const StoryManagement = () => {
                         <div className="w-full md:w-1/2 bg-black flex items-center justify-center relative group">
                             {selectedItem.mediaType === 'VIDEO' ? (
                                 <video
-                                    src={selectedItem.mediaUrl?.startsWith('http') ? selectedItem.mediaUrl : `http://localhost:5000/uploads/${selectedItem.mediaUrl}`}
+                                    src={selectedItem.mediaUrl?.startsWith('http') ? selectedItem.mediaUrl : selectedItem.mediaUrl?.startsWith('/') ? selectedItem.mediaUrl : `/uploads/${selectedItem.mediaUrl}`}
                                     className="max-w-full max-h-full object-contain"
                                     controls
                                     autoPlay
+                                    onError={(e) => {
+                                        console.error('Video load error:', e);
+                                        e.target.style.display = 'none';
+                                        const errorDiv = document.createElement('div');
+                                        errorDiv.className = 'text-white text-center p-8';
+                                        errorDiv.innerHTML = '<p>Failed to load video</p>';
+                                        e.target.parentNode.appendChild(errorDiv);
+                                    }}
                                 />
                             ) : (
                                 <img
-                                    src={selectedItem.mediaUrl?.startsWith('http') ? selectedItem.mediaUrl : `http://localhost:5000/uploads/${selectedItem.mediaUrl}`}
+                                    src={selectedItem.mediaUrl?.startsWith('http') ? selectedItem.mediaUrl : selectedItem.mediaUrl?.startsWith('/') ? selectedItem.mediaUrl : `/uploads/${selectedItem.mediaUrl}`}
                                     alt="Story content"
                                     className="max-w-full max-h-full object-contain"
+                                    onError={(e) => {
+                                        console.error('Image load error:', e);
+                                        console.log('Attempted URL:', e.target.src);
+                                        console.log('Original mediaUrl:', selectedItem.mediaUrl);
+                                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpolyline points="21 15 16 10 5 21"%3E%3C/polyline%3E%3C/svg%3E';
+                                    }}
                                 />
                             )}
                         </div>
@@ -310,14 +345,17 @@ const StoryManagement = () => {
                         <div className="w-full md:w-1/2 flex flex-col h-full bg-white dark:bg-[#1e293b]">
                             {/* User Header */}
                             <div className="p-6 border-b border-gray-100 dark:border-white/10 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full border-2 border-purple-500 p-0.5 overflow-hidden">
+                                <div
+                                    className="w-12 h-12 rounded-full border-2 border-purple-500 p-0.5 overflow-hidden cursor-pointer"
+                                    onClick={() => navigateToUserProfile(selectedItem.userId)}
+                                >
                                     <img
-                                        src={`https://ui-avatars.com/api/?name=${selectedItem.username}&background=random`}
+                                        src={getMediaUrl(selectedItem.userProfilePicture) || `https://ui-avatars.com/api/?name=${selectedItem.username}&background=random`}
                                         alt={selectedItem.username}
                                         className="w-full h-full rounded-full object-cover"
                                     />
                                 </div>
-                                <div>
+                                <div className="cursor-pointer" onClick={() => navigateToUserProfile(selectedItem.userId)}>
                                     <h3 className="font-bold text-gray-900 dark:text-white text-lg">{selectedItem.username}</h3>
                                     <p className="text-xs text-gray-500 mt-0.5">{formatDateShort(selectedItem.createdAt)}</p>
                                 </div>
@@ -356,12 +394,24 @@ const StoryManagement = () => {
                                         {modalActiveTab === 'view' && (
                                             modalData.views?.length > 0 ? (
                                                 modalData.views.map((view, i) => (
-                                                    <div key={view.id || i} className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300">
+                                                    <div
+                                                        key={view.id || i}
+                                                        className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl p-2 -mx-2 transition-colors"
+                                                        onClick={() => navigateToUserProfile(view.viewerId)}
+                                                    >
                                                         <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-white/10">
                                                             <img
-                                                                src={view.profilePicture || `https://ui-avatars.com/api/?name=${view.username}&background=random`}
+                                                                src={view.profilePicture?.startsWith('http')
+                                                                    ? view.profilePicture
+                                                                    : view.profilePicture
+                                                                        ? (view.profilePicture?.startsWith('/') ? view.profilePicture : `/uploads/${view.profilePicture}`)
+                                                                        : `https://ui-avatars.com/api/?name=${view.username}&background=random`
+                                                                }
                                                                 alt={view.username}
                                                                 className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    e.target.src = `https://ui-avatars.com/api/?name=${view.username}&background=random`;
+                                                                }}
                                                             />
                                                         </div>
                                                         <div className="flex-1 border-b border-gray-50 dark:border-white/5 pb-3">
@@ -381,12 +431,24 @@ const StoryManagement = () => {
                                         {modalActiveTab === 'like' && (
                                             modalData.likes?.length > 0 ? (
                                                 modalData.likes.map((like, i) => (
-                                                    <div key={like.id || i} className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300">
+                                                    <div
+                                                        key={like.id || i}
+                                                        className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl p-2 -mx-2 transition-colors"
+                                                        onClick={() => navigateToUserProfile(like.reactorId)}
+                                                    >
                                                         <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-white/10">
                                                             <img
-                                                                src={like.profilePicture || `https://ui-avatars.com/api/?name=${like.username}&background=random`}
+                                                                src={like.profilePicture?.startsWith('http')
+                                                                    ? like.profilePicture
+                                                                    : like.profilePicture
+                                                                        ? (like.profilePicture?.startsWith('/') ? like.profilePicture : `/uploads/${like.profilePicture}`)
+                                                                        : `https://ui-avatars.com/api/?name=${like.username}&background=random`
+                                                                }
                                                                 alt={like.username}
                                                                 className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    e.target.src = `https://ui-avatars.com/api/?name=${like.username}&background=random`;
+                                                                }}
                                                             />
                                                         </div>
                                                         <div className="flex-1 border-b border-gray-50 dark:border-white/5 pb-3">

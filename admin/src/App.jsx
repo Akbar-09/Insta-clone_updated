@@ -8,6 +8,7 @@ import Dashboard from './pages/dashboard';
 
 // User Management
 import UserManagement from './pages/users';
+import UserProfile from './pages/users/UserProfile';
 import BlockList from './pages/users/BlockList';
 
 // Content & Stories
@@ -62,8 +63,9 @@ function App() {
                         <Route path="dashboard" element={<Dashboard />} />
 
                         {/* User Management */}
-                        <Route path="users" element={<UserManagement />} />
-                        <Route path="users/blocklist" element={<BlockList />} />
+                        <Route path="user-list" element={<UserManagement />} />
+                        <Route path="user-list/user-profile/:userId" element={<UserProfile />} />
+                        <Route path="user-list/blocklist" element={<BlockList />} />
 
                         {/* Content Management (Standard List) */}
                         <Route path="content/posts" element={<ContentManagement initialTab="posts" />} />

@@ -41,8 +41,8 @@ const Sidebar = () => {
             title: 'User Management',
             key: 'users',
             items: [
-                { name: 'User List', icon: <Users size={20} />, path: '/users' },
-                { name: 'Block List', icon: <Ban size={20} />, path: '/users/blocklist' }
+                { name: 'User List', icon: <Users size={20} />, path: '/user-list' },
+                { name: 'Block List', icon: <Ban size={20} />, path: '/user-list/blocklist' }
             ]
         },
         {

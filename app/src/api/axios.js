@@ -1,15 +1,20 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: '/api/v1',
+    baseURL: '/api/v1/',
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Request Interceptor: Attach Token
+// Request Interceptor: Attach Token & Normalize URL
 api.interceptors.request.use(
     (config) => {
+        // Automatically remove leading slash from URL to ensure it appends to baseURL
+        if (config.url && config.url.startsWith('/')) {
+            config.url = config.url.substring(1);
+        }
+
         const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;

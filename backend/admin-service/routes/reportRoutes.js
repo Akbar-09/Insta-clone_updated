@@ -1,17 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const reportController = require('../controllers/reportController');
-const { authenticateAdmin, authorizePermissions } = require('../middleware/authMiddleware');
+const { authenticateAdmin } = require('../middleware/authMiddleware');
 
+// All routes require admin authentication
 router.use(authenticateAdmin);
 
-router.use(authorizePermissions(['report_moderation']));
-
-router.get('/', reportController.getReports);
+// Report statistics
 router.get('/stats', reportController.getReportStats);
-router.get('/:reportId', reportController.getReportById);
-router.patch('/:reportId/ignore', reportController.ignoreReport);
-router.patch('/:reportId/ban-user', reportController.banUserFromReport);
 
+// List reports with filtering
+router.get('/', reportController.listReports);
+
+// Get specific report details
+router.get('/:id', reportController.getReportById);
+
+// Report actions
+router.post('/:id/ignore', reportController.ignoreReport);
+router.post('/:id/ban-user', reportController.banUserFromReport);
 
 module.exports = router;

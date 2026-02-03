@@ -1,168 +1,143 @@
-const { Report, AuditLog } = require('../models');
+const { AuditLog } = require('../models');
 const internalApi = require('../services/internalApi');
-const { Op } = require('sequelize');
 
-exports.getReports = async (req, res) => {
-    try {
-        const { status, page = 1, limit = 10 } = req.query;
-        const offset = (parseInt(page) - 1) * parseInt(limit);
-        const whereClause = {};
-        if (status && status !== 'all') whereClause.status = status;
 
-        const { count, rows } = await Report.findAndCountAll({
-            where: whereClause,
-            limit: parseInt(limit),
-            offset,
-            order: [['created_at', 'DESC']]
-        });
-
-        // Enrich reports with user data
-        const enrichedReports = await Promise.all(rows.map(async (report) => {
-            const enriched = report.toJSON();
-            try {
-                const userRes = await internalApi.getUser(report.reported_user_id);
-                if (userRes.data.success) {
-                    enriched.reportedUsername = userRes.data.data.username;
-                    enriched.reportedUser = userRes.data.data;
-                }
-            } catch (err) {
-                enriched.reportedUsername = 'Unknown';
-            }
-            return enriched;
-        }));
-
-        res.json({
-            success: true,
-            data: enrichedReports,
-            pagination: {
-                total: count,
-                page: parseInt(page),
-                limit: parseInt(limit),
-                totalPages: Math.ceil(count / parseInt(limit))
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
+// Get report statistics
 exports.getReportStats = async (req, res) => {
     try {
-        const pending = await Report.count({ where: { status: 'pending' } });
-        const underReview = await Report.count({ where: { status: 'review' } });
-
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const resolvedToday = await Report.count({
-            where: {
-                status: 'resolved',
-                updated_at: { [Op.gte]: todayStart }
-            }
-        });
+        const [pending, underReview, resolvedToday] = await Promise.all([
+            // Count pending reports from post-service
+            internalApi.getReportStats('pending'),
+            // Count under review reports
+            internalApi.getReportStats('review'),
+            // Count resolved today
+            internalApi.getReportStats('resolved_today')
+        ]);
 
         res.json({
             success: true,
-            data: { pending, underReview, resolvedToday }
+            data: {
+                pending: pending.data?.data?.count || 0,
+                underReview: underReview.data?.data?.count || 0,
+                resolvedToday: resolvedToday.data?.data?.count || 0
+            }
         });
     } catch (error) {
+        console.error('Get Report Stats Error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
+// List reports with filtering and pagination
+exports.listReports = async (req, res) => {
+    try {
+        const { status = 'pending', page = 1, limit = 10 } = req.query;
+
+        const response = await internalApi.listReports({
+            status,
+            page: parseInt(page),
+            limit: parseInt(limit)
+        });
+
+        if (response.data.success) {
+            res.json(response.data);
+        } else {
+            res.status(500).json({ success: false, message: 'Failed to fetch reports' });
+        }
+    } catch (error) {
+        console.error('List Reports Error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Get report by ID with full details
 exports.getReportById = async (req, res) => {
     try {
-        const report = await Report.findByPk(req.params.reportId);
-        if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
+        const { id } = req.params;
 
-        const enriched = report.toJSON();
+        const response = await internalApi.getReportById(id);
 
-        // Fetch Reported User
-        try {
-            const userRes = await internalApi.getUser(report.reported_user_id);
-            if (userRes.data.success) enriched.reportedUser = userRes.data.data;
-        } catch (err) { }
-
-        // Fetch Content
-        try {
-            let contentRes;
-            if (report.content_type === 'post') contentRes = await internalApi.getPost(report.content_id);
-            if (report.content_type === 'reel') contentRes = await internalApi.getReel(report.content_id);
-            if (report.content_type === 'comment') contentRes = await internalApi.getComment(report.content_id);
-
-            if (contentRes && contentRes.data.success) {
-                const rawContent = contentRes.data.data;
-                enriched.content = {
-                    type: report.content_type,
-                    text: rawContent.caption || rawContent.text || rawContent.content || '',
-                    mediaUrl: rawContent.mediaUrl || rawContent.videoUrl || '',
-                    createdAt: rawContent.createdAt
-                };
-            }
-        } catch (err) { }
-
-        res.json({ success: true, data: enriched });
+        if (response.data.success) {
+            res.json(response.data);
+        } else {
+            res.status(404).json({ success: false, message: 'Report not found' });
+        }
     } catch (error) {
+        console.error('Get Report By ID Error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
+// Ignore/Resolve a report
 exports.ignoreReport = async (req, res) => {
     try {
-        const report = await Report.findByPk(req.params.reportId);
-        if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
+        const { id } = req.params;
+        const adminId = req.headers['x-user-id'];
 
-        report.status = 'resolved';
-        report.resolution_type = 'ignored';
-        await report.save();
+        const response = await internalApi.updateReportStatus(id, 'resolved', adminId);
 
-        await AuditLog.create({
-            adminId: req.admin.id,
-            actionType: 'ignore_report',
-            targetType: 'report',
-            targetId: report.id,
-            metadata: { reportedUserId: report.reported_user_id }
-        });
+        if (response.data.success) {
+            // Log the action using Sequelize
+            await AuditLog.create({
+                adminId: parseInt(adminId),
+                action: 'IGNORE_REPORT',
+                targetType: 'report',
+                targetId: id,
+                details: JSON.stringify({ reportId: id })
+            });
 
-        res.json({ success: true, message: 'Report ignored successfully' });
+            res.json({ success: true, message: 'Report ignored successfully' });
+        } else {
+            res.status(500).json({ success: false, message: 'Failed to ignore report' });
+        }
     } catch (error) {
+        console.error('Ignore Report Error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
+// Ban user from report
 exports.banUserFromReport = async (req, res) => {
     try {
-        const report = await Report.findByPk(req.params.reportId);
-        if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
+        const { id } = req.params;
+        const adminId = req.headers['x-user-id'];
 
-        // Call User Service to ban user
-        const banRes = await internalApi.banUser(report.reported_user_id);
-        if (!banRes.data.success) {
-            return res.status(500).json({ success: false, message: 'Failed to ban user via User Service' });
+        // Get report details first
+        const reportResponse = await internalApi.getReportById(id);
+
+        if (!reportResponse.data.success) {
+            return res.status(404).json({ success: false, message: 'Report not found' });
         }
 
-        report.status = 'resolved';
-        report.resolution_type = 'user_banned';
-        await report.save();
+        const report = reportResponse.data.data;
+        const userId = report.reportedUserId || report.content?.userId;
 
-        await AuditLog.create({
-            adminId: req.admin.id,
-            actionType: 'ban_user_from_report',
-            targetType: 'report',
-            targetId: report.id,
-            metadata: { reportedUserId: report.reported_user_id }
-        });
+        if (!userId) {
+            return res.status(400).json({ success: false, message: 'Cannot identify user to ban' });
+        }
 
-        res.json({ success: true, message: 'User banned and report resolved' });
+        // Ban the user
+        const banResponse = await internalApi.banUser(userId);
+
+        if (banResponse.data.success) {
+            // Update report status
+            await internalApi.updateReportStatus(id, 'resolved', adminId);
+
+            // Log the action using Sequelize
+            await AuditLog.create({
+                adminId: parseInt(adminId),
+                action: 'BAN_USER_FROM_REPORT',
+                targetType: 'user',
+                targetId: String(userId),
+                details: JSON.stringify({ reportId: id, userId })
+            });
+
+            res.json({ success: true, message: 'User banned successfully' });
+        } else {
+            res.status(500).json({ success: false, message: 'Failed to ban user' });
+        }
     } catch (error) {
+        console.error('Ban User From Report Error:', error);
         res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-exports.getUserReportCount = async (reportedUserId) => {
-    try {
-        return await Report.count({ where: { reported_user_id: reportedUserId } });
-    } catch (err) {
-        console.error('Error fetching report count:', err);
-        return 0;
     }
 };
