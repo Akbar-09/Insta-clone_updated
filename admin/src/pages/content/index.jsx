@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Trash2, X, Heart, MessageCircle, Bookmark } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import * as adminApi from '../../api/adminApi';
 
 const ContentManagement = ({ initialTab = 'posts' }) => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState(initialTab);
+
+    const navigateToUserProfile = (userId) => {
+        if (!userId) return;
+        navigate(`/user-list/user-profile/${userId}`);
+    };
     const [searchQuery, setSearchQuery] = useState('');
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -103,6 +110,14 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
         }
     };
 
+    const getMediaUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        const baseUrl = 'http://localhost:5000';
+        const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+        return `${baseUrl}${cleanUrl}`;
+    };
+
     const formatDateShort = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -170,7 +185,7 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                         {activeTab === 'posts' ? (
                                             <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm">
                                                 <img
-                                                    src={item.mediaUrl?.startsWith('http') ? item.mediaUrl : `http://localhost:5000/uploads/${item.mediaUrl}`}
+                                                    src={getMediaUrl(item.mediaUrl)}
                                                     alt={`Post by ${item.username}`}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -178,7 +193,7 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                         ) : (
                                             <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm bg-black border border-gray-100 dark:border-white/5">
                                                 <video
-                                                    src={item.videoUrl?.startsWith('http') ? item.videoUrl : `http://localhost:5000/uploads/${item.videoUrl}`}
+                                                    src={getMediaUrl(item.videoUrl)}
                                                     className="w-full h-full object-cover"
                                                     muted
                                                 />
@@ -189,7 +204,7 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                         <div className="flex items-center gap-3">
                                             <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center overflow-hidden">
                                                 <img
-                                                    src={`https://ui-avatars.com/api/?name=${item.username}&background=random`}
+                                                    src={getMediaUrl(item.userProfilePicture) || `https://ui-avatars.com/api/?name=${item.username}&background=random`}
                                                     alt={item.username}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -291,8 +306,8 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                     key={pageNum}
                                     onClick={() => setPagination(p => ({ ...p, page: pageNum }))}
                                     className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold transition-all ${pagination.page === pageNum
-                                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 dark:shadow-none'
-                                            : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5'
+                                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 dark:shadow-none'
+                                        : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     {pageNum}
@@ -327,13 +342,13 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                         <div className="w-full md:w-1/2 bg-black flex items-center justify-center relative group">
                             {activeTab === 'posts' ? (
                                 <img
-                                    src={selectedItem.mediaUrl?.startsWith('http') ? selectedItem.mediaUrl : `http://localhost:5000/uploads/${selectedItem.mediaUrl}`}
+                                    src={getMediaUrl(selectedItem.mediaUrl)}
                                     alt="Post content"
                                     className="max-w-full max-h-full object-contain"
                                 />
                             ) : (
                                 <video
-                                    src={selectedItem.videoUrl?.startsWith('http') ? selectedItem.videoUrl : `http://localhost:5000/uploads/${selectedItem.videoUrl}`}
+                                    src={getMediaUrl(selectedItem.videoUrl)}
                                     className="max-w-full max-h-full object-contain"
                                     controls
                                     autoPlay
@@ -345,10 +360,19 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                         <div className="w-full md:w-1/2 flex flex-col h-full bg-white dark:bg-[#1e293b]">
                             {/* User Header */}
                             <div className="p-6 border-b border-gray-100 dark:border-white/10 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 font-bold">
-                                    {selectedItem.username[0]?.toUpperCase()}
+                                <div
+                                    className="w-12 h-12 rounded-full overflow-hidden bg-purple-100 dark:bg-purple-900/30 cursor-pointer"
+                                    onClick={() => navigateToUserProfile(selectedItem.userId)}
+                                >
+                                    {selectedItem.userProfilePicture ? (
+                                        <img src={getMediaUrl(selectedItem.userProfilePicture)} className="w-full h-full object-cover" alt="" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold">
+                                            {selectedItem.username[0]?.toUpperCase()}
+                                        </div>
+                                    )}
                                 </div>
-                                <div>
+                                <div className="cursor-pointer" onClick={() => navigateToUserProfile(selectedItem.userId)}>
                                     <h3 className="font-bold text-gray-900 dark:text-white text-lg capitalize">{selectedItem.username}</h3>
                                     <p className="text-xs text-gray-500 mt-0.5">{formatDateShort(selectedItem.createdAt)}</p>
                                 </div>
@@ -397,12 +421,24 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                             modalData.comments?.length > 0 ? (
                                                 modalData.comments.map((comment, i) => (
                                                     <div key={comment.id || i} className="flex items-start gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                                                        <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 font-bold shrink-0">
-                                                            {comment.username ? comment.username[0].toUpperCase() : 'U'}
+                                                        <div
+                                                            className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 cursor-pointer"
+                                                            onClick={() => navigateToUserProfile(comment.userId)}
+                                                        >
+                                                            <img
+                                                                src={getMediaUrl(comment.profilePicture) || `https://ui-avatars.com/api/?name=${comment.username}&background=random`}
+                                                                className="w-full h-full object-cover"
+                                                                alt=""
+                                                            />
                                                         </div>
                                                         <div className="flex-1 border-b border-gray-50 dark:border-white/5 pb-3">
                                                             <div className="flex items-center justify-between">
-                                                                <h4 className="font-bold text-gray-900 dark:text-white text-sm capitalize">{comment.username || 'User'}</h4>
+                                                                <h4
+                                                                    className="font-bold text-gray-900 dark:text-white text-sm capitalize cursor-pointer hover:text-purple-600 transition-colors"
+                                                                    onClick={() => navigateToUserProfile(comment.userId)}
+                                                                >
+                                                                    {comment.username || 'User'}
+                                                                </h4>
                                                                 <span className="text-[10px] text-gray-400">{formatDateShort(comment.createdAt)}</span>
                                                             </div>
                                                             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{comment.text}</p>
@@ -421,11 +457,23 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                             modalData.likes?.length > 0 ? (
                                                 modalData.likes.map((like, i) => (
                                                     <div key={like.id || i} className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300">
-                                                        <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 font-bold shrink-0">
-                                                            {like.username ? like.username[0].toUpperCase() : 'U'}
+                                                        <div
+                                                            className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 cursor-pointer"
+                                                            onClick={() => navigateToUserProfile(like.userId || like.reactorId)}
+                                                        >
+                                                            <img
+                                                                src={getMediaUrl(like.profilePicture) || `https://ui-avatars.com/api/?name=${like.username}&background=random`}
+                                                                className="w-full h-full object-cover"
+                                                                alt=""
+                                                            />
                                                         </div>
                                                         <div className="flex-1 border-b border-gray-50 dark:border-white/5 pb-3">
-                                                            <h4 className="font-bold text-gray-900 dark:text-white text-sm capitalize">{like.username || `User_${String(like.userId || i).substring(0, 4)}`}</h4>
+                                                            <h4
+                                                                className="font-bold text-gray-900 dark:text-white text-sm capitalize cursor-pointer hover:text-purple-600 transition-colors"
+                                                                onClick={() => navigateToUserProfile(like.userId || like.reactorId)}
+                                                            >
+                                                                {like.username || `User_${String(like.userId || like.reactorId || i).substring(0, 4)}`}
+                                                            </h4>
                                                             <p className="text-[10px] text-purple-500 font-medium">Liked this content</p>
                                                         </div>
                                                     </div>
@@ -442,11 +490,23 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                             modalData.bookmarks?.length > 0 ? (
                                                 modalData.bookmarks.map((bookmark, i) => (
                                                     <div key={bookmark.id || i} className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300">
-                                                        <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 font-bold shrink-0">
-                                                            {bookmark.username ? bookmark.username[0].toUpperCase() : 'U'}
+                                                        <div
+                                                            className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 cursor-pointer"
+                                                            onClick={() => navigateToUserProfile(bookmark.userId)}
+                                                        >
+                                                            <img
+                                                                src={getMediaUrl(bookmark.profilePicture) || `https://ui-avatars.com/api/?name=${bookmark.username}&background=random`}
+                                                                className="w-full h-full object-cover"
+                                                                alt=""
+                                                            />
                                                         </div>
                                                         <div className="flex-1 border-b border-gray-50 dark:border-white/5 pb-3">
-                                                            <h4 className="font-bold text-gray-900 dark:text-white text-sm capitalize">{bookmark.username || `User_${String(bookmark.userId || i).substring(0, 4)}`}</h4>
+                                                            <h4
+                                                                className="font-bold text-gray-900 dark:text-white text-sm capitalize cursor-pointer hover:text-purple-600 transition-colors"
+                                                                onClick={() => navigateToUserProfile(bookmark.userId)}
+                                                            >
+                                                                {bookmark.username || `User_${String(bookmark.userId || i).substring(0, 4)}`}
+                                                            </h4>
                                                             <p className="text-[10px] text-blue-500 font-medium">Saved to collection</p>
                                                         </div>
                                                     </div>

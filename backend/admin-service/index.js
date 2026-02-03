@@ -12,6 +12,13 @@ const PORT = process.env.PORT || 5016;
 app.use(cors());
 app.use(express.json());
 
+const fs = require('fs');
+app.use((req, res, next) => {
+    const log = `${new Date().toISOString()} ${req.method} ${req.url}\n`;
+    fs.appendFileSync('requests.log', log);
+    next();
+});
+
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
@@ -35,14 +42,13 @@ const avatarManagementRoutes = require('./routes/avatarManagementRoutes');
 
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.get('/health-check', (req, res) => res.json({ success: true }));
+app.use('/moderation', contentManagementRoutes);
 app.use('/users', userManagementRoutes);
 app.use('/avatars', avatarManagementRoutes);
 app.use('/comments', commentModerationRoutes);
-app.use('/moderation', contentManagementRoutes);
 
 app.use('/reports', reportRoutes);
-
-
 
 app.use('/hashtags', hashtagRoutes);
 const exploreAdminRoutes = require('./routes/exploreAdminRoutes');
@@ -62,8 +68,6 @@ app.use('/messages', dmSafetyRoutes);
 app.use('/dm-oversight', dmOversightRoutes);
 app.use('/default-avatars', mediaDefaultRoutes);
 
-
-
 // Health check
 app.get('/health', (req, res) => {
     res.json({ success: true, message: 'Admin Service is healthy' });
@@ -82,7 +86,6 @@ const initApp = async () => {
         await languageService.seedLanguages();
 
         // Seed default Role and SuperAdmin if not exists
-
         const [superRole] = await Role.findOrCreate({
             where: { name: 'SuperAdmin' },
             defaults: { permissions: ['all'] }

@@ -173,7 +173,7 @@ const Dashboard = () => {
                 <div className="glass-card p-6 rounded-2xl">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Latest Users</h3>
-                        <button onClick={() => navigate('/users')} className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
+                        <button onClick={() => navigate('/user-list')} className="text-sm text-pink-600 hover:text-pink-700 font-medium">View All</button>
                     </div>
                     <div className="space-y-3">
                         {data.recentUsers.map((user, idx) => (

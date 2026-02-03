@@ -430,28 +430,39 @@ const checkLikes = async (req, res) => {
 
 const reportPost = async (req, res) => {
     try {
-        const postId = req.params.id;
+        const postId = Number(req.params.id);
         const { reason, details } = req.body;
-        const userId = req.headers['x-user-id'] || req.body.userId;
+        const userId = Number(req.headers['x-user-id'] || req.body.userId);
+
+        console.log('[Report] Request received:', { postId, reason, details, userId });
+        console.log('[Report] Types:', {
+            postId: typeof postId,
+            userId: typeof userId,
+            reason: typeof reason
+        });
 
         if (!userId) {
+            console.log('[Report] Error: No userId provided');
             return res.status(400).json({ message: 'User ID required' });
         }
 
         // Check if post exists
         const post = await Post.findByPk(postId);
         if (!post) {
+            console.log('[Report] Error: Post not found:', postId);
             return res.status(404).json({ message: 'Post not found' });
         }
 
         // Prevent users from reporting their own posts
         if (String(post.userId) === String(userId)) {
+            console.log('[Report] Error: User trying to report own post');
             return res.status(400).json({ message: 'You cannot report your own post' });
         }
 
         // Validate reason
         const validReasons = ['spam', 'violence', 'hate', 'nudity', 'scam', 'false_information', 'bullying', 'other'];
         if (!reason || !validReasons.includes(reason)) {
+            console.log('[Report] Error: Invalid reason:', reason);
             return res.status(400).json({ message: 'Invalid report reason' });
         }
 
@@ -461,10 +472,12 @@ const reportPost = async (req, res) => {
         });
 
         if (existingReport) {
+            console.log('[Report] Error: Duplicate report');
             return res.status(400).json({ message: 'You have already reported this post' });
         }
 
         // Create report
+        console.log('[Report] Creating report:', { postId, reportedBy: userId, reason, details });
         const report = await Report.create({
             postId,
             reportedBy: userId,
@@ -472,7 +485,7 @@ const reportPost = async (req, res) => {
             details: details || null
         });
 
-        console.log(`[Report] Post ${postId} reported by User ${userId} for ${reason}`);
+        console.log(`[Report] Success: Post ${postId} reported by User ${userId} for ${reason}`);
 
         res.json({
             status: 'success',
@@ -480,8 +493,14 @@ const reportPost = async (req, res) => {
             data: { reportId: report.id }
         });
     } catch (error) {
-        console.error('Report Post Error:', error);
-        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+        console.error('[Report] Final Error:', error);
+        if (!res.headersSent) {
+            res.status(500).json({
+                status: 'error',
+                message: 'Internal Server Error',
+                error: error.message
+            });
+        }
     }
 };
 

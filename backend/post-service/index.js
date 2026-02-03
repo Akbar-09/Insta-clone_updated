@@ -1,4 +1,4 @@
-// Post Service Entry Point - Force Restart 2
+// Post Service Entry Point
 const express = require('express');
 const cors = require('cors');
 const { connectRabbitMQ: connectRabbitPublisher } = require('./config/rabbitmq');
@@ -14,15 +14,27 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/', postRoutes);
-
 const internalRoutes = require('./routes/internalRoutes');
+const reportInternalRoutes = require('./routes/reportInternalRoutes');
+
+// Use internal routes first
 app.use('/internal', internalRoutes);
+app.use('/internal', reportInternalRoutes);
+
+// Main post routes
+app.use('/', postRoutes);
 
 const startServer = async () => {
     try {
         // Initialize models
+        const Post = require('./models/Post');
+        const Report = require('./models/Report');
         require('./models/SavedPost');
+
+        // Set up associations
+        Report.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
+        Post.hasMany(Report, { foreignKey: 'postId', as: 'reports' });
+
         await sequelize.sync({ alter: true });
         await connectRabbitPublisher();
         await connectRabbitConsumer();

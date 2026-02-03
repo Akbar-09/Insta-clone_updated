@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Ban, Unlock, Trash2, Eye, Calendar } from 'lucide-react';
 
 const BlockList = () => {
+    const navigate = useNavigate();
     const [blockedUsers, setBlockedUsers] = useState([
         { id: 1, username: '@mike_wilson', email: 'mike@example.com', reason: 'Spam and harassment', blockedDate: '2024-01-15', blockedBy: 'Admin User', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' },
         { id: 2, username: '@sarah_jones', email: 'sarah@example.com', reason: 'Inappropriate content', blockedDate: '2024-01-12', blockedBy: 'Admin User', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400' },
@@ -83,6 +85,7 @@ const BlockList = () => {
                                                 <Unlock className="text-green-600 group-hover:text-green-700" size={18} />
                                             </button>
                                             <button
+                                                onClick={() => navigate(`/user-list/user-profile/${user.id}`)}
                                                 className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
                                                 title="View Details"
                                             >

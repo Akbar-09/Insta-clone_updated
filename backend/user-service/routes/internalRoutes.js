@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const UserProfile = require('../models/UserProfile');
 const { Sequelize } = require('sequelize');
+const followService = require('../services/followService');
 
 const Avatar = require('../models/Avatar');
 
@@ -284,6 +285,15 @@ router.get('/:userId', async (req, res) => {
         const user = await UserProfile.findOne({ where: { userId: req.params.userId } });
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
         res.json({ success: true, data: user });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+router.get('/:userId/follow-counts', async (req, res) => {
+    try {
+        const counts = await followService.getFollowCounts(req.params.userId);
+        res.json({ success: true, data: counts });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }

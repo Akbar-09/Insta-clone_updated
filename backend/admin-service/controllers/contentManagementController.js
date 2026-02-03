@@ -1,11 +1,73 @@
 const internalApi = require('../services/internalApi');
 const { AuditLog } = require('../models');
 
+const enrichInteractions = async (likes = [], comments = [], bookmarks = []) => {
+    const userIds = [...new Set([
+        ...likes.map(l => l.userId || l.reactorId),
+        ...comments.map(c => c.userId),
+        ...bookmarks.map(b => b.userId)
+    ])].filter(Boolean);
+
+    let userMap = {};
+    if (userIds.length > 0) {
+        try {
+            const usersRes = await internalApi.getUsersBulk(userIds);
+            if (usersRes.data.success) {
+                userMap = usersRes.data.data.reduce((acc, user) => {
+                    acc[user.userId] = user;
+                    return acc;
+                }, {});
+            }
+        } catch (err) {
+            console.error('Error fetching bulk users:', err.message);
+        }
+    }
+
+    const enrich = (item, idField) => ({
+        ...item,
+        username: userMap[item[idField]]?.username || item.username || `user_${item[idField]}`,
+        profilePicture: userMap[item[idField]]?.profilePicture || item.profilePicture
+    });
+
+    return {
+        likes: likes.map(l => enrich(l, l.userId ? 'userId' : 'reactorId')),
+        comments: comments.map(c => enrich(c, 'userId')),
+        bookmarks: bookmarks.map(b => enrich(b, 'userId'))
+    };
+};
+
 // Posts
 exports.listPosts = async (req, res) => {
     try {
         const { page, limit, search } = req.query;
         const response = await internalApi.listPosts({ page, limit, search });
+
+        if (response.data.success && response.data.data) {
+            const posts = response.data.data;
+            const userIds = [...new Set(posts.map(p => p.userId))].filter(Boolean);
+
+            let userMap = {};
+            if (userIds.length > 0) {
+                const usersRes = await internalApi.getUsersBulk(userIds);
+                if (usersRes.data.success) {
+                    userMap = usersRes.data.data.reduce((acc, user) => {
+                        acc[user.userId] = user;
+                        return acc;
+                    }, {});
+                }
+            }
+
+            const enrichedPosts = posts.map(post => ({
+                ...post,
+                userProfilePicture: userMap[post.userId]?.profilePicture
+            }));
+
+            return res.json({
+                ...response.data,
+                data: enrichedPosts
+            });
+        }
+
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -68,13 +130,16 @@ exports.getPostInteractions = async (req, res) => {
             internalApi.getPostComments(postId),
             internalApi.getPostBookmarks(postId)
         ]);
+
+        const enriched = await enrichInteractions(
+            likes.data.data,
+            comments.data.data,
+            bookmarks.data.data
+        );
+
         res.json({
             success: true,
-            data: {
-                likes: likes.data.data,
-                comments: comments.data.data,
-                bookmarks: bookmarks.data.data
-            }
+            data: enriched
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -86,6 +151,33 @@ exports.listReels = async (req, res) => {
     try {
         const { page, limit, search } = req.query;
         const response = await internalApi.listReels({ page, limit, search });
+
+        if (response.data.success && response.data.data) {
+            const reels = response.data.data;
+            const userIds = [...new Set(reels.map(r => r.userId))].filter(Boolean);
+
+            let userMap = {};
+            if (userIds.length > 0) {
+                const usersRes = await internalApi.getUsersBulk(userIds);
+                if (usersRes.data.success) {
+                    userMap = usersRes.data.data.reduce((acc, user) => {
+                        acc[user.userId] = user;
+                        return acc;
+                    }, {});
+                }
+            }
+
+            const enrichedReels = reels.map(reel => ({
+                ...reel,
+                userProfilePicture: userMap[reel.userId]?.profilePicture
+            }));
+
+            return res.json({
+                ...response.data,
+                data: enrichedReels
+            });
+        }
+
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -147,13 +239,16 @@ exports.getReelInteractions = async (req, res) => {
             internalApi.getReelLikes(reelId),
             internalApi.getPostComments(reelId)
         ]);
+
+        const enriched = await enrichInteractions(
+            likes.data.data,
+            comments.data.data,
+            []
+        );
+
         res.json({
             success: true,
-            data: {
-                likes: likes.data.data,
-                comments: comments.data.data,
-                bookmarks: []
-            }
+            data: enriched
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -218,6 +313,33 @@ exports.listStories = async (req, res) => {
     try {
         const { page, limit, search, status } = req.query;
         const response = await internalApi.listStories({ page, limit, search, status });
+
+        if (response.data.success && response.data.data) {
+            const stories = response.data.data;
+            const userIds = [...new Set(stories.map(s => s.userId))].filter(Boolean);
+
+            let userMap = {};
+            if (userIds.length > 0) {
+                const usersRes = await internalApi.getUsersBulk(userIds);
+                if (usersRes.data.success) {
+                    userMap = usersRes.data.data.reduce((acc, user) => {
+                        acc[user.userId] = user;
+                        return acc;
+                    }, {});
+                }
+            }
+
+            const enrichedStories = stories.map(story => ({
+                ...story,
+                userProfilePicture: userMap[story.userId]?.profilePicture
+            }));
+
+            return res.json({
+                ...response.data,
+                data: enrichedStories
+            });
+        }
+
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

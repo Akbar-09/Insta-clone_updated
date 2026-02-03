@@ -32,6 +32,19 @@ router.get('/stats/user/:userId', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const reels = await Reel.findAll({
+            where: { userId: req.params.userId },
+            order: [['createdAt', 'DESC']]
+        });
+        res.json({ success: true, data: reels });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 router.get('/list', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;

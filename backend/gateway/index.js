@@ -13,9 +13,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'testsecret';
 
 app.use(cors());
 app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: false, // Disable default CORP to allow external image loading
+    crossOriginEmbedderPolicy: false
 }));
 app.use(morgan('dev'));
+
+app.use((req, res, next) => {
+    console.log(`[Gateway] Request: ${req.method} ${req.url}`);
+    next();
+});
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/swagger/swaggerConfig');
@@ -29,15 +35,14 @@ app.get('/health', (req, res) => {
 
 // Rate Limiter
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Increase limit for development/testing
+    windowMs: 15 * 60 * 1000,
+    max: 1000,
     message: { status: 'error', message: 'Too many requests, please try again later.' }
 });
 app.use(limiter);
 
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
-    // Skip auth for login/signup
     const openPaths = [
         '/api/v1/auth/login',
         '/api/v1/auth/signup',
@@ -49,10 +54,11 @@ const authenticateToken = (req, res, next) => {
         '/uploads',
         '/socket.io',
         '/api/v1/socket.io',
-        '/api/v1/ads/active' // Ads are public
+        '/api/v1/ads/active',
+        // Add specific admin debug route just in case
+        '/api/v1/admin/health-check'
     ];
 
-    // Check if path starts with any open path
     if (openPaths.some(path => req.path.startsWith(path))) {
         return next();
     }
@@ -73,59 +79,53 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// Apply Auth Middleware globally
 app.use(authenticateToken);
-
-// Unified Response Wrapper (Simplified Interceptor)
-// Note: Proxying streams makes full response interception complex. 
-// For now, we assume services return JSON. If we really need unification, 
-// we rely on services or use a transformation handler.
-// Here we verify forwarding and Auth primarily.
 
 // Service Routes Mapping
 const services = [
-    { route: '/auth', target: process.env.AUTH_SERVICE_URL || 'http://127.0.0.1:5001' },
-    { route: '/users', target: process.env.USER_SERVICE_URL || 'http://127.0.0.1:5002' },
-    { route: '/posts', target: process.env.POST_SERVICE_URL || 'http://127.0.0.1:5003' },
-    { route: '/stories', target: process.env.STORY_SERVICE_URL || 'http://127.0.0.1:5004' },
-    { route: '/comments', target: process.env.COMMENT_SERVICE_URL || 'http://127.0.0.1:5006' },
-    { route: '/feed', target: process.env.FEED_SERVICE_URL || 'http://127.0.0.1:5007' },
-    { route: '/notifications', target: process.env.NOTIFICATION_SERVICE_URL || 'http://127.0.0.1:5008' },
-    { route: '/search', target: process.env.SEARCH_SERVICE_URL || 'http://127.0.0.1:5009' },
-    { route: '/messages', target: process.env.MESSAGE_SERVICE_URL || 'http://127.0.0.1:5010' },
-    { route: '/reels', target: process.env.REEL_SERVICE_URL || 'http://127.0.0.1:5005' },
-    { route: '/media', target: process.env.MEDIA_SERVICE_URL || 'http://127.0.0.1:5013' },
-    { route: '/ads', target: process.env.AD_SERVICE_URL || 'http://127.0.0.1:5014' },
-    { route: '/live', target: process.env.LIVE_SERVICE_URL || 'http://127.0.0.1:5015' },
-    { route: '/admin', target: process.env.ADMIN_SERVICE_URL || 'http://127.0.0.1:5016' },
-    { route: '/socket.io', target: process.env.SOCKET_SERVICE_URL || 'http://127.0.0.1:5011', ws: true },
+    { route: '/auth', target: process.env.AUTH_SERVICE_URL || 'http://localhost:5001' },
+    { route: '/users', target: process.env.USER_SERVICE_URL || 'http://localhost:5002' },
+    { route: '/posts', target: process.env.POST_SERVICE_URL || 'http://localhost:5003' },
+    { route: '/stories', target: process.env.STORY_SERVICE_URL || 'http://localhost:5004' },
+    { route: '/comments', target: process.env.COMMENT_SERVICE_URL || 'http://localhost:5006' },
+    { route: '/feed', target: process.env.FEED_SERVICE_URL || 'http://localhost:5007' },
+    { route: '/notifications', target: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:5008' },
+    { route: '/search', target: process.env.SEARCH_SERVICE_URL || 'http://localhost:5009' },
+    { route: '/messages', target: process.env.MESSAGE_SERVICE_URL || 'http://localhost:5010' },
+    { route: '/reels', target: process.env.REEL_SERVICE_URL || 'http://localhost:5005' },
+    { route: '/media', target: process.env.MEDIA_SERVICE_URL || 'http://localhost:5013' },
+    { route: '/ads', target: process.env.AD_SERVICE_URL || 'http://localhost:5014' },
+    { route: '/live', target: process.env.LIVE_SERVICE_URL || 'http://localhost:5015' },
+    // Ensure 5016 is correct for admin
+    { route: '/admin', target: process.env.ADMIN_SERVICE_URL || 'http://localhost:5016' },
+    { route: '/socket.io', target: process.env.SOCKET_SERVICE_URL || 'http://localhost:5011', ws: true },
 ];
 
-console.log('Gateway Services Config:', services);
+console.log('Gateway Services Config Loaded:', services.map(s => s.route).join(', '));
 
 // Proxy Setup
-// Proxy Setup
 services.forEach(({ route, target, ws }) => {
+    // Explicitly mount at /api/v1/ROUTE
+    // We rely on app.use stripping the path, so /api/v1/media/foo -> /foo at target.
+    // This allows target to mount routes at /foo or / directly.
+
     app.use(
         `/api/v1${route}`,
         createProxyMiddleware({
             target,
             changeOrigin: true,
-            ws: ws || false, // Enable Websockets if specified
-            pathRewrite: {
-                [`^/api/v1${route}`]: '', // Remove /api/v1/servicePrefix
-            },
+            ws: ws || false,
+            pathRewrite: { [`^/api/v1${route}`]: '' },
             onProxyReq: (proxyReq, req, res) => {
                 if (req.user) {
-                    proxyReq.setHeader('x-user-id', req.user.id || req.user.userId);
-                    // Also pass username if needed
+                    proxyReq.setHeader('x-user-id', String(req.user.id || req.user.userId || ''));
                     if (req.user.username) {
-                        proxyReq.setHeader('x-user-username', req.user.username);
+                        proxyReq.setHeader('x-user-username', String(req.user.username || ''));
                     }
                 }
             },
             onError: (err, req, res) => {
-                console.error(`Error proxying to ${target}:`, err);
+                console.error(`Error proxying to ${target}:`, err.message);
                 if (!res.headersSent) {
                     res.status(503).json({ status: 'error', message: 'Service Unavailable' });
                 }
@@ -134,15 +134,23 @@ services.forEach(({ route, target, ws }) => {
     );
 });
 
+// Global Error Handler for Gateway
+app.use((err, req, res, next) => {
+    console.error('[Gateway Global Error]', err);
+    if (!res.headersSent) {
+        res.status(500).json({ status: 'error', message: 'Internal Gateway Error' });
+    }
+});
+
 // Proxy for Socket.io (Root Level)
 app.use(
     '/socket.io',
     createProxyMiddleware({
-        target: process.env.SOCKET_SERVICE_URL || 'http://127.0.0.1:5011',
+        target: process.env.SOCKET_SERVICE_URL || 'http://localhost:5011',
         changeOrigin: true,
         ws: true,
         onError: (err, req, res) => {
-            console.error(`Error proxying socket.io:`, err);
+            console.error(`Error proxying socket.io:`, err.message);
         }
     })
 );
@@ -151,11 +159,20 @@ app.use(
 app.use(
     '/uploads',
     createProxyMiddleware({
-        target: process.env.MEDIA_SERVICE_URL || 'http://127.0.0.1:5013',
+        target: process.env.MEDIA_SERVICE_URL || 'http://localhost:5013',
         changeOrigin: true,
+        onProxyRes: (proxyRes, req, res) => {
+            // Add CORS headers to allow cross-origin image loading
+            proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+            proxyRes.headers['Cross-Origin-Resource-Policy'] = 'cross-origin';
+            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS';
+            proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type';
+        },
         onError: (err, req, res) => {
-            console.error(`Error proxying uploads:`, err);
-            res.status(404).send('Not Found');
+            console.error(`Error proxying uploads:`, err.message);
+            if (!res.headersSent) {
+                res.status(404).send('Not Found');
+            }
         }
     })
 );

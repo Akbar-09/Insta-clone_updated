@@ -40,6 +40,7 @@ const internalApi = {
     unbanUser: (id) => axios.patch(`${USER_SVC}/internal/${id}/unban`),
     deleteUser: (id) => axios.delete(`${USER_SVC}/internal/${id}`),
     getUsersBulk: (userIds) => axios.post(`${USER_SVC}/internal/bulk`, { userIds }),
+    getFollowCounts: (userId) => axios.get(`${USER_SVC}/internal/${userId}/follow-counts`),
 
     // Avatar Management
     listAvatars: (params) => axios.get(`${USER_SVC}/internal/avatars`, { params }),
@@ -55,6 +56,7 @@ const internalApi = {
     unhidePost: (id) => axios.patch(`${POST_SVC}/internal/${id}/unhide`),
     deletePost: (id) => axios.delete(`${POST_SVC}/internal/${id}`),
     getUserPostCount: (userId) => axios.get(`${POST_SVC}/internal/stats/user/${userId}`),
+    getUserPosts: (userId) => axios.get(`${POST_SVC}/internal/user/${userId}`),
     getPostLikes: (id) => axios.get(`${POST_SVC}/internal/${id}/likes`),
     getPostBookmarks: (id) => axios.get(`${POST_SVC}/internal/${id}/bookmarks`),
 
@@ -65,7 +67,12 @@ const internalApi = {
     unhideReel: (id) => axios.patch(`${REEL_SVC}/internal/${id}/unhide`),
     deleteReel: (id) => axios.delete(`${REEL_SVC}/internal/${id}`),
     getUserReelCount: (userId) => axios.get(`${REEL_SVC}/internal/stats/user/${userId}`),
+    getUserReels: (userId) => axios.get(`${REEL_SVC}/internal/user/${userId}`),
     getReelLikes: (id) => axios.get(`${REEL_SVC}/internal/${id}/likes`),
+
+    // Followers/Following
+    getUserFollowers: (userId) => axios.get(`${USER_SVC}/${userId}/followers`),
+    getUserFollowing: (userId) => axios.get(`${USER_SVC}/${userId}/following`),
 
     // Content Management (Comments)
     getComment: (id) => axios.get(`${COMMENT_SVC}/internal/${id}`),
@@ -108,7 +115,13 @@ const internalApi = {
                 ]
             }
         };
-    })
+    }),
+
+    // Report Management
+    getReportStats: (type) => axios.get(`${POST_SVC}/internal/reports/stats`, { params: { type } }),
+    listReports: (params) => axios.get(`${POST_SVC}/internal/reports`, { params }),
+    getReportById: (id) => axios.get(`${POST_SVC}/internal/reports/${id}`),
+    updateReportStatus: (id, status, adminId) => axios.patch(`${POST_SVC}/internal/reports/${id}/status`, { status, adminId })
 };
 
 

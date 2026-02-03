@@ -9,15 +9,15 @@ const Report = sequelize.define('Report', {
     },
     postId: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
     },
     reportedBy: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
     },
     reason: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
     },
     details: {
         type: DataTypes.TEXT,
@@ -27,10 +27,9 @@ const Report = sequelize.define('Report', {
         type: DataTypes.STRING,
         defaultValue: 'pending',
     },
-    createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-    },
+}, {
+    timestamps: true,
+    tableName: 'Reports'
 });
 
 module.exports = Report;

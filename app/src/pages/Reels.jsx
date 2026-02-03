@@ -11,6 +11,7 @@ import FollowButton from '../components/FollowButton';
 import SharePostModal from '../components/SharePostModal';
 import PostOptionsMenu from '../components/PostOptionsMenu';
 import api from '../api/axios';
+import ReportModal from '../components/ReportModal';
 
 const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
     const { user } = useContext(AuthContext);
@@ -32,6 +33,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
     const [isSaved, setIsSaved] = useState(reel.isSaved || false);
     const [showShareModal, setShowShareModal] = useState(false);
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
     const [isPlaying, setIsPlaying] = useState(isActive);
     const videoRef = useRef(null);
 
@@ -230,10 +232,14 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
                         isOwnPost={user?.id === (reel.userId || reel.id)}
                         isFollowing={reel.isFollowing}
                         onClose={() => setShowOptionsMenu(false)}
-                        onReport={() => {
-                            setShowOptionsMenu(false);
-                            alert('Report submitted');
-                        }}
+                        onReport={() => setShowReportModal(true)}
+                    />
+                )}
+
+                {showReportModal && (
+                    <ReportModal
+                        postId={reel.id}
+                        onClose={() => setShowReportModal(false)}
                     />
                 )}
 

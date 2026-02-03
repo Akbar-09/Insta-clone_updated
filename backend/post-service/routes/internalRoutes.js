@@ -33,6 +33,18 @@ router.get('/stats/user/:userId', async (req, res) => {
     }
 });
 
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const posts = await Post.findAll({
+            where: { userId: req.params.userId },
+            order: [['createdAt', 'DESC']]
+        });
+        res.json({ success: true, data: posts });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 router.get('/list', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;

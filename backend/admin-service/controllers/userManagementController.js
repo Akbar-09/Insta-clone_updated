@@ -83,16 +83,18 @@ exports.deleteUser = async (req, res) => {
 exports.getUserDetails = async (req, res) => {
     try {
         const { userId } = req.params;
-        const [userRes, postsRes, reelsRes, reportCount] = await Promise.all([
+        const [userRes, postsRes, reelsRes, countsRes, reportCount] = await Promise.all([
             internalApi.getUser(userId),
             internalApi.getUserPostCount(userId),
             internalApi.getUserReelCount(userId),
+            internalApi.getFollowCounts(userId),
             Report.count({ where: { reported_user_id: userId } })
         ]);
 
         const user = userRes.data.data;
         const postCount = postsRes.data.data.count;
         const reelCount = reelsRes.data.data.count;
+        const { followersCount, followingCount } = countsRes.data.data;
 
         res.json({
             success: true,
@@ -102,8 +104,8 @@ exports.getUserDetails = async (req, res) => {
                     posts: postCount,
                     reels: reelCount,
                     reports: reportCount,
-                    // followers: user.followersCount, // Assuming these are in user object
-                    // following: user.followingCount
+                    followers: followersCount,
+                    following: followingCount
                 }
             }
         });
@@ -111,3 +113,40 @@ exports.getUserDetails = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+exports.getUserFollowers = async (req, res) => {
+    try {
+        const response = await internalApi.getUserFollowers(req.params.userId);
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getUserFollowing = async (req, res) => {
+    try {
+        const response = await internalApi.getUserFollowing(req.params.userId);
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getUserPosts = async (req, res) => {
+    try {
+        const response = await internalApi.getUserPosts(req.params.userId);
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getUserReels = async (req, res) => {
+    try {
+        const response = await internalApi.getUserReels(req.params.userId);
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
