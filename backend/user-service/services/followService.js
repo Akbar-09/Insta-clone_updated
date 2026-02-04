@@ -148,7 +148,7 @@ exports.getFollowers = async (userId) => {
         attributes: ['followerId']
     });
 
-    const followerIds = followers.map(f => f.followerId);
+    const followerIds = [...new Set(followers.map(f => f.followerId))];
     return await UserProfile.findAll({
         where: { userId: followerIds }
     });
@@ -163,10 +163,21 @@ exports.getFollowing = async (userId) => {
         attributes: ['followingId']
     });
 
-    const followingIds = following.map(f => f.followingId);
+    const followingIds = [...new Set(following.map(f => f.followingId))];
     return await UserProfile.findAll({
         where: { userId: followingIds }
     });
+};
+
+/**
+ * Get real-time follow counts from Follow table
+ */
+exports.getFollowCounts = async (userId) => {
+    const [followersCount, followingCount] = await Promise.all([
+        Follow.count({ where: { followingId: userId } }),
+        Follow.count({ where: { followerId: userId } })
+    ]);
+    return { followersCount, followingCount };
 };
 
 /**

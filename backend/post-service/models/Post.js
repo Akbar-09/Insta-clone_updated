@@ -34,11 +34,19 @@ const Post = sequelize.define('Post', {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
+    viewsCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
     hideLikes: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
     commentsDisabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    isHidden: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },

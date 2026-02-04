@@ -36,8 +36,29 @@ const Conversation = sequelize.define('Conversation', {
     lastMessageAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
+    },
+    riskScore: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    riskLevel: {
+        type: DataTypes.ENUM('high', 'medium', 'low'),
+        allowNull: true
+    },
+    flaggedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    status: {
+        type: DataTypes.ENUM('flagged', 'investigating', 'cleared'),
+        defaultValue: 'cleared'
+    },
+    aiFlags: {
+        type: DataTypes.JSONB,
+        defaultValue: []
     }
 }, {
+
     indexes: [
         {
             name: 'conversations_user1_user2_idx',

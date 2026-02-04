@@ -24,6 +24,9 @@ app.use(express.json());
 app.use('/', storyRoutes);
 app.use('/', highlightRoutes);
 
+const internalRoutes = require('./routes/internalRoutes');
+app.use('/internal', internalRoutes);
+
 const startServer = async () => {
     try {
         await sequelize.sync({ alter: true });

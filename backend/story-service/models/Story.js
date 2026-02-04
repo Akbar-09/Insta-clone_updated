@@ -27,6 +27,14 @@ const Story = sequelize.define('Story', {
         type: DataTypes.DATE,
         allowNull: false,
     },
+    viewsCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
+    likesCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
     createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,

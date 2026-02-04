@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Report = sequelize.define('Report', {
+const AppFeedback = sequelize.define('AppFeedback', {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -9,30 +9,31 @@ const Report = sequelize.define('Report', {
     },
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     username: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     text: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     },
     files: {
-        type: DataTypes.JSONB, // Store array of file paths/URLs
+        type: DataTypes.JSONB,
         defaultValue: []
     },
     status: {
         type: DataTypes.STRING,
-        defaultValue: 'pending' // 'pending', 'reviewing', 'resolved', 'dismissed'
+        defaultValue: 'pending'
     },
     browserInfo: {
         type: DataTypes.JSONB,
         allowNull: true
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    tableName: 'AppFeedback' // Unique table name
 });
 
-module.exports = Report;
+module.exports = AppFeedback;

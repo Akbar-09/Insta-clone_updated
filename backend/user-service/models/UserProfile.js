@@ -56,6 +56,18 @@ const UserProfile = sequelize.define('UserProfile', {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
+    country: {
+        type: DataTypes.STRING,
+        defaultValue: 'Unknown',
+    },
+    loginProvider: {
+        type: DataTypes.STRING,
+        defaultValue: 'email',
+    },
+    accountStatus: {
+        type: DataTypes.STRING,
+        defaultValue: 'active',
+    },
 });
 
 module.exports = UserProfile;

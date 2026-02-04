@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
                 if (storedToken) {
                     setToken(storedToken);
                     // Using /auth/me to get current user details
-                    const { data } = await api.get('/auth/me');
+                    const { data } = await api.get('auth/me');
                     if (data.status === 'success') {
                         setUser(data.data);
                     }
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const { data } = await api.post('/auth/login', { email, password });
+            const { data } = await api.post('auth/login', { email, password });
             if (data.status === 'success') {
                 localStorage.setItem('token', data.data.token);
                 setToken(data.data.token);
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
 
     const signup = async (userData) => {
         try {
-            const { data } = await api.post('/auth/signup', userData);
+            const { data } = await api.post('auth/signup', userData);
             if (data.status === 'success') {
                 localStorage.setItem('token', data.data.token);
                 setToken(data.data.token);
@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         try {
             // Include deviceId if we had one
-            await api.post('/auth/logout');
+            await api.post('auth/logout');
         } catch (error) {
             console.error("Logout API failed", error);
         } finally {

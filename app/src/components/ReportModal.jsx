@@ -127,7 +127,8 @@ const ReportModal = ({ postId, onClose, onReport }) => {
             setStep('submitted');
         } catch (error) {
             console.error("Report failed", error);
-            alert('Failed to submit report. Please try again.');
+            const serverMessage = error.response?.data?.message || 'Failed to submit report. Please try again.';
+            alert(serverMessage);
         } finally {
             setLoading(false);
         }

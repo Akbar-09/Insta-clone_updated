@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Report = sequelize.define('Report', {
+const PostReport = sequelize.define('PostReport', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -11,12 +11,12 @@ const Report = sequelize.define('Report', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    reportedBy: {
+    userId: { // Renamed from reportedBy for consistency
         type: DataTypes.INTEGER,
         allowNull: false,
     },
     reason: {
-        type: DataTypes.ENUM('spam', 'violence', 'hate', 'nudity', 'scam', 'false_information', 'bullying', 'other'),
+        type: DataTypes.STRING,
         allowNull: false,
     },
     details: {
@@ -24,13 +24,12 @@ const Report = sequelize.define('Report', {
         allowNull: true,
     },
     status: {
-        type: DataTypes.ENUM('pending', 'reviewed', 'resolved', 'dismissed'),
+        type: DataTypes.STRING,
         defaultValue: 'pending',
     },
-    createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-    },
+}, {
+    timestamps: true,
+    tableName: 'PostReports' // Unique table name
 });
 
-module.exports = Report;
+module.exports = PostReport;
