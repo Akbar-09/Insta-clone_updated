@@ -108,7 +108,7 @@ const Analytics = () => {
                     </h3>
                     <div className="w-full h-64 flex items-end gap-2 p-4">
                         {acquisitionChartData.map((d, i) => (
-                            <div key={i} className="flex-1 flex flex-col justify-end group relative">
+                            <div key={i} className="flex-1 flex flex-col justify-end group relative h-full">
                                 <div
                                     className="w-full bg-gradient-to-t from-pink-500 to-violet-500 rounded-t-sm transition-all hover:opacity-100 opacity-60 relative"
                                     style={{ height: `${d.height}%` }}
@@ -133,7 +133,7 @@ const Analytics = () => {
                     </h3>
                     <div className="w-full h-64 flex items-end gap-2 p-4">
                         {engagementChartData.map((d, i) => (
-                            <div key={i} className="flex-1 flex flex-col justify-end group relative">
+                            <div key={i} className="flex-1 flex flex-col justify-end group relative h-full">
                                 <div
                                     className="w-full bg-gradient-to-t from-blue-500 to-cyan-500 rounded-t-sm transition-all hover:opacity-100 opacity-60 relative"
                                     style={{ height: `${d.height}%` }}

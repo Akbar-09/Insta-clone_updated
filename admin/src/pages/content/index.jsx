@@ -114,8 +114,15 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
         if (!url) return null;
         if (url.startsWith('http')) return url;
         const baseUrl = 'http://localhost:5000';
-        const cleanUrl = url.startsWith('/') ? url : `/${url}`;
-        return `${baseUrl}${cleanUrl}`;
+        let cleanPath = url;
+
+        if (url.includes('uploads/')) {
+            cleanPath = url.startsWith('/') ? url : '/' + url;
+        } else {
+            cleanPath = url.startsWith('/') ? `/uploads${url}` : `/uploads/${url}`;
+        }
+
+        return `${baseUrl}${cleanPath}`.replace(/([^:]\/)\/+/g, "$1");
     };
 
     const formatDateShort = (dateString) => {
@@ -182,7 +189,7 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        {activeTab === 'posts' ? (
+                                        {(item.mediaUrl && item.mediaType !== 'VIDEO') ? (
                                             <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm">
                                                 <img
                                                     src={getMediaUrl(item.mediaUrl)}
@@ -193,7 +200,7 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                         ) : (
                                             <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm bg-black border border-gray-100 dark:border-white/5">
                                                 <video
-                                                    src={getMediaUrl(item.videoUrl)}
+                                                    src={getMediaUrl(item.videoUrl || item.mediaUrl)}
                                                     className="w-full h-full object-cover"
                                                     muted
                                                 />
@@ -204,7 +211,7 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                         <div className="flex items-center gap-3">
                                             <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center overflow-hidden">
                                                 <img
-                                                    src={getMediaUrl(item.userProfilePicture) || `https://ui-avatars.com/api/?name=${item.username}&background=random`}
+                                                    src={item.userProfilePicture || `https://ui-avatars.com/api/?name=${item.username}&background=random`}
                                                     alt={item.username}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -340,7 +347,7 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
 
                         {/* Left: Media Content */}
                         <div className="w-full md:w-1/2 bg-black flex items-center justify-center relative group">
-                            {activeTab === 'posts' ? (
+                            {(selectedItem.mediaUrl && selectedItem.mediaType !== 'VIDEO') ? (
                                 <img
                                     src={getMediaUrl(selectedItem.mediaUrl)}
                                     alt="Post content"
@@ -348,7 +355,7 @@ const ContentManagement = ({ initialTab = 'posts' }) => {
                                 />
                             ) : (
                                 <video
-                                    src={getMediaUrl(selectedItem.videoUrl)}
+                                    src={getMediaUrl(selectedItem.mediaUrl || selectedItem.videoUrl)}
                                     className="max-w-full max-h-full object-contain"
                                     controls
                                     autoPlay

@@ -23,6 +23,8 @@ const internalApi = {
     getUserGrowthStats: () => axios.get(`${USER_SVC}/internal/stats`),
     getUserMonthlyGrowth: (year) => axios.get(`${USER_SVC}/internal/growth`, { params: { year } }),
     getEngagementStats: () => axios.get(`${POST_SVC}/internal/stats/engagement`),
+    getPostOverallStats: () => axios.get(`${POST_SVC}/internal/stats/overall`),
+    getReelOverallStats: () => axios.get(`${REEL_SVC}/internal/stats/overall`),
     getEngagementTrends: () => axios.get(`${POST_SVC}/internal/engagement/trends`),
     getTopContent: (limit) => axios.get(`${POST_SVC}/internal/top`, { params: { limit } }),
 
@@ -104,24 +106,31 @@ const internalApi = {
 
     getTrendingHashtags: () => axios.get(`${POST_SVC}/internal/recent`).then(res => {
         // Fallback or real implementation for hashtags. 
-        // For now, we simulate since hashtag service might not be fully implemented as separate.
+        // For now, we simulate with breakdown since hashtag service is minimal.
         return {
             data: {
                 success: true, data: [
-                    { tag: '#jaadoe', count: 1200 },
-                    { tag: '#lifestyle', count: 850 },
-                    { tag: '#tech', count: 640 },
-                    { tag: '#aesthetic', count: 430 }
+                    { tag: '#analytics', postsCount: 145, reelsCount: 89 },
+                    { tag: '#trend', postsCount: 120, reelsCount: 65 },
+                    { tag: '#viral', postsCount: 98, reelsCount: 140 },
+                    { tag: '#demo', postsCount: 85, reelsCount: 40 },
+                    { tag: '#growth', postsCount: 65, reelsCount: 30 }
                 ]
             }
         };
     }),
 
-    // Report Management
+    // Report Management (Post Reports)
     getReportStats: (type) => axios.get(`${POST_SVC}/internal/reports/stats`, { params: { type } }),
     listReports: (params) => axios.get(`${POST_SVC}/internal/reports`, { params }),
     getReportById: (id) => axios.get(`${POST_SVC}/internal/reports/${id}`),
-    updateReportStatus: (id, status, adminId) => axios.patch(`${POST_SVC}/internal/reports/${id}/status`, { status, adminId })
+    updateReportStatus: (id, status, adminId) => axios.patch(`${POST_SVC}/internal/reports/${id}/status`, { status, adminId }),
+
+    // User Feedback / Problems
+    getUserReportStats: (type) => axios.get(`${USER_SVC}/internal/reports/stats`, { params: { type } }),
+    listUserReports: (params) => axios.get(`${USER_SVC}/internal/reports`, { params }),
+    getUserReportById: (id) => axios.get(`${USER_SVC}/internal/reports/${id}`),
+    updateUserReportStatus: (id, status) => axios.patch(`${USER_SVC}/internal/reports/${id}/status`, { status })
 };
 
 

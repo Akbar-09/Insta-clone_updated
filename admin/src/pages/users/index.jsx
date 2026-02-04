@@ -146,7 +146,7 @@ const UserManagement = () => {
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100">
                                                 <img
-                                                    src={getMediaUrl(user.profilePicture) || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
+                                                    src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
                                                     alt={user.username}
                                                     className="w-full h-full object-cover"
                                                 />

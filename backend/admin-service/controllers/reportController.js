@@ -1,26 +1,31 @@
 const { AuditLog } = require('../models');
 const internalApi = require('../services/internalApi');
 
-
 // Get report statistics
 exports.getReportStats = async (req, res) => {
     try {
-        const [pending, underReview, resolvedToday] = await Promise.all([
-            // Count pending reports from post-service
-            internalApi.getReportStats('pending'),
-            // Count under review reports
-            internalApi.getReportStats('review'),
-            // Count resolved today
-            internalApi.getReportStats('resolved_today')
+        const [pStats, uStats] = await Promise.all([
+            Promise.all([
+                internalApi.getReportStats('pending'),
+                internalApi.getReportStats('review'),
+                internalApi.getReportStats('resolved_today')
+            ]),
+            Promise.all([
+                internalApi.getUserReportStats('pending'),
+                internalApi.getUserReportStats('review'),
+                internalApi.getUserReportStats('resolved_today')
+            ])
         ]);
+
+        const stats = {
+            pending: (pStats[0].data?.data?.count || 0) + (uStats[0].data?.data?.count || 0),
+            underReview: (pStats[1].data?.data?.count || 0) + (uStats[1].data?.data?.count || 0),
+            resolvedToday: (pStats[2].data?.data?.count || 0) + (uStats[2].data?.data?.count || 0)
+        };
 
         res.json({
             success: true,
-            data: {
-                pending: pending.data?.data?.count || 0,
-                underReview: underReview.data?.data?.count || 0,
-                resolvedToday: resolvedToday.data?.data?.count || 0
-            }
+            data: stats
         });
     } catch (error) {
         console.error('Get Report Stats Error:', error);
@@ -31,19 +36,44 @@ exports.getReportStats = async (req, res) => {
 // List reports with filtering and pagination
 exports.listReports = async (req, res) => {
     try {
-        const { status = 'pending', page = 1, limit = 10 } = req.query;
+        const { status = 'pending', page = 1, limit = 10, type = 'all' } = req.query;
 
-        const response = await internalApi.listReports({
-            status,
-            page: parseInt(page),
-            limit: parseInt(limit)
-        });
+        let allReports = [];
+        let totalCount = 0;
 
-        if (response.data.success) {
-            res.json(response.data);
-        } else {
-            res.status(500).json({ success: false, message: 'Failed to fetch reports' });
+        if (type === 'all' || type === 'post') {
+            const pRes = await internalApi.listReports({ status, page, limit }).catch(() => ({ data: { success: false } }));
+            if (pRes.data.success) {
+                const reportsWithMeta = pRes.data.data.map(r => ({ ...r, content_type: 'post' }));
+                allReports = [...allReports, ...reportsWithMeta];
+                totalCount += pRes.data.pagination?.total || 0;
+            }
         }
+
+        if (type === 'all' || type === 'user') {
+            const uRes = await internalApi.listUserReports({ status, page, limit }).catch(() => ({ data: { success: false } }));
+            if (uRes.data.success) {
+                const reportsWithMeta = uRes.data.data.map(r => ({ ...r, content_type: 'app_feedback' }));
+                allReports = [...allReports, ...reportsWithMeta];
+                totalCount += uRes.data.pagination?.total || 0;
+            }
+        }
+
+        // Re-sort by date if merged
+        if (type === 'all') {
+            allReports.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        }
+
+        res.json({
+            success: true,
+            data: allReports,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: totalCount,
+                totalPages: Math.ceil(totalCount / parseInt(limit))
+            }
+        });
     } catch (error) {
         console.error('List Reports Error:', error);
         res.status(500).json({ success: false, message: error.message });
@@ -54,10 +84,19 @@ exports.listReports = async (req, res) => {
 exports.getReportById = async (req, res) => {
     try {
         const { id } = req.params;
+        const { type } = req.query; // Optional hint
 
-        const response = await internalApi.getReportById(id);
+        let response;
+        if (type === 'app_feedback' || id.length > 20) { // UUID is likely app_feedback
+            response = await internalApi.getUserReportById(id);
+        } else {
+            response = await internalApi.getReportById(id).catch(() => null);
+            if (!response || !response.data.success) {
+                response = await internalApi.getUserReportById(id);
+            }
+        }
 
-        if (response.data.success) {
+        if (response && response.data.success) {
             res.json(response.data);
         } else {
             res.status(404).json({ success: false, message: 'Report not found' });
@@ -72,23 +111,33 @@ exports.getReportById = async (req, res) => {
 exports.ignoreReport = async (req, res) => {
     try {
         const { id } = req.params;
-        const adminId = req.headers['x-user-id'];
+        const { type } = req.body;
+        const adminId = req.admin ? req.admin.id : (req.headers['x-admin-id'] || req.headers['x-user-id'] || 1);
 
-        const response = await internalApi.updateReportStatus(id, 'resolved', adminId);
-
-        if (response.data.success) {
-            // Log the action using Sequelize
-            await AuditLog.create({
-                adminId: parseInt(adminId),
-                action: 'IGNORE_REPORT',
-                targetType: 'report',
-                targetId: id,
-                details: JSON.stringify({ reportId: id })
-            });
-
-            res.json({ success: true, message: 'Report ignored successfully' });
+        let response;
+        if (type === 'app_feedback' || (typeof id === 'string' && id.length > 20)) {
+            response = await internalApi.updateUserReportStatus(id, 'resolved');
         } else {
-            res.status(500).json({ success: false, message: 'Failed to ignore report' });
+            response = await internalApi.updateReportStatus(id, 'ignored', adminId).catch(() => null);
+            if (!response || !response.data.success) {
+                response = await internalApi.updateUserReportStatus(id, 'resolved');
+            }
+        }
+
+        if (response && response.data.success) {
+            // Log action
+            if (AuditLog) {
+                await AuditLog.create({
+                    adminId: parseInt(adminId),
+                    action: 'IGNORE_REPORT',
+                    targetType: 'report',
+                    targetId: String(id),
+                    details: JSON.stringify({ type })
+                }).catch(console.error);
+            }
+            res.json({ success: true, message: 'Report ignored/resolved' });
+        } else {
+            res.status(500).json({ success: false, message: 'Action failed' });
         }
     } catch (error) {
         console.error('Ignore Report Error:', error);
@@ -100,42 +149,53 @@ exports.ignoreReport = async (req, res) => {
 exports.banUserFromReport = async (req, res) => {
     try {
         const { id } = req.params;
-        const adminId = req.headers['x-user-id'];
+        const { type } = req.body;
+        const adminId = req.admin ? req.admin.id : (req.headers['x-admin-id'] || req.headers['x-user-id'] || 1);
 
-        // Get report details first
-        const reportResponse = await internalApi.getReportById(id);
+        // 1. Get report details to find the user ID
+        let report;
+        let detailRes;
 
-        if (!reportResponse.data.success) {
-            return res.status(404).json({ success: false, message: 'Report not found' });
+        if (type === 'app_feedback' || (typeof id === 'string' && id.length > 20)) {
+            detailRes = await internalApi.getUserReportById(id);
+        } else {
+            detailRes = await internalApi.getReportById(id).catch(() => null);
+            if (!detailRes || !detailRes.data.success) {
+                detailRes = await internalApi.getUserReportById(id);
+            }
         }
 
-        const report = reportResponse.data.data;
-        const userId = report.reportedUserId || report.content?.userId;
-
-        if (!userId) {
-            return res.status(400).json({ success: false, message: 'Cannot identify user to ban' });
+        if (detailRes && detailRes.data.success) {
+            report = detailRes.data.data;
         }
 
-        // Ban the user
-        const banResponse = await internalApi.banUser(userId);
+        if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
 
-        if (banResponse.data.success) {
-            // Update report status
-            await internalApi.updateReportStatus(id, 'resolved', adminId);
+        const userIdToBan = report.reportedUserId || report.userId || (report.content && report.content.userId);
+        if (!userIdToBan) return res.status(400).json({ success: false, message: 'Could not identify user to ban' });
 
-            // Log the action using Sequelize
+        // 2. Ban user via user-service
+        await internalApi.banUser(userIdToBan);
+
+        // 3. Mark report as resolved/banned
+        if (type === 'app_feedback' || (typeof id === 'string' && id.length > 20)) {
+            await internalApi.updateUserReportStatus(id, 'resolved');
+        } else {
+            await internalApi.updateReportStatus(id, 'banned', adminId);
+        }
+
+        // 4. Log action
+        if (AuditLog) {
             await AuditLog.create({
                 adminId: parseInt(adminId),
-                action: 'BAN_USER_FROM_REPORT',
+                action: 'BAN_USER',
                 targetType: 'user',
-                targetId: String(userId),
-                details: JSON.stringify({ reportId: id, userId })
-            });
-
-            res.json({ success: true, message: 'User banned successfully' });
-        } else {
-            res.status(500).json({ success: false, message: 'Failed to ban user' });
+                targetId: String(userIdToBan),
+                details: JSON.stringify({ reportId: id, type })
+            }).catch(console.error);
         }
+
+        res.json({ success: true, message: 'User banned and report resolved' });
     } catch (error) {
         console.error('Ban User From Report Error:', error);
         res.status(500).json({ success: false, message: error.message });

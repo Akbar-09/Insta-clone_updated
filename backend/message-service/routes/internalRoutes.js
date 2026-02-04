@@ -95,4 +95,15 @@ router.patch('/conversations/:conversationId/mark-safe', async (req, res) => {
     }
 });
 
+// Get single conversation
+router.get('/conversations/:conversationId', async (req, res) => {
+    try {
+        const conv = await Conversation.findByPk(req.params.conversationId);
+        if (!conv) return res.status(404).json({ success: false, message: 'Conversation not found' });
+        res.json({ success: true, data: conv });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 module.exports = router;

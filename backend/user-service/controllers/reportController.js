@@ -7,7 +7,11 @@ exports.submitReport = async (req, res) => {
         const { text, files, browserInfo } = req.body;
 
         if (!userId) {
-            return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+            return res.status(401).json({ status: 'error', message: 'Unauthorized: User ID required' });
+        }
+
+        if (!text && (!files || files.length === 0)) {
+            return res.status(400).json({ status: 'error', message: 'Please provide some details or attach a file.' });
         }
 
         const profile = await UserProfile.findOne({ where: { userId } });
@@ -17,8 +21,8 @@ exports.submitReport = async (req, res) => {
             userId,
             username,
             text,
-            files: files || [],
-            browserInfo
+            files: Array.isArray(files) ? files : [],
+            browserInfo: browserInfo || {}
         });
 
         res.status(201).json({
@@ -28,7 +32,11 @@ exports.submitReport = async (req, res) => {
         });
     } catch (error) {
         console.error('Submit Report Error:', error);
-        res.status(500).json({ status: 'error', message: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to submit report. Please try again later.',
+            error: error.message
+        });
     }
 };
 

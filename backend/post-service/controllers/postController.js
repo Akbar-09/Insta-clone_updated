@@ -435,72 +435,70 @@ const reportPost = async (req, res) => {
         const userId = Number(req.headers['x-user-id'] || req.body.userId);
 
         console.log('[Report] Request received:', { postId, reason, details, userId });
-        console.log('[Report] Types:', {
-            postId: typeof postId,
-            userId: typeof userId,
-            reason: typeof reason
-        });
 
-        if (!userId) {
-            console.log('[Report] Error: No userId provided');
-            return res.status(400).json({ message: 'User ID required' });
+        if (!userId || isNaN(userId)) {
+            console.log('[Report] Error: No valid userId provided');
+            return res.status(401).json({ status: 'error', message: 'Unauthorized: Valid User ID required' });
+        }
+
+        if (!postId || isNaN(postId)) {
+            console.log('[Report] Error: No valid postId provided');
+            return res.status(400).json({ status: 'error', message: 'Invalid Post ID' });
         }
 
         // Check if post exists
         const post = await Post.findByPk(postId);
         if (!post) {
             console.log('[Report] Error: Post not found:', postId);
-            return res.status(404).json({ message: 'Post not found' });
+            return res.status(404).json({ status: 'error', message: 'Post not found' });
         }
 
         // Prevent users from reporting their own posts
         if (String(post.userId) === String(userId)) {
             console.log('[Report] Error: User trying to report own post');
-            return res.status(400).json({ message: 'You cannot report your own post' });
+            return res.status(400).json({ status: 'error', message: 'You cannot report your own post' });
         }
 
         // Validate reason
         const validReasons = ['spam', 'violence', 'hate', 'nudity', 'scam', 'false_information', 'bullying', 'other'];
         if (!reason || !validReasons.includes(reason)) {
             console.log('[Report] Error: Invalid reason:', reason);
-            return res.status(400).json({ message: 'Invalid report reason' });
+            return res.status(400).json({ status: 'error', message: 'Please select a valid reason for reporting' });
         }
 
         // Check if user already reported this post
         const existingReport = await Report.findOne({
-            where: { postId, reportedBy: userId }
+            where: { postId, userId: userId }
         });
 
         if (existingReport) {
             console.log('[Report] Error: Duplicate report');
-            return res.status(400).json({ message: 'You have already reported this post' });
+            return res.status(400).json({ status: 'error', message: 'You have already reported this post' });
         }
 
         // Create report
-        console.log('[Report] Creating report:', { postId, reportedBy: userId, reason, details });
+        console.log('[Report] Creating report in DB...');
         const report = await Report.create({
             postId,
-            reportedBy: userId,
+            userId: userId,
             reason,
             details: details || null
         });
 
-        console.log(`[Report] Success: Post ${postId} reported by User ${userId} for ${reason}`);
+        console.log(`[Report] Success: Post ${postId} reported by User ${userId}`);
 
         res.json({
             status: 'success',
-            message: 'Report submitted successfully',
+            message: 'Report submitted successfully. Our team will review it shortly.',
             data: { reportId: report.id }
         });
     } catch (error) {
         console.error('[Report] Final Error:', error);
-        if (!res.headersSent) {
-            res.status(500).json({
-                status: 'error',
-                message: 'Internal Server Error',
-                error: error.message
-            });
-        }
+        res.status(500).json({
+            status: 'error',
+            message: 'An internal error occurred while processing your report. Please try again later.',
+            error: error.message
+        });
     }
 };
 

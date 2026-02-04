@@ -3,8 +3,8 @@ const { AuditLog, Report } = require('../models');
 
 exports.listUsers = async (req, res) => {
     try {
-        const { page, limit, search } = req.query;
-        const response = await internalApi.listUsers({ page, limit, search });
+        const { page, limit, search, status } = req.query;
+        const response = await internalApi.listUsers({ page, limit, search, status });
 
         if (response.data.success && response.data.data) {
             const users = response.data.data;
