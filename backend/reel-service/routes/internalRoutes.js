@@ -23,6 +23,29 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+router.get('/stats/overall', async (req, res) => {
+    try {
+        const stats = await Reel.findOne({
+            attributes: [
+                [Sequelize.fn('SUM', Sequelize.col('likesCount')), 'totalLikes'],
+                [Sequelize.fn('SUM', Sequelize.col('commentsCount')), 'totalComments'],
+                [Sequelize.fn('SUM', Sequelize.col('viewsCount')), 'totalViews']
+            ]
+        });
+
+        res.json({
+            success: true,
+            data: {
+                likes: parseInt(stats?.get('totalLikes') || 0),
+                comments: parseInt(stats?.get('totalComments') || 0),
+                views: parseInt(stats?.get('totalViews') || 0)
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 
 router.get('/stats/user/:userId', async (req, res) => {
     try {

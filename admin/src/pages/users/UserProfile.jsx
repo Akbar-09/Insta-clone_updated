@@ -84,8 +84,17 @@ const UserProfile = () => {
         if (!url) return null;
         if (url.startsWith('http')) return url;
         const baseUrl = 'http://localhost:5000';
-        const cleanUrl = url.startsWith('/') ? url : `/${url}`;
-        return `${baseUrl}${cleanUrl}`;
+        let cleanPath = url;
+
+        // Handle double uploads or missing uploads prefix
+        if (url.includes('uploads/')) {
+            cleanPath = url.startsWith('/') ? url : '/' + url;
+        } else {
+            cleanPath = url.startsWith('/') ? `/uploads${url}` : `/uploads/${url}`;
+        }
+
+        // Sanitize double slashes but keep http://
+        return `${baseUrl}${cleanPath}`.replace(/([^:]\/)\/+/g, "$1");
     };
 
     const tabDisplayName = (tab) => {
@@ -193,11 +202,21 @@ const UserProfile = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-500">
                                 {tabContent.map(item => (
                                     <div key={item.id} className="aspect-square rounded-[24px] overflow-hidden bg-gray-100 dark:bg-white/5 relative group cursor-pointer shadow-sm border border-gray-100 dark:border-white/5">
-                                        <img
-                                            src={getMediaUrl(item.mediaUrl || item.thumbnailUrl)}
-                                            alt="content"
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        />
+                                        {(item.mediaUrl && item.mediaType !== 'VIDEO') ? (
+                                            <img
+                                                src={getMediaUrl(item.mediaUrl)}
+                                                alt="content"
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            />
+                                        ) : (
+                                            <video
+                                                src={getMediaUrl(item.mediaUrl || item.videoUrl)}
+                                                className="w-full h-full object-cover"
+                                                muted
+                                                onMouseOver={e => e.target.play()}
+                                                onMouseOut={e => { e.target.pause(); e.target.currentTime = 0; }}
+                                            />
+                                        )}
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6 text-white font-bold">
                                             <span className="flex items-center gap-2"><Heart size={20} fill="white" /> {item.likesCount || 0}</span>
                                             <span className="flex items-center gap-2"><MessageCircle size={20} fill="white" /> {item.commentsCount || 0}</span>

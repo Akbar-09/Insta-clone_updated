@@ -61,7 +61,7 @@ router.get('/reports', async (req, res) => {
         const reports = rows.map(report => ({
             id: report.id,
             postId: report.postId,
-            reportedBy: report.reportedBy,
+            reportedBy: report.userId,
             reason: report.reason,
             description: report.details,
             status: report.status,
@@ -117,7 +117,7 @@ router.get('/reports/:id', async (req, res) => {
         const formattedReport = {
             id: report.id,
             postId: report.postId,
-            reportedBy: report.reportedBy,
+            reportedBy: report.userId,
             reason: report.reason,
             description: report.details,
             status: report.status,

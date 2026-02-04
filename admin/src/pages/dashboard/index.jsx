@@ -232,13 +232,19 @@ const Dashboard = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         {data.recentPosts.map((post, idx) => (
-                            <div key={post.id || idx} className="relative group cursor-pointer rounded-xl overflow-hidden shadow-sm">
-                                <img src={post.mediaUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400'} alt="" className="w-full aspect-square object-cover" />
+                            <div key={post.id || idx} className="relative group cursor-pointer rounded-xl overflow-hidden shadow-sm bg-gray-100 dark:bg-black/20 aspect-square">
+                                {post.mediaType === 'VIDEO' ? (
+                                    <div className="w-full h-full flex items-center justify-center bg-gray-800 text-white">
+                                        <Video size={32} opacity={0.5} />
+                                    </div>
+                                ) : (
+                                    <img src={post.mediaUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400'} alt="" className="w-full h-full object-cover" />
+                                )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                                     <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                                        <p className="font-semibold text-sm">@{post.user?.username}</p>
+                                        <p className="font-semibold text-sm truncate">@{post.creatorUsername || post.user?.username || 'user'}</p>
                                         <div className="flex gap-3 text-xs mt-1">
-                                            <span>❤️ {post.likesCount || 0}</span>
+                                            <span>❤️ {post.likesCount || post.likes || 0}</span>
                                             <span>💬 {post.commentsCount || 0}</span>
                                         </div>
                                     </div>
@@ -263,8 +269,15 @@ const Dashboard = () => {
                                     </div>
                                     <p className="font-semibold text-sm text-gray-800 dark:text-white">#{hashtag.name || hashtag.tag?.replace('#', '')}</p>
                                 </div>
-                                <div className="text-right text-xs text-gray-500">
-                                    <p>{(hashtag.usageCount || hashtag.count || 0).toLocaleString()} uses</p>
+                                <div className="flex gap-4 text-right">
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-sm font-bold text-gray-800 dark:text-white">{(hashtag.postsCount || 0).toLocaleString()}</span>
+                                        <span className="text-[10px] text-gray-500">Posts</span>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-sm font-bold text-gray-800 dark:text-white">{(hashtag.reelsCount || 0).toLocaleString()}</span>
+                                        <span className="text-[10px] text-gray-500">Reels</span>
+                                    </div>
                                 </div>
                             </div>
                         ))}

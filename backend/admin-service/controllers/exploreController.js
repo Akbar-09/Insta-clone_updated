@@ -1,4 +1,4 @@
-const { ExploreAlgorithmConfig, ExploreTrendingTopic, AuditLog } = require('../models');
+const { ExploreAlgorithmConfig, ExploreTrendingTopic, AuditLog, Hashtag, sequelize } = require('../models');
 
 // --- Algorithm Configuration ---
 
@@ -38,9 +38,9 @@ exports.updateAlgorithmConfig = async (req, res) => {
         await AuditLog.create({
             adminId: req.admin.id,
             actionType: 'UPDATE_ALGORITHM',
-            targetType: 'explore_config',
+            targetType: 'system',
             targetId: config.id.toString(),
-            metadata: req.body
+            metadata: { ...req.body, subType: 'explore_config' }
         });
 
         // In a real microservices architecture, we would emit an event here (e.g., RabbitMQ)
@@ -75,9 +75,9 @@ exports.addTrendingTopic = async (req, res) => {
         await AuditLog.create({
             adminId: req.admin.id,
             actionType: 'ADD_TRENDING_TOPIC',
-            targetType: 'trending_topic',
+            targetType: 'system',
             targetId: newTopic.id.toString(),
-            metadata: { topic: formattedTopic }
+            metadata: { topic: formattedTopic, subType: 'trending_topic' }
         });
 
         res.json({ success: true, data: newTopic });
@@ -96,13 +96,15 @@ exports.removeTrendingTopic = async (req, res) => {
 
         if (!topic) return res.status(404).json({ success: false, message: 'Topic not found' });
 
+        const topicName = topic.topic;
         await topic.destroy();
 
         await AuditLog.create({
             adminId: req.admin.id,
             actionType: 'REMOVE_TRENDING_TOPIC',
-            targetType: 'trending_topic',
-            targetId: topicId
+            targetType: 'system',
+            targetId: topicId,
+            metadata: { topic: topicName, subType: 'trending_topic' }
         });
 
         res.json({ success: true, message: 'Topic removed' });
@@ -115,35 +117,80 @@ exports.removeTrendingTopic = async (req, res) => {
 
 exports.getCategoryDistribution = async (req, res) => {
     try {
-        // In reality, this would query an analytics service or aggregate Post metadata
-        const data = [
-            { category: "Travel & Adventure", percentage: 35 },
-            { category: "Technology", percentage: 25 },
-            { category: "Fashion & Style", percentage: 20 },
-            { category: "Food & Dining", percentage: 15 },
-            { category: "Other", percentage: 5 }
-        ];
+        // Use top hashtags as proxy for categories
+        const hashtags = await Hashtag.findAll({
+            order: [
+                [sequelize.literal('"postsCount" + "reelsCount"'), 'DESC']
+            ],
+            limit: 5,
+            attributes: ['name', 'postsCount', 'reelsCount']
+        });
+
+        const totalInteraction = hashtags.reduce((sum, tag) => sum + tag.postsCount + tag.reelsCount, 0);
+
+        const data = hashtags.map(tag => ({
+            category: tag.name.replace('#', ''), // Clean up hash
+            percentage: totalInteraction > 0
+                ? Math.round(((tag.postsCount + tag.reelsCount) / totalInteraction) * 100)
+                : 0
+        }));
+
+        // Fill remaining if less than 5 or add "Other" if needed
+        if (data.length === 0) {
+            // Fallback if no hashtags yet
+            res.json({
+                success: true, data: [
+                    { category: "General", percentage: 100 }
+                ]
+            });
+            return;
+        }
+
         res.json({ success: true, data });
     } catch (err) {
+        console.error('Category Dist Error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
 
 exports.getPerformanceMetrics = async (req, res) => {
     try {
-        // Mock metrics
+        const internalApi = require('../services/internalApi');
+
+        const [postStats, reelStats] = await Promise.all([
+            internalApi.getPostOverallStats(),
+            internalApi.getReelOverallStats()
+        ]);
+
+        const pData = postStats.data.success ? postStats.data.data : { likes: 0, comments: 0, views: 0 };
+        const rData = reelStats.data.success ? reelStats.data.data : { likes: 0, comments: 0, views: 0 };
+
+        const totalViews = pData.views + rData.views;
+        const totalLikes = pData.likes + rData.likes;
+        const totalComments = pData.comments + rData.comments;
+        const totalEngagement = totalLikes + totalComments;
+
+        // Calculate simplified metrics (mocking "Change" for now as we don't have historical snapshots)
+        const ctr = totalViews > 0 ? ((totalEngagement / totalViews) * 100).toFixed(1) : 0;
+        const engagementRate = totalViews > 0 ? ((totalEngagement / totalViews) * 100).toFixed(1) : 0; // Simplified
+
+        // Mocking average watch time as we don't store it
+        const avgWatchTime = rData.views > 0 ? 15 : 0;
+
         const data = {
-            impressions: 2400000,
-            impressionsChange: 12.5,
-            ctr: 4.8,
-            ctrChange: 0.8,
-            avgWatchTime: 45,
-            watchTimeChange: -2,
-            engagementRate: 18,
-            engagementChange: 3.2
+            impressions: totalViews,
+            impressionsChange: 5.0, // Hardcoded growth for demo
+            ctr: parseFloat(ctr),
+            ctrChange: 0.5,
+            avgWatchTime: avgWatchTime, // Seconds
+            watchTimeChange: 0,
+            engagementRate: parseFloat(engagementRate),
+            engagementChange: 1.2
         };
+
         res.json({ success: true, data });
     } catch (err) {
+        console.error('Perf Metrics Error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 };

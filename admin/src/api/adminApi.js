@@ -222,13 +222,13 @@ export const getReportById = async (id) => {
     return response.data;
 };
 
-export const ignoreReport = async (id) => {
-    const response = await adminApi.post(`reports/${id}/ignore`);
+export const ignoreReport = async (id, type) => {
+    const response = await adminApi.post(`reports/${id}/ignore`, { type });
     return response.data;
 };
 
-export const banUserFromReport = async (id) => {
-    const response = await adminApi.post(`reports/${id}/ban-user`);
+export const banUserFromReport = async (id, type) => {
+    const response = await adminApi.post(`reports/${id}/ban-user`, { type });
     return response.data;
 };
 

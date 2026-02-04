@@ -22,6 +22,21 @@ const ReportModal = ({ reportId, onClose, onAction }) => {
         }
     };
 
+    const getMediaUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        const baseUrl = 'http://localhost:5000';
+        let cleanPath = url;
+
+        if (url.includes('uploads/')) {
+            cleanPath = url.startsWith('/') ? url : '/' + url;
+        } else {
+            cleanPath = url.startsWith('/') ? `/uploads${url}` : `/uploads/${url}`;
+        }
+
+        return `${baseUrl}${cleanPath}`.replace(/([^:]\/)\/+/g, "$1");
+    };
+
     if (!reportId) return null;
 
     return (
@@ -32,10 +47,29 @@ const ReportModal = ({ reportId, onClose, onAction }) => {
                     <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-pink-500" size={40} /></div>
                 ) : report ? (
                     <div className="flex flex-col md:flex-row">
-                        <div className="w-full md:w-1/2 aspect-square md:aspect-auto bg-gray-100 dark:bg-black/50 relative group">
-                            {report.content?.mediaUrl ? (
+                        <div className="w-full md:w-1/2 aspect-square md:aspect-auto bg-gray-100 dark:bg-black/50 relative group flex items-center justify-center overflow-hidden">
+                            {report.content_type === 'app_feedback' ? (
+                                <div className="p-6 w-full h-full flex flex-col justify-center items-center text-center bg-gradient-to-br from-blue-500/10 to-purple-500/10">
+                                    <AlertTriangle size={48} className="text-blue-500 mb-4" />
+                                    <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">App Feedback</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 px-4">This is a general problem report or feedback from a user.</p>
+
+                                    {report.files && report.files.length > 0 && (
+                                        <div className="mt-6 flex gap-2 overflow-x-auto p-2 w-full justify-center">
+                                            {report.files.map((file, i) => (
+                                                <img
+                                                    key={i}
+                                                    src={getMediaUrl(file)}
+                                                    className="w-16 h-16 rounded-lg object-cover border border-white/20 shadow-sm"
+                                                    alt="attachment"
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : report.content?.mediaUrl || report.content?.videoUrl ? (
                                 <img
-                                    src={report.content.mediaUrl.startsWith('http') ? report.content.mediaUrl : `http://localhost:5000/uploads/${report.content.mediaUrl}`}
+                                    src={getMediaUrl(report.content.mediaUrl || report.content.videoUrl)}
                                     alt="Reported content"
                                     className="w-full h-full object-cover"
                                 />
@@ -43,48 +77,57 @@ const ReportModal = ({ reportId, onClose, onAction }) => {
                                 <div className="w-full h-full flex items-center justify-center text-gray-400">No Media</div>
                             )}
                             <div className="absolute top-2 right-2 flex gap-1">
-                                <span className="bg-red-500/90 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur-md lowercase first-letter:uppercase">
+                                <span className={`text-white text-xs px-2 py-0.5 rounded-full backdrop-blur-md lowercase first-letter:uppercase ${report.content_type === 'app_feedback' ? 'bg-blue-500/90' : 'bg-red-500/90'}`}>
                                     {report.content_type}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="w-full md:w-1/2 p-6 flex flex-col h-full">
+                        <div className="w-full md:w-1/2 p-6 flex flex-col h-full overflow-y-auto max-h-[80vh]">
                             <div className="flex-1">
-                                <button onClick={onClose} className="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                                <button onClick={onClose} className="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors z-10">
                                     <X size={20} className="text-gray-500" />
                                 </button>
 
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden shrink-0">
                                         <img
-                                            src={report.reportedUser?.profilePicture
-                                                ? (report.reportedUser.profilePicture.startsWith('http') ? report.reportedUser.profilePicture : `http://localhost:5000/uploads/${report.reportedUser.profilePicture}`)
-                                                : `https://ui-avatars.com/api/?name=${report.reportedUser?.username || 'user'}&background=random`}
+                                            src={getMediaUrl(report.reportedUser?.profilePicture) || `https://ui-avatars.com/api/?name=${report.reportedUsername || 'user'}&background=random`}
                                             alt="user" className="w-full h-full object-cover"
                                         />
                                     </div>
                                     <div>
-                                        <h4 className="font-semibold text-gray-800 dark:text-white">@{report.reportedUser?.username || 'Unknown'}</h4>
-                                        <p className="text-xs text-gray-500">Reported User</p>
+                                        <h4 className="font-semibold text-gray-800 dark:text-white">@{report.reportedUsername || 'Unknown'}</h4>
+                                        <p className="text-xs text-gray-500">{report.content_type === 'app_feedback' ? 'Reporter' : 'Reported User'}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-4">
-                                    <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-500/10">
-                                        <span className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider">Reason</span>
+                                    <div className={`p-3 rounded-lg border ${report.content_type === 'app_feedback' ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-500/10' : 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-500/10'}`}>
+                                        <span className={`text-xs font-semibold uppercase tracking-wider ${report.content_type === 'app_feedback' ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>Reason</span>
                                         <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">{report.reason}</p>
                                     </div>
 
                                     <div>
-                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</span>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 bg-gray-50 dark:bg-white/5 p-3 rounded-lg">
-                                            {report.description || "No description provided."}
+                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description / Details</span>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 bg-gray-50 dark:bg-white/5 p-3 rounded-lg whitespace-pre-wrap">
+                                            {report.description || report.details || "No description provided."}
                                         </p>
                                     </div>
 
+                                    {report.browserInfo && (
+                                        <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Browser Info</span>
+                                            <div className="grid grid-cols-2 gap-2 mt-2 text-[10px] text-gray-500">
+                                                <div>OS: {report.browserInfo.platform}</div>
+                                                <div>Lang: {report.browserInfo.language}</div>
+                                                <div className="col-span-2 truncate">UA: {report.browserInfo.userAgent}</div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center justify-between text-xs text-gray-400 pt-4 border-t border-gray-100 dark:border-white/5">
-                                        <span>Report ID: {report.id.substring(0, 8)}...</span>
+                                        <span>ID: {String(report.id).substring(0, 8)}...</span>
                                         <span>{new Date(report.created_at).toLocaleString()}</span>
                                     </div>
                                 </div>
@@ -92,13 +135,13 @@ const ReportModal = ({ reportId, onClose, onAction }) => {
 
                             <div className="mt-8 flex gap-3">
                                 <button
-                                    onClick={() => onAction('ignore', report.id)}
+                                    onClick={() => onAction('ignore', report.id, report.content_type)}
                                     className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 font-medium text-sm hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
                                 >
                                     Ignore
                                 </button>
                                 <button
-                                    onClick={() => onAction('ban', report.id)}
+                                    onClick={() => onAction('ban', report.id, report.content_type)}
                                     className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-medium text-sm hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all"
                                 >
                                     Ban User
@@ -202,11 +245,11 @@ const Reports = () => {
         }
     };
 
-    const handleAction = async (action, id) => {
+    const handleAction = async (action, id, type) => {
         try {
             let res;
-            if (action === 'ignore') res = await adminApi.ignoreReport(id);
-            if (action === 'ban') res = await adminApi.banUserFromReport(id);
+            if (action === 'ignore') res = await adminApi.ignoreReport(id, type);
+            if (action === 'ban') res = await adminApi.banUserFromReport(id, type);
 
             if (res.success) {
                 setSelectedReportId(null);

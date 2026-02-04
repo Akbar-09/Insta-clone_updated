@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Report = sequelize.define('Report', {
+const PostReport = sequelize.define('PostReport', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -11,7 +11,7 @@ const Report = sequelize.define('Report', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    reportedBy: {
+    userId: { // Renamed from reportedBy for consistency
         type: DataTypes.INTEGER,
         allowNull: false,
     },
@@ -29,7 +29,7 @@ const Report = sequelize.define('Report', {
     },
 }, {
     timestamps: true,
-    tableName: 'Reports'
+    tableName: 'PostReports' // Unique table name
 });
 
-module.exports = Report;
+module.exports = PostReport;

@@ -17,9 +17,9 @@ app.use(express.json());
 const internalRoutes = require('./routes/internalRoutes');
 const reportInternalRoutes = require('./routes/reportInternalRoutes');
 
-// Use internal routes first
+// Use internal routes
+app.use('/internal', reportInternalRoutes); // Reports first to avoid collision with /:postId
 app.use('/internal', internalRoutes);
-app.use('/internal', reportInternalRoutes);
 
 // Main post routes
 app.use('/', postRoutes);

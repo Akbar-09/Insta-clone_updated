@@ -140,3 +140,7 @@ App.jsx
  ├─ Profile
  ├─ Login
  └─ Signup
+
+
+ // command for running docker-compose
+ docker-compose -f docker-compose.test.yml up -d postgres redis rabbitmq            
