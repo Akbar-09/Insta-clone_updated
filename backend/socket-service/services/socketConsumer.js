@@ -16,10 +16,22 @@ const connectRabbitMQ = async () => {
 
         channel.consume('socket_events', (msg) => {
             if (msg) {
-                const content = JSON.parse(msg.content.toString());
-                const type = msg.fields.routingKey;
-                handleEvent({ type, payload: content });
-                channel.ack(msg);
+                try {
+                    const content = JSON.parse(msg.content.toString());
+                    let type = msg.fields.routingKey;
+
+                    // If routing key is not specific (e.g. just the queue name or empty),
+                    // try to extract type from the message content itself
+                    if ((!type || type === 'socket_events' || type === '') && content.type) {
+                        type = content.type;
+                    }
+
+                    handleEvent({ type, payload: content.payload || content });
+                    channel.ack(msg);
+                } catch (error) {
+                    console.error('Error processing msg:', error);
+                    channel.nack(msg, false, false);
+                }
             }
         });
     } catch (error) {

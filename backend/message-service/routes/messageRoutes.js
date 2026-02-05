@@ -1,5 +1,5 @@
 const express = require('express');
-const { sendMessage, getMessages, getConversations, markAsSeen, getActivityStoryReplies } = require('../controllers/messageController');
+const { sendMessage, getMessages, getConversations, markAsSeen, getActivityStoryReplies, getConversationDetails, toggleMute, deleteConversation, blockUser, unblockUser, reportConversation } = require('../controllers/messageController');
 
 const router = express.Router();
 
@@ -22,8 +22,14 @@ router.use(extractUser);
 
 router.get('/activity/story-replies', getActivityStoryReplies);
 router.get('/conversations', getConversations);
-router.get('/conversations/:conversationId', getMessages); // Match requirement: Get messages for a conversation
-router.post('/send', sendMessage); // Match requirement: Send a message
-router.post('/seen', markAsSeen); // Match requirement: Mark messages as seen
+router.get('/conversations/:conversationId', getMessages);
+router.get('/conversations/:conversationId/details', getConversationDetails);
+router.patch('/conversations/:conversationId/mute', toggleMute);
+router.post('/conversations/:conversationId/block', blockUser);
+router.post('/conversations/:conversationId/unblock', unblockUser);
+router.post('/conversations/:conversationId/report', reportConversation);
+router.delete('/conversations/:conversationId', deleteConversation);
+router.post('/send', sendMessage);
+router.post('/seen', markAsSeen);
 
 module.exports = router;

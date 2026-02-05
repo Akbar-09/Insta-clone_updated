@@ -62,7 +62,10 @@ const Sidebar = () => {
     const moreMenuRef = useRef(null);
     const drawerRef = useRef(null);
 
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => {
+        if (path === '/messages') return /^\/messages/i.test(location.pathname);
+        return location.pathname === path;
+    };
 
     // Close drawers on route change
     useEffect(() => {
@@ -155,7 +158,7 @@ const Sidebar = () => {
         setIsLiveModalOpen(true);
     };
 
-    const isNarrow = activeDrawer !== null || location.pathname === '/messages';
+    const isNarrow = activeDrawer !== null || /^\/messages/i.test(location.pathname);
 
     const NavItem = ({ to, icon: Icon, label, path, badge, onClick, drawerName, isCreateBtn, isMoreBtn }) => {
         const activeRoute = path && isActive(path);

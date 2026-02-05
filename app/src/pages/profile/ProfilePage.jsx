@@ -88,13 +88,20 @@ const ProfilePage = ({ section }) => {
                 setProfile(profileData);
 
                 // Fetch posts
-                const postsResponse = await getUserPosts(profileData.userId);
-                if (postsResponse.status === 'success') {
-                    setPosts(postsResponse.data);
+                try {
+                    const postsResponse = await getUserPosts(profileData.userId);
+                    if (postsResponse.status === 'success') {
+                        setPosts(postsResponse.data);
+                    }
+                } catch (postError) {
+                    console.error("Failed to load posts", postError);
                 }
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
+            if (error.response && error.response.status === 404) {
+                setProfile(null); // Explicitly set null to trigger "User not found" UI
+            }
         } finally {
             setLoading(false);
         }

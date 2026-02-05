@@ -30,7 +30,9 @@ const getConversations = async (req, res) => {
         let profilesMap = {};
         try {
             const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:5002';
-            const response = await axios.post(`${userServiceUrl}/profile/batch`, { userIds: otherUserIds });
+            const response = await axios.post(`${userServiceUrl}/profile/batch`, { userIds: otherUserIds }, {
+                headers: { 'x-user-id': userId }
+            });
             if (response.data.status === 'success') {
                 response.data.data.forEach(p => {
                     profilesMap[p.userId] = p;
@@ -168,6 +170,8 @@ const sendMessage = async (req, res) => {
         if (type === 'image') snippet = '📷 Image';
         else if (type === 'video') snippet = '🎥 Video';
         else if (type === 'story_reply') snippet = '✉️ Replied to your story';
+        else if (type === 'sticker') snippet = '🖼️ Sticker';
+        else if (type === 'voice') snippet = '🎤 Voice message';
 
         await conversation.update({
             lastMessageContent: snippet ? snippet.substring(0, 50) : '',
@@ -197,44 +201,114 @@ const sendMessage = async (req, res) => {
 
     } catch (error) {
         console.error('Error sending message:', error);
-        if (error.name === 'SequelizeDatabaseError') {
-            console.error('SQL:', error.sql);
-            console.error('Message:', error.message);
+        res.status(500).json({ status: 'error', message: 'Failed to send message' });
+    }
+};
+
+const getConversationDetails = async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const userId = req.user.id;
+
+        const conversation = await Conversation.findByPk(conversationId);
+        if (!conversation) return res.status(404).json({ status: 'error', message: 'Not found' });
+
+        const otherUserId = conversation.user1Id === userId ? conversation.user2Id : conversation.user1Id;
+
+        // Fetch other user profile
+        let otherUser = { userId: otherUserId, username: 'User' };
+        try {
+            const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+            // Use batch endpoint which supports checking by ID and returns blocked status
+            const batchRes = await axios.post(`${userServiceUrl}/profile/batch`,
+                { userIds: [otherUserId] },
+                { headers: { 'x-user-id': userId } }
+            );
+
+            if (batchRes.data.status === 'success' && batchRes.data.data.length > 0) {
+                otherUser = batchRes.data.data[0];
+            }
+        } catch (e) { console.error('Profile fetch failed', e.message); }
+
+        // Fetch media (images/videos/stickers/voice)
+        const media = await Message.findAll({
+            where: {
+                conversationId,
+                type: { [Op.in]: ['image', 'video', 'sticker', 'voice'] }
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 50
+        });
+
+        res.json({
+            status: 'success',
+            data: {
+                conversation: {
+                    ...conversation.toJSON(),
+                    isMuted: conversation.user1Id === userId ? conversation.user1Muted : conversation.user2Muted
+                },
+                otherUser,
+                media
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+};
+
+const toggleMute = async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const userId = req.user.id;
+
+        const conversation = await Conversation.findByPk(conversationId);
+        if (!conversation) return res.status(404).json({ status: 'error', message: 'Not found' });
+
+        if (conversation.user1Id === userId) {
+            conversation.user1Muted = !conversation.user1Muted;
+        } else {
+            conversation.user2Muted = !conversation.user2Muted;
         }
-        res.status(500).json({ status: 'error', message: 'Failed to send message', debug: error.message });
+
+        await conversation.save();
+        res.json({ status: 'success', isMuted: conversation.user1Id === userId ? conversation.user1Muted : conversation.user2Muted });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+};
+
+const deleteConversation = async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        // In a real app, we might soft delete or mark as hidden for this user.
+        // For simplicity, we'll hard delete messages or the conversation.
+        await Message.destroy({ where: { conversationId } });
+        await Conversation.destroy({ where: { id: conversationId } });
+        res.json({ status: 'success' });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
     }
 };
 
 const getActivityStoryReplies = async (req, res) => {
     try {
-        const userId = req.headers['x-user-id']; // Correctly get from headers in direct call scenarios or ensure middleware populates it.
+        const userId = req.headers['x-user-id'];
         const { sort, startDate, endDate } = req.query;
-
-        // Fallback for userId if not in headers (e.g. if using req.user approach)
         const currentUserId = userId || (req.user && req.user.id);
-
         if (!currentUserId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
 
-        const whereClause = {
-            senderId: currentUserId,
-            type: 'story_reply'
-        };
-
+        const whereClause = { senderId: currentUserId, type: 'story_reply' };
         if (startDate && endDate) {
-            whereClause.createdAt = {
-                [Op.between]: [new Date(startDate), new Date(endDate)]
-            };
+            whereClause.createdAt = { [Op.between]: [new Date(startDate), new Date(endDate)] };
         }
 
         const replies = await Message.findAll({
             where: whereClause,
             order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
         });
-
         res.json({ status: 'success', data: replies });
     } catch (error) {
-        console.error('Get Activity Story Replies Error:', error);
-        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+        res.status(500).json({ status: 'error', message: error.message });
     }
 };
 
@@ -269,11 +343,68 @@ const markAsSeen = async (req, res) => {
                 channel.sendToQueue('socket_events', Buffer.from(JSON.stringify(event)));
             }
         }
-
         res.json({ status: 'success' });
     } catch (error) {
-        console.error('Error marking as seen:', error);
-        res.status(500).json({ status: 'error', message: 'Failed to mark as seen' });
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+};
+
+const blockUser = async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const userId = req.user.id;
+        const conversation = await Conversation.findByPk(conversationId);
+        if (!conversation) return res.status(404).json({ status: 'error', message: 'Not found' });
+
+        const otherUserId = conversation.user1Id === userId ? conversation.user2Id : conversation.user1Id;
+
+        try {
+            const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+            await axios.post(`${userServiceUrl}/profile/block/${otherUserId}`, {}, {
+                headers: { 'x-user-id': userId }
+            });
+            res.json({ status: 'success', message: 'User blocked' });
+        } catch (apiError) {
+            console.error('User service block failed', apiError.message);
+            res.status(500).json({ status: 'error', message: 'Failed to block user' });
+        }
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+};
+
+const unblockUser = async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const userId = req.user.id;
+        const conversation = await Conversation.findByPk(conversationId);
+        if (!conversation) return res.status(404).json({ status: 'error', message: 'Not found' });
+
+        const otherUserId = conversation.user1Id === userId ? conversation.user2Id : conversation.user1Id;
+
+        try {
+            const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+            await axios.delete(`${userServiceUrl}/profile/unblock/${otherUserId}`, {
+                headers: { 'x-user-id': userId }
+            });
+            res.json({ status: 'success', message: 'User unblocked' });
+        } catch (apiError) {
+            console.error('User service unblock failed', apiError.message);
+            res.status(500).json({ status: 'error', message: 'Failed to unblock user' });
+        }
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+};
+
+const reportConversation = async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const { reason } = req.body;
+        // In a real app, logic to handle report
+        res.json({ status: 'success', message: 'Report submitted' });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
     }
 };
 
@@ -282,6 +413,12 @@ module.exports = {
     getMessages,
     sendMessage,
     markAsSeen,
-    getActivityStoryReplies
+    getActivityStoryReplies,
+    getConversationDetails,
+    toggleMute,
+    deleteConversation,
+    blockUser,
+    unblockUser,
+    reportConversation
 };
 

@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { Settings, UserPlus, ChevronDown, Link as LinkIcon, MoreHorizontal } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import FollowButton from '../FollowButton';
 import { useFollow } from '../../hooks/useFollow';
@@ -26,6 +27,8 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
         if (url.startsWith('http') || url.startsWith('data:')) return url;
         return url;
     };
+
+    const navigate = useNavigate();
 
     return (
         <header className="flex mb-11 px-0 max-md:px-4 max-md:mb-6 max-md:mt-4">
@@ -64,7 +67,10 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
                                 />
 
                                 {/* Message Button */}
-                                <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm text-black transition-colors">
+                                <button
+                                    onClick={() => navigate('/messages', { state: { startChatWith: profile } })}
+                                    className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm text-black transition-colors"
+                                >
                                     Message
                                 </button>
 

@@ -8,9 +8,8 @@ const Layout = () => {
     const location = useLocation();
     const isFeed = location.pathname === '/feed' || location.pathname === '/';
 
-    const isMessages = location.pathname === '/messages';
-
-    const isReels = location.pathname === '/reels';
+    const isMessages = /^\/messages/i.test(location.pathname);
+    const isReels = location.pathname.startsWith('/reels');
 
     return (
         <div className="flex min-h-screen">
@@ -29,7 +28,7 @@ const Layout = () => {
                         <>
                             {/* Feed Column - CENTER SCROLLABLE */}
                             {/* This div becomes the ONLY scrollable area for the feed. */}
-                            <div className="w-full max-w-[630px] flex flex-col mr-[50px] max-[1160px]:mr-0 max-[1160px]:max-w-[600px] shrink-0 h-full overflow-y-auto scrollbar-none pb-20">
+                            <div className="w-full max-w-[600px] flex flex-col mr-[64px] max-[1160px]:mr-0 max-[1160px]:max-w-[500px] shrink-0 h-full overflow-y-auto scrollbar-none pb-20">
                                 <div className="pt-[30px]">
                                     <Outlet />
                                 </div>

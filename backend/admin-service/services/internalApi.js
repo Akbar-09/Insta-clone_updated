@@ -130,7 +130,12 @@ const internalApi = {
     getUserReportStats: (type) => axios.get(`${USER_SVC}/internal/reports/stats`, { params: { type } }),
     listUserReports: (params) => axios.get(`${USER_SVC}/internal/reports`, { params }),
     getUserReportById: (id) => axios.get(`${USER_SVC}/internal/reports/${id}`),
-    updateUserReportStatus: (id, status) => axios.patch(`${USER_SVC}/internal/reports/${id}/status`, { status })
+    updateUserReportStatus: (id, status) => axios.patch(`${USER_SVC}/internal/reports/${id}/status`, { status }),
+
+    // Notification Management
+    createBroadcast: (data) => axios.post(`${process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:5008'}/admin/broadcast`, data),
+    getBroadcastHistory: () => axios.get(`${process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:5008'}/admin/history`),
+    getBroadcastStats: () => axios.get(`${process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:5008'}/admin/stats`)
 };
 
 

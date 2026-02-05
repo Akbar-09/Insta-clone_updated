@@ -155,7 +155,7 @@
 
 /**
  * @swagger
- * /users/me:
+ * /users/profile/me:
  *   get:
  *     summary: Get current logged-in user profile
  *     tags: [Users]
@@ -366,6 +366,60 @@
  *     responses:
  *       201:
  *         description: Comment added
+ * /comments/{id}:
+ *   delete:
+ *     summary: Delete a comment
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Deleted
+ * /comments/{id}/like:
+ *   post:
+ *     summary: Like a comment
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Liked
+ *   delete:
+ *     summary: Unlike a comment
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Unliked
+ * /comments/check-comments:
+ *   post:
+ *     summary: Batch check like status for comments
+ *     tags: [Comments]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               commentIds:
+ *                 type: array
+ *                 items: { type: integer }
+ *     responses:
+ *       200:
+ *         description: OK
  */
 
 // --- STORIES ---
@@ -418,6 +472,39 @@
  *     responses:
  *       200:
  *         description: Story marked as viewed
+ * /stories/archive:
+ *   get:
+ *     summary: Get user's archived stories
+ *     tags: [Stories]
+ *     responses:
+ *       200:
+ *         description: List of stories
+ * /stories/activity/story-replies:
+ *   get:
+ *     summary: Get story replies activity
+ *     tags: [Stories]
+ *     responses:
+ *       200:
+ *         description: OK
+ * /stories/highlights:
+ *   post:
+ *     summary: Create a story highlight
+ *     tags: [Stories]
+ *     responses:
+ *       201:
+ *         description: Highlight created
+ * /stories/highlights/{userId}:
+ *   get:
+ *     summary: Get user's highlights
+ *     tags: [Stories]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: OK
  */
 
 
@@ -456,6 +543,32 @@
  *     responses:
  *       200:
  *         description: Reel liked
+ *   delete:
+ *     summary: Unlike a reel
+ *     tags: [Reels]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Reel unliked
+ * /reels/activity/reels:
+ *   get:
+ *     summary: Get user reel activity
+ *     tags: [Reels]
+ *     responses:
+ *       200:
+ *         description: OK
+ * /reels/activity/likes:
+ *   get:
+ *     summary: Get user liked reels
+ *     tags: [Reels]
+ *     responses:
+ *       200:
+ *         description: OK
  */
 
 // --- MESSAGES ---
@@ -469,7 +582,7 @@
 
 /**
  * @swagger
- * /conversations:
+ * /messages/conversations:
  *   get:
  *     summary: Get user conversations
  *     tags: [Messages]
@@ -480,7 +593,7 @@
 
 /**
  * @swagger
- * /conversations/{id}/messages:
+ * /messages/conversations/{id}/messages:
  *   get:
  *     summary: Get messages in a conversation
  *     tags: [Messages]
@@ -536,6 +649,38 @@
  *     responses:
  *       200:
  *         description: List of notifications
+ * /notifications/settings:
+ *   get:
+ *     summary: Get notification preferences
+ *     tags: [Notifications]
+ *     responses:
+ *       200:
+ *         description: OK
+ *   patch:
+ *     summary: Update notification preferences
+ *     tags: [Notifications]
+ *     responses:
+ *       200:
+ *         description: Updated
+ * /notifications/unread-count:
+ *   get:
+ *     summary: Get count of unread notifications
+ *     tags: [Notifications]
+ *     responses:
+ *       200:
+ *         description: OK
+ * /notifications/{id}/read:
+ *   patch:
+ *     summary: Mark a notification as read
+ *     tags: [Notifications]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: OK
  */
 
 // --- SEARCH ---
@@ -597,6 +742,77 @@
  *     responses:
  *       200:
  *         description: Report submitted successfully
+ */
+
+// --- FEED ---
+
+/**
+ * @swagger
+ * tags:
+ *   name: Feed
+ *   description: Algorithm-based personalized feeds
+ */
+
+/**
+ * @swagger
+ * /feed:
+ *   get:
+ *     summary: Get personalized post feed
+ *     tags: [Feed]
+ *     responses:
+ *       200:
+ *         description: List of posts
+ */
+
+// --- LIVE ---
+
+/**
+ * @swagger
+ * tags:
+ *   name: Live
+ *   description: Live streaming features
+ */
+
+/**
+ * @swagger
+ * /live/create:
+ *   post:
+ *     summary: Create a new live stream session
+ *     tags: [Live]
+ *     responses:
+ *       201:
+ *         description: Session created
+ * /live/feed/active:
+ *   get:
+ *     summary: Get active live streams
+ *     tags: [Live]
+ *     responses:
+ *       200:
+ *         description: List of active streams
+ * /live/{id}:
+ *   get:
+ *     summary: Get live session details
+ *     tags: [Live]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: OK
+ * /live/{id}/comment:
+ *   post:
+ *     summary: Add comment to a live stream
+ *     tags: [Live]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Comment added
  */
 
 // --- ADMIN ---

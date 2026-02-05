@@ -172,55 +172,78 @@ const PostCard = ({ post, onLikeUpdate }) => {
     };
 
     return (
-        <article ref={cardRef} className="bg-white dark:bg-black border-b border-border md:border md:border-border md:rounded-lg mb-4">
-
+        <article ref={cardRef} className="bg-white dark:bg-black border-b border-border md:border md:border-border md:rounded-lg mb-4 w-full overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-3">
+            <div className="flex items-center justify-between py-2 px-3">
                 <div className="flex items-center gap-3 cursor-pointer">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden border border-border">
-                        {currentPost.userAvatar && <img src={currentPost.userAvatar} alt={currentPost.username} className="w-full h-full object-cover" />}
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[1.5px]">
+                        <div className="w-full h-full rounded-full bg-white dark:bg-black p-[1.5px]">
+                            <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden border border-border flex items-center justify-center text-[10px] font-bold text-gray-500 uppercase">
+                                {currentPost.userAvatar ? (
+                                    <img src={currentPost.userAvatar} alt={currentPost.username} className="w-full h-full object-cover" />
+                                ) : (
+                                    currentPost.username?.charAt(0) || '?'
+                                )}
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div className="font-semibold text-sm text-text-primary flex items-center gap-1">
-                            {currentPost.username}
+                    <div className="flex flex-col -gap-1">
+                        <div className="font-semibold text-[13px] text-text-primary flex items-center gap-1 group">
+                            <span className="hover:text-gray-500 transition-colors leading-none">{currentPost.username}</span>
                             {/* Time / Ad Label */}
                             {currentPost.isAd ? (
-                                <span className="text-text-secondary font-normal flex items-center gap-1">• Sponsored</span>
+                                <span className="text-text-secondary font-normal flex items-center gap-1 leading-none">• Sponsored</span>
                             ) : (
-                                <span className="text-text-secondary font-normal">• {formatTime(currentPost.createdAt)}</span>
+                                <span className="text-text-secondary font-normal leading-none">• {formatTime(currentPost.createdAt)}</span>
                             )}
                         </div>
 
-                        {currentPost.location && <div className="text-xs text-text-secondary">{currentPost.location}</div>}
+                        {currentPost.location && <div className="text-[9px] text-text-secondary font-medium tracking-tight uppercase leading-none mt-0.5">{currentPost.location}</div>}
                     </div>
                 </div>
                 <button
                     onClick={() => setShowOptionsMenu(true)}
-                    className="text-text-primary hover:opacity-60"
+                    className="text-text-primary hover:opacity-60 transition-opacity p-1"
                 >
-                    <MoreHorizontal size={20} />
+                    <MoreHorizontal size={18} />
                 </button>
             </div>
 
             {/* Image (Full width, no padding) */}
-            <div className="w-full overflow-hidden border-y border-border relative" onDoubleClick={handleDoubleTap}>
+            <div className="w-full overflow-hidden border-y border-border relative bg-gray-50 dark:bg-neutral-900 group" onDoubleClick={handleDoubleTap}>
                 <HeartOverlay visible={isAnimating} onAnimationEnd={() => setIsAnimating(false)} />
                 {currentPost.mediaType === 'VIDEO' ? (
-                    <video src={getMediaUrl(currentPost.mediaUrl)} controls className="w-full h-auto block" />
+                    <video src={getMediaUrl(currentPost.mediaUrl)} controls className="w-full aspect-square object-contain bg-black block" />
                 ) : (
-                    <img src={getMediaUrl(currentPost.mediaUrl || currentPost.imageUrl)} alt="Post content" className="w-full h-full object-cover" />
+                    <div className="aspect-square w-full relative">
+                        {(!currentPost.mediaUrl && !currentPost.imageUrl) ? (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-neutral-800 text-gray-400">
+                                <span className="text-sm italic">No media content</span>
+                            </div>
+                        ) : (
+                            <img
+                                src={getMediaUrl(currentPost.mediaUrl || currentPost.imageUrl)}
+                                alt="Post content"
+                                className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = 'https://ui-avatars.com/api/?name=Post+Error&background=f3f4f6&color=9ca3af&size=512';
+                                }}
+                            />
+                        )}
+                    </div>
                 )}
             </div>
 
             {/* Actions */}
-            <div className="flex justify-between py-3 px-4">
+            <div className="flex justify-between py-2 px-3">
                 <div className="flex gap-4">
                     {/* Like */}
                     <button
                         onClick={toggleLike}
                         className={`cursor-pointer hover:opacity-60 transition-transform active:scale-125 ${isLiked ? 'text-like' : 'text-text-primary'}`}
                     >
-                        <Heart size={24} fill={isLiked ? 'currentColor' : 'none'} className={isLiked && isAnimating ? 'animate-bounce' : ''} />
+                        <Heart size={22} fill={isLiked ? 'currentColor' : 'none'} className={isLiked && isAnimating ? 'animate-bounce' : ''} />
                     </button>
 
                     {/* Comment */}
@@ -229,7 +252,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
                         disabled={currentPost.commentsDisabled}
                         className={`cursor-pointer hover:opacity-60 transition-opacity ${showComments ? 'text-text-primary opacity-50' : 'text-text-primary'} ${currentPost.commentsDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
                     >
-                        <MessageCircle size={24} />
+                        <MessageCircle size={22} />
                     </button>
 
                     {/* Share */}
@@ -237,7 +260,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
                         onClick={() => setShowShareModal(true)}
                         className="cursor-pointer text-text-primary hover:opacity-60 transition-opacity"
                     >
-                        <Send size={24} />
+                        <Send size={22} />
                     </button>
                 </div>
                 {/* Save/Bookmark */}
@@ -246,7 +269,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
                     disabled={saving}
                     className={`cursor-pointer hover:opacity-60 transition-all hover:scale-110 ${isSaved ? 'text-black dark:text-white' : 'text-text-primary'}`}
                 >
-                    <Bookmark size={24} fill={isSaved ? 'currentColor' : 'none'} />
+                    <Bookmark size={22} fill={isSaved ? 'currentColor' : 'none'} />
                 </button>
             </div>
 
@@ -265,28 +288,27 @@ const PostCard = ({ post, onLikeUpdate }) => {
 
             {/* Likes */}
             {!currentPost.hideLikes && (
-                <div className="font-semibold text-sm text-text-primary mb-2 px-4">
+                <div className="font-semibold text-[13px] text-text-primary mb-1 px-3">
                     {likesCount.toLocaleString()} like{likesCount !== 1 ? 's' : ''}
                 </div>
             )}
 
 
             {/* Caption */}
-            <div className="px-4 pb-2">
-                <span className="font-semibold text-sm mr-2 cursor-pointer hover:text-gray-500">{currentPost.username}</span>
-                <span className="text-sm dropdown-caption" dangerouslySetInnerHTML={{ __html: formatCaption(currentPost.caption) }} />
+            <div className="px-3 pb-1.5">
+                <span className="font-semibold text-[13px] mr-2 cursor-pointer hover:text-gray-500">{currentPost.username}</span>
+                <span className="text-[13px] dropdown-caption leading-relaxed" dangerouslySetInnerHTML={{ __html: formatCaption(currentPost.caption) }} />
             </div>
 
             {/* Comments Section */}
             {!currentPost.commentsDisabled && !showComments && currentPost.commentsCount > 0 && (
-                <div className="px-4">
+                <div className="px-3 pb-2">
                     <button
                         onClick={handleCommentClick}
-                        className="text-sm text-gray-500 hover:underline cursor-pointer border-none bg-transparent"
+                        className="text-[13px] text-gray-500 hover:text-gray-400 cursor-pointer border-none bg-transparent"
                     >
                         View all {currentPost.commentsCount} comments
                     </button>
-                    {/* Add Comment Input Preview */}
                 </div>
             )}
 

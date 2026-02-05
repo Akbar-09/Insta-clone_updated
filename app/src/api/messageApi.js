@@ -53,3 +53,39 @@ export const markAsSeen = async (conversationId) => {
         console.error("Failed to mark seen", error);
     }
 };
+
+// Fetch conversation details
+export const getConversationDetails = async (conversationId) => {
+    const res = await api.get(`/messages/conversations/${conversationId}/details`);
+    return res.data.data;
+};
+
+// Toggle mute
+export const toggleMute = async (conversationId) => {
+    const res = await api.patch(`/messages/conversations/${conversationId}/mute`);
+    return res.data.isMuted;
+};
+
+// Delete conversation
+export const deleteConversation = async (conversationId) => {
+    const res = await api.delete(`/messages/conversations/${conversationId}`);
+    return res.data;
+};
+
+// Block user
+export const blockUser = async (conversationId) => {
+    const res = await api.post(`/messages/conversations/${conversationId}/block`);
+    return res.data;
+};
+
+// Unblock user
+export const unblockUser = async (conversationId) => {
+    const res = await api.post(`/messages/conversations/${conversationId}/unblock`);
+    return res.data;
+};
+
+// Report conversation
+export const reportConversation = async (conversationId, reason = 'other') => {
+    const res = await api.post(`/messages/conversations/${conversationId}/report`, { reason });
+    return res.data;
+};

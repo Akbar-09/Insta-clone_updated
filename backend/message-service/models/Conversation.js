@@ -56,6 +56,16 @@ const Conversation = sequelize.define('Conversation', {
     aiFlags: {
         type: DataTypes.JSONB,
         defaultValue: []
+    },
+    user1Muted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: 'user1_muted'
+    },
+    user2Muted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: 'user2_muted'
     }
 }, {
 

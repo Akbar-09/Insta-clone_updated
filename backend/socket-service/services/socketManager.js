@@ -34,6 +34,12 @@ const initSocket = (server) => {
             }
         });
 
+        socket.on('user:typing', ({ conversationId, receiverId, isTyping }) => {
+            if (receiverId) {
+                io.to(`user:${receiverId}`).emit('user:typing', { conversationId, isTyping });
+            }
+        });
+
         socket.on('disconnect', () => {
             console.log('Client disconnected:', socket.id);
         });

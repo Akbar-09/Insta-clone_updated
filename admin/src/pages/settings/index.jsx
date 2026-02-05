@@ -77,7 +77,7 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
 };
 
 const Settings = () => {
-    const { theme, toggleTheme } = useTheme();
+    const { theme, toggleTheme, setTheme } = useTheme();
     const [settings, setSettings] = useState({
         maintenanceMode: false,
         allowRegistrations: true,
@@ -100,7 +100,12 @@ const Settings = () => {
                 adminApi.getProfile()
             ]);
 
-            if (settingsRes.success) setSettings(settingsRes.data);
+            if (settingsRes.success) {
+                setSettings(settingsRes.data);
+                if (settingsRes.data.adminTheme && settingsRes.data.adminTheme !== theme) {
+                    setTheme(settingsRes.data.adminTheme);
+                }
+            }
             if (profileRes.success) setProfile(profileRes.data);
         } catch (error) {
             console.error('Failed to load settings', error);
@@ -113,8 +118,17 @@ const Settings = () => {
         setSettings(prev => ({ ...prev, [key]: value }));
     };
 
+    const handleThemeToggle = () => {
+        const newTheme = theme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+        // We defer saving until "Save Changes" is clicked, or we could auto-save.
+        // For consistency with other settings, we update the local state which will be saved on "Save Settings".
+        handleSettingChange('adminTheme', newTheme);
+    };
+
     const saveSettings = async () => {
         try {
+            // Ensure we send the current theme 
             await adminApi.updateSettings({ ...settings, adminTheme: theme });
             alert('Settings saved successfully!');
         } catch (error) {
@@ -230,7 +244,7 @@ const Settings = () => {
                                 <h4 className="text-sm font-medium text-gray-800 dark:text-white">Dark Mode</h4>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Toggle admin panel theme.</p>
                             </div>
-                            <button onClick={toggleTheme} className="px-4 py-2 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg text-xs text-gray-800 dark:text-white">
+                            <button onClick={handleThemeToggle} className="px-4 py-2 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg text-xs text-gray-800 dark:text-white">
                                 {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
                             </button>
                         </div>

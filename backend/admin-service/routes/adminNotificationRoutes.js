@@ -7,5 +7,6 @@ router.use(authenticateAdmin);
 
 router.post('/global', authorizePermissions(['notifications:write']), notificationController.sendGlobalNotification);
 router.get('/history', authorizePermissions(['notifications:read']), notificationController.getNotificationHistory);
+router.get('/stats', authorizePermissions(['notifications:read']), notificationController.getNotificationStats);
 
 module.exports = router;

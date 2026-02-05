@@ -1,5 +1,6 @@
 const UserProfile = require('../models/UserProfile');
 const Follow = require('../models/Follow');
+const BlockedUser = require('../models/BlockedUser');
 const AccountHistory = require('../models/AccountHistory');
 const { publishEvent } = require('../config/rabbitmq');
 const axios = require('axios');
@@ -27,7 +28,6 @@ exports.getSuggestions = async (req, res) => {
         const followingIds = following.map(f => f.followingId);
 
         // 2. Get Blocked Users (I blocked them OR they blocked me)
-        const BlockedUser = require('../models/BlockedUser');
         const blocked = await BlockedUser.findAll({
             where: {
                 [Op.or]: [
@@ -170,6 +170,7 @@ exports.getUserProfile = async (req, res) => {
 
         // Check if current user is following this profile
         let isFollowing = false;
+        let isBlocked = false;
         if (currentUserId && (currentUserId.toString() !== profile.userId.toString())) {
             const follow = await Follow.findOne({
                 where: {
@@ -178,6 +179,14 @@ exports.getUserProfile = async (req, res) => {
                 }
             });
             isFollowing = !!follow;
+
+            const block = await BlockedUser.findOne({
+                where: {
+                    blockerId: currentUserId,
+                    blockedId: profile.userId
+                }
+            });
+            isBlocked = !!block;
         }
 
         // Update counts
@@ -194,7 +203,8 @@ exports.getUserProfile = async (req, res) => {
                 postsCount,
                 followersCount,
                 followingCount,
-                isFollowing
+                isFollowing,
+                isBlocked
             }
         });
     } catch (error) {
@@ -533,10 +543,6 @@ exports.removeFollower = async (req, res) => {
  * Update Profile Photo
  * POST /api/v1/profile/profile-photo
  */
-/**
- * Update Profile Photo
- * POST /api/v1/profile/profile-photo
- */
 exports.updateProfilePhoto = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'] || req.body.userId;
@@ -650,6 +656,8 @@ exports.getBatchProfiles = async (req, res) => {
         });
 
         let followingMap = {};
+        let blockedMap = {};
+
         if (currentUserId) {
             const following = await Follow.findAll({
                 where: {
@@ -661,11 +669,23 @@ exports.getBatchProfiles = async (req, res) => {
             following.forEach(f => {
                 followingMap[f.followingId] = true;
             });
+
+            const blocked = await BlockedUser.findAll({
+                where: {
+                    blockerId: currentUserId,
+                    blockedId: userIds
+                },
+                attributes: ['blockedId']
+            });
+            blocked.forEach(b => {
+                blockedMap[b.blockedId] = true;
+            });
         }
 
         const result = profiles.map(p => ({
             ...p.toJSON(),
-            isFollowing: !!followingMap[p.userId]
+            isFollowing: !!followingMap[p.userId],
+            isBlocked: !!blockedMap[p.userId]
         }));
 
         res.json({ status: 'success', data: result });
