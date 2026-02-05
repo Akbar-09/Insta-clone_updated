@@ -1,0 +1,2000 @@
+[
+  {
+    "service": "ad-service",
+    "method": "POST",
+    "path": "/",
+    "file": "adRoutes.js"
+  },
+  {
+    "service": "ad-service",
+    "method": "GET",
+    "path": "/active",
+    "file": "adRoutes.js"
+  },
+  {
+    "service": "ad-service",
+    "method": "PATCH",
+    "path": "/:id/approve",
+    "file": "adRoutes.js"
+  },
+  {
+    "service": "ad-service",
+    "method": "POST",
+    "path": "/impression",
+    "file": "adRoutes.js"
+  },
+  {
+    "service": "ad-service",
+    "method": "POST",
+    "path": "/click",
+    "file": "adRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "POST",
+    "path": "/global",
+    "file": "adminNotificationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/history",
+    "file": "adminNotificationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "adminNotificationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/summary",
+    "file": "analyticsAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/user-acquisition",
+    "file": "analyticsAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/engagement-trends",
+    "file": "analyticsAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/top-content",
+    "file": "analyticsAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/countries",
+    "file": "analyticsAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/active-hours",
+    "file": "analyticsAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/countries",
+    "file": "analyticsRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/active-hours",
+    "file": "analyticsRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "auditRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "POST",
+    "path": "/login",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/me",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/admins",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/admins/:id/role",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/admins/:id",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/roles",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "POST",
+    "path": "/roles",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PUT",
+    "path": "/roles/:id",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/roles/:id",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "avatarManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "avatarManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:avatarId/approve",
+    "file": "avatarManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:avatarId/reject",
+    "file": "avatarManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/:avatarId",
+    "file": "avatarManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/pages",
+    "file": "cmsRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/pages/:id",
+    "file": "cmsRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "commentModerationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "commentModerationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:commentId/approve",
+    "file": "commentModerationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:commentId/remove",
+    "file": "commentModerationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/:commentId",
+    "file": "commentModerationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/posts",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/posts/:postId/interactions",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/posts/:postId/hide",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/posts/:postId/unhide",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/posts/:postId",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/reels",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/reels/:reelId/interactions",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/reels/:reelId/hide",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/reels/:reelId/unhide",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/reels/:reelId",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/stories",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/stories/:storyId/interactions",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/stories/:storyId",
+    "file": "contentManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/kpis",
+    "file": "dashboardRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/activity-feed",
+    "file": "dashboardRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/user-growth",
+    "file": "dashboardRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/media-distribution",
+    "file": "dashboardRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/login-methods",
+    "file": "dashboardRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/recent-users",
+    "file": "dashboardRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/recent-posts",
+    "file": "dashboardRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/conversations",
+    "file": "dmOversightRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "dmOversightRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/conversations/:conversationId/transcript",
+    "file": "dmOversightRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/conversations/:conversationId/mark-safe",
+    "file": "dmOversightRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "POST",
+    "path": "/conversations/:conversationId/ban-users",
+    "file": "dmOversightRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/reported",
+    "file": "dmSafetyRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:conversationId/flag",
+    "file": "dmSafetyRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/algorithm",
+    "file": "exploreAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/algorithm",
+    "file": "exploreAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/trending-topics",
+    "file": "exploreAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "POST",
+    "path": "/trending-topics",
+    "file": "exploreAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/trending-topics/:topicId",
+    "file": "exploreAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/category-distribution",
+    "file": "exploreAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/performance-metrics",
+    "file": "exploreAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/geo-users",
+    "file": "geoAnalyticsRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "hashtagAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/trending",
+    "file": "hashtagAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:id/toggle-visibility",
+    "file": "hashtagAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/:id",
+    "file": "hashtagAdminRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "hashtagRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/trending",
+    "file": "hashtagRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:id/block",
+    "file": "hashtagRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "POST",
+    "path": "/feature",
+    "file": "hashtagRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "languageRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:id/enable",
+    "file": "languageRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:id/disable",
+    "file": "languageRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:id/set-default",
+    "file": "languageRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "mediaDefaultRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "POST",
+    "path": "/",
+    "file": "mediaDefaultRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/posts/:postId",
+    "file": "moderationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/posts/:postId/hide",
+    "file": "moderationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/reels/:reelId",
+    "file": "moderationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/stories/:storyId",
+    "file": "moderationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/comments/:commentId",
+    "file": "moderationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/posts",
+    "file": "moderationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/reels",
+    "file": "moderationRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "reportRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "reportRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/:id",
+    "file": "reportRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "POST",
+    "path": "/:id/ignore",
+    "file": "reportRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "POST",
+    "path": "/:id/ban-user",
+    "file": "reportRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/profile",
+    "file": "settingRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PUT",
+    "path": "/profile",
+    "file": "settingRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "settingRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PUT",
+    "path": "/",
+    "file": "settingRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/",
+    "file": "userManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:userId/ban",
+    "file": "userManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "PATCH",
+    "path": "/:userId/unban",
+    "file": "userManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "DELETE",
+    "path": "/:userId",
+    "file": "userManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/:userId/details",
+    "file": "userManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/:userId/followers",
+    "file": "userManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/:userId/following",
+    "file": "userManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/:userId/posts",
+    "file": "userManagementRoutes.js"
+  },
+  {
+    "service": "admin-service",
+    "method": "GET",
+    "path": "/:userId/reels",
+    "file": "userManagementRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "POST",
+    "path": "/register",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "POST",
+    "path": "/signup",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "POST",
+    "path": "/login",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "GET",
+    "path": "/check-username",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "GET",
+    "path": "/check-email",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "POST",
+    "path": "/reset-password/request",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "POST",
+    "path": "/reset-password/verify",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "POST",
+    "path": "/logout",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "GET",
+    "path": "/me",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "auth-service",
+    "method": "GET",
+    "path": "/history",
+    "file": "authRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "POST",
+    "path": "/",
+    "file": "commentRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "GET",
+    "path": "/",
+    "file": "commentRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "DELETE",
+    "path": "/:id",
+    "file": "commentRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "POST",
+    "path": "/:id/like",
+    "file": "commentRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "DELETE",
+    "path": "/:id/like",
+    "file": "commentRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "POST",
+    "path": "/check-comments",
+    "file": "commentRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "GET",
+    "path": "/activity/comments",
+    "file": "commentRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "GET",
+    "path": "/activity/reviews",
+    "file": "commentRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "GET",
+    "path": "/list",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "GET",
+    "path": "/:commentId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "PATCH",
+    "path": "/:commentId/approve",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "PATCH",
+    "path": "/:commentId/remove",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "DELETE",
+    "path": "/:commentId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "comment-service",
+    "method": "GET",
+    "path": "/post/:postId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "feed-service",
+    "method": "GET",
+    "path": "/",
+    "file": "feedRoutes.js"
+  },
+  {
+    "service": "live-service",
+    "method": "POST",
+    "path": "/create",
+    "file": "liveRoutes.js"
+  },
+  {
+    "service": "live-service",
+    "method": "GET",
+    "path": "/feed/active",
+    "file": "liveRoutes.js"
+  },
+  {
+    "service": "live-service",
+    "method": "GET",
+    "path": "/:id",
+    "file": "liveRoutes.js"
+  },
+  {
+    "service": "live-service",
+    "method": "POST",
+    "path": "/:id/comment",
+    "file": "liveRoutes.js"
+  },
+  {
+    "service": "live-service",
+    "method": "POST",
+    "path": "/webhook/publish",
+    "file": "liveRoutes.js"
+  },
+  {
+    "service": "live-service",
+    "method": "POST",
+    "path": "/webhook/done",
+    "file": "liveRoutes.js"
+  },
+  {
+    "service": "media-service",
+    "method": "POST",
+    "path": "/upload",
+    "file": "mediaRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "GET",
+    "path": "/conversations",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "GET",
+    "path": "/conversations/:conversationId/transcript",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "PATCH",
+    "path": "/conversations/:conversationId/mark-safe",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "GET",
+    "path": "/conversations/:conversationId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "GET",
+    "path": "/activity/story-replies",
+    "file": "messageRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "GET",
+    "path": "/conversations",
+    "file": "messageRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "GET",
+    "path": "/conversations/:conversationId",
+    "file": "messageRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "POST",
+    "path": "/send",
+    "file": "messageRoutes.js"
+  },
+  {
+    "service": "message-service",
+    "method": "POST",
+    "path": "/seen",
+    "file": "messageRoutes.js"
+  },
+  {
+    "service": "notification-service",
+    "method": "GET",
+    "path": "/settings",
+    "file": "notificationRoutes.js"
+  },
+  {
+    "service": "notification-service",
+    "method": "PATCH",
+    "path": "/settings",
+    "file": "notificationRoutes.js"
+  },
+  {
+    "service": "notification-service",
+    "method": "GET",
+    "path": "/",
+    "file": "notificationRoutes.js"
+  },
+  {
+    "service": "notification-service",
+    "method": "GET",
+    "path": "/unread-count",
+    "file": "notificationRoutes.js"
+  },
+  {
+    "service": "notification-service",
+    "method": "PATCH",
+    "path": "/:id/read",
+    "file": "notificationRoutes.js"
+  },
+  {
+    "service": "notification-service",
+    "method": "PATCH",
+    "path": "/read-all",
+    "file": "notificationRoutes.js"
+  },
+  {
+    "service": "notification-service",
+    "method": "POST",
+    "path": "/admin/broadcast",
+    "file": "notificationRoutes.js"
+  },
+  {
+    "service": "notification-service",
+    "method": "GET",
+    "path": "/admin/history",
+    "file": "notificationRoutes.js"
+  },
+  {
+    "service": "notification-service",
+    "method": "GET",
+    "path": "/admin/stats",
+    "file": "notificationRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/stats/overall",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/stats/engagement",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/engagement/trends",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/top",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/recent",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/list",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/stats/user/:userId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/user/:userId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "PATCH",
+    "path": "/:postId/hide",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "PATCH",
+    "path": "/:postId/unhide",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "DELETE",
+    "path": "/:postId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/:postId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/:postId/likes",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/:postId/bookmarks",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "POST",
+    "path": "/",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/explore",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "POST",
+    "path": "/:id/like",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "DELETE",
+    "path": "/:id/like",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/saved",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "POST",
+    "path": "/check-likes",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/activity/likes",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/activity/posts",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/:id/embed",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/:id",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "DELETE",
+    "path": "/:id",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "PUT",
+    "path": "/:id",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "PUT",
+    "path": "/:id/hide-likes",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "PUT",
+    "path": "/:id/toggle-comments",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "POST",
+    "path": "/:id/report",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "POST",
+    "path": "/:id/bookmark",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "DELETE",
+    "path": "/:id/bookmark",
+    "file": "postRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/reports/stats",
+    "file": "reportInternalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/reports",
+    "file": "reportInternalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "GET",
+    "path": "/reports/:id",
+    "file": "reportInternalRoutes.js"
+  },
+  {
+    "service": "post-service",
+    "method": "PATCH",
+    "path": "/reports/:id/status",
+    "file": "reportInternalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/stats/overall",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/stats/user/:userId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/user/:userId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/list",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "PATCH",
+    "path": "/:reelId/hide",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "PATCH",
+    "path": "/:reelId/unhide",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "DELETE",
+    "path": "/:reelId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/recent",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/:reelId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/:reelId/likes",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "POST",
+    "path": "/",
+    "file": "reelRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/",
+    "file": "reelRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/activity/reels",
+    "file": "reelRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "GET",
+    "path": "/activity/likes",
+    "file": "reelRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "POST",
+    "path": "/:id/like",
+    "file": "reelRoutes.js"
+  },
+  {
+    "service": "reel-service",
+    "method": "DELETE",
+    "path": "/:id/like",
+    "file": "reelRoutes.js"
+  },
+  {
+    "service": "search-service",
+    "method": "GET",
+    "path": "/",
+    "file": "searchRoutes.js"
+  },
+  {
+    "service": "search-service",
+    "method": "GET",
+    "path": "/users",
+    "file": "searchRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/stories/me",
+    "file": "highlightRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/activity/highlights",
+    "file": "highlightRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "POST",
+    "path": "/highlights",
+    "file": "highlightRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/highlights/:userId",
+    "file": "highlightRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/highlights/:highlightId/stories",
+    "file": "highlightRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "PUT",
+    "path": "/highlights/:highlightId",
+    "file": "highlightRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "DELETE",
+    "path": "/highlights/:highlightId",
+    "file": "highlightRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/list",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/:storyId/views",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/:storyId/likes",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "DELETE",
+    "path": "/:storyId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "POST",
+    "path": "/",
+    "file": "storyRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/",
+    "file": "storyRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/archive",
+    "file": "storyRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "GET",
+    "path": "/activity/story-replies",
+    "file": "storyRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "DELETE",
+    "path": "/:id",
+    "file": "storyRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "POST",
+    "path": "/:id/report",
+    "file": "storyRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "POST",
+    "path": "/:id/view",
+    "file": "storyRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "POST",
+    "path": "/:id/react",
+    "file": "storyRoutes.js"
+  },
+  {
+    "service": "story-service",
+    "method": "DELETE",
+    "path": "/:id/react",
+    "file": "storyRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/:userId/follow",
+    "file": "followRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/:userId/follow",
+    "file": "followRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/:userId/follow/status",
+    "file": "followRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/:userId/followers",
+    "file": "followRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/:userId/following",
+    "file": "followRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/requests",
+    "file": "followRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/requests/accept",
+    "file": "followRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/requests/reject",
+    "file": "followRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/reports/stats",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/reports",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/reports/:id",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/reports/:id/status",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/stats",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/avatars",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/avatars/stats",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/avatars/:avatarId/approve",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/avatars/:avatarId/reject",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/avatars/:avatarId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/growth",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/login-methods",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/countries",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/list",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/:userId/ban",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/:userId/unban",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/:userId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/recent",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/bulk",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/:userId",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/:userId/follow-counts",
+    "file": "internalRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/report-problem",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/reports/me",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/close-friends",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/close-friends/:friendId",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/close-friends/:friendId",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/blocked-users",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/block/:userId",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/unblock/:userId",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/story-privacy/hidden-users",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/story-privacy/hide",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/story-privacy/unhide/:hiddenUserId",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/messages",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/settings/messages",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/story-replies",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/settings/story-replies",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/activity-status",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/settings/activity-status",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/tags-mentions",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/settings/tags-mentions",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/tags/pending",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/tags/:id/approve",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/tags/:id/remove",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/comments",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PUT",
+    "path": "/settings/comments",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/sharing",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PUT",
+    "path": "/settings/sharing",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/restricted",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/settings/restricted/:userId",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/settings/restricted/:userId",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/hidden-words",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PUT",
+    "path": "/settings/hidden-words",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/settings/hidden-words/words",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/settings/hidden-words/words/:id",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/muted",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/settings/muted/:userId",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/settings/muted/:userId",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/content-preferences",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/settings/content-preferences",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/like-share",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/settings/like-share",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/subscriptions",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/general",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/settings/general",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/settings/apps",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PATCH",
+    "path": "/settings/apps/:id/revoke",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/help/account-status",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/help/violations",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/help/feature-limits",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/help/support-requests",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/help/feedback",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/me",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "PUT",
+    "path": "/me",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/profile-photo",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/profile-photo",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/me/saved",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/suggestions",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "POST",
+    "path": "/batch",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/activity/account-history",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/:username",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/:userId/posts",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/:userId/followers",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "GET",
+    "path": "/:userId/following",
+    "file": "profileRoutes.js"
+  },
+  {
+    "service": "user-service",
+    "method": "DELETE",
+    "path": "/followers/:followerId",
+    "file": "profileRoutes.js"
+  }
+]

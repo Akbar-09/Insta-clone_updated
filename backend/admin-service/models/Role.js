@@ -15,6 +15,10 @@ const Role = sequelize.define('Role', {
     permissions: {
         type: DataTypes.JSONB, // Array of permission strings: ['users:read', 'posts:delete', 'settings:write']
         defaultValue: []
+    },
+    description: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 });
 

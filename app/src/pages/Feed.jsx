@@ -22,12 +22,12 @@ const Feed = () => {
     }
 
     return (
-        <div className="flex flex-col relative w-full max-w-[630px] mx-auto">
+        <div className="flex flex-col relative w-full max-w-[600px] mx-auto">
             <div className="sticky top-0 z-10 bg-transparent backdrop-blur-xl pt-4 pb-2 -mt-4 mb-2">
                 <Stories />
             </div>
 
-            <div className="mt-0 flex flex-col items-center">
+            <div className="mt-0 flex flex-col items-stretch px-0 md:px-4">
                 {posts.length === 0 ? (
                     <div className="text-text-secondary py-10">No posts yet. Follow people to see their posts!</div>
                 ) : (

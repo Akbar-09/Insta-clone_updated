@@ -39,7 +39,7 @@ const EditProfile = () => {
                             bio: data.bio || '',
                             gender: data.gender || 'Male',
                             showAccountSuggestions: data.showAccountSuggestions !== undefined ? data.showAccountSuggestions : true,
-                            profilePicture: data.profilePicture || ''
+                            profilePicture: (data.profilePicture && data.profilePicture.startsWith('blob:')) ? '' : (data.profilePicture || '')
                         });
                         setBioCount(data.bio ? data.bio.length : 0);
                     }

@@ -18,7 +18,7 @@ const Message = sequelize.define('Message', {
         field: 'sender_id'
     },
     type: {
-        type: DataTypes.ENUM('text', 'image', 'video', 'story_reply'),
+        type: DataTypes.ENUM('text', 'image', 'video', 'story_reply', 'sticker', 'voice'),
         defaultValue: 'text'
     },
     content: {

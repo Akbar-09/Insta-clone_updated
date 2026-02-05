@@ -1,0 +1,164 @@
+[
+  {
+    "method": "POST",
+    "url": "/ads/impression",
+    "code": 201,
+    "status": "PASS"
+  },
+  {
+    "method": "POST",
+    "url": "/ads/click",
+    "code": 201,
+    "status": "PASS"
+  },
+  {
+    "method": "POST",
+    "url": "/auth/register",
+    "code": 503,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/auth/signup",
+    "code": 503,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/auth/login",
+    "code": 503,
+    "status": "FAIL"
+  },
+  {
+    "method": "GET",
+    "url": "/auth/check-username?username=admin",
+    "code": 503,
+    "status": "FAIL"
+  },
+  {
+    "method": "GET",
+    "url": "/auth/check-email?email=admin@example.com",
+    "code": 503,
+    "status": "FAIL"
+  },
+  {
+    "method": "GET",
+    "url": "/live/1",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/live/1/comment",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/live/webhook/publish",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/live/webhook/done",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/messages/seen",
+    "code": 200,
+    "status": "PASS"
+  },
+  {
+    "method": "POST",
+    "url": "/notifications/admin/broadcast",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "GET",
+    "url": "/posts/stats",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "GET",
+    "url": "/posts/top",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "GET",
+    "url": "/posts/recent",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "GET",
+    "url": "/posts/list",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "GET",
+    "url": "/posts/reports",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/posts",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/reels",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/stories",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/stories/1/report",
+    "code": 400,
+    "status": "FAIL"
+  },
+  {
+    "method": "GET",
+    "url": "/stories/highlights/1/stories",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "DELETE",
+    "url": "/stories/highlights/1",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/users/requests/accept",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "POST",
+    "url": "/users/requests/reject",
+    "code": 500,
+    "status": "FAIL"
+  },
+  {
+    "method": "PUT",
+    "url": "/users/me",
+    "code": 500,
+    "status": "FAIL"
+  }
+]
