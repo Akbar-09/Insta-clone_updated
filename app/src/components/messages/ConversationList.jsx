@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { Edit } from 'lucide-react';
+import SwitchAccountModal from '../SwitchAccountModal';
 
 const ConversationList = ({ conversations, selectedId, onSelect, currentUser }) => {
+    const [showSwitchAccount, setShowSwitchAccount] = useState(false);
+
     const formatTime = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -16,7 +20,10 @@ const ConversationList = ({ conversations, selectedId, onSelect, currentUser }) 
         <div className="flex flex-col h-full w-full">
             {/* Header */}
             <div className="h-[75px] flex items-center justify-between px-5 pt-4 pb-2 shrink-0">
-                <div className="flex items-center gap-2 cursor-pointer font-bold text-xl text-text-primary">
+                <div
+                    className="flex items-center gap-2 cursor-pointer font-bold text-xl text-text-primary"
+                    onClick={() => setShowSwitchAccount(true)}
+                >
                     <span>{currentUser?.username}</span>
                     <svg className="w-5 h-5 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -26,6 +33,10 @@ const ConversationList = ({ conversations, selectedId, onSelect, currentUser }) 
                     <Edit size={24} strokeWidth={1.5} />
                 </div>
             </div>
+
+            {showSwitchAccount && (
+                <SwitchAccountModal onClose={() => setShowSwitchAccount(false)} />
+            )}
 
             {/* Search Bar */}
             <div className="px-5 pb-3">
@@ -73,8 +84,14 @@ const ConversationList = ({ conversations, selectedId, onSelect, currentUser }) 
                                     </div>
                                     <div className={`flex items-center gap-1 text-xs ${hasUnread ? 'font-bold text-text-primary' : 'text-text-secondary'}`}>
                                         <span className="truncate max-w-[140px]">
-                                            {conv.lastMessageSenderId === currentUser?.id ? 'You: ' : ''}
-                                            {conv.lastMessageContent}
+                                            {conv.lastMessageContent ? (
+                                                <>
+                                                    {conv.lastMessageSenderId === currentUser?.id ? 'You: ' : ''}
+                                                    {conv.lastMessageContent}
+                                                </>
+                                            ) : (
+                                                <span className="italic text-gray-400">No messages yet</span>
+                                            )}
                                         </span>
                                         <span>•</span>
                                         <span>{formatTime(conv.lastMessageAt)}</span>

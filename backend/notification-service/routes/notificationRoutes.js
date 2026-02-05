@@ -20,4 +20,10 @@ router.get('/unread-count', getUnreadCount);
 router.patch('/:id/read', markRead);
 router.patch('/read-all', markAllRead);
 
+// Admin Routes
+const { createBroadcast, getHistory, getStats } = require('../controllers/adminNotificationController');
+router.post('/admin/broadcast', createBroadcast);
+router.get('/admin/history', getHistory);
+router.get('/admin/stats', getStats);
+
 module.exports = router;

@@ -407,4 +407,61 @@ export const checkHealth = async () => {
     return response.data;
 };
 
+// Notification Management
+export const sendNotification = async (data) => {
+    const response = await adminApi.post('notifications/global', data);
+    return response.data;
+};
+
+export const getNotificationHistory = async () => {
+    const response = await adminApi.get('notifications/history');
+    return response.data;
+};
+
+export const getNotificationStats = async () => {
+    const response = await adminApi.get('notifications/stats');
+    return response.data;
+};
+
+// Roles & Admins
+export const listRoles = async () => {
+    const response = await adminApi.get('auth/roles');
+    return response.data;
+};
+
+export const createRole = async (data) => {
+    const response = await adminApi.post('auth/roles', data);
+    return response.data;
+};
+
+export const updateRole = async (id, data) => {
+    const response = await adminApi.put(`auth/roles/${id}`, data);
+    return response.data;
+};
+
+export const deleteRole = async (id) => {
+    const response = await adminApi.delete(`auth/roles/${id}`);
+    return response.data;
+};
+
+export const listAdmins = async () => {
+    const response = await adminApi.get('auth/admins');
+    return response.data;
+};
+
+export const updateAdminRole = async (id, roleId) => {
+    const response = await adminApi.patch(`auth/admins/${id}/role`, { roleId });
+    return response.data;
+};
+
+export const deleteAdmin = async (id) => {
+    const response = await adminApi.delete(`auth/admins/${id}`);
+    return response.data;
+};
+
+export const getAuditLogs = async (params) => {
+    const response = await adminApi.get('audit', { params });
+    return response.data;
+};
+
 export default adminApi;

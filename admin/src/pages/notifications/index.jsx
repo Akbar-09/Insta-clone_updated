@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Bell, Send, Calendar, Users, Globe, Smartphone, History } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, Send, Calendar, Users, Globe, Smartphone, History, Loader2 } from 'lucide-react';
+import * as adminApi from '../../api/adminApi';
 
 const NotificationManagement = () => {
     const [formData, setFormData] = useState({
@@ -11,26 +12,64 @@ const NotificationManagement = () => {
         schedule: 'now'
     });
 
-    const [notifications, setNotifications] = useState([
-        { id: 1, title: 'New Feature Alert', message: 'Check out our new story filters!', target: 'All Users', sent: '2 hours ago', recipients: 45231 },
-        { id: 2, title: 'Maintenance Notice', message: 'Scheduled maintenance tonight at 2 AM', target: 'All Users', sent: '1 day ago', recipients: 45231 },
-        { id: 3, title: 'Regional Update', message: 'New features for US users', target: 'United States', sent: '3 days ago', recipients: 12500 },
-        { id: 4, title: 'Mobile App Update', message: 'Update available on App Store', target: 'Mobile Users', sent: '5 days ago', recipients: 28000 },
-    ]);
+    const [notifications, setNotifications] = useState([]);
+    const [stats, setStats] = useState({ totalRecipients: 0, sentToday: 0, sentMonth: 0 });
+    const [loading, setLoading] = useState(true);
+    const [sending, setSending] = useState(false);
 
-    const handleSubmit = (e) => {
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [historyRes, statsRes] = await Promise.all([
+                adminApi.getNotificationHistory(),
+                adminApi.getNotificationStats()
+            ]);
+
+            if (historyRes.success) {
+                setNotifications(historyRes.data);
+            }
+            if (statsRes.success) {
+                setStats(statsRes.data);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Mock notification send
-        const newNotification = {
-            id: notifications.length + 1,
-            title: formData.title,
-            message: formData.message,
-            target: formData.target === 'all' ? 'All Users' : formData.target === 'country' ? formData.country : formData.platform,
-            sent: 'Just now',
-            recipients: 45231
-        };
-        setNotifications([newNotification, ...notifications]);
-        setFormData({ title: '', message: '', target: 'all', country: '', platform: '', schedule: 'now' });
+        try {
+            setSending(true);
+            const res = await adminApi.sendNotification(formData);
+            if (res.success) {
+                setFormData({ title: '', message: '', target: 'all', country: '', platform: '', schedule: 'now' });
+                fetchData(); // Refresh list and stats
+                alert('Notification sent successfully!');
+            }
+        } catch (error) {
+            console.error('Failed to send notification:', error);
+            alert('Failed to send notification');
+        } finally {
+            setSending(false);
+        }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Just now';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     return (
@@ -150,10 +189,11 @@ const NotificationManagement = () => {
 
                         <button
                             type="submit"
-                            className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-violet-600 text-white font-semibold hover:from-pink-600 hover:to-violet-700 shadow-lg shadow-pink-500/20 transition-all flex items-center justify-center gap-2"
+                            disabled={sending}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-violet-600 text-white font-semibold hover:from-pink-600 hover:to-violet-700 shadow-lg shadow-pink-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                         >
-                            <Send size={18} />
-                            Send Notification
+                            {sending ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+                            {sending ? 'Sending...' : 'Send Notification'}
                         </button>
                     </form>
                 </div>
@@ -167,7 +207,9 @@ const NotificationManagement = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Recipients</p>
-                                <p className="text-2xl font-bold text-gray-800 dark:text-white">45,231</p>
+                                <p className="text-2xl font-bold text-gray-800 dark:text-white">
+                                    {loading ? '...' : stats.totalRecipients.toLocaleString()}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -179,7 +221,9 @@ const NotificationManagement = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Sent Today</p>
-                                <p className="text-2xl font-bold text-gray-800 dark:text-white">12</p>
+                                <p className="text-2xl font-bold text-gray-800 dark:text-white">
+                                    {loading ? '...' : stats.sentToday.toLocaleString()}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -191,7 +235,9 @@ const NotificationManagement = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">This Month</p>
-                                <p className="text-2xl font-bold text-gray-800 dark:text-white">156</p>
+                                <p className="text-2xl font-bold text-gray-800 dark:text-white">
+                                    {loading ? '...' : stats.sentMonth.toLocaleString()}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -202,21 +248,32 @@ const NotificationManagement = () => {
             <div className="glass-card p-6 rounded-2xl">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Notification History</h2>
                 <div className="space-y-3">
-                    {notifications.map((notification) => (
-                        <div key={notification.id} className="p-4 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-800 dark:text-white">{notification.title}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
-                                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                        <span>👥 {notification.recipients.toLocaleString()} recipients</span>
-                                        <span>🎯 {notification.target}</span>
-                                        <span>🕒 {notification.sent}</span>
+                    {loading ? (
+                        <div className="text-center py-8 text-gray-500">Loading history...</div>
+                    ) : notifications.length > 0 ? (
+                        notifications.map((notification) => (
+                            <div key={notification.id} className="p-4 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-semibold text-gray-800 dark:text-white">{notification.title}</h3>
+                                            {notification.status === 'scheduled' && (
+                                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-100 text-yellow-700">Scheduled</span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
+                                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                            <span>👥 {notification.recipientsCount?.toLocaleString()} recipients</span>
+                                            <span>🎯 {notification.target === 'all' ? 'All Users' : `${notification.target} (${notification.targetValue})`}</span>
+                                            <span>🕒 {formatDate(notification.sentAt || notification.scheduledFor)}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <div className="text-center py-8 text-gray-500">No notifications sent yet</div>
+                    )}
                 </div>
             </div>
         </div>

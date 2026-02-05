@@ -87,6 +87,7 @@ function App() {
                 <Route path="/explore/people" element={<SuggestedPeoplePage />} />
                 <Route path="/reels" element={<Reels />} />
                 <Route path="/messages" element={<Messages />} />
+                <Route path="/messages/:conversationId" element={<Messages />} />
                 <Route path="/profile/:id" element={<Profile />} />
                 <Route path="/profile/:id/saved" element={<Profile section="saved" />} />
                 <Route path="/profile/:id/reels" element={<Profile section="reels" />} />

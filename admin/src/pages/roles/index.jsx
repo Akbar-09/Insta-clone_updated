@@ -1,56 +1,100 @@
-import React, { useState } from 'react';
-import { Lock, Plus, Shield, UserCheck, MoreVertical, X, Check, Edit2, Trash2, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Lock, Plus, Shield, UserCheck, MoreVertical, X, Check, Edit2, Trash2, Save, Loader2 } from 'lucide-react';
+import * as adminApi from '../../api/adminApi';
 
 const RoleManagement = () => {
-    // Mock Roles
-    const [roles, setRoles] = useState([
-        { id: 1, name: 'Super Admin', users: 3, description: 'Full access to all system features.' },
-        { id: 2, name: 'Moderator', users: 12, description: 'Can review and delete content, ban users.' },
-        { id: 3, name: 'Support Agent', users: 8, description: 'Can view user details and handle reports.' },
-        { id: 4, name: 'Analyst', users: 2, description: 'View-only access to analytics dashboards.' },
-    ]);
-
-    // Mock Admins
-    const [admins, setAdmins] = useState([
-        { id: 1, name: 'Admin User', email: 'admin@instagram.com', role: 'Super Admin', lastActive: 'Now' },
-        { id: 2, name: 'Sarah Connor', email: 'sarah@instagram.com', role: 'Moderator', lastActive: '2h ago' },
-        { id: 3, name: 'John Smith', email: 'john@instagram.com', role: 'Support Agent', lastActive: '1d ago' },
-    ]);
+    const [roles, setRoles] = useState([]);
+    const [admins, setAdmins] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditPermsModalOpen, setIsEditPermsModalOpen] = useState(false);
-    const [newRole, setNewRole] = useState({ name: '', description: '' });
+    const [newRole, setNewRole] = useState({ name: '', description: '', permissions: [] });
     const [editingRole, setEditingRole] = useState(null);
     const [activeDropdown, setActiveDropdown] = useState(null);
 
-    // Mock Permissions List
+    // Permissions List - can be expanded as needed
     const permissionsList = [
         "User Management", "Content Moderation", "System Settings", "Analytics View", "Reports Handling"
     ];
 
-    const handleAddRole = (e) => {
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const [isAdminRoleModalOpen, setIsAdminRoleModalOpen] = useState(false);
+    const [editingAdmin, setEditingAdmin] = useState(null);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [rolesRes, adminsRes] = await Promise.all([
+                adminApi.listRoles(),
+                adminApi.listAdmins()
+            ]);
+
+            if (rolesRes.success) {
+                // Enrich roles with user counts from the admins list
+                const enrichedRoles = rolesRes.data.map(role => ({
+                    ...role,
+                    users: adminsRes.data?.filter(a => a.roleId === role.id).length || 0
+                }));
+                setRoles(enrichedRoles);
+            }
+            if (adminsRes.success) setAdmins(adminsRes.data);
+        } catch (error) {
+            console.error('Failed to fetch data', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddRole = async (e) => {
         e.preventDefault();
-        const role = {
-            id: roles.length + 1,
-            name: newRole.name,
-            description: newRole.description,
-            users: 0
-        };
-        setRoles([...roles, role]);
-        setIsAddModalOpen(false);
-        setNewRole({ name: '', description: '' });
+        try {
+            const res = await adminApi.createRole({
+                name: newRole.name,
+                description: newRole.description,
+                permissions: [] // New roles start with no permissions
+            });
+            if (res.success) {
+                fetchData();
+                setIsAddModalOpen(false);
+                setNewRole({ name: '', description: '', permissions: [] });
+            }
+        } catch (error) {
+            console.error('Failed to add role', error);
+            alert('Failed to add role');
+        }
     };
 
     const handleEditPermissions = (role) => {
-        setEditingRole(role);
+        setEditingRole({ ...role });
         setIsEditPermsModalOpen(true);
     };
 
-    const handleSavePermissions = () => {
-        // Mock save logic
-        setIsEditPermsModalOpen(false);
-        setEditingRole(null);
-        alert(`Permissions updated for ${editingRole.name}`);
+    const handleTogglePermission = (perm) => {
+        const currentPerms = editingRole.permissions || [];
+        const newPerms = currentPerms.includes(perm)
+            ? currentPerms.filter(p => p !== perm)
+            : [...currentPerms, perm];
+        setEditingRole({ ...editingRole, permissions: newPerms });
+    };
+
+    const handleSavePermissions = async () => {
+        try {
+            const res = await adminApi.updateRole(editingRole.id, {
+                permissions: editingRole.permissions
+            });
+            if (res.success) {
+                fetchData();
+                setIsEditPermsModalOpen(false);
+                setEditingRole(null);
+            }
+        } catch (error) {
+            console.error('Failed to update permissions', error);
+            alert('Failed to update permissions');
+        }
     };
 
     const toggleDropdown = (id) => {
@@ -61,12 +105,48 @@ const RoleManagement = () => {
         }
     };
 
-    const handleDeleteAdmin = (id) => {
-        if (confirm('Are you sure you want to remove this admin access?')) {
-            setAdmins(admins.filter(a => a.id !== id));
-            setActiveDropdown(null);
+    const handleEditAdminRole = (admin) => {
+        setEditingAdmin(admin);
+        setIsAdminRoleModalOpen(true);
+        setActiveDropdown(null);
+    };
+
+    const handleUpdateAdminRole = async (roleId) => {
+        try {
+            const res = await adminApi.updateAdminRole(editingAdmin.id, roleId);
+            if (res.success) {
+                fetchData();
+                setIsAdminRoleModalOpen(false);
+                setEditingAdmin(null);
+            }
+        } catch (error) {
+            console.error('Failed to update admin role', error);
+            alert('Failed to update admin role');
         }
     };
+
+    const handleDeleteAdmin = async (id) => {
+        if (confirm('Are you sure you want to remove this admin access?')) {
+            try {
+                const res = await adminApi.deleteAdmin(id);
+                if (res.success) {
+                    fetchData();
+                    setActiveDropdown(null);
+                }
+            } catch (error) {
+                console.error('Failed to remove admin', error);
+                alert('Failed to remove admin');
+            }
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="animate-spin text-pink-500" size={32} />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 relative" onClick={() => activeDropdown && setActiveDropdown(null)}>
@@ -97,7 +177,7 @@ const RoleManagement = () => {
                                 </span>
                             </div>
                             <h3 className="font-bold text-lg text-gray-800 dark:text-white">{role.name}</h3>
-                            <p className="text-xs text-gray-500 mt-2 leading-relaxed">{role.description}</p>
+                            <p className="text-xs text-gray-500 mt-2 leading-relaxed line-clamp-2">{role.description || 'No description provided.'}</p>
                         </div>
                         <button
                             onClick={() => handleEditPermissions(role)}
@@ -118,7 +198,7 @@ const RoleManagement = () => {
                             <tr>
                                 <th className="pb-3 pl-4 font-medium text-gray-500 uppercase text-xs">Name</th>
                                 <th className="pb-3 font-medium text-gray-500 uppercase text-xs">Role</th>
-                                <th className="pb-3 font-medium text-gray-500 uppercase text-xs">Last Active</th>
+                                <th className="pb-3 font-medium text-gray-500 uppercase text-xs">Last Login</th>
                                 <th className="pb-3 text-right font-medium text-gray-500 uppercase text-xs pr-4">Action</th>
                             </tr>
                         </thead>
@@ -126,7 +206,7 @@ const RoleManagement = () => {
                             {admins.map((admin) => (
                                 <tr key={admin.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors relative">
                                     <td className="py-4 pl-4 flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-400 flex items-center justify-center text-xs font-bold text-gray-700">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-violet-500 flex items-center justify-center text-xs font-bold text-white">
                                             {admin.name[0]}
                                         </div>
                                         <div>
@@ -135,14 +215,16 @@ const RoleManagement = () => {
                                         </div>
                                     </td>
                                     <td className="py-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${admin.role === 'Super Admin' ? 'bg-purple-100 text-purple-700' :
-                                            admin.role === 'Moderator' ? 'bg-blue-100 text-blue-700' :
+                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${admin.role?.name === 'SuperAdmin' ? 'bg-purple-100 text-purple-700' :
+                                            admin.role?.name === 'Moderator' ? 'bg-blue-100 text-blue-700' :
                                                 'bg-gray-100 text-gray-700'
                                             }`}>
-                                            {admin.role}
+                                            {admin.role?.name || 'No Role'}
                                         </span>
                                     </td>
-                                    <td className="py-4 text-sm text-gray-500">{admin.lastActive}</td>
+                                    <td className="py-4 text-sm text-gray-500">
+                                        {admin.lastLogin ? new Date(admin.lastLogin).toLocaleDateString() : 'Never'}
+                                    </td>
                                     <td className="py-4 text-right pr-4 relative">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); toggleDropdown(admin.id); }}
@@ -154,7 +236,10 @@ const RoleManagement = () => {
                                         {/* Dropdown Menu */}
                                         {activeDropdown === admin.id && (
                                             <div className="absolute right-8 top-8 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-white/10 z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                                <button className="w-full text-left px-4 py-2 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleEditAdminRole(admin)}
+                                                    className="w-full text-left px-4 py-2 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2"
+                                                >
                                                     <Edit2 size={12} /> Edit Role
                                                 </button>
                                                 <button
@@ -172,6 +257,36 @@ const RoleManagement = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Update Admin Role Modal */}
+            {isAdminRoleModalOpen && editingAdmin && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsAdminRoleModalOpen(false)}></div>
+                    <div className="relative bg-white dark:bg-gray-900 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/10">
+                            <h3 className="font-bold text-lg text-gray-800 dark:text-white">Assign Role</h3>
+                            <button onClick={() => setIsAdminRoleModalOpen(false)} className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                                <X size={20} className="text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">Select a new role for <b>{editingAdmin.name}</b>:</p>
+                            <div className="space-y-2">
+                                {roles.map((role) => (
+                                    <button
+                                        key={role.id}
+                                        onClick={() => handleUpdateAdminRole(role.id)}
+                                        className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${editingAdmin.roleId === role.id ? 'bg-pink-500 border-pink-500 text-white' : 'border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200'}`}
+                                    >
+                                        <div className="font-semibold text-sm">{role.name}</div>
+                                        <div className={`text-[10px] ${editingAdmin.roleId === role.id ? 'text-pink-100' : 'text-gray-500'}`}>{role.description}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Add Role Modal */}
             {isAddModalOpen && (
@@ -231,7 +346,7 @@ const RoleManagement = () => {
                         <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/10">
                             <div>
                                 <h3 className="font-bold text-lg text-gray-800 dark:text-white">Edit Permissions</h3>
-                                <p className="text-xs text-gray-500">{editingRole.name}</p>
+                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mt-1">{editingRole.name}</p>
                             </div>
                             <button onClick={() => setIsEditPermsModalOpen(false)} className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
                                 <X size={20} className="text-gray-500" />
@@ -241,14 +356,21 @@ const RoleManagement = () => {
                         <div className="p-6 space-y-4">
                             <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Select permissions for this role:</p>
                             <div className="grid grid-cols-1 gap-2">
-                                {permissionsList.map((perm, idx) => (
-                                    <label key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors">
-                                        <div className={`w-5 h-5 rounded border flex items-center justify-center ${idx < 3 ? 'bg-pink-500 border-pink-500 text-white' : 'border-gray-300 dark:border-gray-600'}`}>
-                                            {idx < 3 && <Check size={12} strokeWidth={3} />}
-                                        </div>
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{perm}</span>
-                                    </label>
-                                ))}
+                                {permissionsList.map((perm, idx) => {
+                                    const isChecked = editingRole.permissions?.includes(perm);
+                                    return (
+                                        <label
+                                            key={idx}
+                                            className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
+                                            onClick={() => handleTogglePermission(perm)}
+                                        >
+                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isChecked ? 'bg-pink-500 border-pink-500 text-white' : 'border-gray-300 dark:border-gray-600'}`}>
+                                                {isChecked && <Check size={12} strokeWidth={3} />}
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{perm}</span>
+                                        </label>
+                                    );
+                                })}
                             </div>
 
                             <div className="pt-4 flex gap-3">

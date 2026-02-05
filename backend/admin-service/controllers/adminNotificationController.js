@@ -1,21 +1,22 @@
-const { publishEvent } = require('../config/rabbitmq');
+const internalApi = require('../services/internalApi');
 const { AuditLog } = require('../models');
 
 exports.sendGlobalNotification = async (req, res) => {
     try {
-        const { title, message, target } = req.body; // target: all, android, ios
+        const { title, message, target, country, platform, schedule } = req.body;
 
-        await publishEvent('GLOBAL_NOTIFICATION_SEND', { title, message, target, adminId: req.admin.id });
+        // Call notification service to create broadcast
+        const response = await internalApi.createBroadcast(req.body);
 
         await AuditLog.create({
             adminId: req.admin.id,
             adminUsername: req.admin.username,
             action: 'SEND_GLOBAL_NOTIFICATION',
             resourceType: 'NOTIFICATION',
-            details: { title, target }
+            details: { title, target, notificationId: response.data.data.id }
         });
 
-        res.json({ success: true, message: 'Global notification queued' });
+        res.json({ success: true, message: 'Notification scheduled/sent', data: response.data.data });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -23,11 +24,17 @@ exports.sendGlobalNotification = async (req, res) => {
 
 exports.getNotificationHistory = async (req, res) => {
     try {
-        const history = await AuditLog.findAll({
-            where: { action: 'SEND_GLOBAL_NOTIFICATION' },
-            order: [['createdAt', 'DESC']]
-        });
-        res.json({ success: true, data: history });
+        const response = await internalApi.getBroadcastHistory();
+        res.json({ success: true, data: response.data.data });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getNotificationStats = async (req, res) => {
+    try {
+        const response = await internalApi.getBroadcastStats();
+        res.json({ success: true, data: response.data.data });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
