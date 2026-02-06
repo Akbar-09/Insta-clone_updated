@@ -13,6 +13,7 @@ const connectRabbitMQ = async () => {
 
         await channel.bindQueue(q.queue, exchange, 'COMMENT_ADDED');
         await channel.bindQueue(q.queue, exchange, 'COMMENT_DELETED');
+        await channel.bindQueue(q.queue, exchange, 'MEDIA.OPTIMIZED');
 
         console.log('Post Service listening for Comment events...');
 
@@ -38,9 +39,28 @@ const connectRabbitMQ = async () => {
                             await post.decrement('commentsCount');
                             console.log(`Decremented commentsCount for post ${postId}`);
                         }
+                    } else if (routingKey === 'MEDIA.OPTIMIZED') {
+                        const { originalUrl, optimizedUrl, thumbnailUrl, type } = data;
+                        console.log(`Updating post with optimized media... ${originalUrl} -> ${optimizedUrl}`);
+
+                        // Find potential posts that use this media (originalUrl)
+                        const posts = await Post.findAll({ where: { mediaUrl: originalUrl } });
+
+                        if (posts.length > 0) {
+                            for (const post of posts) {
+                                post.mediaUrl = optimizedUrl;
+                                if (thumbnailUrl) {
+                                    post.thumbnailUrl = thumbnailUrl;
+                                }
+                                await post.save();
+                                console.log(`Post ${post.id} updated with optimized media.`);
+                            }
+                        } else {
+                            console.log('No posts found with original URL:', originalUrl);
+                        }
                     }
                 } catch (err) {
-                    console.error('Error syncing post comments:', err);
+                    console.error('Error syncing post data:', err);
                 }
 
                 channel.ack(msg);

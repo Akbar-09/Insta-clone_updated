@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { connectRabbitMQ } = require('./config/rabbitmq');
+const { connectRabbitMQ: connectRabbitManager } = require('./config/rabbitmq');
+const { connectRabbitMQ: startMessageConsumer } = require('./services/messageConsumer');
 const sequelize = require('./config/database');
 const messageRoutes = require('./routes/messageRoutes');
 require('dotenv').config();
@@ -22,7 +23,8 @@ app.use('/', messageRoutes);
 const startServer = async () => {
     try {
         await sequelize.sync({ alter: true });
-        await connectRabbitMQ();
+        await connectRabbitManager();
+        await startMessageConsumer();
         app.listen(PORT, () => {
             console.log(`Message Service running on port ${PORT}`);
         });

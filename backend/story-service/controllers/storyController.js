@@ -172,9 +172,10 @@ const deleteStory = async (req, res) => {
             return res.status(403).json({ status: 'error', message: 'Forbidden' });
         }
 
+        const mediaUrl = story.mediaUrl;
         await story.destroy();
 
-        await publishEvent('STORY_DELETED', { storyId: id, userId });
+        await publishEvent('STORY_DELETED', { storyId: id, userId, mediaUrl });
 
         res.json({ status: 'success', message: 'Story deleted successfully' });
     } catch (error) {

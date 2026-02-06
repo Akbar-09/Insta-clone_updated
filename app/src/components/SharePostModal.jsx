@@ -40,7 +40,7 @@ const SharePostModal = ({ postId, mediaUrl, onClose }) => {
     };
 
     const handleCopyLink = () => {
-        const link = `http://localhost:5173/p/${postId}`;
+        const link = `http://${window.location.host}/p/${postId}`;
         navigator.clipboard.writeText(link);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);

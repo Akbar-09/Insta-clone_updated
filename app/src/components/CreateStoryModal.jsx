@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import { X, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import api from '../api/axios';
+import { uploadMedia } from '../api/mediaApi';
 import { AuthContext } from '../context/AuthContext';
 
 const CreateStoryModal = ({ onClose }) => {
@@ -50,38 +51,30 @@ const CreateStoryModal = ({ onClose }) => {
 
         setLoading(true);
         try {
-            // 1. Upload Media
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-
+            // 1. Upload Media (R2 with Local Fallback)
             console.log('Uploading story media...');
-            const uploadRes = await api.post('/media/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            if (uploadRes.data.status !== 'success') throw new Error('Upload failed');
-            const { url, type } = uploadRes.data.data;
+            const media = await uploadMedia(selectedFile, 'story');
 
             // 2. Create Story
             console.log('Creating story...');
             const storyRes = await api.post('/stories', {
                 userId: user.id,
                 username: user.username,
-                mediaUrl: url,
-                mediaType: type || (selectedFile.type.startsWith('image/') ? 'IMAGE' : 'VIDEO')
+                mediaUrl: media.url,
+                mediaType: selectedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE'
             });
 
             if (storyRes.data.status === 'success') {
                 console.log('Story created successfully!');
                 onClose();
-                window.location.reload(); // Reload to show new story
+                window.location.reload();
             } else {
                 throw new Error('Story creation failed');
             }
 
         } catch (error) {
             console.error('Error creating story:', error);
-            alert('Failed to create story. Please try again.');
+            alert('Failed to create story: ' + error.message);
         } finally {
             setLoading(false);
         }

@@ -19,6 +19,10 @@ const Story = sequelize.define('Story', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    thumbnailUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     mediaType: {
         type: DataTypes.ENUM('IMAGE', 'VIDEO'),
         defaultValue: 'IMAGE',

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useContext } from 'react';
 import { Image as ImageIcon, X, ArrowLeft, Loader2, Sparkles, Globe, DollarSign } from 'lucide-react';
 import api from '../api/axios';
+import { uploadMedia } from '../api/mediaApi';
 import { createAd } from '../api/adApi';
 import { AuthContext } from '../context/AuthContext';
 
@@ -46,21 +47,14 @@ const CreateAdModal = ({ onClose }) => {
 
         setLoading(true);
         try {
-            // 1. Upload Media
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-
-            const uploadRes = await api.post('/media/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            if (uploadRes.data.status !== 'success') throw new Error('Media upload failed');
-            const { url } = uploadRes.data.data;
+            // 1. Upload Media (R2 with Local Fallback)
+            console.log('Uploading ad media...');
+            const media = await uploadMedia(selectedFile, 'ads');
 
             // 2. Create Ad via Ad Service
             const adData = {
                 advertiserId: user.id || 1, // Fallback if user context is missing
-                imageUrl: url,
+                imageUrl: media.url,
                 targetUrl,
                 headline,
                 description,
@@ -74,14 +68,13 @@ const CreateAdModal = ({ onClose }) => {
             if (response.data.success) {
                 console.log('Ad created successfully!');
                 onClose();
-                // Optional: show a success toast or notification
             } else {
                 throw new Error('Ad creation failed');
             }
 
         } catch (error) {
             console.error('Error creating ad:', error);
-            alert('Failed to create advertisement. Please try again.');
+            alert('Failed to create advertisement: ' + error.message);
         } finally {
             setLoading(false);
         }

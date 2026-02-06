@@ -137,7 +137,7 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
 
         try {
             setIsUploading(true);
-            const data = await uploadMedia(file);
+            const data = await uploadMedia(file, 'messages');
             onSendMessage('Sent an image', 'image', { mediaUrl: data.url });
         } catch (error) {
             console.error("Upload failed", error);
@@ -168,7 +168,7 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
                 try {
                     setIsUploading(true);
                     const file = new File([audioBlob], `voice_${Date.now()}.wav`, { type: 'audio/wav' });
-                    const data = await uploadMedia(file);
+                    const data = await uploadMedia(file, 'messages');
                     onSendMessage('Voice message', 'voice', { mediaUrl: data.url });
                 } catch (error) {
                     console.error("Voice upload failed", error);

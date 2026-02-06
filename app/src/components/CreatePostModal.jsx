@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useContext } from 'react';
 import { Image as ImageIcon, X, ArrowLeft } from 'lucide-react';
 import api from '../api/axios';
+import { uploadMedia } from '../api/mediaApi';
 import { AuthContext } from '../context/AuthContext';
 
 const CreatePostModal = ({ onClose }) => {
@@ -51,43 +52,31 @@ const CreatePostModal = ({ onClose }) => {
 
         setLoading(true);
         try {
-            // 1. Upload Media
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-
+            // 1. Upload Media (R2 with Local Fallback)
             console.log('Uploading media...');
-            // Note: Ensure /media/upload endpoint matches your backend route
-            // The gateway should route /api/v1/media/upload -> media-service
-            // But based on previous walkthrough, it might be just /upload if service is mounted directly?
-            // Let's assume standard Gateway pattern: /media/upload
-            const uploadRes = await api.post('/media/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            if (uploadRes.data.status !== 'success') throw new Error('Upload failed');
-            const { url, type } = uploadRes.data.data; // Assuming backend returns { url, type } or we derive type
+            const media = await uploadMedia(selectedFile, 'posts');
 
             // 2. Create Post
-            console.log('Creating post with URL:', url);
+            console.log('Creating post with URL:', media.url);
             const postRes = await api.post('/posts', {
                 userId: user.id,
                 username: user.username,
                 caption,
-                mediaUrl: url,
-                mediaType: type || (selectedFile.type.startsWith('image/') ? 'IMAGE' : 'VIDEO')
+                mediaUrl: media.url,
+                mediaType: selectedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE'
             });
 
             if (postRes.data.status === 'success') {
                 console.log('Post created successfully!');
                 onClose();
-                window.location.reload(); // Reload to show new post on Feed (and Profile if visited)
+                window.location.reload();
             } else {
                 throw new Error('Post creation failed');
             }
 
         } catch (error) {
             console.error('Error creating post:', error);
-            alert('Failed to create post. Please try again.');
+            alert('Failed to share post: ' + error.message);
         } finally {
             setLoading(false);
         }
