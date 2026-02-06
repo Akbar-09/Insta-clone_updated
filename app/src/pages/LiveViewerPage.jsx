@@ -46,7 +46,7 @@ const LiveViewerPage = () => {
         // Initialize HLS
         if (Hls.isSupported()) {
             const hls = new Hls();
-            const streamUrl = `http://localhost:8000/live/${session.streamKey}.m3u8`;
+            const streamUrl = `http://${window.location.hostname}:8000/live/${session.streamKey}.m3u8`;
             hls.loadSource(streamUrl);
             hls.attachMedia(videoRef.current);
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -56,13 +56,13 @@ const LiveViewerPage = () => {
             return () => hls.destroy();
         } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
             // Safari native support
-            videoRef.current.src = `http://localhost:8000/live/${session.streamKey}.m3u8`;
+            videoRef.current.src = `http://${window.location.hostname}:8000/live/${session.streamKey}.m3u8`;
         }
     }, [session]);
 
     useEffect(() => {
         // Socket.io for comments and viewer count
-        socketRef.current = io('http://localhost:5011'); // Socket service port
+        socketRef.current = io(`http://${window.location.hostname}:5011`); // Socket service port
 
         socketRef.current.emit('join-live', id);
 

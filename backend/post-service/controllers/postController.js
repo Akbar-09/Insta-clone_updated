@@ -23,7 +23,7 @@ const createPost = async (req, res) => {
             username,
             caption,
             mediaUrl,
-            mediaType
+            mediaType: mediaType ? mediaType.toUpperCase() : 'IMAGE'
         });
 
         // Publish Event
@@ -218,9 +218,14 @@ const deletePost = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized' });
         }
 
+        const mediaUrl = post.mediaUrl;
         await post.destroy();
-        // Also delete likes, comments etc ideally
-        // But cascading might handle or just leave for mvp
+
+        // Publish Event for media cleanup
+        await publishEvent('POST_DELETED', {
+            postId,
+            mediaUrl
+        });
 
         res.json({ status: 'success', message: 'Post deleted' });
     } catch (error) {

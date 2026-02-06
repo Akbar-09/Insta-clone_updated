@@ -22,6 +22,10 @@ const Post = sequelize.define('Post', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    thumbnailUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     mediaType: {
         type: DataTypes.ENUM('IMAGE', 'VIDEO'),
         defaultValue: 'IMAGE',

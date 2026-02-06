@@ -23,11 +23,16 @@ async function verify() {
 
     const completionTimeout = setTimeout(() => {
         console.error('FAILURE: Timeout waiting for event.');
+        socket.disconnect();
         process.exit(1);
     }, 10000);
 
     socket.on('connect', async () => {
         console.log('SUCCESS: Socket connected.');
+
+        // Join the room for user 1
+        socket.emit('join', 1);
+        console.log('Joined user:1 room.');
 
         // 3. Publish RabbitMQ Event to trigger socket emission
         try {
@@ -37,21 +42,25 @@ async function verify() {
 
             await channel.assertExchange(exchange, 'topic', { durable: true });
 
-            const messageData = {
-                id: 999,
-                senderId: 2,
-                recipientId: 1,
-                text: 'Socket Verification Message',
-                createdAt: new Date()
+            const messagePayload = {
+                message: {
+                    id: 999,
+                    senderId: 2,
+                    content: 'Socket Verification Message',
+                    createdAt: new Date()
+                },
+                receiverId: 1 // Match the field used in socketConsumer.js
             };
 
-            channel.publish(exchange, 'MESSAGE_SENT', Buffer.from(JSON.stringify(messageData)));
+            // Wrap in the format handleEvent expects if not using routing key purely, 
+            // but here type is passed as routing key.
+            channel.publish(exchange, 'MESSAGE_SENT', Buffer.from(JSON.stringify(messagePayload)));
             console.log('Published MESSAGE_SENT event to RabbitMQ');
 
             setTimeout(async () => {
                 await channel.close();
                 await connection.close();
-            }, 500);
+            }, 1000);
 
         } catch (error) {
             console.error('RabbitMQ Error:', error);
@@ -64,9 +73,10 @@ async function verify() {
         process.exit(1);
     });
 
-    socket.on('new_message', (data) => {
-        console.log('Received new_message event:', data);
-        if (data.id === 999 && data.text === 'Socket Verification Message') {
+    // Match the event name emitted by socketConsumer.js
+    socket.on('message:receive', (data) => {
+        console.log('Received message:receive event:', data);
+        if (data.id === 999 && data.content === 'Socket Verification Message') {
             console.log('SUCCESS: Received expected message via socket.');
             clearTimeout(completionTimeout);
             socket.disconnect();
@@ -76,3 +86,4 @@ async function verify() {
 }
 
 verify();
+

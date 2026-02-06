@@ -277,11 +277,29 @@ const toggleMute = async (req, res) => {
     }
 };
 
+const { publishEvent } = require('../config/rabbitmq');
+
 const deleteConversation = async (req, res) => {
     try {
         const { conversationId } = req.params;
-        // In a real app, we might soft delete or mark as hidden for this user.
-        // For simplicity, we'll hard delete messages or the conversation.
+
+        // Find messages with media before deleting
+        const messagesWithMedia = await Message.findAll({
+            where: {
+                conversationId,
+                type: { [Op.in]: ['image', 'video', 'sticker', 'voice'] },
+                mediaUrl: { [Op.ne]: null }
+            }
+        });
+
+        // Publish deletion events for each media
+        for (const msg of messagesWithMedia) {
+            await publishEvent('MESSAGE_DELETED', {
+                messageId: msg.id,
+                mediaUrl: msg.mediaUrl
+            });
+        }
+
         await Message.destroy({ where: { conversationId } });
         await Conversation.destroy({ where: { id: conversationId } });
         res.json({ status: 'success' });
