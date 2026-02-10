@@ -66,8 +66,8 @@ const EmailNotifications = () => {
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl pb-10">
             <div className="flex items-center mb-6 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
-                    <ArrowLeft />
+                <button onClick={() => navigate(-1)} className="mr-4 flex hover:bg-gray-100 dark:hover:bg-zinc-800 p-2 rounded-full transition-colors">
+                    <ArrowLeft className="w-6 h-6" />
                 </button>
                 <h2 className="text-xl font-bold">Email notifications</h2>
             </div>

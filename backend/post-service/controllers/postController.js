@@ -132,11 +132,18 @@ const getPostById = async (req, res) => {
             return res.status(404).json({ message: 'Post not found' });
         }
 
-        let isLiked = false;
         if (userId) {
             const like = await Like.findOne({ where: { userId, postId } });
             isLiked = !!like;
         }
+
+        // Publish View Event for Analytics
+        await publishEvent('POST_VIEWED', {
+            ownerId: post.userId,
+            contentId: post.id,
+            viewerId: userId || null,
+            timestamp: new Date()
+        });
 
         res.json({ status: 'success', data: { ...post, isLiked } });
     } catch (error) {

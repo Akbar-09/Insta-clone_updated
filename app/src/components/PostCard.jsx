@@ -14,6 +14,7 @@ import EditPostModal from './EditPostModal';
 // ShareModal is already imported as SharePostModal, so no need to re-import.
 // The instruction mentioned "ShareModal" but the existing component is "SharePostModal".
 // I will assume the instruction meant to use the existing SharePostModal.
+import * as adApi from '../api/adApi';
 
 const PostCard = ({ post, onLikeUpdate }) => {
     const { user } = useContext(AuthContext);
@@ -96,10 +97,38 @@ const PostCard = ({ post, onLikeUpdate }) => {
     // Is Own Post Logic
     const isOwnPost = user && (user.id === currentPost.userId || user.username === currentPost.username);
 
+    const getProxiedUrl = (url) => {
+        if (!url) return '';
+        if (typeof url !== 'string') return url;
+
+        // Convert absolute local gateway URLs to relative to use Vite proxy
+        // This handles http://localhost:5000, http://127.0.0.1:5000, etc.
+        try {
+            if (url.startsWith('http://localhost:5000') || url.startsWith('http://127.0.0.1:5000')) {
+                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1):5000/, '');
+            }
+
+            // If it's an R2 URL directly, try to convert it to our proxied endpoint
+            if (url.includes('r2.dev')) {
+                const parts = url.split('.dev/');
+                if (parts.length > 1) {
+                    return `/api/v1/media/files/${parts[1]}`;
+                }
+            }
+
+            // Ensure media files are always routed through the api/v1 prefix
+            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
+                return url.replace('/media/files', '/api/v1/media/files');
+            }
+        } catch (e) {
+            console.warn('URL proxying failed:', e);
+        }
+
+        return url;
+    };
+
     const getMediaUrl = (url) => {
-        if (!url) return undefined;
-        if (url.startsWith('http')) return url;
-        return url; // Proxy handles /uploads
+        return getProxiedUrl(url);
     };
 
     // --- Comment Icon Handler ---
@@ -132,10 +161,14 @@ const PostCard = ({ post, onLikeUpdate }) => {
         setSaving(true);
 
         try {
-            if (!previousState) {
-                await savePost(post.id, user.id || user.userId);
+            if (currentPost.isAd) {
+                await adApi.bookmarkAd(currentPost.id);
             } else {
-                await unsavePost(post.id, user.id || user.userId);
+                if (!previousState) {
+                    await savePost(post.id, user.id || user.userId);
+                } else {
+                    await unsavePost(post.id, user.id || user.userId);
+                }
             }
         } catch (error) {
             console.error("Bookmark failed", error);
@@ -213,7 +246,16 @@ const PostCard = ({ post, onLikeUpdate }) => {
             <div className="w-full overflow-hidden border-y border-border relative bg-gray-50 dark:bg-neutral-900 group" onDoubleClick={handleDoubleTap}>
                 <HeartOverlay visible={isAnimating} onAnimationEnd={() => setIsAnimating(false)} />
                 {currentPost.mediaType === 'VIDEO' ? (
-                    <video src={getMediaUrl(currentPost.mediaUrl)} controls className="w-full aspect-square object-contain bg-black block" />
+                    <video
+                        src={getMediaUrl(currentPost.mediaUrl)}
+                        controls
+                        className="w-full aspect-square object-contain bg-black block"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.style.display = 'none';
+                            e.target.parentNode.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-neutral-800 text-gray-400 font-bold">VIDEO LOADING ERROR</div>';
+                        }}
+                    />
                 ) : (
                     <div className="aspect-square w-full relative">
                         {(!currentPost.mediaUrl && !currentPost.imageUrl) ? (
@@ -227,7 +269,8 @@ const PostCard = ({ post, onLikeUpdate }) => {
                                 className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 onError={(e) => {
                                     e.target.onerror = null;
-                                    e.target.src = 'https://ui-avatars.com/api/?name=Post+Error&background=f3f4f6&color=9ca3af&size=512';
+                                    // Use a high-quality placeholder for broken images
+                                    e.target.src = 'https://ui-avatars.com/api/?name=Post&background=f3f4f6&color=9ca3af&size=512&semibold=true&format=svg';
                                 }}
                             />
                         )}
@@ -326,7 +369,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
                 />
             )}
 
-            {showReportModal && (
+            {showReportModal && !currentPost.isAd && (
                 <ReportModal
                     postId={currentPost.id}
                     onClose={() => setShowReportModal(false)}
@@ -351,6 +394,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
             {showComments && (
                 <CommentSection
                     postId={currentPost.id}
+                    isAd={currentPost.isAd || false}
                     onClose={() => setShowComments(false)}
                     initialComments={currentPost.latestComments || []}
                     initialCount={currentPost.commentsCount || 0}

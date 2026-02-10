@@ -64,7 +64,7 @@ const VoicePlayer = ({ src }) => {
     );
 };
 
-const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onToggleInfo, isTyping, handleTyping, onUpdate }) => {
+const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, updateOptimisticMessage, commitMessage, onToggleInfo, isTyping, handleTyping, onUpdate }) => {
     const [newMessage, setNewMessage] = useState('');
     const [showStickers, setShowStickers] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -79,7 +79,40 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
     const fileInputRef = useRef(null);
     const navigate = useNavigate();
 
+    const getProxiedUrl = (url) => {
+        if (!url) return '';
+        if (typeof url !== 'string') return url;
 
+        // Don't proxy blob URLs
+        if (url.startsWith('blob:')) return url;
+
+        // Convert absolute local gateway URLs to relative to use Vite proxy
+        try {
+            // Handle variants of localhost:5000 (backend)
+            if (url.startsWith('http://localhost:5000') ||
+                url.startsWith('http://127.0.0.1:5000') ||
+                url.startsWith('http://192.168.1.15:5000')) {
+                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.15):5000/, '');
+            }
+
+            // If it's an R2 URL directly, try to convert it to our proxied endpoint
+            if (url.includes('r2.dev')) {
+                const parts = url.split('.dev/');
+                if (parts.length > 1) {
+                    return `/api/v1/media/files/${parts[1]}`;
+                }
+            }
+
+            // Ensure media files are always routed through the api/v1 prefix if they are local paths
+            if (url.includes('/media/files') && !url.includes('/api/v1/') && !url.startsWith('http')) {
+                return url.replace('/media/files', '/api/v1/media/files');
+            }
+        } catch (e) {
+            console.warn('URL proxying failed:', e);
+        }
+
+        return url;
+    };
 
     const scrollToBottom = (behavior = 'smooth') => {
         messagesEndRef.current?.scrollIntoView({ behavior });
@@ -102,14 +135,12 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
 
     const handleEmojiSelect = (emoji) => {
         setNewMessage(prev => prev + emoji);
-        // Keep focus as per standard emoji pickers
     };
 
     const handleUnblock = async () => {
         if (window.confirm("Are you sure you want to unblock this user?")) {
             try {
                 await unblockUser(conversation.id);
-                // alert("User unblocked"); // Optional
                 if (onUpdate) onUpdate();
             } catch (error) {
                 console.error("Unblock failed", error);
@@ -135,13 +166,32 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
         const file = e.target.files[0];
         if (!file) return;
 
+        const previewUrl = URL.createObjectURL(file);
+        console.log('[ChatWindow] File selected, preview:', previewUrl);
+
         try {
+            // 1. Send optimistic message IMMEDIATELY with blob preview
+            const tempId = await onSendMessage('Sent an image', 'image', { mediaUrl: previewUrl });
+            console.log('[ChatWindow] Optimistic message logic triggered, tempId:', tempId);
+
             setIsUploading(true);
+            // 2. Upload in background
             const data = await uploadMedia(file, 'messages');
-            onSendMessage('Sent an image', 'image', { mediaUrl: data.url });
+            console.log('[ChatWindow] Upload complete, server URL:', data.url);
+
+            // 3. Finalize
+            if (updateOptimisticMessage && commitMessage) {
+                // First update the local UI to use the new server URL (but still marked as optimistic)
+                updateOptimisticMessage(tempId, { mediaUrl: data.url });
+                // Then commit to the server to get a real ID
+                commitMessage(tempId, { content: 'Sent an image', type: 'image', mediaUrl: data.url });
+            }
+
+            setTimeout(() => URL.revokeObjectURL(previewUrl), 15000);
         } catch (error) {
-            console.error("Upload failed", error);
+            console.error("[ChatWindow] Upload failed", error);
             alert("Failed to upload image");
+            URL.revokeObjectURL(previewUrl);
         } finally {
             setIsUploading(false);
             e.target.value = null;
@@ -165,14 +215,28 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
 
             mediaRecorderRef.current.onstop = async () => {
                 const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+                const voicePreviewUrl = URL.createObjectURL(audioBlob);
+
+                // 1. Send optimistic voice message
+                const tempId = await onSendMessage('Voice message', 'voice', { mediaUrl: voicePreviewUrl });
+
                 try {
                     setIsUploading(true);
                     const file = new File([audioBlob], `voice_${Date.now()}.wav`, { type: 'audio/wav' });
+                    // 2. Upload in background
                     const data = await uploadMedia(file, 'messages');
-                    onSendMessage('Voice message', 'voice', { mediaUrl: data.url });
+
+                    // 3. Finalize
+                    if (updateOptimisticMessage && commitMessage) {
+                        updateOptimisticMessage(tempId, { mediaUrl: data.url });
+                        commitMessage(tempId, { content: 'Voice message', type: 'voice', mediaUrl: data.url });
+                    }
+
+                    setTimeout(() => URL.revokeObjectURL(voicePreviewUrl), 10000);
                 } catch (error) {
                     console.error("Voice upload failed", error);
                     alert("Failed to send voice message");
+                    URL.revokeObjectURL(voicePreviewUrl);
                 } finally {
                     setIsUploading(false);
                 }
@@ -281,13 +345,7 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
                     </div>
 
                     <div className={`flex flex-col ${groupedContent.length < 5 ? '' : 'mt-auto'}`}>
-                        {groupedContent.filter(item => {
-                            if (item.type !== 'message') return true;
-                            const msg = item.data;
-                            // Filter out temporary blob URLs from previous test sessions
-                            if (msg.mediaUrl && msg.mediaUrl.startsWith('blob:')) return false;
-                            return true;
-                        }).map((item, index, filteredArray) => {
+                        {groupedContent.map((item, index, filteredArray) => {
                             if (item.type === 'date') {
                                 return (
                                     <div key={`date-${index}`} className="text-center text-[11px] font-semibold text-text-secondary my-8 uppercase tracking-wider">
@@ -297,7 +355,11 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
                             }
 
                             const msg = item.data;
-                            const isOwn = msg.senderId === currentUser?.id;
+                            // Debug log to find out why images vanish
+                            if (msg.type === 'image') {
+                                console.log(`[ChatWindow] Rendering image ${msg.id}:`, msg);
+                            }
+                            const isOwn = String(msg.senderId) === String(currentUser?.id);
                             const isLastInGroup = index === filteredArray.length - 1 || filteredArray[index + 1].type === 'date';
 
                             return (
@@ -318,23 +380,33 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
 
                                         <div className="flex flex-col gap-1">
                                             {/* Sticker Content */}
-                                            {msg.type === 'sticker' && msg.mediaUrl && !msg.mediaUrl.startsWith('blob:') && (
+                                            {msg.type === 'sticker' && msg.mediaUrl && (!msg.mediaUrl.startsWith('blob:') || msg.isOptimistic) && (
                                                 <div className="w-32 h-32 p-1">
-                                                    <img src={msg.mediaUrl} alt="Sticker" className="w-full h-full object-contain" />
+                                                    <img src={getProxiedUrl(msg.mediaUrl)} alt="Sticker" className="w-full h-full object-contain" />
                                                 </div>
                                             )}
 
                                             {/* Voice Content */}
-                                            {msg.type === 'voice' && msg.mediaUrl && !msg.mediaUrl.startsWith('blob:') && (
+                                            {msg.type === 'voice' && msg.mediaUrl && (!msg.mediaUrl.startsWith('blob:') || msg.isOptimistic) && (
                                                 <div className={`flex items-center gap-3 px-4 py-3 rounded-[22px] min-w-[220px] ${isOwn ? 'bg-[#3797f0] text-white' : 'bg-[#efefef] dark:bg-[#262626] text-text-primary'}`}>
-                                                    <VoicePlayer src={msg.mediaUrl} />
+                                                    <VoicePlayer src={getProxiedUrl(msg.mediaUrl)} />
                                                 </div>
                                             )}
 
                                             {/* Media Content (Image/Video) */}
-                                            {msg.type === 'image' && msg.mediaUrl && !msg.mediaUrl.startsWith('blob:') && (
-                                                <div className="rounded-[22px] overflow-hidden mb-1 border border-gray-200 max-w-[240px]">
-                                                    <img src={msg.mediaUrl} alt="Sent attachment" className="w-full h-auto" />
+                                            {msg.type === 'image' && msg.mediaUrl && (
+                                                <div className="rounded-[22px] overflow-hidden mb-1 border border-gray-200 max-w-[240px] bg-gray-50 dark:bg-neutral-900 min-h-[100px] flex items-center justify-center">
+                                                    <img
+                                                        key={msg.mediaUrl}
+                                                        src={getProxiedUrl(msg.mediaUrl)}
+                                                        alt="Sent attachment"
+                                                        className="w-full h-auto block"
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            // Fallback for broken message images
+                                                            e.target.src = 'https://ui-avatars.com/api/?name=Image&background=f3f4f6&color=9ca3af&size=240&semibold=true';
+                                                        }}
+                                                    />
                                                 </div>
                                             )}
 
@@ -343,13 +415,13 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
                                                 <div className="bg-gray-100 dark:bg-gray-900 rounded-2xl p-2 mb-1 border border-gray-200 dark:border-gray-800 overflow-hidden">
                                                     <div className="flex items-center gap-2 mb-2 px-1">
                                                         <div className="w-4 h-4 rounded-full bg-gray-300" />
-                                                        <span className="text-[10px] font-semibold">Replying to story</span>
+                                                        <span className="text-[10px] font-semibold text-text-primary">Replying to story</span>
                                                     </div>
                                                     <div className="w-32 h-48 bg-gray-200 dark:bg-gray-800 rounded-lg relative overflow-hidden cursor-pointer group">
-                                                        {msg.mediaUrl && !msg.mediaUrl.startsWith('blob:') ? (
-                                                            <img src={msg.mediaUrl} alt="Story" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                                        {msg.mediaUrl && (!msg.mediaUrl.startsWith('blob:') || msg.isOptimistic) ? (
+                                                            <img src={getProxiedUrl(msg.mediaUrl)} alt="Story" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500">Story expired</div>
+                                                            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">Story unavailable</div>
                                                         )}
                                                     </div>
                                                 </div>
@@ -420,7 +492,6 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, onTogg
                     </div>
                 ) : (
                     <div className="p-4">
-                        {/* Normal Input UI */}
                         {showStickers && (
                             <StickerPicker
                                 onSelect={handleSendSticker}

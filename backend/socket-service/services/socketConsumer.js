@@ -55,8 +55,14 @@ const handleEvent = (event) => {
             io.to(`user:${payload.receiverId}`).emit('message:seen', payload);
             break;
         case 'LIVE_COMMENT':
-            // payload: { sessionId, comment }
-            io.to(`live:${payload.sessionId}`).emit('receive-comment', payload.comment);
+        case 'LIVE_CHAT_MESSAGE':
+            // payload: { sessionId/streamId, comment/message }
+            const streamId = payload.streamId || payload.sessionId;
+            const chatMsg = payload.message || payload.comment;
+            io.to(`live:${streamId}`).emit('receive-comment', chatMsg);
+            break;
+        case 'LIVE_STREAM_STATUS':
+            io.to(`live:${payload.streamId}`).emit('stream-status', payload.status);
             break;
         default:
             // console.warn('Unknown event type:', event.type);

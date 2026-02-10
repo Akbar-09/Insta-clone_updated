@@ -55,23 +55,24 @@ const authenticateToken = (req, res, next) => {
         '/socket.io',
         '/api/v1/socket.io',
         '/api/v1/ads/active',
+        '/api/v1/media/files',
+        '/api/v1/ads/media',
         // Add specific admin debug route just in case
         '/api/v1/admin/health-check'
     ];
 
-    if (openPaths.some(path => req.path.startsWith(path))) {
-        return next();
-    }
-
+    const isOpenPath = openPaths.some(path => req.path.startsWith(path));
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
+        if (isOpenPath) return next();
         return res.status(401).json({ status: 'error', message: 'Access Denied: No Token Provided' });
     }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
+            if (isOpenPath) return next();
             return res.status(403).json({ status: 'error', message: 'Invalid token' });
         }
         req.user = user;
@@ -95,6 +96,7 @@ const services = [
     { route: '/reels', target: process.env.REEL_SERVICE_URL || 'http://localhost:5005' },
     { route: '/media', target: process.env.MEDIA_SERVICE_URL || 'http://localhost:5013' },
     { route: '/ads', target: process.env.AD_SERVICE_URL || 'http://localhost:5014' },
+    { route: '/insights', target: process.env.INSIGHT_SERVICE_URL || 'http://127.0.0.1:5017' },
     { route: '/live', target: process.env.LIVE_SERVICE_URL || 'http://localhost:5015' },
     // Ensure 5016 is correct for admin
     { route: '/admin', target: process.env.ADMIN_SERVICE_URL || 'http://localhost:5016' },

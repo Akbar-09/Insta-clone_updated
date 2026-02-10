@@ -206,4 +206,55 @@ const processR2MediaBackground = async (mediaId, tempKey, type, context) => {
     }
 };
 
-module.exports = { getPresignedUrl, finalizeUpload };
+const serveFile = async (req, res) => {
+    try {
+        const key = req.params[0];
+        if (!key) return res.status(400).send('File key required');
+
+        // 1. Try serving the requested key
+        try {
+            const command = new GetObjectCommand({
+                Bucket: BUCKET_NAME,
+                Key: key
+            });
+            const { Body, ContentType } = await r2Client.send(command);
+            res.set('Content-Type', ContentType);
+            res.set('Cache-Control', 'public, max-age=31536000');
+            res.set('Access-Control-Allow-Origin', '*');
+            res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+            return Body.pipe(res);
+        } catch (r2Error) {
+            // If not found and it's a temp key, try to find optimized version
+            if (r2Error.name === 'NoSuchKey' && key.includes('/temp/')) {
+                const uuidMatch = key.match(/([0-9a-f-]{36})/);
+                if (uuidMatch) {
+                    const uuid = uuidMatch[1];
+                    // Search for any key in R2 that contains this UUID and is NOT in temp
+                    // For efficiency, we can try common paths first
+                    const fallbackKeys = [
+                        `${FOLDER_NAME}/ads/media/temp_${uuid}_opt.webp`,
+                        `${FOLDER_NAME}/posts/images/temp_${uuid}_opt.webp`,
+                        `${FOLDER_NAME}/posts/videos/temp_${uuid}_opt.mp4`
+                    ];
+
+                    for (const fKey of fallbackKeys) {
+                        try {
+                            const fCommand = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: fKey });
+                            const { Body: fBody, ContentType: fContentType } = await r2Client.send(fCommand);
+                            res.set('Content-Type', fContentType);
+                            res.set('Cache-Control', 'public, max-age=31536000');
+                            return fBody.pipe(res);
+                        } catch (e) { /* continue */ }
+                    }
+                }
+            }
+            throw r2Error;
+        }
+    } catch (error) {
+        console.error('Serve File Error:', error);
+        if (error.name === 'NoSuchKey') return res.status(404).send('File not found');
+        res.status(500).send('Error serving file');
+    }
+};
+
+module.exports = { getPresignedUrl, finalizeUpload, serveFile };

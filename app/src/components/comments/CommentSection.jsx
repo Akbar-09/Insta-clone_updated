@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import CommentItem from './CommentItem';
 import CommentInput from './CommentInput';
 import { getComments } from '../../api/commentApi';
+import * as adApi from '../../api/adApi';
 
-const CommentSection = ({ postId, initialCount = 0, initialComments = [], isExpanded = false, onToggle, inputRef }) => {
+const CommentSection = ({ postId, isAd = false, initialCount = 0, initialComments = [], isExpanded = false, onToggle, inputRef }) => {
     const [comments, setComments] = useState(initialComments);
     const [loading, setLoading] = useState(false);
     const [internalExpanded, setInternalExpanded] = useState(false);
@@ -24,6 +25,8 @@ const CommentSection = ({ postId, initialCount = 0, initialComments = [], isExpa
         }
     };
 
+    const [replyingTo, setReplyingTo] = useState(null);
+
     // Fetch comments only when expanded
     useEffect(() => {
         if (showComments && !fetchedOnce) {
@@ -31,13 +34,28 @@ const CommentSection = ({ postId, initialCount = 0, initialComments = [], isExpa
         }
     }, [showComments, fetchedOnce]);
 
+    const handleReply = (comment) => {
+        setReplyingTo(comment);
+        if (inputRef && inputRef.current) {
+            inputRef.current.focus();
+        }
+    };
+
     const fetchComments = async () => {
         setLoading(true);
         try {
-            const data = await getComments(postId);
-            if (data.status === 'success') {
-                setComments(data.data);
-                setFetchedOnce(true);
+            if (isAd) {
+                const res = await adApi.getComments(postId);
+                if (res.data.status === 'success') {
+                    setComments(res.data.data);
+                    setFetchedOnce(true);
+                }
+            } else {
+                const data = await getComments(postId);
+                if (data.status === 'success') {
+                    setComments(data.data);
+                    setFetchedOnce(true);
+                }
             }
         } catch (error) {
             console.error("Failed to fetch comments", error);
@@ -49,6 +67,7 @@ const CommentSection = ({ postId, initialCount = 0, initialComments = [], isExpa
     const handleCommentAdded = (newComment) => {
         setComments(prev => [...prev, newComment]);
         setCommentCount(prev => prev + 1);
+        setReplyingTo(null); // Clear reply state after adding
         if (!showComments) {
             if (onToggle) onToggle(true);
             else setInternalExpanded(true);
@@ -81,14 +100,35 @@ const CommentSection = ({ postId, initialCount = 0, initialComments = [], isExpa
                             <div className="w-5 h-5 border-2 border-text-secondary border-t-transparent rounded-full animate-spin"></div>
                         </div>
                     ) : (
-                        comments.map(comment => (
-                            <CommentItem
-                                key={comment.id}
-                                comment={comment}
-                                postId={postId}
-                                onDelete={handleCommentDeleted}
-                            />
-                        ))
+                        (() => {
+                            // Organize comments: Parents followed by their replies
+                            const parents = comments.filter(c => !c.parentId);
+                            const replies = comments.filter(c => c.parentId);
+
+                            const organized = [];
+                            parents.forEach(parent => {
+                                organized.push(parent);
+                                // Add replies for this parent
+                                const childReplies = replies.filter(r => String(r.parentId) === String(parent.id));
+                                organized.push(...childReplies);
+                            });
+
+                            // Add any orphan replies just in case
+                            const addedIds = organized.map(o => o.id);
+                            const orphans = replies.filter(r => !addedIds.includes(r.id));
+                            organized.push(...orphans);
+
+                            return organized.map(comment => (
+                                <CommentItem
+                                    key={comment.id}
+                                    comment={comment}
+                                    postId={postId}
+                                    isAd={isAd}
+                                    onDelete={handleCommentDeleted}
+                                    onReply={handleReply}
+                                />
+                            ));
+                        })()
                     )}
                     {/* Hide toggle if open */}
                     <button
@@ -101,7 +141,14 @@ const CommentSection = ({ postId, initialCount = 0, initialComments = [], isExpa
             )}
 
             {/* Input */}
-            <CommentInput ref={inputRef} postId={postId} onCommentAdded={handleCommentAdded} />
+            <CommentInput
+                ref={inputRef}
+                postId={postId}
+                isAd={isAd}
+                onCommentAdded={handleCommentAdded}
+                replyingTo={replyingTo}
+                onClearReply={() => setReplyingTo(null)}
+            />
         </div>
     );
 };

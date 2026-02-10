@@ -38,6 +38,11 @@ const Comment = sequelize.define('Comment', {
     reportedCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0
+    },
+    parentId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'parent_id'
     }
 });
 

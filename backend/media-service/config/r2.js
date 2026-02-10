@@ -12,6 +12,7 @@ if (!accountId || !accessKeyId || !secretAccessKey) {
 const r2Client = new S3Client({
     region: 'auto',
     endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    forcePathStyle: true, // Crucial for R2 to avoid SSL errors with bucket subdomains
     credentials: {
         accessKeyId: accessKeyId || 'placeholder',
         secretAccessKey: secretAccessKey || 'placeholder',

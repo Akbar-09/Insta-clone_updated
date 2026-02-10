@@ -24,38 +24,50 @@ export default function useFeed() {
             }
 
             if (adsRes.status === 'fulfilled' && adsRes.value.data.status === 'success') {
-                fetchedAds = adsRes.value.data.data.map(ad => ({
-                    ...ad,
-                    isAd: true,
-                    // Map generic post fields
-                    id: `ad_${ad.id}`, // specific string id
-                    originalAdId: ad.id,
-                    username: ad.username || 'Sponsored',
-                    userAvatar: ad.profileImage || `https://ui-avatars.com/api/?name=${ad.username}&background=random`,
-                    imageUrl: ad.mediaUrl, // PostCard uses object.imageUrl or mediaUrl
-                    likesCount: 0,
-                    hideLikes: true,
-                    commentsDisabled: true,
-                    trackClick: () => api.post('/ads/click', { adId: ad.id }),
-                    trackImpression: () => api.post('/ads/impression', { adId: ad.id })
-                }));
+                fetchedAds = adsRes.value.data.data.map(ad => {
+                    const originalId = ad.id;
+                    return {
+                        ...ad,
+                        isAd: true,
+                        // Map generic post fields
+                        id: originalId,
+                        originalAdId: originalId,
+                        username: ad.username || 'Sponsored',
+                        userAvatar: ad.profileImage || `https://ui-avatars.com/api/?name=${ad.username}&background=random`,
+                        // Backend now provides mediaUrl, imageUrl, likesCount, hideLikes, etc.
+                        likesCount: ad.likesCount || 0,
+                        commentsCount: ad.commentsCount || 0,
+                        isLiked: !!ad.isLiked,
+                        isSaved: !!ad.isSaved,
+                        hideLikes: ad.hideLikes || false,
+                        commentsDisabled: ad.commentsDisabled || false,
+                        trackClick: () => api.post('/ads/click', { adId: originalId }),
+                        trackImpression: () => api.post('/ads/impression', { adId: originalId })
+                    };
+                });
             } else {
                 if (adsRes.status === 'rejected') console.warn('Ads fetch failed', adsRes.reason);
             }
 
-            // Mix Logic: Ad every 4 posts
+            console.log(`Feed: ${fetchedPosts.length} posts, ${fetchedAds.length} ads fetched.`);
+
+            // Mix Logic: Ad every 3 posts
             const mixedFeed = [];
             let adIndex = 0;
 
-            fetchedPosts.forEach((post, index) => {
-                mixedFeed.push(post);
-                if ((index + 1) % 4 === 0 && adIndex < fetchedAds.length) {
-                    mixedFeed.push(fetchedAds[adIndex]);
-                    adIndex++;
-                }
-            });
-
-            // If any ads left and feed is short? No, keep balance.
+            if (fetchedPosts.length > 0) {
+                fetchedPosts.forEach((post, index) => {
+                    mixedFeed.push(post);
+                    // Inject ad after every 3 posts
+                    if ((index + 1) % 3 === 0 && adIndex < fetchedAds.length) {
+                        mixedFeed.push(fetchedAds[adIndex]);
+                        adIndex++;
+                    }
+                });
+            } else if (fetchedAds.length > 0) {
+                // If no regular posts, show just ads
+                mixedFeed.push(...fetchedAds);
+            }
 
             setPosts(mixedFeed);
         } catch (err) {

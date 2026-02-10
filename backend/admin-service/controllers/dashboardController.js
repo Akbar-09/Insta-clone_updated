@@ -1,12 +1,17 @@
-const { AuditLog, Report } = require('../models');
+const { AuditLog } = require('../models');
 const internalApi = require('../services/internalApi');
 
 exports.getKPIs = async (req, res) => {
     try {
-        const userStats = await internalApi.getServiceStats('users');
-        const postStats = await internalApi.getServiceStats('posts');
-        const reelStats = await internalApi.getServiceStats('reels');
-        const pendingReports = await Report.count({ where: { status: 'pending' } });
+        const [userStats, postStats, reelStats, pReportStats, uReportStats] = await Promise.all([
+            internalApi.getServiceStats('users'),
+            internalApi.getServiceStats('posts'),
+            internalApi.getServiceStats('reels'),
+            internalApi.getReportStats('pending').catch(() => ({ data: { data: { count: 0 } } })),
+            internalApi.getUserReportStats('pending').catch(() => ({ data: { data: { count: 0 } } }))
+        ]);
+
+        const pendingReports = (pReportStats.data?.data?.count || 0) + (uReportStats.data?.data?.count || 0);
 
         res.json({
             success: true,

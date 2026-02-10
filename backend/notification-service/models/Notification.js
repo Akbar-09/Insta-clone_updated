@@ -24,7 +24,7 @@ const Notification = sequelize.define('Notification', {
         allowNull: true,
     },
     type: {
-        type: DataTypes.ENUM('LIKE', 'COMMENT', 'FOLLOW', 'REPLY', 'MENTION'),
+        type: DataTypes.ENUM('LIKE', 'COMMENT', 'FOLLOW', 'REPLY', 'MENTION', 'MESSAGE'),
         allowNull: false,
     },
     resourceId: { // postId, commentId, etc.
@@ -33,6 +33,10 @@ const Notification = sequelize.define('Notification', {
     },
     resourceImage: {
         type: DataTypes.STRING,
+        allowNull: true,
+    },
+    message: { // Content preview (comment text, message text)
+        type: DataTypes.TEXT,
         allowNull: true,
     },
     isRead: {

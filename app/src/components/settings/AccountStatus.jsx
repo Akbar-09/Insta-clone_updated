@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAccountStatus } from '../../api/settingsApi';
-import { Loader2, ArrowLeft, CheckCircle, ChevronRight } from 'lucide-react';
+import { Loader2, ArrowLeft, CheckCircle, ChevronRight, Image as ImageIcon, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,68 +8,82 @@ const AccountStatus = () => {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(null);
     const navigate = useNavigate();
-    const { user } = useAuth(); // Assume user loaded in context
+    const { user } = useAuth();
 
     useEffect(() => {
-        getAccountStatus()
-            .then(res => setStatus(res.data.data))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        const fetchStatus = async () => {
+            try {
+                const res = await getAccountStatus();
+                if (res.data.status === 'success') {
+                    setStatus(res.data.data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch account status', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStatus();
     }, []);
 
-    if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
+    const StatusItem = ({ icon: Icon, label, onClick, hasIssue = false }) => (
+        <div
+            onClick={onClick}
+            className="flex items-center justify-between py-[12px] cursor-pointer group"
+        >
+            <div className="flex items-center">
+                <Icon size={24} strokeWidth={1.2} className="mr-4 text-text-primary" />
+                <span className="text-[15px] font-medium text-text-primary">{label}</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <CheckCircle size={20} className="text-[#00c950]" strokeWidth={2.5} />
+                <ChevronRight size={20} className="text-[#8e8e8e] group-hover:translate-x-1 transition-transform" />
+            </div>
+        </div>
+    );
+
+    if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin text-text-secondary" /></div>;
 
     return (
-        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl h-full pb-10">
-            <div className="flex items-center mb-6 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
-                    <ArrowLeft />
+        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl mx-auto pb-10">
+            <div className="flex items-center mb-10 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-4 md:hidden p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
                 </button>
-                <div className="flex flex-col">
-                    <h2 className="text-xl font-bold">Account Status</h2>
-                </div>
+                <h2 className="text-xl font-bold">Account Status</h2>
             </div>
 
-            <div className="flex items-center py-4 mb-6">
+            {/* Profile Card */}
+            <div className="bg-[#f0f2f5] dark:bg-[#262626] p-4 rounded-xl flex items-center mb-8">
                 <img
-                    src={user?.profilePicture || '/default-avatar.png'}
+                    src={user?.profilePicture || 'https://via.placeholder.com/150'}
                     alt={user?.username}
-                    className="w-14 h-14 rounded-full object-cover mr-4"
+                    className="w-[50px] h-[50px] rounded-full object-cover mr-4 ring-1 ring-black/10 dark:ring-white/10"
                 />
-                <div>
-                    <h3 className="font-bold text-lg">{user?.username}</h3>
-                    <p className="text-sm text-text-secondary">Account Status</p>
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold leading-tight">{user?.username || 'user'}</span>
+                    <span className="text-sm text-text-secondary">{user?.fullName || 'Full Name'}</span>
                 </div>
             </div>
 
-            <div
-                onClick={() => navigate('/settings/account_status/removed_content')}
-                className="flex items-center justify-between py-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 -mx-2 px-2 rounded-lg transition-colors"
-            >
-                <div className="flex items-center">
-                    <img src="/icons/removed-content.svg" alt="" className="w-6 h-6 mr-3 opacity-50" onError={(e) => e.target.style.display = 'none'} /> {/* Placeholder icon */}
-                    <div>
-                        <span className="text-base font-medium block">Removed content</span>
-                        <p className="text-xs text-text-secondary">What you posted that affected your account status.</p>
-                    </div>
-                </div>
-                <ChevronRight size={20} className="text-text-secondary" />
-            </div>
+            {/* Description */}
+            <p className="text-[13px] text-text-secondary leading-normal mb-8 max-w-[550px]">
+                See any actions Instagram has taken when your account or content don't follow our standards. <span className="text-[#0095f6] cursor-pointer hover:underline">Learn more about Account Status</span>
+            </p>
 
-            <div
-                onClick={() => navigate('/settings/account_status/features')}
-                className="flex items-center justify-between py-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 -mx-2 px-2 rounded-lg transition-colors"
-            >
-                <div className="flex items-center">
-                    <img src="/icons/features.svg" alt="" className="w-6 h-6 mr-3 opacity-50" onError={(e) => e.target.style.display = 'none'} />
-                    <div>
-                        <span className="text-base font-medium block">Features you can't use</span>
-                        <p className="text-xs text-text-secondary">What you can't do right now.</p>
-                    </div>
-                </div>
-                <ChevronRight size={20} className="text-text-secondary" />
+            {/* Status List */}
+            <div className="flex flex-col">
+                <StatusItem
+                    icon={ImageIcon}
+                    label="Removed content and messaging issues"
+                    onClick={() => navigate('/settings/account_status/removed_content')}
+                />
+                <StatusItem
+                    icon={Search}
+                    label="Features you can't use"
+                    onClick={() => navigate('/settings/account_status/feature_limits')}
+                />
             </div>
-
         </div>
     );
 };

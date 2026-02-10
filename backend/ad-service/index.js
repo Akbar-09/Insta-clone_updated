@@ -1,3 +1,4 @@
+// Ad Service initialized
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
@@ -17,8 +18,16 @@ const startServer = async () => {
     try {
         // Initialize models and sync
         require('./models/Ad');
+        require('./models/AdMedia');
+        require('./models/AdTarget');
+        require('./models/AdBudget');
+        require('./models/AdMetric');
+        require('./models/BoostedContentReference');
         require('./models/AdImpression');
         require('./models/AdClick');
+        require('./models/AdLike');
+        require('./models/AdBookmark');
+        require('./models/AdComment');
 
         await sequelize.sync({ alter: true });
         console.log('Ad Service: Database connected and synced.');

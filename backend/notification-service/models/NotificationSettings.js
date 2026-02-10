@@ -41,6 +41,10 @@ const NotificationSettings = sequelize.define('NotificationSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
+    likeMilestones: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
 
     // Email Notification Settings
     feedbackEmails: {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { editPost } from '../api/postActionsApi';
+import * as adApi from '../api/adApi';
 
 const EditPostModal = ({ post, onClose, onUpdate }) => {
     const [caption, setCaption] = useState(post.caption || '');
@@ -9,7 +10,13 @@ const EditPostModal = ({ post, onClose, onUpdate }) => {
     const handleSave = async () => {
         setLoading(true);
         try {
-            const response = await editPost(post.id, { caption });
+            let response;
+            if (post.isAd) {
+                response = await adApi.updateAd(post.id, { caption });
+            } else {
+                response = await editPost(post.id, { caption });
+            }
+
             if (response.data.status === 'success') {
                 onUpdate(caption);
                 onClose();

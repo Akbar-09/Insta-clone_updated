@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const LiveSession = require('./LiveSession');
+const LiveStream = require('./LiveStream');
 
 const LiveViewer = sequelize.define('LiveViewer', {
     id: {
@@ -8,11 +8,11 @@ const LiveViewer = sequelize.define('LiveViewer', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
-    liveSessionId: {
+    streamId: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-            model: LiveSession,
+            model: LiveStream,
             key: 'id'
         }
     },
@@ -25,14 +25,20 @@ const LiveViewer = sequelize.define('LiveViewer', {
         defaultValue: DataTypes.NOW
     },
     leftAt: {
-        type: DataTypes.DATE
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     tableName: 'live_viewers',
-    timestamps: true
+    timestamps: true,
+    indexes: [
+        { fields: ['streamId'] },
+        { fields: ['userId'] },
+        { fields: ['leftAt'] } // Helpful to find active viewers
+    ]
 });
 
-LiveSession.hasMany(LiveViewer, { foreignKey: 'liveSessionId' });
-LiveViewer.belongsTo(LiveSession, { foreignKey: 'liveSessionId' });
+LiveStream.hasMany(LiveViewer, { foreignKey: 'streamId' });
+LiveViewer.belongsTo(LiveStream, { foreignKey: 'streamId' });
 
 module.exports = LiveViewer;

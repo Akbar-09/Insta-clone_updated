@@ -6,21 +6,18 @@ const StoryAndLiveSettings = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl">
-            <h2 className="text-xl font-bold mb-6 mt-1">Story and live</h2>
+        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl mx-auto pb-10">
+            <h2 className="text-xl font-bold mb-8 mt-1 text-center md:text-left">Hide story and live</h2>
 
-            <div className="flex flex-col">
+            <div className="bg-white dark:bg-[#1c1c1c] border border-border rounded-xl overflow-hidden shadow-sm">
                 <div
                     onClick={() => navigate('/settings/story_and_live/hide_from')}
-                    className="flex items-center justify-between py-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 -mx-2 px-2 rounded-lg transition-colors"
+                    className="flex items-center justify-between p-6 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
                 >
                     <span className="text-base font-medium">Hide story and live from</span>
-                    <ChevronRight size={20} className="text-text-secondary" />
+                    <ChevronRight size={20} className="text-text-secondary group-hover:translate-x-1 transition-transform" />
                 </div>
             </div>
-            <p className="text-sm text-text-secondary mt-2">
-                Hide your story and live videos from specific people.
-            </p>
         </div>
     );
 };

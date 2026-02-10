@@ -6,7 +6,7 @@ const Review = require('../models/Review');
 
 const createComment = async (req, res) => {
     try {
-        const { postId, text } = req.body;
+        const { postId, text, parentId } = req.body;
         const userId = req.headers['x-user-id'] || req.body.userId;
         const username = req.headers['x-user-username'] || req.body.username;
         const userAvatar = req.body.userAvatar; // Avatar usually not in headers, maybe body or fetch from user service (but simplified here)
@@ -20,7 +20,8 @@ const createComment = async (req, res) => {
             userId,
             username,
             text,
-            likesCount: 0
+            likesCount: 0,
+            parentId: parentId || null
         });
 
         // Publish Event

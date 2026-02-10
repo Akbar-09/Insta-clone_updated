@@ -2,16 +2,19 @@ import { useState, useContext } from 'react';
 import { Heart, Trash2 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { likeComment, unlikeComment, deleteComment } from '../../api/commentApi';
+import * as adApi from '../../api/adApi';
 
-const CommentItem = ({ comment, postId, onDelete }) => {
+const CommentItem = ({ comment, postId, isAd = false, onDelete, onReply }) => {
     const { user } = useContext(AuthContext);
     const [liked, setLiked] = useState(comment.isLiked || false);
     const [likesCount, setLikesCount] = useState(comment.likesCount || 0);
     const [isHovered, setIsHovered] = useState(false);
 
-    const isOwner = user?.id === comment.userId;
+    const isOwner = user?.id === comment.userId || user?.userId === comment.userId;
+    const commentContent = comment.text || comment.content; // Fallback for different models
 
     const handleLikeToggle = async () => {
+        if (isAd) return; // Not supporting comment likes for ads yet
         const newLiked = !liked;
         // Optimistic update
         setLiked(newLiked);
@@ -34,7 +37,11 @@ const CommentItem = ({ comment, postId, onDelete }) => {
     const handleDelete = async () => {
         if (window.confirm('Are you sure you want to delete this comment?')) {
             try {
-                await deleteComment(postId, comment.id);
+                if (isAd) {
+                    await adApi.deleteComment(postId, comment.id);
+                } else {
+                    await deleteComment(postId, comment.id);
+                }
                 onDelete(comment.id);
             } catch (error) {
                 console.error("Failed to delete comment", error);
@@ -60,7 +67,7 @@ const CommentItem = ({ comment, postId, onDelete }) => {
 
     return (
         <div
-            className="flex justify-between items-start py-2 group"
+            className={`flex justify-between items-start py-2 group ${comment.parentId ? 'ml-10' : ''}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -73,14 +80,19 @@ const CommentItem = ({ comment, postId, onDelete }) => {
                 <div className="flex flex-col">
                     <div className="text-sm">
                         <span className="font-semibold text-text-primary mr-2 cursor-pointer">{comment.username}</span>
-                        <span className="text-text-primary whitespace-pre-wrap break-words">{comment.text}</span>
+                        <span className="text-text-primary whitespace-pre-wrap break-words">{commentContent}</span>
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-text-secondary">
                         <span>{formatTimeAgo(comment.createdAt)}</span>
                         {likesCount > 0 && (
                             <span className="font-semibold">{likesCount} like{likesCount !== 1 && 's'}</span>
                         )}
-                        <span className="cursor-pointer hover:text-text-primary">Reply</span>
+                        <span
+                            onClick={onReply ? () => onReply(comment) : undefined}
+                            className="cursor-pointer hover:text-text-primary"
+                        >
+                            Reply
+                        </span>
                         {isOwner && isHovered && (
                             <button onClick={handleDelete} className="ml-2 text-text-secondary hover:text-red-500 transition-colors">
                                 <Trash2 size={12} />
@@ -90,12 +102,14 @@ const CommentItem = ({ comment, postId, onDelete }) => {
                 </div>
             </div>
 
-            <button
-                onClick={handleLikeToggle}
-                className={`pt-1 hover:opacity-60 transition-opacity ${liked ? 'text-red-500' : 'text-text-secondary'}`}
-            >
-                <Heart size={12} fill={liked ? 'currentColor' : 'none'} />
-            </button>
+            {!isAd && (
+                <button
+                    onClick={handleLikeToggle}
+                    className={`pt-1 hover:opacity-60 transition-opacity ${liked ? 'text-red-500' : 'text-text-secondary'}`}
+                >
+                    <Heart size={12} fill={liked ? 'currentColor' : 'none'} />
+                </button>
+            )}
         </div>
     );
 };

@@ -12,59 +12,66 @@ export const useMessages = (socket, userId, initialConversationId) => {
         try {
             const data = await getConversations();
             setConversations(data);
-            if (initialConversationId) {
-                const conv = data.find(c => c.id === parseInt(initialConversationId));
-                if (conv) {
-                    setSelectedConversation(conv);
-                } else if (initialConversationId !== 'new') {
-                    setSelectedConversation(null);
-                }
-            } else {
-                setSelectedConversation(null);
-            }
+            return data;
         } catch (error) {
             console.error("Failed to load conversations", error);
+            return [];
         } finally {
             setLoadingConversations(false);
         }
     };
 
-    // Initial fetch of conversations
+    // Initial fetch of conversations only
     useEffect(() => {
         if (userId) {
-            fetchConversations();
+            fetchConversations().then(data => {
+                if (initialConversationId && initialConversationId !== 'new') {
+                    const conv = data.find(c => c.id === parseInt(initialConversationId));
+                    if (conv) setSelectedConversation(conv);
+                }
+            });
         }
-    }, [userId, initialConversationId]);
+    }, [userId]);
+
+    // Handle initialConversationId changes (URL navigation)
+    useEffect(() => {
+        if (initialConversationId && initialConversationId !== 'new' && conversations.length > 0) {
+            const convId = parseInt(initialConversationId);
+            if (selectedConversation?.id !== convId) {
+                const conv = conversations.find(c => c.id === convId);
+                if (conv) setSelectedConversation(conv);
+            }
+        } else if (!initialConversationId && selectedConversation) {
+            setSelectedConversation(null);
+        }
+    }, [initialConversationId, conversations]);
 
     // Fetch messages when conversation selected
     useEffect(() => {
-        if (!selectedConversation) {
+        const currentId = selectedConversation?.id;
+        if (!currentId || currentId === 'new') {
             setMessages([]);
             return;
         }
 
-        // Don't fetch for new/ephemeral conversations
-        if (selectedConversation.id === 'new') {
-            setMessages([]);
-            return;
-        }
-
-        const fetchMessages = async () => {
+        const fetchMessagesForConv = async () => {
+            console.log(`[useMessages] Fetching messages for ${currentId}...`);
             setLoadingMessages(true);
             try {
-                const msgs = await getMessages(selectedConversation.id);
-                setMessages(msgs);
+                const msgs = await getMessages(currentId);
+                setMessages(msgs.map(m => normalizeMessage(m)));
+                console.log(`[useMessages] Fetched ${msgs.length} messages for ${currentId}`);
                 // Mark as seen immediately when opening
-                markAsSeen(selectedConversation.id);
+                markAsSeen(currentId);
             } catch (error) {
-                console.error("Failed to load messages", error);
+                console.error("[useMessages] Failed to load messages", error);
             } finally {
                 setLoadingMessages(false);
             }
         };
 
-        fetchMessages();
-    }, [selectedConversation]);
+        fetchMessagesForConv();
+    }, [selectedConversation?.id]);
 
     // Internal helper to create/open a chat with a specific user (from search or other triggers)
     const startConversationWithUser = (targetUser) => {
@@ -129,20 +136,48 @@ export const useMessages = (socket, userId, initialConversationId) => {
     const [isTyping, setIsTyping] = useState(false);
     const typingTimeoutRef = useRef(null);
 
+    const normalizeMessage = (msg) => {
+        if (!msg) return msg;
+        const normalized = { ...msg };
+
+        const mappings = {
+            'media_url': 'mediaUrl',
+            'conversation_id': 'conversationId',
+            'sender_id': 'senderId',
+            'reply_to_story_id': 'replyToStoryId',
+            'created_at': 'createdAt',
+            'updated_at': 'updatedAt'
+        };
+
+        Object.keys(mappings).forEach(snake => {
+            const camel = mappings[snake];
+            if (msg[snake] !== undefined && msg[camel] === undefined) {
+                normalized[camel] = msg[snake];
+            }
+        });
+
+        if (!normalized.mediaUrl && msg.media_url) normalized.mediaUrl = msg.media_url;
+        return normalized;
+    };
+
     // Socket listeners
     useEffect(() => {
         if (!socket) return;
 
-        socket.on('message:receive', (message) => {
+        socket.on('message:receive', (rawMessage) => {
+            console.log('[useMessages] Socket received:', rawMessage);
+            const message = normalizeMessage(rawMessage);
+
             setConversations(prev => {
                 const existingIndex = prev.findIndex(c => c.id === message.conversationId);
                 let newConvs = [...prev];
 
                 let snippet = message.content;
-                if (message.type === 'image') snippet = '📷 Image';
-                else if (message.type === 'video') snippet = '🎥 Video';
-                else if (message.type === 'sticker') snippet = '🖼️ Sticker';
-                else if (message.type === 'voice') snippet = '🎤 Voice message';
+                const type = message.type;
+                if (type === 'image') snippet = '📷 Image';
+                else if (type === 'video') snippet = '🎥 Video';
+                else if (type === 'sticker') snippet = '🖼️ Sticker';
+                else if (type === 'voice') snippet = '🎤 Voice message';
 
                 if (existingIndex > -1) {
                     const updatedConv = {
@@ -157,22 +192,30 @@ export const useMessages = (socket, userId, initialConversationId) => {
                 return newConvs;
             });
 
-            if (selectedConversation && selectedConversation.id === message.conversationId) {
-                setMessages(prev => [...prev, message]);
+            if (selectedConversation && (String(selectedConversation.id) === String(message.conversationId))) {
+                setMessages(prev => {
+                    // Check if message ID already exists (numeric ID or same temp ID)
+                    if (prev.some(m => String(m.id) === String(message.id))) return prev;
+
+                    // Optimization: If we find a temp message from us that matches this content/type, 
+                    // we could technically replace it here, but commitMessage usually handles it.
+                    // For safety, just append if it's truly new.
+                    return [...prev, message];
+                });
                 markAsSeen(message.conversationId);
             }
         });
 
         socket.on('message:seen', ({ conversationId, seenBy }) => {
-            if (selectedConversation && selectedConversation.id === parseInt(conversationId)) {
+            if (selectedConversation && String(selectedConversation.id) === String(conversationId)) {
                 setMessages(prev => prev.map(m =>
-                    (m.senderId !== seenBy && !m.isSeen) ? { ...m, isSeen: true } : m
+                    (String(m.senderId) !== String(seenBy) && !m.isSeen) ? { ...m, isSeen: true } : m
                 ));
             }
         });
 
         socket.on('user:typing', ({ conversationId, isTyping: typing }) => {
-            if (selectedConversation && selectedConversation.id === parseInt(conversationId)) {
+            if (selectedConversation && String(selectedConversation.id) === String(conversationId)) {
                 setIsTyping(typing);
             }
         });
@@ -182,7 +225,7 @@ export const useMessages = (socket, userId, initialConversationId) => {
             socket.off('message:seen');
             socket.off('user:typing');
         };
-    }, [socket, selectedConversation]);
+    }, [socket, selectedConversation, markAsSeen]);
 
     const handleTyping = (isTypingStatus) => {
         if (!socket || !selectedConversation || selectedConversation.id === 'new') return;
@@ -193,12 +236,59 @@ export const useMessages = (socket, userId, initialConversationId) => {
         });
     };
 
+    const updateOptimisticMessage = (tempId, updates) => {
+        console.log(`[useMessages] Updating optimistic ${tempId}`, updates);
+        setMessages(prev => prev.map(m => String(m.id) === String(tempId) ? { ...m, ...updates } : m));
+    };
+
+    const commitMessage = async (tempId, currentData) => {
+        if (!selectedConversation) return;
+
+        console.log(`[useMessages] Committing ${tempId} to server... Content:`, currentData.content, "Media:", currentData.mediaUrl);
+        try {
+            const result = await sendMessage({
+                conversationId: selectedConversation.id === 'new' ? null : selectedConversation.id,
+                receiverId: selectedConversation.otherUser?.userId,
+                content: currentData.content,
+                type: currentData.type,
+                mediaUrl: currentData.mediaUrl,
+                ...currentData.metadata
+            });
+
+            const serverMsg = normalizeMessage(result.data);
+            console.log(`[useMessages] ${tempId} committed result:`, serverMsg);
+
+            setMessages(prev => {
+                const existingIndex = prev.findIndex(m => String(m.id) === String(serverMsg.id) && String(m.id) !== String(tempId));
+                if (existingIndex > -1) {
+                    console.log(`[useMessages] Found server sibling for ${tempId}, merging and removing temp`);
+                    // If the server message (with its real ID) is already in the state (e.g., from socket.on('message:receive')),
+                    // we just need to remove the optimistic one. The socket handler should have already merged/added it.
+                    return prev.filter(m => String(m.id) !== String(tempId));
+                }
+
+                console.log(`[useMessages] Replacing temp ${tempId} with server msg ${serverMsg.id}`);
+                // Use a functional merge to ensure we don't lose mediaUrl if updateOptimisticMessage already set it
+                return prev.map(m => String(m.id) === String(tempId) ? { ...m, ...serverMsg, isOptimistic: false } : m);
+            });
+
+            if (selectedConversation.id === 'new' && result.conversationId) {
+                const realId = result.conversationId;
+                setSelectedConversation(prev => ({ ...prev, id: realId }));
+                setConversations(prev => prev.map(c => c.id === 'new' ? { ...c, id: realId } : c));
+            }
+        } catch (error) {
+            console.error("Send failed", error);
+            setMessages(prev => prev.filter(m => String(m.id) !== String(tempId)));
+        }
+    };
+
     const handleSendMessage = async (content, type = 'text', metadata = {}) => {
-        if (!selectedConversation || (!content?.trim() && !metadata.mediaUrl)) return;
+        if (!selectedConversation) return null;
 
-        handleTyping(false); // Stop typing when sending
+        handleTyping(false);
 
-        const tempId = Date.now();
+        const tempId = `temp-${Date.now()}`;
         const optimisticMessage = {
             id: tempId,
             conversationId: selectedConversation.id,
@@ -213,6 +303,7 @@ export const useMessages = (socket, userId, initialConversationId) => {
 
         setMessages(prev => [...prev, optimisticMessage]);
 
+        // Update conversation snippet
         setConversations(prev => {
             const existingIndex = prev.findIndex(c => c.id === selectedConversation.id);
             if (existingIndex === -1) return prev;
@@ -235,26 +326,12 @@ export const useMessages = (socket, userId, initialConversationId) => {
             return newConvs;
         });
 
-        try {
-            const result = await sendMessage({
-                conversationId: selectedConversation.id === 'new' ? null : selectedConversation.id,
-                receiverId: selectedConversation.otherUser?.userId,
-                content,
-                type,
-                ...metadata
-            });
-
-            setMessages(prev => prev.map(m => m.id === tempId ? result.data : m));
-
-            if (selectedConversation.id === 'new' && result.conversationId) {
-                const realId = result.conversationId;
-                setSelectedConversation(prev => ({ ...prev, id: realId }));
-                setConversations(prev => prev.map(c => c.id === 'new' ? { ...c, id: realId } : c));
-            }
-        } catch (error) {
-            console.error("Send failed", error);
-            setMessages(prev => prev.filter(m => m.id !== tempId));
+        const isBlob = metadata.mediaUrl && metadata.mediaUrl.startsWith('blob:');
+        if (type === 'text' || (metadata.mediaUrl && !isBlob)) {
+            commitMessage(tempId, optimisticMessage);
         }
+
+        return tempId;
     };
 
     return {
@@ -266,6 +343,8 @@ export const useMessages = (socket, userId, initialConversationId) => {
         loadingConversations,
         loadingMessages,
         handleSendMessage,
+        updateOptimisticMessage,
+        commitMessage,
         isTyping,
         handleTyping,
         refreshConversations: fetchConversations

@@ -9,12 +9,13 @@ const AdImpression = sequelize.define('AdImpression', {
         primaryKey: true,
     },
     adId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+        type: DataTypes.UUID,
+        allowNull: false,
         references: {
-            model: Ad,
+            model: 'ads',
             key: 'id'
-        }
+        },
+        onDelete: 'CASCADE'
     },
     viewerId: {
         type: DataTypes.INTEGER, // User who saw the ad
@@ -24,6 +25,9 @@ const AdImpression = sequelize.define('AdImpression', {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     }
+}, {
+    tableName: 'ad_impressions',
+    timestamps: true
 });
 
 // Association

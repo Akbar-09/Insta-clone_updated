@@ -3,54 +3,54 @@ const sequelize = require('../config/database');
 
 const Ad = sequelize.define('Ad', {
     id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
     },
-    advertiserId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+    userId: {
+        type: DataTypes.INTEGER, // References User.id from auth-service
+        allowNull: false,
     },
-    imageUrl: {
+    title: {
         type: DataTypes.STRING,
         allowNull: true,
     },
-    targetUrl: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    headline: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    description: {
+    caption: {
         type: DataTypes.TEXT,
         allowNull: true,
     },
-    type: {
-        type: DataTypes.ENUM('image', 'video', 'carousel'),
-        defaultValue: 'image',
+    ctaText: {
+        type: DataTypes.STRING,
+        allowNull: true, // Learn More, Shop Now, Visit Website, etc.
+    },
+    destinationUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    adType: {
+        type: DataTypes.ENUM('NEW_MEDIA', 'BOOST_CONTENT'),
+        defaultValue: 'NEW_MEDIA',
     },
     status: {
-        type: DataTypes.ENUM('pending', 'active', 'paused', 'completed', 'rejected'),
-        defaultValue: 'pending',
+        type: DataTypes.ENUM('DRAFT', 'REVIEW', 'ACTIVE', 'PAUSED', 'COMPLETED', 'REJECTED'),
+        defaultValue: 'DRAFT',
     },
-    budget: {
-        type: DataTypes.DECIMAL(10, 2),
-        defaultValue: 0.00,
+    hideLikes: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
     },
-    spent: {
-        type: DataTypes.DECIMAL(10, 2),
-        defaultValue: 0.00,
+    commentsDisabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
     },
-    startDate: {
-        type: DataTypes.DATE,
-        allowNull: true,
-    },
-    endDate: {
-        type: DataTypes.DATE,
-        allowNull: true,
-    }
+}, {
+    tableName: 'ads',
+    timestamps: true,
+    indexes: [
+        { fields: ['userId'] },
+        { fields: ['status'] },
+        { fields: ['createdAt'] },
+    ]
 });
 
 module.exports = Ad;
