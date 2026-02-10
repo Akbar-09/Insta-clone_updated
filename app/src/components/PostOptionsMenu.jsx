@@ -5,6 +5,7 @@ import {
     reportPost, unfollowUser, deletePost, copyLink, favoriteUser,
     hideLikeCount, toggleComments, getEmbedCode, followUser
 } from '../api/postActionsApi';
+import * as adApi from '../api/adApi';
 
 const PostOptionsMenu = ({
     post,
@@ -72,12 +73,29 @@ const PostOptionsMenu = ({
 
         setLoading(true);
         try {
+            // If it's an ad, restrict most post-service specific actions
+            const isAd = post.isAd;
+
             switch (action) {
                 case 'report':
+                    if (isAd) {
+                        await adApi.reportAd?.(post.id); // If implemented later
+                        alert("Ad reported. Thank you for your feedback.");
+                        onClose();
+                        return;
+                    }
                     if (onReport) onReport();
                     onClose();
                     break;
                 case 'delete':
+                    if (isAd) {
+                        if (window.confirm('Delete this ad? This will remove it from the platform.')) {
+                            await adApi.deleteAd(post.id);
+                            if (onDeleteSuccess) onDeleteSuccess(post.id);
+                            onClose();
+                        }
+                        return;
+                    }
                     if (window.confirm('Delete this post? This cannot be undone.')) {
                         await deletePost(post.id);
                         if (onDeleteSuccess) onDeleteSuccess(post.id);
@@ -102,19 +120,26 @@ const PostOptionsMenu = ({
                     onClose();
                     break;
                 case 'hideLikes':
-                    await hideLikeCount(post.id);
+                    if (isAd) {
+                        await adApi.hideLikeCount(post.id);
+                    } else {
+                        await hideLikeCount(post.id);
+                    }
                     if (onUpdatePost) onUpdatePost({ ...post, hideLikes: !post.hideLikes });
                     onClose();
                     break;
                 case 'toggleComments':
-                    await toggleComments(post.id);
+                    if (isAd) {
+                        await adApi.toggleComments(post.id);
+                    } else {
+                        await toggleComments(post.id);
+                    }
                     if (onUpdatePost) onUpdatePost({ ...post, commentsDisabled: !post.commentsDisabled });
                     onClose();
                     break;
                 case 'copyLink':
                     const success = await copyLink(post.id);
                     if (success) {
-                        // Show a temporary success message
                         const msg = document.createElement('div');
                         msg.textContent = 'Link copied to clipboard';
                         msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
@@ -125,8 +150,12 @@ const PostOptionsMenu = ({
                     break;
                 case 'embed':
                     try {
-                        const embedData = await getEmbedCode(post.id);
-                        // Copy embed code to clipboard
+                        let embedData;
+                        if (isAd) {
+                            embedData = await adApi.getEmbedCode(post.id);
+                        } else {
+                            embedData = await getEmbedCode(post.id);
+                        }
                         await navigator.clipboard.writeText(embedData.data.embedHtml);
                         const msg = document.createElement('div');
                         msg.textContent = 'Embed code copied to clipboard';

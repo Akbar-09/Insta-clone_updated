@@ -25,6 +25,8 @@ const Messages = () => {
         setSelectedConversation,
         startConversationWithUser,
         handleSendMessage,
+        updateOptimisticMessage,
+        commitMessage,
         isTyping,
         handleTyping,
         refreshConversations
@@ -85,6 +87,8 @@ const Messages = () => {
                             messages={messages}
                             currentUser={user}
                             onSendMessage={handleSendMessage}
+                            updateOptimisticMessage={updateOptimisticMessage}
+                            commitMessage={commitMessage}
                             onToggleInfo={() => setShowInfoPanel(!showInfoPanel)}
                             isTyping={isTyping}
                             handleTyping={handleTyping}

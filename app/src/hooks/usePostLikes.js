@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { likePost, unlikePost } from '../api/likeApi';
+import * as adApi from '../api/adApi';
 
 export const usePostLikes = (post, onLikeUpdate) => {
     // Initialize state from props (safely handle null post)
@@ -36,12 +37,17 @@ export const usePostLikes = (post, onLikeUpdate) => {
         }
 
         isRequesting.current = true;
+        const isAd = post.isAd;
 
         try {
-            if (previousLiked) {
-                await unlikePost(post.id);
+            if (isAd) {
+                await adApi.likeAd(post.id);
             } else {
-                await likePost(post.id);
+                if (previousLiked) {
+                    await unlikePost(post.id);
+                } else {
+                    await likePost(post.id);
+                }
             }
         } catch (error) {
             console.error('Like toggle failed', error);

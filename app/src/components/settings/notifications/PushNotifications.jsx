@@ -85,8 +85,6 @@ const PushNotifications = () => {
             console.error('Update failed', err);
             // Revert
             setSettings(prev => ({ ...prev, [key]: !value }));
-            // Note: Reverting enum requires explicit previous value, but for simplicity here treating toggle error.
-            // For robust production: Store prev state before opt-update.
         }
     };
 
@@ -101,8 +99,8 @@ const PushNotifications = () => {
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl pb-10">
             <div className="flex items-center mb-6 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
-                    <ArrowLeft />
+                <button onClick={() => navigate(-1)} className="mr-4 flex hover:bg-gray-100 dark:hover:bg-zinc-800 p-2 rounded-full transition-colors">
+                    <ArrowLeft className="w-6 h-6" />
                 </button>
                 <h2 className="text-xl font-bold">Push notifications</h2>
             </div>
@@ -157,8 +155,18 @@ const PushNotifications = () => {
                 {/* Story Replies */}
                 <ToggleGroup
                     label="Story Replies"
+                    description="Receive notifications for replies to your stories"
                     name="storyReplies"
                     checked={settings.storyReplies}
+                    onChange={handleChange}
+                />
+
+                {/* Like Milestones */}
+                <ToggleGroup
+                    label="Like Milestones"
+                    description="Receive notifications when your post gets a certain number of likes"
+                    name="likeMilestones"
+                    checked={settings.likeMilestones}
                     onChange={handleChange}
                 />
             </div>

@@ -16,6 +16,7 @@ const services = [
     { name: 'socket-service', dir: 'socket-service' },
     { name: 'media-service', dir: 'media-service' },
     { name: 'ad-service', dir: 'ad-service' },
+    { name: 'insight-service', dir: 'insight-service' },
     { name: 'live-service', dir: 'live-service' },
     { name: 'admin-service', dir: 'admin-service' }
 ];
@@ -71,6 +72,7 @@ function getPort(name) {
         'media-service': 5013,
         'ad-service': 5014,
         'live-service': 5015,
+        'insight-service': 5017,
         'admin-service': 5016
     };
     return ports[name] || 0; // 0 will let OS assign random port if not found, but we want our ports

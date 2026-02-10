@@ -33,6 +33,14 @@ const processImage = async (filePath, type = 'feed') => {
                     position: 'center'
                 };
                 break;
+            case 'ads':
+                resizeOptions = {
+                    width: 1080,
+                    height: 1080,
+                    fit: 'cover',
+                    position: 'center'
+                };
+                break;
             case 'feed':
             default:
                 // Only resize if larger than 1080px width

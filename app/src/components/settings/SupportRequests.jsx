@@ -9,48 +9,81 @@ const SupportRequests = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        getSupportRequests()
-            .then(res => setRequests(res.data.data))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        const fetchRequests = async () => {
+            try {
+                const res = await getSupportRequests();
+                if (res.data.status === 'success') {
+                    setRequests(res.data.data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch support requests', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRequests();
     }, []);
 
-    // Helper to count by category
     const getCount = (cat) => requests.filter(r => r.category === cat).length;
 
-    const items = [
-        { label: 'Reports', category: 'report' },
-        { label: 'Violations', category: 'violation' },
-        { label: 'Monetisation Support', category: 'monetisation' },
+    const sections = [
+        {
+            label: 'Reports',
+            description: "These are reports you've submitted.",
+            category: 'report'
+        },
+        {
+            label: 'Safety Notices',
+            description: 'Find resources to help you recover from a difficult experience.',
+            category: 'safety'
+        },
+        {
+            label: 'Violations',
+            description: "These are posts you've shared that go against our guidelines.",
+            category: 'violation'
+        },
+        {
+            label: 'Monetization Support',
+            description: "These are monetization support tickets you've submitted.",
+            category: 'monetisation'
+        },
     ];
 
-    if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
+    if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin text-text-secondary" /></div>;
 
     return (
-        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl h-full pb-10">
-            <div className="flex items-center mb-6 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
-                    <ArrowLeft />
+        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl mx-auto h-full pb-10">
+            <div className="flex items-center mb-10 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-0 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
                 </button>
-                <h2 className="text-xl font-bold">Support requests</h2>
+                <div className="flex-1 flex justify-center mr-6">
+                    <h2 className="text-base font-bold">Help</h2>
+                </div>
             </div>
 
             <div className="flex flex-col">
-                {items.map(item => (
-                    <div
-                        key={item.category}
-                        // onClick={() => navigate(`/settings/help/reports/${item.category}`)} // Routing to list not fully requested but structure implies it
-                        className="flex items-center justify-between py-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 -mx-2 px-2 rounded-lg transition-colors"
-                    >
-                        <div className="flex items-center">
-                            <span className="text-base text-text-primary">{item.label}</span>
+                {sections.map((section, index) => (
+                    <div key={section.label}>
+                        <div
+                            onClick={() => navigate(`/settings/help/support_requests/${section.category}`)}
+                            className="flex items-center justify-between py-[18px] cursor-pointer group"
+                        >
+                            <div className="flex flex-col">
+                                <span className="text-[15px] font-bold text-text-primary mb-1">{section.label}</span>
+                                <p className="text-[13px] text-text-secondary leading-normal">
+                                    {section.description}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1">
+                                    <div className="w-2 h-2 rounded-full bg-[#0095f6]" />
+                                    <span className="text-[14px] text-[#8e8e8e]">{getCount(section.category)}</span>
+                                </div>
+                                <ChevronRight size={18} className="text-[#8e8e8e] group-hover:translate-x-1 transition-transform" />
+                            </div>
                         </div>
-                        <div className="flex items-center">
-                            {getCount(item.category) > 0 && (
-                                <span className="text-xs text-green-500 font-semibold mr-3">{getCount(item.category)} updates</span>
-                            )}
-                            <ChevronRight size={20} className="text-text-secondary" />
-                        </div>
+                        {index < sections.length - 1 && <div className="h-px bg-border my-1" />}
                     </div>
                 ))}
             </div>

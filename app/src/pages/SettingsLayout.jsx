@@ -28,10 +28,12 @@ const SettingsLayout = () => {
         if (pathname.includes('story_highlights')) return 'Story and live';
         if (pathname.includes('messages_replies')) return 'Messages and replies';
         if (pathname.includes('tags_mentions')) return 'Tags and mentions';
+        if (pathname.includes('manually_approve_tags')) return 'Manually approve tags';
         if (pathname.includes('comments')) return 'Comments';
-        if (pathname.includes('sharing')) return 'Sharing and remixes';
+        if (pathname.includes('sharing')) return 'Sharing and reuse';
         if (pathname.includes('restricted_accounts')) return 'Restricted accounts';
-        if (pathname.includes('hidden_words')) return 'Hidden Words';
+        if (pathname.includes('hidden_words/custom')) return 'Comment filtering';
+        if (pathname.includes('hidden_words')) return 'Hidden words';
         if (pathname.includes('muted_accounts')) return 'Muted accounts';
         if (pathname.includes('like_counts')) return 'Like and share counts';
         if (pathname.includes('archiving')) return 'Archiving and downloading';
@@ -39,8 +41,19 @@ const SettingsLayout = () => {
         if (pathname.includes('language')) return 'Language';
         if (pathname.includes('website_permissions')) return 'Website permissions';
         if (pathname.includes('supervision')) return 'Family Centre';
+        if (pathname.includes('help/support_requests/')) {
+            if (pathname.includes('report')) return 'Reports';
+            if (pathname.includes('safety')) return 'Safety Notices';
+            if (pathname.includes('violation')) return 'Violations';
+            if (pathname.includes('monetisation')) return 'Monetization Support';
+            return 'Support Requests';
+        }
+        if (pathname.includes('help/feedback')) return 'Help';
+        if (pathname.includes('help/privacy_help')) return 'Privacy and security help';
         if (pathname.includes('help')) return 'Help';
         if (pathname.includes('privacy_center')) return 'Privacy Centre';
+        if (pathname.includes('account_status/removed_content')) return 'Removed content';
+        if (pathname.includes('account_status/feature_limits')) return 'Features you can\'t use';
         if (pathname.includes('account_status')) return 'Account Status';
         if (pathname.includes('meta_verified')) return 'Jaadoe Verified';
         if (pathname.includes('about')) return 'About';
@@ -116,7 +129,7 @@ const SettingsLayout = () => {
                     <SidebarItem icon={Lock} label="Account privacy" path="/settings/privacy" />
                     <SidebarItem icon={Star} label="Close Friends" path="/settings/close_friends" />
                     <SidebarItem icon={Ban} label="Blocked" path="/settings/blocked" />
-                    <SidebarItem icon={BookOpen} label="Story and live" path="/settings/story_highlights" />
+                    <SidebarItem icon={BookOpen} label="Story and location" path="/settings/story_and_live" />
                 </SidebarSection>
 
                 {/* HOW OTHERS CAN INTERACT WITH YOU */}
@@ -124,7 +137,7 @@ const SettingsLayout = () => {
                     <SidebarItem icon={MessageCircle} label="Messages and story replies" path="/settings/messages_replies" />
                     <SidebarItem icon={AtSign} label="Tags and mentions" path="/settings/tags_mentions" />
                     <SidebarItem icon={MessageSquare} label="Comments" path="/settings/comments" />
-                    <SidebarItem icon={Share2} label="Sharing and remixes" path="/settings/sharing" />
+                    <SidebarItem icon={Share2} label="Sharing and reuse" path="/settings/sharing" />
                     <SidebarItem icon={AlertCircle} label="Restricted accounts" path="/settings/restricted_accounts" />
                     <SidebarItem icon={Type} label="Hidden Words" path="/settings/hidden_words" />
                 </SidebarSection>
@@ -206,14 +219,14 @@ const SettingsLayout = () => {
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Lock} label="Account privacy" path="/settings/privacy" /></div>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Star} label="Close Friends" path="/settings/close_friends" /></div>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Ban} label="Blocked" path="/settings/blocked" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={BookOpen} label="Story and live" path="/settings/story_highlights" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={BookOpen} label="Story and location" path="/settings/story_and_live" /></div>
                         </SidebarSection>
 
                         <SidebarSection title="How others can interact with you">
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={MessageCircle} label="Messages and story replies" path="/settings/messages_replies" /></div>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={AtSign} label="Tags and mentions" path="/settings/tags_mentions" /></div>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={MessageSquare} label="Comments" path="/settings/comments" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Share2} label="Sharing and remixes" path="/settings/sharing" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Share2} label="Sharing and reuse" path="/settings/sharing" /></div>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={AlertCircle} label="Restricted accounts" path="/settings/restricted_accounts" /></div>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Type} label="Hidden Words" path="/settings/hidden_words" /></div>
                         </SidebarSection>
