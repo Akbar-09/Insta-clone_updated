@@ -24,6 +24,9 @@ const Media = sequelize.define('Media', {
     cdnUrl: { // New: Store the CDN URL (might be same as url, but kept for clarity)
         type: DataTypes.STRING,
     },
+    tempKey: { // New: Store the original temp key for fallback
+        type: DataTypes.STRING,
+    },
     thumbnailUrl: {
         type: DataTypes.STRING,
     },

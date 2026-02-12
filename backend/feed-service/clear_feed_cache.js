@@ -1,18 +1,20 @@
 const { client } = require('./config/redis');
+require('dotenv').config();
 
-const clearCache = async () => {
+async function clear() {
     try {
-        await client.connect();
-        console.log('Redis Connected.');
+        console.log('Connecting to Redis...');
+        await client.connect(); // v4 client
+        console.log('Connected.');
 
         await client.del('global_feed');
-        console.log('global_feed cleared.');
+        console.log('Cleared global_feed.');
 
-        process.exit(0);
     } catch (e) {
         console.error(e);
-        process.exit(1);
+    } finally {
+        await client.quit();
     }
-};
+}
 
-clearCache();
+clear();

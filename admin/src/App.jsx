@@ -47,6 +47,7 @@ import Settings from './pages/settings';
 import LanguageManagement from './pages/settings/Languages';
 import NotificationManagement from './pages/notifications';
 import CMSPages from './pages/cms';
+import HelpCentreCMS from './pages/help-centre/HelpCentreCMS';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -91,6 +92,7 @@ function App() {
 
                         {/* Settings & CMS */}
                         <Route path="cms" element={<CMSPages />} />
+                        <Route path="help-centre-cms" element={<HelpCentreCMS />} />
                         <Route path="languages" element={<LanguageManagement />} />
                         <Route path="settings" element={<Settings />} />
 

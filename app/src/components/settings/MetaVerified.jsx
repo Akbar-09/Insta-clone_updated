@@ -1,7 +1,10 @@
 import { BadgeCheck, Check, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import jaadoeLogo from '../../assets/jaadoe_logo.svg';
 
 const MetaVerified = () => {
+    const navigate = useNavigate();
+
     return (
         <div className="flex flex-col w-full text-text-primary max-w-[600px] items-center text-center">
 
@@ -49,7 +52,10 @@ const MetaVerified = () => {
                 </div>
             </div>
 
-            <button className="w-full max-w-[400px] bg-blue-btn hover:bg-[#1877f2] text-white py-3 rounded-xl font-semibold text-base transition-colors mt-4">
+            <button
+                onClick={() => navigate('/help/category/verified-badge')}
+                className="w-full max-w-[400px] bg-blue-btn hover:bg-[#1877f2] text-white py-3 rounded-xl font-semibold text-base transition-colors mt-4"
+            >
                 Subscribe
             </button>
 

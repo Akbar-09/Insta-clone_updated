@@ -4,7 +4,12 @@ const UserProfile = require('../models/UserProfile');
 exports.submitReport = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'];
-        const { text, files, browserInfo } = req.body;
+        let { text, files, browserInfo, description, details, reason } = req.body;
+
+        // Allow aliases for text
+        if (!text) {
+            text = description || details || reason;
+        }
 
         if (!userId) {
             return res.status(401).json({ status: 'error', message: 'Unauthorized: User ID required' });

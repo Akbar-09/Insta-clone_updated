@@ -101,6 +101,11 @@ const PostCard = ({ post, onLikeUpdate }) => {
         if (!url) return '';
         if (typeof url !== 'string') return url;
 
+        // Handle bare filenames (likely R2/Media Service uploads)
+        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
+            return `/api/v1/media/files/${url}`;
+        }
+
         // Convert absolute local gateway URLs to relative to use Vite proxy
         // This handles http://localhost:5000, http://127.0.0.1:5000, etc.
         try {
@@ -213,7 +218,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
                         <div className="w-full h-full rounded-full bg-white dark:bg-black p-[1.5px]">
                             <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden border border-border flex items-center justify-center text-[10px] font-bold text-gray-500 uppercase">
                                 {currentPost.userAvatar ? (
-                                    <img src={currentPost.userAvatar} alt={currentPost.username} className="w-full h-full object-cover" />
+                                    <img src={getMediaUrl(currentPost.userAvatar)} alt={currentPost.username} className="w-full h-full object-cover" />
                                 ) : (
                                     currentPost.username?.charAt(0) || '?'
                                 )}
@@ -247,13 +252,16 @@ const PostCard = ({ post, onLikeUpdate }) => {
                 <HeartOverlay visible={isAnimating} onAnimationEnd={() => setIsAnimating(false)} />
                 {currentPost.mediaType === 'VIDEO' ? (
                     <video
+                        key={getMediaUrl(currentPost.mediaUrl)}
                         src={getMediaUrl(currentPost.mediaUrl)}
                         controls
+                        playsInline
+                        preload="metadata"
                         className="w-full aspect-square object-contain bg-black block"
                         onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.style.display = 'none';
-                            e.target.parentNode.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-neutral-800 text-gray-400 font-bold">VIDEO LOADING ERROR</div>';
+                            // Sometimes simple retries or just letting the browser handle it is better than invasive replacement
+                            console.error("Video Error:", getMediaUrl(currentPost.mediaUrl), e.target.error);
+                            // Don't hide immediately, might be a transient network issue or format issue
                         }}
                     />
                 ) : (

@@ -47,7 +47,11 @@ const HelpCentre = () => {
                 {sections.map(section => (
                     <div
                         key={section.label}
-                        onClick={() => { }}
+                        onClick={() => {
+                            if (section.label === 'Help Center') {
+                                window.open('/help', '_blank');
+                            }
+                        }}
                         className="flex items-start p-4 bg-white dark:bg-[#1c1c1c] border border-border rounded-xl shadow-sm cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                     >
                         <div className="mt-1 p-2 bg-[#f0f2f5] dark:bg-[#262626] rounded-full mr-4">

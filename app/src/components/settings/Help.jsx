@@ -24,13 +24,21 @@ const Help = () => {
                 {items.map(item => (
                     <div
                         key={item.label}
-                        onClick={() => navigate(item.path)}
+                        onClick={() => {
+                            if (item.label === 'Help Center') {
+                                window.open('/help', '_blank');
+                            } else {
+                                navigate(item.path);
+                            }
+                        }}
                         className="flex items-center justify-between py-[12px] px-2 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors group"
                     >
                         <span className="text-[15px] font-medium text-text-primary">{item.label}</span>
                         <ChevronRight size={20} className="text-[#8e8e8e] group-hover:translate-x-1 transition-transform" />
                     </div>
                 ))}
+
+
 
                 {/* Tell us how we're doing */}
                 <div

@@ -21,7 +21,12 @@ const generateThumbnail = (videoPath, outputDir, filename) => {
                 size: '320x?' // Fixed width, auto height
             })
             .on('end', () => resolve())
-            .on('error', (err) => reject(err));
+            .on('error', (err) => {
+                console.error("Thumbnail generation error:", err);
+                // Resolve anyway to not break the whole process? Or reject?
+                // Rejecting is safer to know something went wrong.
+                reject(err);
+            });
     });
 };
 
@@ -85,11 +90,14 @@ const processVideo = (filePath, type = 'feed') => {
                         });
                     });
                 } catch (err) {
+                    console.error("Post-processing error:", err);
                     reject(err);
                 }
             })
             .on('error', (err) => {
                 console.error('Video processing error:', err);
+                // If optimization fails, maybe return original? No, that defeats the purpose.
+                // But specifically for valid files that fail encoding ??
                 reject(err);
             })
             .save(outputPath);
