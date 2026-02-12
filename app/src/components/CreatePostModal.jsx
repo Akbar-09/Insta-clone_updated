@@ -33,19 +33,23 @@ const CreatePostModal = ({ onClose }) => {
     };
 
     const processFile = (file) => {
-        if (file && file.type.startsWith('image/')) {
-            setSelectedFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result);
-            };
-            reader.readAsDataURL(file);
+        if (file) {
+            if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+                setSelectedFile(file);
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPreview(reader.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select an image or video file.');
+            }
         }
     };
 
     const [loading, setLoading] = useState(false);
 
-    // ... file processing logic remains ...
+    // ... existing handlePost ...
 
     const handlePost = async () => {
         if (!selectedFile) return;
@@ -59,11 +63,12 @@ const CreatePostModal = ({ onClose }) => {
             // 2. Create Post
             console.log('Creating post with URL:', media.url);
             const postRes = await api.post('/posts', {
-                userId: user.id,
-                username: user.username,
+                userId: user.id || 1, // Fallback if context not fully loaded
+                username: user.username || 'user',
                 caption,
                 mediaUrl: media.url,
-                mediaType: selectedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE'
+                mediaType: selectedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
+                thumbnailUrl: media.thumbnailUrl // If backend generates/returns it
             });
 
             if (postRes.data.status === 'success') {
@@ -86,11 +91,15 @@ const CreatePostModal = ({ onClose }) => {
         setSelectedFile(null);
         setPreview(null);
         setCaption('');
+        // Reset file input value so same file can be selected again if needed
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const triggerFileInput = () => {
         fileInputRef.current?.click();
     };
+
+    const isVideo = selectedFile?.type?.startsWith('video/');
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/65 backdrop-blur-sm p-5" onClick={onClose}>
@@ -155,7 +164,7 @@ const CreatePostModal = ({ onClose }) => {
                             <input
                                 ref={fileInputRef}
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,video/*"
                                 onChange={handleFileSelect}
                                 className="hidden"
                             />
@@ -163,18 +172,22 @@ const CreatePostModal = ({ onClose }) => {
                     ) : (
                         // Preview & Caption State
                         <div className="w-full flex h-full">
-                            {/* Image Preview Side */}
+                            {/* Image/Video Preview Side */}
                             <div className="w-[60%] h-full bg-black flex items-center justify-center">
-                                <img src={preview} alt="Preview" className="max-w-full max-h-full object-contain" />
+                                {isVideo ? (
+                                    <video src={preview} className="max-w-full max-h-full object-contain" controls />
+                                ) : (
+                                    <img src={preview} alt="Preview" className="max-w-full max-h-full object-contain" />
+                                )}
                             </div>
 
                             {/* Details Side */}
                             <div className="w-[40%] flex flex-col border-l border-border h-full">
                                 <div className="p-4 flex items-center shrink-0">
                                     <div className="w-7 h-7 rounded-full bg-gray-200 mr-3 overflow-hidden">
-                                        <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=50&h=50&fit=crop" alt="User" className="w-full h-full object-cover" />
+                                        <img src={user?.profileImage || "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=50&h=50&fit=crop"} alt="User" className="w-full h-full object-cover" />
                                     </div>
-                                    <span className="font-semibold text-sm">design_master</span>
+                                    <span className="font-semibold text-sm">{user?.username || 'user'}</span>
                                 </div>
 
                                 <div className="p-4 pt-0 flex-grow">

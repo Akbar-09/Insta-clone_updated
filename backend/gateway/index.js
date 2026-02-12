@@ -57,6 +57,13 @@ const authenticateToken = (req, res, next) => {
         '/api/v1/ads/active',
         '/api/v1/media/files',
         '/api/v1/ads/media',
+        // Help Centre Public Routes
+        '/api/v1/help/categories',
+        '/api/v1/help/category',
+        '/api/v1/help/articles',
+        '/api/v1/help/article',
+        '/api/v1/help/search',
+        '/api/v1/help/feedback',
         // Add specific admin debug route just in case
         '/api/v1/admin/health-check'
     ];
@@ -100,6 +107,7 @@ const services = [
     { route: '/live', target: process.env.LIVE_SERVICE_URL || 'http://localhost:5015' },
     // Ensure 5016 is correct for admin
     { route: '/admin', target: process.env.ADMIN_SERVICE_URL || 'http://localhost:5016' },
+    { route: '/help', target: process.env.HELP_SERVICE_URL || 'http://localhost:5060' },
     { route: '/socket.io', target: process.env.SOCKET_SERVICE_URL || 'http://localhost:5011', ws: true },
 ];
 

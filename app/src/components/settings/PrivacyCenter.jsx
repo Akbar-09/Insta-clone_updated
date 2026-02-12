@@ -1,6 +1,8 @@
 import { Shield, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const PrivacyCenter = () => {
+    const navigate = useNavigate();
     return (
         <div className="flex flex-col w-full text-text-primary max-w-[600px]">
             <h2 className="text-xl font-bold mb-6">Privacy Centre</h2>
@@ -9,7 +11,10 @@ const PrivacyCenter = () => {
                 Control your privacy settings and learn more about how we use your information.
             </p>
 
-            <div className="bg-[#EFEFEF] dark:bg-[#262626] p-6 rounded-xl mb-6 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <div
+                onClick={() => navigate('/help/category/privacy-settings')}
+                className="bg-[#EFEFEF] dark:bg-[#262626] p-6 rounded-xl mb-6 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
                 <div className="flex items-start gap-4">
                     <div className="mt-1">
                         <Shield size={24} className="text-text-primary" />

@@ -1,11 +1,13 @@
 import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import jaadoeLogo from '../assets/jaadoe_logo.svg';
 
 const Login = () => {
     const navigate = useNavigate();
     const { login } = useContext(AuthContext);
+    const { t } = useLanguage();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -47,7 +49,7 @@ const Login = () => {
                         <input
                             type="text"
                             className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-text-primary placeholder-text-secondary/70 focus:border-white/50 focus:bg-white/20 outline-none transition-all duration-300 shadow-inner backdrop-blur-md"
-                            placeholder="Phone number, username, or email"
+                            placeholder={t('Phone number, username, or email')}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -58,7 +60,7 @@ const Login = () => {
                         <input
                             type="password"
                             className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-text-primary placeholder-text-secondary/70 focus:border-white/50 focus:bg-white/20 outline-none transition-all duration-300 shadow-inner backdrop-blur-md"
-                            placeholder="Password"
+                            placeholder={t('Password')}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -70,25 +72,25 @@ const Login = () => {
                         disabled={isSubmitting}
                         className={`mt-4 w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl py-3.5 font-bold text-sm tracking-wide shadow-lg hover:shadow-blue-500/30 transition-all duration-300 transform active:scale-[0.98] ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
-                        {isSubmitting ? 'Logging in...' : 'Log in'}
+                        {isSubmitting ? t('Logging in...') : t('Log in')}
                     </button>
 
-                    <div className="flex items-center w-full my-6 text-text-secondary text-[12px] font-bold tracking-wider opacity-60 before:h-px before:bg-white/30 before:flex-1 before:mr-4 after:h-px after:bg-white/30 after:flex-1 after:ml-4">OR</div>
+                    <div className="flex items-center w-full my-6 text-text-secondary text-[12px] font-bold tracking-wider opacity-60 before:h-px before:bg-white/30 before:flex-1 before:mr-4 after:h-px after:bg-white/30 after:flex-1 after:ml-4">{t('OR')}</div>
 
                     <div className="text-indigo-900 dark:text-indigo-300 font-semibold text-sm cursor-pointer hover:text-indigo-700 dark:hover:text-white transition-colors flex items-center justify-center gap-2">
-                        <span>Log in with Facebook</span>
+                        <span>{t('Log in with Facebook')}</span>
                     </div>
                 </form>
 
                 <div className="mt-8 text-xs text-text-secondary/80">
-                    <span className="cursor-pointer hover:underline">Forgot password?</span>
+                    <span className="cursor-pointer hover:underline">{t('Forgot password?')}</span>
                 </div>
             </div>
 
             {/* Signup Link Glass Card */}
             <div className="glass p-5 w-full max-w-[400px] text-center text-sm rounded-xl shadow-lg relative z-10 transition-transform hover:-translate-y-1 duration-300">
-                <span className="text-text-secondary">Don't have an account?</span>
-                <Link to="/signup" className="text-blue-600 dark:text-blue-400 font-bold ml-1.5 hover:text-blue-500 transition-colors">Sign up</Link>
+                <span className="text-text-secondary">{t("Don't have an account?")}</span>
+                <Link to="/signup" className="text-blue-600 dark:text-blue-400 font-bold ml-1.5 hover:text-blue-500 transition-colors">{t('Sign up')}</Link>
             </div>
         </div>
     );

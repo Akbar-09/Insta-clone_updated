@@ -36,7 +36,10 @@ const authorizePermissions = (requiredPermissions = []) => {
         const { permissions } = req.admin.role;
 
         // SuperAdmin bypass or check specific permissions
-        if (req.admin.role.name === 'SuperAdmin') return next();
+        if (req.admin.role.name === 'SuperAdmin' || req.admin.role.name === 'Super Admin') return next();
+
+        // Check for wildcard permission
+        if (permissions.includes('*')) return next();
 
         const hasPermission = requiredPermissions.every(p => permissions.includes(p));
         if (!hasPermission) {

@@ -9,8 +9,10 @@ import {
 import jaadoeLogo from '../assets/jaadoe_logo.svg';
 
 import { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 const SettingsLayout = () => {
+    const { t } = useLanguage();
     const location = useLocation();
     const isActive = (path) => location.pathname.includes(path);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -96,80 +98,82 @@ const SettingsLayout = () => {
                             <img src={jaadoeLogo} className="w-4 h-auto mr-1 opacity-70 object-contain" alt="Jaadoe" />
                             <span className="font-semibold text-text-primary text-base">Jaadoe</span>
                         </div>
-                        <h3 className="font-bold text-[17px] mb-1 text-text-primary">Accounts Centre</h3>
+                        <h3 className="font-bold text-[17px] mb-1 text-text-primary">{t('Accounts Centre')}</h3>
                         <p className="text-[12px] text-text-secondary leading-4 mb-3">
-                            Manage your connected experiences and account settings across Jaadoe technologies.
+                            {t('Manage your connected experiences')}
                         </p>
                         <div className="flex items-center text-[12px] text-text-secondary gap-2 mb-1">
                             <User size={14} />
-                            <span>Personal details</span>
+                            <span>{t('Personal details')}</span>
                         </div>
                         <div className="flex items-center text-[12px] text-text-secondary gap-2 mb-1">
                             <Shield size={14} />
-                            <span>Password and security</span>
+                            <span>{t('Password and security')}</span>
                         </div>
                         <div className="flex items-center text-[12px] text-text-secondary gap-2">
                             <AlertCircle size={14} />
-                            <span>Ad preferences</span>
+                            <span>{t('Ad preferences')}</span>
                         </div>
-                        <div className="mt-4 text-[#0095f6] font-semibold text-[12px] hover:text-[#00376b]">See more in Accounts Centre</div>
+                        <Link
+                            to="/help/category/profile"
+                            className="mt-4 text-[#0095f6] font-semibold text-[12px] hover:text-[#00376b] block"
+                        >
+                            {t('See more in Accounts Centre')}
+                        </Link>
                     </div>
                 </div>
 
-                {/* HOW YOU USE INSTAGRAM */}
-                <SidebarSection title="How you use Jaadoe">
-                    <SidebarItem icon={User} label="Edit profile" path="/settings/edit-profile" />
-                    <SidebarItem icon={Bell} label="Notifications" path="/settings/notifications" />
-                    <SidebarItem icon={Monitor} label="Professional Account" path="/settings/professional_account" />
-                    <SidebarItem icon={LayoutGrid} label="Creator tools and controls" path="/settings/creator_tools" />
+                {/* HOW YOU USE JAADOE */}
+                <SidebarSection title={t('How you use Jaadoe')}>
+                    <SidebarItem icon={User} label={t('Edit profile')} path="/settings/edit-profile" />
+                    <SidebarItem icon={Bell} label={t('Notifications')} path="/settings/notifications" />
+                    <SidebarItem icon={Monitor} label={t('Professional Account')} path="/settings/professional_account" />
+                    <SidebarItem icon={LayoutGrid} label={t('Creator tools and controls')} path="/settings/creator_tools" />
                 </SidebarSection>
 
                 {/* WHO CAN SEE YOUR CONTENT */}
-                <SidebarSection title="Who can see your content">
-                    <SidebarItem icon={Lock} label="Account privacy" path="/settings/privacy" />
-                    <SidebarItem icon={Star} label="Close Friends" path="/settings/close_friends" />
-                    <SidebarItem icon={Ban} label="Blocked" path="/settings/blocked" />
-                    <SidebarItem icon={BookOpen} label="Story and location" path="/settings/story_and_live" />
+                <SidebarSection title={t('Who can see your content')}>
+                    <SidebarItem icon={Lock} label={t('Account privacy')} path="/settings/privacy" />
+                    <SidebarItem icon={Star} label={t('Close Friends')} path="/settings/close_friends" />
+                    <SidebarItem icon={Ban} label={t('Blocked')} path="/settings/blocked" />
+                    <SidebarItem icon={BookOpen} label={t('Story and location')} path="/settings/story_and_live" />
                 </SidebarSection>
 
                 {/* HOW OTHERS CAN INTERACT WITH YOU */}
-                <SidebarSection title="How others can interact with you">
-                    <SidebarItem icon={MessageCircle} label="Messages and story replies" path="/settings/messages_replies" />
-                    <SidebarItem icon={AtSign} label="Tags and mentions" path="/settings/tags_mentions" />
-                    <SidebarItem icon={MessageSquare} label="Comments" path="/settings/comments" />
-                    <SidebarItem icon={Share2} label="Sharing and reuse" path="/settings/sharing" />
-                    <SidebarItem icon={AlertCircle} label="Restricted accounts" path="/settings/restricted_accounts" />
-                    <SidebarItem icon={Type} label="Hidden Words" path="/settings/hidden_words" />
+                <SidebarSection title={t('How others can interact with you')}>
+                    <SidebarItem icon={MessageCircle} label={t('Messages and story replies')} path="/settings/messages_replies" />
+                    <SidebarItem icon={AtSign} label={t('Tags and mentions')} path="/settings/tags_mentions" />
+                    <SidebarItem icon={MessageSquare} label={t('Comments')} path="/settings/comments" />
+                    <SidebarItem icon={Share2} label={t('Sharing and reuse')} path="/settings/sharing" />
+                    <SidebarItem icon={AlertCircle} label={t('Restricted accounts')} path="/settings/restricted_accounts" />
+                    <SidebarItem icon={Type} label={t('Hidden Words')} path="/settings/hidden_words" />
                 </SidebarSection>
 
                 {/* WHAT YOU SEE */}
-                <SidebarSection title="What you see">
-                    <SidebarItem icon={VolumeX} label="Muted accounts" path="/settings/muted_accounts" />
-                    <SidebarItem icon={FileText} label="Content preferences" path="/settings/content_preferences" />
-                    <SidebarItem icon={Heart} label="Like and share counts" path="/settings/like_counts" />
-                    <SidebarItem icon={CreditCard} label="Subscriptions" path="/settings/subscriptions" />
+                <SidebarSection title={t('What you see')}>
+                    <SidebarItem icon={VolumeX} label={t('Muted accounts')} path="/settings/muted_accounts" />
+                    <SidebarItem icon={FileText} label={t('Content preferences')} path="/settings/content_preferences" />
+                    <SidebarItem icon={Heart} label={t('Like and share counts')} path="/settings/like_counts" />
+                    <SidebarItem icon={CreditCard} label={t('Subscriptions')} path="/settings/subscriptions" />
                 </SidebarSection>
 
                 {/* YOUR APP AND MEDIA */}
-                <SidebarSection title="Your app and media">
-                    <SidebarItem icon={HardDrive} label="Archiving and downloading" path="/settings/archiving" />
-                    <SidebarItem icon={MousePointerClick} label="Accessibility" path="/settings/accessibility" />
-                    <SidebarItem icon={Globe} label="Language" path="/settings/language" />
-                    <SidebarItem icon={Monitor} label="Website permissions" path="/settings/website_permissions" />
+                <SidebarSection title={t('Your app and media')}>
+                    <SidebarItem icon={HardDrive} label={t('Archiving and downloading')} path="/settings/archiving" />
+                    <SidebarItem icon={MousePointerClick} label={t('Accessibility')} path="/settings/accessibility" />
+                    <SidebarItem icon={Globe} label={t('Language')} path="/settings/language" />
+                    <SidebarItem icon={Monitor} label={t('Website permissions')} path="/settings/website_permissions" />
                 </SidebarSection>
 
-                {/* FOR FAMILIES */}
-                <SidebarSection title="For families">
-                    <SidebarItem icon={Users} label="Family Centre" path="/settings/supervision" />
-                </SidebarSection>
+
 
                 {/* MORE INFO AND SUPPORT */}
-                <SidebarSection title="More info and support">
-                    <SidebarItem icon={HelpCircle} label="Help" path="/settings/help" />
-                    <SidebarItem icon={Shield} label="Privacy Centre" path="/settings/privacy_center" />
-                    <SidebarItem icon={User} label="Account Status" path="/settings/account_status" />
-                    <SidebarItem icon={UserPlus} label="Jaadoe Verified" path="/settings/meta_verified" />
-                    <SidebarItem icon={Info} label="About" path="/settings/about" />
+                <SidebarSection title={t('More info and support')}>
+                    <SidebarItem icon={HelpCircle} label={t('Help')} path="/settings/help" />
+                    <SidebarItem icon={Shield} label={t('Privacy Centre')} path="/settings/privacy_center" />
+                    <SidebarItem icon={User} label={t('Account Status')} path="/settings/account_status" />
+                    <SidebarItem icon={UserPlus} label={t('Jaadoe Verified')} path="/settings/meta_verified" />
+                    <SidebarItem icon={Info} label={t('About')} path="/settings/about" />
                 </SidebarSection>
 
                 {/* FOOTER LINKS */}
@@ -208,47 +212,47 @@ const SettingsLayout = () => {
                         </div>
                         {/* Re-use content structure - duplicated for mobile implementation brevity, or could refactor to component */}
 
-                        <SidebarSection title="How you use Jaadoe">
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={User} label="Edit profile" path="/settings/edit-profile" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Bell} label="Notifications" path="/settings/notifications" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Monitor} label="Professional Account" path="/settings/professional_account" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={LayoutGrid} label="Creator tools and controls" path="/settings/creator_tools" /></div>
+                        <SidebarSection title={t('How you use Jaadoe')}>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={User} label={t('Edit profile')} path="/settings/edit-profile" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Bell} label={t('Notifications')} path="/settings/notifications" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Monitor} label={t('Professional Account')} path="/settings/professional_account" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={LayoutGrid} label={t('Creator tools and controls')} path="/settings/creator_tools" /></div>
                         </SidebarSection>
 
-                        <SidebarSection title="Who can see your content">
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Lock} label="Account privacy" path="/settings/privacy" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Star} label="Close Friends" path="/settings/close_friends" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Ban} label="Blocked" path="/settings/blocked" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={BookOpen} label="Story and location" path="/settings/story_and_live" /></div>
+                        <SidebarSection title={t('Who can see your content')}>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Lock} label={t('Account privacy')} path="/settings/privacy" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Star} label={t('Close Friends')} path="/settings/close_friends" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Ban} label={t('Blocked')} path="/settings/blocked" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={BookOpen} label={t('Story and location')} path="/settings/story_and_live" /></div>
                         </SidebarSection>
 
-                        <SidebarSection title="How others can interact with you">
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={MessageCircle} label="Messages and story replies" path="/settings/messages_replies" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={AtSign} label="Tags and mentions" path="/settings/tags_mentions" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={MessageSquare} label="Comments" path="/settings/comments" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Share2} label="Sharing and reuse" path="/settings/sharing" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={AlertCircle} label="Restricted accounts" path="/settings/restricted_accounts" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Type} label="Hidden Words" path="/settings/hidden_words" /></div>
+                        <SidebarSection title={t('How others can interact with you')}>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={MessageCircle} label={t('Messages and story replies')} path="/settings/messages_replies" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={AtSign} label={t('Tags and mentions')} path="/settings/tags_mentions" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={MessageSquare} label={t('Comments')} path="/settings/comments" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Share2} label={t('Sharing and reuse')} path="/settings/sharing" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={AlertCircle} label={t('Restricted accounts')} path="/settings/restricted_accounts" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Type} label={t('Hidden Words')} path="/settings/hidden_words" /></div>
                         </SidebarSection>
 
-                        <SidebarSection title="What you see">
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={VolumeX} label="Muted accounts" path="/settings/muted_accounts" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Heart} label="Like and share counts" path="/settings/like_counts" /></div>
+                        <SidebarSection title={t('What you see')}>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={VolumeX} label={t('Muted accounts')} path="/settings/muted_accounts" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Heart} label={t('Like and share counts')} path="/settings/like_counts" /></div>
                         </SidebarSection>
 
-                        <SidebarSection title="Your app and media">
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={HardDrive} label="Archiving and downloading" path="/settings/archiving" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={MousePointerClick} label="Accessibility" path="/settings/accessibility" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Globe} label="Language" path="/settings/language" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Monitor} label="Website permissions" path="/settings/website_permissions" /></div>
+                        <SidebarSection title={t('Your app and media')}>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={HardDrive} label={t('Archiving and downloading')} path="/settings/archiving" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={MousePointerClick} label={t('Accessibility')} path="/settings/accessibility" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Globe} label={t('Language')} path="/settings/language" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Monitor} label={t('Website permissions')} path="/settings/website_permissions" /></div>
                         </SidebarSection>
 
-                        <SidebarSection title="More info and support">
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={HelpCircle} label="Help" path="/settings/help" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Shield} label="Privacy Centre" path="/settings/privacy_center" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={User} label="Account Status" path="/settings/account_status" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={UserPlus} label="Jaadoe Verified" path="/settings/meta_verified" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Info} label="About" path="/settings/about" /></div>
+                        <SidebarSection title={t('More info and support')}>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={HelpCircle} label={t('Help')} path="/settings/help" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Shield} label={t('Privacy Centre')} path="/settings/privacy_center" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={User} label={t('Account Status')} path="/settings/account_status" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={UserPlus} label={t('Jaadoe Verified')} path="/settings/meta_verified" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Info} label={t('About')} path="/settings/about" /></div>
                         </SidebarSection>
                     </div>
                 </div>

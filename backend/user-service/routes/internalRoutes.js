@@ -234,6 +234,9 @@ router.patch('/avatars/:avatarId/reject', async (req, res) => {
 
 router.delete('/avatars/:avatarId', async (req, res) => {
     try {
+        if (!/^\d+$/.test(req.params.avatarId)) {
+            return res.status(400).json({ success: false, message: 'Invalid Avatar ID. Expected Integer.' });
+        }
         const avatar = await Avatar.findByPk(req.params.avatarId);
         if (!avatar) return res.status(404).json({ success: false, message: 'Avatar not found' });
 

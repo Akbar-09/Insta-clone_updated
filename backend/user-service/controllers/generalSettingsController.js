@@ -50,6 +50,11 @@ exports.revokeAppAccess = async (req, res) => {
         const userId = req.headers['x-user-id'];
         const { id } = req.params;
 
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(id)) {
+            return res.status(400).json({ status: 'error', message: 'Invalid App ID format. Expected UUID.' });
+        }
+
         const app = await ConnectedApp.findOne({ where: { id, userId } });
         if (!app) return res.status(404).json({ status: 'error', message: 'App not found' });
 

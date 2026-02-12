@@ -33,14 +33,24 @@ const PrivacySecurityHelp = () => {
                 <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                     <ArrowLeft size={24} />
                 </button>
-                <h2 className="text-xl font-bold">Privacy and security help</h2>
+                <h3 className="text-xl font-bold">Privacy and security help</h3>
             </div>
 
             <div className="flex flex-col space-y-4">
                 {sections.map(section => (
                     <div
                         key={section.label}
-                        onClick={() => { }}
+                        onClick={() => {
+                            if (section.label === 'Privacy policy') {
+                                window.open('/help/category/privacy-settings', '_blank');
+                            } else if (section.label === 'Security settings') {
+                                window.open('/help/category/login-help', '_blank');
+                            } else if (section.label === 'Reporting') {
+                                window.open('/help/category/reporting', '_blank');
+                            } else if (section.label === 'Verification') {
+                                navigate('/help/category/verified-badge');
+                            }
+                        }}
                         className="flex items-start p-4 bg-white dark:bg-[#1c1c1c] border border-border rounded-xl shadow-sm cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
                     >
                         <div className="mt-1 p-2 bg-[#f0f2f5] dark:bg-[#262626] rounded-full mr-4">

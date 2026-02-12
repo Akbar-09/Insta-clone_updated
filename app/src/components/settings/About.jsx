@@ -6,8 +6,15 @@ const About = () => {
             <h2 className="text-xl font-bold mb-6">About</h2>
 
             <div className="flex flex-col gap-1">
-                {['Data Policy', 'Terms of Use', 'Open Source Libraries'].map(item => (
-                    <div key={item} className="py-4 border-b border-border cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 -mx-4 px-4 flex justify-between items-center transition-colors">
+                {['Data Policy', 'Terms of Use'].map(item => (
+                    <div
+                        key={item}
+                        onClick={() => {
+                            if (item === 'Data Policy') window.open('/help/category/data-policy', '_blank');
+                            else if (item === 'Terms of Use') window.open('/help/category/terms-of-use', '_blank');
+                        }}
+                        className="py-4 border-b border-border cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 -mx-4 px-4 flex justify-between items-center transition-colors"
+                    >
                         <span className="text-base font-medium">{item}</span>
                         <div className="w-4 h-4 text-text-secondary rotate-[-90deg]">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>

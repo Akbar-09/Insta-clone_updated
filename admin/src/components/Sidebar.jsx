@@ -83,7 +83,7 @@ const Sidebar = () => {
             title: 'System & Config',
             key: 'settings',
             items: [
-                { name: 'CMS & Pages', icon: <FileEdit size={20} />, path: '/cms' },
+                { name: 'Help Centre', icon: <Layers size={20} />, path: '/help-centre-cms' },
                 { name: 'Notifications', icon: <Bell size={20} />, path: '/notifications' },
                 { name: 'Languages', icon: <Globe size={20} />, path: '/languages' },
                 { name: 'Platform Settings', icon: <Settings size={20} />, path: '/settings' },

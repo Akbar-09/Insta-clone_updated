@@ -3,6 +3,7 @@ const { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aw
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const { Op } = require('sequelize');
 const Media = require('../models/Media');
 const { processImage } = require('../utils/imageProcessor');
 const { processVideo } = require('../utils/videoProcessor');
@@ -70,6 +71,7 @@ const finalizeUpload = async (req, res) => {
             filename: key, // Initially the temp key
             originalName: filename,
             r2Key: key,
+            tempKey: key, // Store temp key for fallback
             url: `${PUBLIC_DOMAIN}/${key}`,
             cdnUrl: `${PUBLIC_DOMAIN}/${key}`,
             type: type,
@@ -211,7 +213,7 @@ const serveFile = async (req, res) => {
         const key = req.params[0];
         if (!key) return res.status(400).send('File key required');
 
-        // 1. Try serving the requested key
+        // 1. Try serving the requested key directly from R2
         try {
             const command = new GetObjectCommand({
                 Bucket: BUCKET_NAME,
@@ -224,27 +226,68 @@ const serveFile = async (req, res) => {
             res.set('Cross-Origin-Resource-Policy', 'cross-origin');
             return Body.pipe(res);
         } catch (r2Error) {
-            // If not found and it's a temp key, try to find optimized version
-            if (r2Error.name === 'NoSuchKey' && key.includes('/temp/')) {
-                const uuidMatch = key.match(/([0-9a-f-]{36})/);
-                if (uuidMatch) {
-                    const uuid = uuidMatch[1];
-                    // Search for any key in R2 that contains this UUID and is NOT in temp
-                    // For efficiency, we can try common paths first
-                    const fallbackKeys = [
-                        `${FOLDER_NAME}/ads/media/temp_${uuid}_opt.webp`,
-                        `${FOLDER_NAME}/posts/images/temp_${uuid}_opt.webp`,
-                        `${FOLDER_NAME}/posts/videos/temp_${uuid}_opt.mp4`
-                    ];
+            // 2. If not found, check if it's a reference to a processed file
+            if (r2Error.name === 'NoSuchKey' || r2Error.$metadata?.httpStatusCode === 404) {
+                // Try searching the database for this key (it might have been the original temp key)
+                const mediaRecord = await Media.findOne({
+                    where: {
+                        [Op.or]: [
+                            { r2Key: key },
+                            { tempKey: key }, // Check temp key
+                            { url: { [Op.like]: `%${key}%` } }
+                        ]
+                    }
+                });
 
-                    for (const fKey of fallbackKeys) {
-                        try {
-                            const fCommand = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: fKey });
-                            const { Body: fBody, ContentType: fContentType } = await r2Client.send(fCommand);
-                            res.set('Content-Type', fContentType);
-                            res.set('Cache-Control', 'public, max-age=31536000');
-                            return fBody.pipe(res);
-                        } catch (e) { /* continue */ }
+                if (mediaRecord && mediaRecord.r2Key !== key) {
+                    console.log(`[R2] Found fallback key in DB for ${key} -> ${mediaRecord.r2Key}`);
+                    try {
+                        const fallbackCommand = new GetObjectCommand({
+                            Bucket: BUCKET_NAME,
+                            Key: mediaRecord.r2Key
+                        });
+                        const { Body: fBody, ContentType: fContentType } = await r2Client.send(fallbackCommand);
+                        res.set('Content-Type', fContentType);
+                        res.set('Cache-Control', 'public, max-age=31536000');
+                        res.set('Access-Control-Allow-Origin', '*');
+                        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+                        return fBody.pipe(res);
+                    } catch (e) {
+                        // Fall through to error
+                    }
+                }
+
+                // 3. Last ditch effort: regex UUID fallback if it was a temp key
+                if (key.includes('/temp/')) {
+                    const uuidMatch = key.match(/([0-9a-f-]{36})/);
+                    if (uuidMatch) {
+                        const uuid = uuidMatch[1];
+                        console.log(`[R2 Fallback] Searching for UUID: ${uuid}`);
+
+                        const possiblePaths = [
+                            // Optimized Video
+                            `${FOLDER_NAME}/posts/videos/temp_${uuid}_opt.mp4`,
+                            // Optimized Image
+                            `${FOLDER_NAME}/posts/images/temp_${uuid}_opt.webp`,
+                            // Original Temp (if processing failed but file exists?)
+                            `${FOLDER_NAME}/temp/${uuid}.mp4`,
+                            `${FOLDER_NAME}/temp/${uuid}.jpg`,
+                            `${FOLDER_NAME}/temp/${uuid}.png`
+                        ];
+
+                        for (const fKey of possiblePaths) {
+                            try {
+                                // console.log(`[R2 Fallback] Trying: ${fKey}`);
+                                const fCommand = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: fKey });
+                                const { Body: fBody, ContentType: fContentType } = await r2Client.send(fCommand);
+                                res.set('Content-Type', fContentType);
+                                res.set('Cache-Control', 'public, max-age=31536000');
+                                console.log(`[R2 Fallback] SUCCESS -> Serving ${fKey}`);
+                                return fBody.pipe(res);
+                            } catch (e) {
+                                // Continue
+                            }
+                        }
                     }
                 }
             }
@@ -252,7 +295,9 @@ const serveFile = async (req, res) => {
         }
     } catch (error) {
         console.error('Serve File Error:', error);
-        if (error.name === 'NoSuchKey') return res.status(404).send('File not found');
+        if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
+            return res.status(404).send('File not found');
+        }
         res.status(500).send('Error serving file');
     }
 };
