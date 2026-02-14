@@ -108,7 +108,7 @@ exports.getMyProfile = async (req, res) => {
         // Get posts count from post-service
         let postsCount = 0;
         try {
-            const postsRes = await axios.get(`http://localhost:5003/?authorId=${profile.userId}`);
+            const postsRes = await axios.get(`http://localhost:5003/?username=${profile.username}`);
             if (postsRes.data.status === 'success') {
                 postsCount = postsRes.data.data.length;
             }
@@ -160,7 +160,7 @@ exports.getUserProfile = async (req, res) => {
         // Get posts count
         let postsCount = 0;
         try {
-            const postsRes = await axios.get(`http://localhost:5003/?authorId=${profile.userId}`);
+            const postsRes = await axios.get(`http://localhost:5003/?username=${profile.username}`);
             if (postsRes.data.status === 'success') {
                 postsCount = postsRes.data.data.length;
             }
@@ -339,7 +339,7 @@ exports.getUserPosts = async (req, res) => {
 
         // Fetch posts from post-service
         try {
-            const url = `http://localhost:5003/?authorId=${profile.userId}`;
+            const url = `http://localhost:5003/?username=${profile.username}`;
             console.log(`[UserService] Fetching posts from: ${url}`);
             const postsRes = await axios.get(url);
 
@@ -357,6 +357,41 @@ exports.getUserPosts = async (req, res) => {
         }
     } catch (error) {
         console.error('Get User Posts Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+/**
+ * Get user's reels
+ * GET /api/v1/profile/:userId/reels
+ */
+exports.getUserReels = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const currentUserId = req.headers['x-user-id'] || req.query.currentUserId;
+
+        const profile = await UserProfile.findOne({ where: { userId } });
+        if (!profile) return res.status(404).json({ status: 'error', message: 'User not found' });
+
+        // Privacy Check
+        if (profile.isPrivate && (!currentUserId || parseInt(currentUserId) !== parseInt(userId))) {
+            const isFollowing = await Follow.findOne({
+                where: { followerId: currentUserId, followingId: userId }
+            });
+            if (!isFollowing) return res.json({ status: 'success', data: [], message: 'Account is private' });
+        }
+
+        try {
+            const url = `http://localhost:5004/user?username=${profile.username}`;
+            console.log(`[UserService] Fetching reels from: ${url}`);
+            const reelsRes = await axios.get(url);
+            res.json({ status: 'success', data: reelsRes.data.data || [] });
+        } catch (error) {
+            console.error('Error fetching reels:', error.message);
+            res.json({ status: 'success', data: [] });
+        }
+    } catch (error) {
+        console.error('Get User Reels Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };

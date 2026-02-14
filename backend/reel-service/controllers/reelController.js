@@ -55,12 +55,16 @@ const getReels = async (req, res) => {
 
 const getUserReels = async (req, res) => {
     try {
-        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { username, userId: queryUserId } = req.query;
+        const userId = req.headers['x-user-id'] || queryUserId;
         const { sort = 'newest', startDate, endDate } = req.query;
 
-        if (!userId) return res.status(400).json({ message: 'User ID required' });
+        console.log(`[ReelService] getUserReels query: username=${username}, userId=${userId}`);
 
-        const whereClause = { userId };
+        const whereClause = {};
+        if (username) whereClause.username = username;
+        if (userId) whereClause.userId = userId;
+
         if (startDate && endDate) {
             whereClause.createdAt = {
                 [Op.between]: [new Date(startDate), new Date(endDate)]
@@ -74,6 +78,43 @@ const getUserReels = async (req, res) => {
         res.json({ status: 'success', data: reels });
     } catch (error) {
         console.error('Get User Reels Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const getReelById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const currentUserId = req.headers['x-user-id'] || req.query.userId;
+
+        const reel = await Reel.findByPk(id);
+
+        if (!reel) {
+            return res.status(404).json({ message: 'Reel not found' });
+        }
+
+        let isLiked = false;
+        if (currentUserId) {
+            const like = await ReelLike.findOne({
+                where: {
+                    reelId: id,
+                    userId: currentUserId
+                }
+            });
+            isLiked = !!like;
+        }
+
+        // Return object structure matching what frontend expects
+        res.json({
+            status: 'success',
+            data: {
+                ...reel.toJSON(),
+                isLiked,
+                comments: reel.commentsCount || 0
+            }
+        });
+    } catch (error) {
+        console.error('Get Reel By ID Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
@@ -205,6 +246,7 @@ module.exports = {
     createReel,
     getReels,
     getUserReels,
+    getReelById,
     likeReel,
     unlikeReel,
     getLikedReels,

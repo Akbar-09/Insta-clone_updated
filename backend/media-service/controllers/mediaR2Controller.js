@@ -291,11 +291,21 @@ const serveFile = async (req, res) => {
                     }
                 }
             }
+
+            // 4. Final Fallback: Check local filesystem
+            const localPath = path.join(__dirname, '../uploads', path.basename(key));
+            if (fs.existsSync(localPath)) {
+                console.log(`[R2 Fallback] Serving from local filesystem: ${localPath}`);
+                res.set('Access-Control-Allow-Origin', '*');
+                res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+                return res.sendFile(localPath);
+            }
+
             throw r2Error;
         }
     } catch (error) {
         console.error('Serve File Error:', error);
-        if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
+        if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404 || error.code === 'ENOENT') {
             return res.status(404).send('File not found');
         }
         res.status(500).send('Error serving file');

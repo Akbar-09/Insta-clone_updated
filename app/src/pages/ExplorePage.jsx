@@ -28,8 +28,8 @@ const ExplorePage = () => {
 
             setPosts(prev => {
                 // Deduplicate logic just in case backend or race condition causes overlap
-                const existingIds = new Set(prev.map(p => p.id));
-                const uniqueNewPosts = newPosts.filter(p => !existingIds.has(p.id));
+                const existingIds = new Set(prev.map(p => String(p.id)));
+                const uniqueNewPosts = newPosts.filter(p => !existingIds.has(String(p.id)));
                 return [...prev, ...uniqueNewPosts];
             });
 

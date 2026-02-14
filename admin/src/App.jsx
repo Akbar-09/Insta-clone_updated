@@ -28,6 +28,7 @@ import ExploreControl from './pages/explore';
 // Systems
 import RoleManagement from './pages/roles';
 import AuditLogs from './pages/logs';
+import Monitoring from './pages/monitoring';
 
 // Reports
 import Reports from './pages/reports';
@@ -108,6 +109,7 @@ function App() {
                         {/* System */}
                         <Route path="roles" element={<RoleManagement />} />
                         <Route path="logs" element={<AuditLogs />} />
+                        <Route path="monitoring" element={<Monitoring />} />
                     </Route>
                 </Routes>
             </BrowserRouter>

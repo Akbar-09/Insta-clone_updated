@@ -1,7 +1,8 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
+import { Clapperboard } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
-import { getUserProfile, getMyProfile, getUserPosts, followUser, unfollowUser } from '../../api/profileApi';
+import { getUserProfile, getMyProfile, getUserPosts, getUserReels, followUser, unfollowUser } from '../../api/profileApi';
 import ProfileHeader from './ProfileHeader';
 import HighlightsRow from './HighlightsRow';
 import ProfileTabs from './ProfileTabs';
@@ -34,6 +35,7 @@ const ProfilePage = ({ section }) => {
 
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
+    const [reels, setReels] = useState([]);
     const [loading, setLoading] = useState(true);
     // Prioritize 'section' prop if passed (from Routes), else use URL search param
     const [activeTab, setActiveTab] = useState(section || initialTab);
@@ -87,14 +89,21 @@ const ProfilePage = ({ section }) => {
             if (profileData) {
                 setProfile(profileData);
 
-                // Fetch posts
+                // Fetch posts and reels in parallel
                 try {
-                    const postsResponse = await getUserPosts(profileData.userId);
+                    const [postsResponse, reelsResponse] = await Promise.all([
+                        getUserPosts(profileData.userId),
+                        getUserReels(profileData.userId)
+                    ]);
+
                     if (postsResponse.status === 'success') {
                         setPosts(postsResponse.data);
                     }
-                } catch (postError) {
-                    console.error("Failed to load posts", postError);
+                    if (reelsResponse.status === 'success') {
+                        setReels(reelsResponse.data);
+                    }
+                } catch (fetchError) {
+                    console.error("Failed to load user content", fetchError);
                 }
             }
         } catch (error) {
@@ -180,6 +189,7 @@ const ProfilePage = ({ section }) => {
 
                 <ProfileTabs
                     activeTab={activeTab}
+                    isOwnProfile={isOwnProfile}
                     setActiveTab={(tab) => {
                         setActiveTab(tab);
                         // Optional: Update URL shallowly if not using routes for all tabs, 
@@ -189,7 +199,51 @@ const ProfilePage = ({ section }) => {
                 />
 
                 {/* Tab Content */}
-                {activeTab === 'posts' && <ProfileGrid posts={posts} />}
+                {/* Tab Content */}
+                {activeTab === 'posts' && (() => {
+                    // Merge posts and reels for the main grid
+                    const formattedReels = reels.map(r => ({
+                        ...r,
+                        mediaType: 'VIDEO',
+                        // Ensure compatibility with ProfileGrid
+                        mediaUrl: r.videoUrl,
+                        commentsCount: r.comments || r.commentsCount || 0,
+                        likesCount: r.likesCount || 0,
+                        // If id collision is a concern, we might prefix, but ProfileGrid uses combined key
+                    }));
+
+                    // Concatenate posts and reels directly (assuming separate IDs or distinct entities)
+                    // We removed ID filtering because post-service and reel-service might have overlapping IDs for different content
+                    const allContent = [...posts, ...formattedReels].sort((a, b) => {
+                        // Sort by createdAt descending
+                        const dateA = new Date(a.createdAt || 0);
+                        const dateB = new Date(b.createdAt || 0);
+                        return dateB - dateA;
+                    });
+
+                    return <ProfileGrid posts={allContent} />;
+                })()}
+                {activeTab === 'reels' && (
+                    <>
+                        {reels.length > 0 ? (
+                            <ProfileGrid posts={reels} />
+                        ) : posts.filter(p => p.mediaType === 'VIDEO').length > 0 ? (
+                            <ProfileGrid posts={posts.filter(p => p.mediaType === 'VIDEO')} />
+                        ) : (
+                            <div className="py-20 text-center text-text-secondary">
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="w-16 h-16 rounded-full border-2 border-gray-600 flex items-center justify-center">
+                                        <Clapperboard size={30} className="text-gray-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-text-primary">No Reels Yet</h2>
+                                        <p className="mt-2 text-sm">When they share reels, they'll appear here.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
                 {activeTab === 'saved' && isOwnProfile && <SavedPosts />}
                 {activeTab === 'saved' && !isOwnProfile && (
                     <div className="py-20 text-center text-text-secondary">

@@ -328,7 +328,7 @@ router.get('/list', async (req, res) => {
             where,
             limit,
             offset,
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC'], ['id', 'DESC']]
         });
 
         res.json({

@@ -28,13 +28,23 @@ const connectRabbitMQ = async () => {
 
                 try {
                     if (routingKey === 'USER_CREATED') {
-                        // Create Profile
-                        await UserProfile.create({
-                            userId: data.id,
-                            username: data.username,
-                            fullName: data.fullName,
+                        // Upsert Profile (Update if exists, Create if not)
+                        const [profile, created] = await UserProfile.findOrCreate({
+                            where: { userId: data.id },
+                            defaults: {
+                                username: data.username,
+                                fullName: data.fullName || data.username,
+                            }
                         });
-                        console.log('User Profile Created');
+
+                        if (!created) {
+                            console.log(`User Profile for ID ${data.id} already exists (placeholder found). Updating profile...`);
+                            profile.username = data.username;
+                            profile.fullName = data.fullName || data.username;
+                            profile.createdAt = new Date(); // Reset creation date to now since this is a new registration
+                            await profile.save();
+                        }
+                        console.log('User Profile Synced');
                     } else if (routingKey === 'MEDIA.OPTIMIZED') {
                         const { originalUrl, optimizedUrl } = data;
                         console.log(`Optimizing profile pic update: ${originalUrl} -> ${optimizedUrl}`);

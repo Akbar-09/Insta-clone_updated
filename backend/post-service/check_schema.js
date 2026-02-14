@@ -1,29 +1,37 @@
-const { Client } = require('pg');
 require('dotenv').config();
+const sequelize = require('./config/database');
 
-const client = new Client({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'post_db',
-    password: process.env.DB_PASSWORD || 'password',
-    port: 5432,
-});
-
-async function checkSchema() {
+(async () => {
     try {
-        await client.connect();
-        const res = await client.query(`
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name = 'Posts' 
-            AND column_name IN ('likesCount', 'commentsCount')
-        `);
-        console.log('Found Columns:', res.rows);
-    } catch (err) {
-        console.error('Error executing query:', err.message);
-    } finally {
-        await client.end();
-    }
-}
+        await sequelize.authenticate();
+        console.log('Connected\n');
 
-checkSchema();
+        // Show all tables
+        const [tables] = await sequelize.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+        console.log('Available tables:');
+        tables.forEach(t => console.log('  -', t.table_name));
+        console.log('');
+
+        // Check if Bookmarks table exists and its structure
+        try {
+            const [columns] = await sequelize.query(`
+                SELECT column_name, data_type 
+                FROM information_schema.columns 
+                WHERE table_name = 'Bookmarks'
+            `);
+            if (columns.length > 0) {
+                console.log('Bookmarks table columns:');
+                columns.forEach(c => console.log(`  - ${c.column_name}: ${c.data_type}`));
+            } else {
+                console.log('Bookmarks table not found or has no columns');
+            }
+        } catch (e) {
+            console.log('Error checking Bookmarks:', e.message);
+        }
+
+    } catch (error) {
+        console.error('Error:', error.message);
+    } finally {
+        await sequelize.close();
+    }
+})();

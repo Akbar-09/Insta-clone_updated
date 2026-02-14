@@ -67,9 +67,45 @@ const getFeed = async (req, res) => {
                 } catch (err) {
                     console.error('Error hydrating comments:', err);
                 }
+
+                // 3. Hydrate User Profiles (Avatars)
+                const userServiceUrl = process.env.USER_SERVICE_URL || 'http://127.0.0.1:5002';
+                try {
+                    const uniqueUserIds = [...new Set(feed.map(p => p.userId).filter(id => id))];
+                    if (uniqueUserIds.length > 0) {
+                        const userResponse = await fetch(`${userServiceUrl}/profile/batch`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userIds: uniqueUserIds })
+                        });
+
+                        if (userResponse.ok) {
+                            const userData = await userResponse.json();
+                            if (userData.status === 'success') {
+                                const profileMap = {};
+                                userData.data.forEach(profile => {
+                                    profileMap[profile.userId] = profile;
+                                });
+
+                                feed = feed.map(post => {
+                                    const profile = profileMap[post.userId];
+                                    if (profile) {
+                                        return {
+                                            ...post,
+                                            userAvatar: profile.profilePicture || profile.avatarUrl,
+                                            username: profile.username || post.username
+                                        };
+                                    }
+                                    return post;
+                                });
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error hydrating user profiles:', err);
+                }
             } catch (err) {
                 console.error('Error hydrating feed:', err);
-                // Continue with whatever data we have
             }
         }
 

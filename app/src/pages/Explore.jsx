@@ -27,16 +27,41 @@ const Explore = () => {
         return '';
     };
 
+    const handlePostClick = (post, index) => {
+        const postMetadata = posts.map(p => ({ id: p.id, type: p.type || 'POST' }));
+        navigate(`/post/${post.id}`, {
+            state: {
+                postMetadata,
+                currentIndex: index,
+                type: post.type || 'POST'
+            }
+        });
+    };
+
+    // Helper to get the correct thumbnail/image URL for display
+    const getDisplayUrl = (post) => {
+        // For videos, prefer thumbnailUrl if available, otherwise use mediaUrl
+        if (post.mediaType === 'VIDEO') {
+            return post.thumbnailUrl || post.mediaUrl || post.image;
+        }
+        // For images, use mediaUrl or image
+        return post.mediaUrl || post.image;
+    };
+
     return (
         <div className="w-full max-w-[975px] mx-auto pb-6 pt-4">
             <div className="grid grid-cols-3 gap-1 max-md:gap-[1px] auto-rows-[minmax(100px,auto)] grid-flow-dense">
                 {posts.map((post, index) => (
                     <div
                         key={post.id}
-                        onClick={() => navigate(`/post/${post.id}`)}
+                        onClick={() => handlePostClick(post, index)}
                         className={`relative w-full cursor-pointer overflow-hidden bg-secondary group ${getSpanClass(index)} ${getSpanClass(index) ? 'aspect-[1/2]' : 'aspect-square'}`}
                     >
-                        <img src={post.mediaUrl || post.image} alt="Explore content" className="absolute top-0 left-0 w-full h-full object-cover" />
+                        <img
+                            src={getDisplayUrl(post)}
+                            alt="Explore content"
+                            className="absolute top-0 left-0 w-full h-full object-cover"
+                        />
 
                         {/* Hover Overlay */}
                         <div className="absolute top-0 left-0 w-full h-full bg-black/30 flex justify-center items-center opacity-0 transition-opacity duration-100 group-hover:opacity-100 z-10">

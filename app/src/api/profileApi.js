@@ -53,6 +53,14 @@ export const getUserPosts = async (userId) => {
 };
 
 /**
+ * Get user's reels
+ */
+export const getUserReels = async (userId) => {
+    const response = await api.get(`/users/profile/${userId}/reels`);
+    return response.data;
+};
+
+/**
  * Get current user's saved posts
  */
 export const getMySavedPosts = async () => {
@@ -121,6 +129,7 @@ export default {
     getUserProfile,
     updateMyProfile,
     getUserPosts,
+    getUserReels,
     getMySavedPosts,
     getFollowersList,
     getFollowingList,

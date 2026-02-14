@@ -1,12 +1,15 @@
-import { useState, useEffect, useContext, forwardRef } from 'react';
+import { useState, useEffect, useContext, forwardRef, useRef } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { addComment } from '../../api/commentApi';
 import * as adApi from '../../api/adApi';
+import EmojiPicker from '../messages/EmojiPicker';
 
 const CommentInput = forwardRef(({ postId, isAd = false, onCommentAdded, replyingTo, onClearReply }, ref) => {
     const { user } = useContext(AuthContext);
     const [submitting, setSubmitting] = useState(false);
     const [textValue, setTextValue] = useState('');
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiPickerRef = useRef(null);
 
     // Pre-fill username when replying
     useEffect(() => {
@@ -14,6 +17,21 @@ const CommentInput = forwardRef(({ postId, isAd = false, onCommentAdded, replyin
             setTextValue(`@${replyingTo.username} `);
         }
     }, [replyingTo]);
+
+    // Close emoji picker on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+                setShowEmojiPicker(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleEmojiSelect = (emoji) => {
+        setTextValue(prev => prev + emoji);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,6 +49,7 @@ const CommentInput = forwardRef(({ postId, isAd = false, onCommentAdded, replyin
             }
 
             setTextValue('');
+            setShowEmojiPicker(false);
             if (onClearReply) onClearReply();
 
             if (onCommentAdded) {
@@ -43,14 +62,13 @@ const CommentInput = forwardRef(({ postId, isAd = false, onCommentAdded, replyin
             }
         } catch (error) {
             console.error("Failed to post comment", error);
-            // alert("Failed to post comment");
         } finally {
             setSubmitting(false);
         }
     };
 
     return (
-        <div className="flex flex-col border-t border-border">
+        <div className="flex flex-col border-t border-border relative">
             {replyingTo && (
                 <div className="flex items-center justify-between px-4 py-1.5 bg-gray-50 dark:bg-neutral-900 border-b border-border">
                     <span className="text-xs text-text-secondary">
@@ -67,9 +85,18 @@ const CommentInput = forwardRef(({ postId, isAd = false, onCommentAdded, replyin
                     </button>
                 </div>
             )}
+
+            {showEmojiPicker && (
+                <div ref={emojiPickerRef} className="absolute bottom-full left-0 mb-2">
+                    <EmojiPicker onSelect={handleEmojiSelect} onClose={() => setShowEmojiPicker(false)} />
+                </div>
+            )}
+
             <form onSubmit={handleSubmit} className="flex items-center px-4 py-3">
-                {/* Simple smiley icon placeholder for emoji picker if needed later */}
-                <div className="mr-3 cursor-pointer">
+                <div
+                    className="mr-3 cursor-pointer hover:opacity-70 transition-opacity"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                >
                     <svg aria-label="Emoji" color="rgb(115, 115, 115)" fill="rgb(115, 115, 115)" height="24" role="img" viewBox="0 0 24 24" width="24">
                         <path d="M15.83 10.997a1.167 1.167 0 1 0 1.167 1.167 1.167 1.167 0 0 0-1.167-1.167Zm-6.5 1.167a1.167 1.167 0 1 0-1.166 1.167 1.167 1.167 0 0 0 1.166-1.167Zm5.163 3.24a3.406 3.406 0 0 1-4.982.007 1 1 0 1 0-1.557 1.256 5.397 5.397 0 0 0 8.09 0 1 1 0 0 0-1.55-1.263ZM12 .503a11.5 11.5 0 1 0 11.5 11.5A11.513 11.513 0 0 0 12 .503Zm0 21a9.5 9.5 0 1 1 9.5-9.5 9.51 9.51 0 0 1-9.5 9.5Z"></path>
                     </svg>

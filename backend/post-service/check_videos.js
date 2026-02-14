@@ -1,27 +1,22 @@
-const { Client } = require('pg');
-require('dotenv').config();
+const { Sequelize } = require('sequelize');
+const path = require('path');
 
-const client = new Client({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'post_db',
-    password: process.env.DB_PASSWORD || 'password',
-    port: 5432,
+// Use the same config as post-service
+const sequelize = new Sequelize('instagram', 'root', 'root', {
+    host: 'localhost',
+    dialect: 'mysql',
+    logging: false
 });
 
-async function checkVideoPosts() {
+(async () => {
     try {
-        await client.connect();
-        const res = await client.query('SELECT count(*) FROM "Posts" WHERE "mediaType" = \'VIDEO\'');
-        console.log('Video Posts Count:', res.rows[0].count);
-
-        const total = await client.query('SELECT count(*) FROM "Posts"');
-        console.log('Total Posts Count:', total.rows[0].count);
-    } catch (err) {
-        console.error('Error executing query:', err.message);
+        const [posts] = await sequelize.query(
+            'SELECT id, userId, mediaType, mediaUrl, imageUrl, videoUrl FROM Posts WHERE mediaType = "VIDEO" LIMIT 10'
+        );
+        console.log(JSON.stringify(posts, null, 2));
+    } catch (error) {
+        console.error('Error:', error.message);
     } finally {
-        await client.end();
+        await sequelize.close();
     }
-}
-
-checkVideoPosts();
+})();

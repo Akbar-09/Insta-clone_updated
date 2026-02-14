@@ -12,8 +12,8 @@ const ExploreGrid = ({ posts }) => {
                 const spanClass = isTall ? 'row-span-2' : '';
 
                 return (
-                    <div key={post.id} className={spanClass}>
-                        <ExplorePostCard post={post} isLarge={isTall} />
+                    <div key={`${post.id}-${index}`} className={spanClass}>
+                        <ExplorePostCard post={post} isLarge={isTall} allPostIds={posts.map(p => p.id)} index={index} />
                     </div>
                 );
             })}
