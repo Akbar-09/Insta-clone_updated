@@ -122,7 +122,7 @@ const SharingSettings = () => {
                 <div className="mb-4">
                     <span className="text-[15px] font-medium block mb-1">Website embeds</span>
                     <p className="text-[12px] text-text-secondary leading-normal">
-                        When this is on, your public posts or profile can be shown outside of Instagram, including articles and blogs. <span className="text-[#0095f6] cursor-pointer hover:underline">Learn more</span>
+                        When this is on, your public posts or profile can be shown outside of Jaadoe, including articles and blogs. <span className="text-[#0095f6] cursor-pointer hover:underline" onClick={() => window.open('/help', '_blank')}>Learn more</span>
                     </p>
                 </div>
                 <div className="bg-white dark:bg-[#1c1c1c] border border-border rounded-xl shadow-sm overflow-hidden">
@@ -147,7 +147,7 @@ const SharingSettings = () => {
                     </div>
                 </div>
                 <p className="text-[12px] text-text-secondary mt-3 pl-1 leading-normal max-w-[500px]">
-                    When this is on, business accounts can request to feature any of your new tagged content on Meta Products, including shops, ads and other features on Facebook and Instagram. <span className="text-[#0095f6] cursor-pointer hover:underline">Learn more</span>
+                    When this is on, business accounts can request to feature any of your new tagged content on Meta Products, including shops, ads and other features on Jaadoe. <span className="text-[#0095f6] cursor-pointer hover:underline" onClick={() => window.open('/help', '_blank')}>Learn more</span>
                 </p>
             </div>
         </div>

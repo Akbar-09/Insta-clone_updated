@@ -1,10 +1,12 @@
 import { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { getUserById, updateUserProfile } from '../../api/userApi';
 import AccountPrivacyModal from './AccountPrivacyModal';
 
 const PrivacySettings = () => {
+    const navigate = useNavigate();
     const { user, setUser } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [isPrivate, setIsPrivate] = useState(false);
@@ -86,7 +88,7 @@ const PrivacySettings = () => {
                             When your account is public, your profile and posts can be seen by anyone, on or off Instagram, even if they don't have an Instagram account.
                         </p>
                         <p className="text-sm text-text-secondary leading-normal">
-                            When your account is private, only the followers you approve can see what you share, including your photos or videos on hashtag and location pages, and your followers and following lists. Certain info on your profile, such as your profile picture and username, is visible to everyone on and off Instagram. <span className="text-blue-500 cursor-pointer">Learn more</span>
+                            When your account is private, only the followers you approve can see what you share, including your photos or videos on hashtag and location pages, and your followers and following lists. Certain info on your profile, such as your profile picture and username, is visible to everyone on and off Instagram. <span onClick={() => navigate('/help/category/edit-profile')} className="text-blue-500 cursor-pointer hover:underline font-medium">Learn more</span>
                         </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
@@ -105,7 +107,7 @@ const PrivacySettings = () => {
                     <div className="mr-8">
                         <span className="text-base font-medium block mb-2">Allow public photos and videos to appear in search engine results</span>
                         <p className="text-sm text-text-secondary leading-normal">
-                            When this is on, search engines such as Google can show your public photos and videos in search results outside of Instagram. When this is off, links to your publicly shared content can still appear in search results. <span className="text-blue-500 cursor-pointer">Learn more</span>
+                            When this is on, search engines such as Google can show your public photos and videos in search results outside of Instagram. When this is off, links to your publicly shared content can still appear in search results. <span onClick={() => navigate('/help/category/sharing')} className="text-blue-500 cursor-pointer hover:underline font-medium">Learn more</span>
                         </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">

@@ -75,3 +75,30 @@ export const getFollowersList = async (userId) => {
         throw error;
     }
 };
+
+export const blockUser = async (userId) => {
+    try {
+        const response = await api.post(`/users/block/${userId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const restrictUser = async (userId) => {
+    try {
+        const response = await api.post(`/users/settings/restricted/${userId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const reportProblem = async (data) => {
+    try {
+        const response = await api.post('/users/report-problem', data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

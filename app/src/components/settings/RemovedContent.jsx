@@ -56,7 +56,7 @@ const RemovedContent = () => {
                     {noIssues ? 'Your account is not affected right now' : 'Your account may be affected'}
                 </h3>
                 <p className="text-[14px] text-text-secondary leading-tight">
-                    Thank you for following our <span className="text-[#0095f6] cursor-pointer hover:underline">Community Standards</span>.
+                    Thank you for following our <span className="text-[#0095f6] cursor-pointer hover:underline" onClick={() => window.open('/help', '_blank')}>Community Standards</span>.
                 </p>
             </div>
 
@@ -75,7 +75,7 @@ const RemovedContent = () => {
             <div className="mb-10 pt-4 border-t border-border">
                 <h3 className="text-base font-bold mb-4">More information</h3>
                 <div
-                    onClick={() => { }} // Navigate to guidelines or help center
+                    onClick={() => window.open('/help', '_blank')}
                     className="flex items-center justify-between py-2 cursor-pointer group"
                 >
                     <div className="flex items-center">

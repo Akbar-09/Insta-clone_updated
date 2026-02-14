@@ -41,7 +41,7 @@ export const useMessages = (socket, userId, initialConversationId) => {
                 const conv = conversations.find(c => c.id === convId);
                 if (conv) setSelectedConversation(conv);
             }
-        } else if (!initialConversationId && selectedConversation) {
+        } else if (!initialConversationId && selectedConversation && selectedConversation.id !== 'new') {
             setSelectedConversation(null);
         }
     }, [initialConversationId, conversations]);
@@ -81,7 +81,7 @@ export const useMessages = (socket, userId, initialConversationId) => {
 
         // Check if existing
         const existing = conversations.find(c =>
-            c.otherUser?.userId === targetId || c.otherUser?.id === targetId
+            String(c.otherUser?.userId) === String(targetId) || String(c.otherUser?.id) === String(targetId)
         );
 
         if (existing) {

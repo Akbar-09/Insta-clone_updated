@@ -53,7 +53,7 @@ const FeatureLimits = () => {
                     {noIssues ? 'You can use all the features right now' : 'Access to some features is limited'}
                 </h3>
                 <p className="text-[14px] text-text-secondary leading-tight">
-                    Thank you for following our <span className="text-[#0095f6] cursor-pointer hover:underline">Community Standards</span>.
+                    Thank you for following our <span className="text-[#0095f6] cursor-pointer hover:underline" onClick={() => window.open('/help', '_blank')}>Community Standards</span>.
                 </p>
             </div>
 
@@ -86,7 +86,7 @@ const FeatureLimits = () => {
             {/* Generic What this means Section (Optional, keeping consistent) */}
             <div className="mt-4 p-4">
                 <p className="text-[13px] text-text-secondary leading-normal italic text-center">
-                    Maintaining a safe and supportive community is our priority. If you believe this is a mistake, you can request a review in the Help Centre.
+                    Maintaining a safe and supportive community is our priority. If you believe this is a mistake, you can request a review in the <span className="text-[#0095f6] cursor-pointer hover:underline" onClick={() => window.open('/help', '_blank')}>Help Centre</span>.
                 </p>
             </div>
         </div>

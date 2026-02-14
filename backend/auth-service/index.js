@@ -11,8 +11,16 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
+process.on('uncaughtException', (err) => {
+    console.error('UNCAUGHT EXCEPTION:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('UNHANDLED REJECTION:', reason);
+});
+
 app.use((req, res, next) => {
-    console.log(`[AuthSvc] ${req.method} ${req.url}`);
+    console.log(`[AuthSvc] Request received: ${req.method} ${req.url} from ${req.ip}`);
     next();
 });
 

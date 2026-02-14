@@ -136,7 +136,7 @@ const SettingsLayout = () => {
                     <SidebarItem icon={Lock} label={t('Account privacy')} path="/settings/privacy" />
                     <SidebarItem icon={Star} label={t('Close Friends')} path="/settings/close_friends" />
                     <SidebarItem icon={Ban} label={t('Blocked')} path="/settings/blocked" />
-                    <SidebarItem icon={BookOpen} label={t('Story and location')} path="/settings/story_and_live" />
+                    <SidebarItem icon={BookOpen} label={t('Story and Live')} path="/settings/story_and_live" />
                 </SidebarSection>
 
                 {/* HOW OTHERS CAN INTERACT WITH YOU */}
@@ -223,7 +223,7 @@ const SettingsLayout = () => {
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Lock} label={t('Account privacy')} path="/settings/privacy" /></div>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Star} label={t('Close Friends')} path="/settings/close_friends" /></div>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Ban} label={t('Blocked')} path="/settings/blocked" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={BookOpen} label={t('Story and location')} path="/settings/story_and_live" /></div>
+                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={BookOpen} label={t('Story and Live')} path="/settings/story_and_live" /></div>
                         </SidebarSection>
 
                         <SidebarSection title={t('How others can interact with you')}>

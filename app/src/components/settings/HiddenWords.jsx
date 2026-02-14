@@ -48,7 +48,7 @@ const HiddenWords = () => {
             <div className="flex-1 mr-8">
                 <span className="text-[15px] font-medium block leading-tight mb-1">{label}</span>
                 <p className="text-[12px] text-text-secondary leading-normal">
-                    {description} {learnMore && <span className="text-[#0095f6] cursor-pointer hover:underline">Learn more</span>}
+                    {description} {learnMore && <span className="text-[#0095f6] cursor-pointer hover:underline" onClick={() => window.open('/help', '_blank')}>Learn more</span>}
                 </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">

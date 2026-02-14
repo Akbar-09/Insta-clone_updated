@@ -5,6 +5,49 @@ const { publishEvent } = require('../config/rabbitmq');
 const sequelize = require('../config/database');
 const { Op } = require('sequelize');
 
+const getPostsByUsers = async (req, res) => {
+    try {
+        const { userIds, limit = 20, offset = 0 } = req.body;
+        const currentUserId = req.headers['x-user-id'] || req.body.currentUserId;
+
+        if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+            return res.json({ status: 'success', data: [] });
+        }
+
+        const posts = await Post.findAll({
+            where: {
+                userId: {
+                    [Op.in]: userIds
+                }
+            },
+            order: [['createdAt', 'DESC']],
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            raw: true
+        });
+
+        // Add isLiked status if currentUserId is present
+        let likedPostIds = new Set();
+        if (currentUserId) {
+            const likes = await Like.findAll({
+                where: { userId: currentUserId, postId: posts.map(p => p.id) },
+                attributes: ['postId']
+            });
+            likedPostIds = new Set(likes.map(l => l.postId));
+        }
+
+        const postsWithLikeStatus = posts.map(post => ({
+            ...post,
+            isLiked: likedPostIds.has(post.id)
+        }));
+
+        res.json({ status: 'success', data: postsWithLikeStatus });
+    } catch (error) {
+        console.error('Get Posts By Users Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 // Set up associations
 Post.hasMany(Like, { foreignKey: 'postId' });
 Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
@@ -343,18 +386,25 @@ const deletePost = async (req, res) => {
         const postId = req.params.id;
         const userId = req.headers['x-user-id'] || req.body.userId;
 
+        console.log(`[PostService] Delete request for post ${postId} by user ${userId}`);
+
         const post = await Post.findByPk(postId);
         if (!post) {
+            console.log(`[PostService] Post ${postId} not found for deletion.`);
             // Idempotent success: post already gone
             return res.status(200).json({ status: 'success', message: 'Post already deleted' });
         }
 
+        console.log(`[PostService] Post found. Owner: ${post.userId}, Requestor: ${userId}`);
+
         if (String(post.userId) !== String(userId)) {
+            console.log(`[PostService] Unauthorized deletion attempt. Owner: ${post.userId}, Requestor: ${userId}`);
             return res.status(403).json({ message: 'Unauthorized' });
         }
 
         const mediaUrl = post.mediaUrl;
         await post.destroy();
+        console.log(`[PostService] Post ${postId} destroyed.`);
 
         // Publish Event for media cleanup
         await publishEvent('POST_DELETED', {
@@ -773,5 +823,6 @@ module.exports = {
     reportPost,
     getEmbedCode,
     getActivityLikes,
-    getActivityPosts
+    getActivityPosts,
+    getPostsByUsers
 };

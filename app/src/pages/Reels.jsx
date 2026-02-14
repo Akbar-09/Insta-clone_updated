@@ -84,6 +84,47 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
         }
     };
 
+    const getProxiedUrl = (url) => {
+        if (!url) return '';
+        if (typeof url !== 'string') return url;
+
+        // Handle bare filenames (likely R2/Media Service uploads)
+        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
+            return `/api/v1/media/files/${url}`;
+        }
+
+        try {
+            // Check for frontend dev server IP with port 5175
+            if (url.startsWith('http://192.168.1.15:5175/api/v1/')) {
+                return url.replace('http://192.168.1.15:5175', '');
+            }
+
+            // Check for old backend IP with port 5000
+            if (url.startsWith('http://192.168.1.15:5000')) {
+                return url.replace('http://192.168.1.15:5000', '');
+            }
+
+            if (url.startsWith('http://localhost:5000') || url.startsWith('http://127.0.0.1:5000') || url.startsWith('http://192.168.1.15:5000')) {
+                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.15):5000/, '');
+            }
+
+            if (url.includes('r2.dev')) {
+                const parts = url.split('.dev/');
+                if (parts.length > 1) {
+                    return `/api/v1/media/files/${parts[1]}`;
+                }
+            }
+
+            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
+                return url.replace('/media/files', '/api/v1/media/files');
+            }
+        } catch (e) {
+            console.warn('URL proxying failed:', e);
+        }
+
+        return url;
+    };
+
     return (
         <div className="flex flex-col items-center h-screen">
             <div className={`flex items-end gap-16 relative h-full w-full max-h-screen transition-all duration-500 ease-in-out px-4 pb-4 ${showComments ? 'justify-center' : 'justify-center'}`}>
@@ -95,7 +136,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
                     <div className="w-full h-full bg-black rounded-xl overflow-hidden shadow-2xl relative border border-white/10">
                         <video
                             ref={videoRef}
-                            src={reel.videoUrl}
+                            src={getProxiedUrl(reel.videoUrl)}
                             className="w-full h-full object-cover cursor-pointer"
                             loop
                             muted={isMuted}
