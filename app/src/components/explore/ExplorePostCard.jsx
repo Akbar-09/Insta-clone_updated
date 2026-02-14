@@ -13,13 +13,27 @@ const ExplorePostCard = ({ post, isLarge, allPostIds, index }) => {
         }
 
         try {
-            if (url.startsWith('http://localhost:5000') || url.startsWith('http://127.0.0.1:5000')) {
-                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1):5000/, '');
+            // Check for frontend dev server IP with port 5175
+            if (url.startsWith('http://192.168.1.15:5175/api/v1/')) {
+                return url.replace('http://192.168.1.15:5175', '');
             }
+
+            // Check for old backend IP with port 5000
+            if (url.startsWith('http://192.168.1.15:5000')) {
+                return url.replace('http://192.168.1.15:5000', '');
+            }
+
+            if (url.startsWith('http://localhost:5000') || url.startsWith('http://127.0.0.1:5000') || url.startsWith('http://192.168.1.15:5000')) {
+                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.15):5000/, '');
+            }
+
             if (url.includes('r2.dev')) {
                 const parts = url.split('.dev/');
-                if (parts.length > 1) return `/api/v1/media/files/${parts[1]}`;
+                if (parts.length > 1) {
+                    return `/api/v1/media/files/${parts[1]}`;
+                }
             }
+
             if (url.includes('/media/files') && !url.includes('/api/v1/')) {
                 return url.replace('/media/files', '/api/v1/media/files');
             }

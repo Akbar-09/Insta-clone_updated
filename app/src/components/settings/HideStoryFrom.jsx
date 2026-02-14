@@ -9,8 +9,9 @@ import { useNavigate } from 'react-router-dom';
 const HideStoryFrom = () => {
     const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
-    const [hiddenUsers, setHiddenUsers] = useState([]);
-    const [candidates, setCandidates] = useState([]);
+    const [hiddenUsers, setHiddenUsers] = useState([]); // IDs
+    const [hiddenProfiles, setHiddenProfiles] = useState([]); // Objects
+    const [candidates, setCandidates] = useState([]); // Followers
     const [searchResults, setSearchResults] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
@@ -28,6 +29,7 @@ const HideStoryFrom = () => {
 
                     if (hiddenRes.data.status === 'success') {
                         setHiddenUsers(hiddenRes.data.data.map(u => u.userId));
+                        setHiddenProfiles(hiddenRes.data.data);
                     }
                     if (followersRes.status === 'success') {
                         setCandidates(followersRes.data);
@@ -50,7 +52,10 @@ const HideStoryFrom = () => {
                     const res = await searchUsers(searchQuery);
                     if (res.status === 'success') {
                         const currentId = user.id || user.userId;
-                        const filtered = res.data.filter(u => String(u.userId) !== String(currentId));
+                        const filtered = res.data.filter(u => {
+                            const resultId = u.userId || u.referenceId || u.id;
+                            return String(resultId) !== String(currentId);
+                        });
                         setSearchResults(filtered);
                     }
                 } catch (err) {
@@ -66,10 +71,17 @@ const HideStoryFrom = () => {
         return () => clearTimeout(timer);
     }, [searchQuery, user]);
 
-    const handleToggle = async (targetId) => {
+    const handleToggle = async (person) => {
+        const targetId = person.userId || person.referenceId || person.id;
         const isHidden = hiddenUsers.includes(targetId);
 
+        // Optimistic UI
         setHiddenUsers(prev => isHidden ? prev.filter(id => id !== targetId) : [...prev, targetId]);
+        if (!isHidden) {
+            setHiddenProfiles(prev => [...prev, person]);
+        } else {
+            setHiddenProfiles(prev => prev.filter(p => (p.userId || p.referenceId || p.id) !== targetId));
+        }
 
         try {
             if (isHidden) {
@@ -79,20 +91,42 @@ const HideStoryFrom = () => {
             }
         } catch (err) {
             console.error('Failed to update status', err);
+            // Revert
             setHiddenUsers(prev => isHidden ? [...prev, targetId] : prev.filter(id => id !== targetId));
+            if (!isHidden) {
+                setHiddenProfiles(prev => prev.filter(p => (p.userId || p.referenceId || p.id) !== targetId));
+            } else {
+                setHiddenProfiles(prev => [...prev, person]);
+            }
         }
     };
 
-    const displayList = searchQuery.trim().length > 1 ? searchResults : candidates;
+    // If searching globally (more than 1 char), show search results. 
+    // Otherwise show combined followers list and hidden profiles.
+    let displayList = [];
+    if (searchQuery.trim().length > 1) {
+        displayList = searchResults;
+    } else {
+        const candidateIds = new Set(candidates.map(c => String(c.userId || c.id || '')));
+        const uniqueHidden = hiddenProfiles.filter(p => {
+            const pId = String(p.userId || p.referenceId || p.id || '');
+            return !candidateIds.has(pId);
+        });
+        displayList = [...uniqueHidden, ...candidates];
+    }
 
     const finalDisplay = searchQuery.trim().length > 1
         ? displayList
         : [...displayList].sort((a, b) => {
-            const aHidden = hiddenUsers.includes(a.userId);
-            const bHidden = hiddenUsers.includes(b.userId);
+            const aId = a.userId || a.referenceId || a.id;
+            const bId = b.userId || b.referenceId || b.id;
+            const aHidden = hiddenUsers.includes(aId);
+            const bHidden = hiddenUsers.includes(bId);
             if (aHidden && !bHidden) return -1;
             if (!aHidden && bHidden) return 1;
-            return a.username.localeCompare(b.username);
+            const aName = (a.username || a.content || '').toLowerCase();
+            const bName = (b.username || b.content || '').toLowerCase();
+            return aName.localeCompare(bName);
         });
 
     if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
@@ -137,28 +171,48 @@ const HideStoryFrom = () => {
                         {searchQuery ? 'No users found.' : 'No followers found.'}
                     </div>
                 ) : (
-                    finalDisplay.map(person => {
-                        const isHidden = hiddenUsers.includes(person.userId);
+                    finalDisplay.map((person, index) => {
+                        const currentId = person.userId || person.referenceId || person.id;
+                        const isHidden = hiddenUsers.includes(currentId);
+
+                        // Fallback username for search results where enrichment might be partial
+                        const displayName = person.username || person.content || 'Unknown User';
+
+                        // Use currentId as key, but add index as fallback to ensure uniqueness
+                        const uniqueKey = currentId ? `hide-${currentId}` : `index-${index}`;
+
+                        const getAvatarUrl = (profilePic) => {
+                            if (!profilePic) return `https://ui-avatars.com/api/?name=${displayName}&background=random`;
+                            if (profilePic.startsWith('http') || profilePic.startsWith('data:')) return profilePic;
+                            return profilePic.startsWith('/') ? profilePic : `/${profilePic}`;
+                        };
+
                         return (
                             <div
-                                key={person.userId}
+                                key={uniqueKey}
                                 className="flex items-center justify-between py-1 px-1 rounded-lg cursor-pointer group"
-                                onClick={() => handleToggle(person.userId)}
+                                onClick={() => handleToggle(person)}
                             >
                                 <div className="flex items-center">
                                     <img
-                                        src={person.profilePicture || '/default-avatar.png'}
-                                        alt={person.username}
+                                        src={getAvatarUrl(person.profilePicture || person.metadata?.profilePicture)}
+                                        alt={displayName}
                                         className="w-11 h-11 rounded-full object-cover border border-border"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = `https://ui-avatars.com/api/?name=${displayName}&background=random`;
+                                        }}
                                     />
                                     <div className="ml-3">
-                                        <div className="font-semibold text-sm leading-tight">{person.username}</div>
-                                        <div className="text-text-secondary text-[13px] leading-tight">{person.fullName}</div>
+                                        <div className="font-semibold text-sm leading-tight">{displayName}</div>
+                                        <div className="text-text-secondary text-[13px] leading-tight">
+                                            {person.fullName || person.fullname || person.metadata?.fullName || ''}
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div className="relative">
-                                    <div className={`w-6 h-6 rounded-full border transition-all duration-200 flex items-center justify-center ${isHidden ? 'border-[#0095f6] bg-[#0095f6]' : 'border-gray-300 dark:border-gray-600'}`}>
+                                    <div className={`w-6 h-6 rounded-full border transition-all duration-200 flex items-center justify-center ${isHidden ? 'border-[#0095f6] bg-[#0095f6]' : 'border-gray-400 dark:border-gray-500 group-hover:border-gray-600'}`}>
                                         {isHidden && <Check size={14} strokeWidth={3} className="text-white" />}
                                     </div>
                                 </div>

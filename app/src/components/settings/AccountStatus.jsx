@@ -56,7 +56,7 @@ const AccountStatus = () => {
             {/* Profile Card */}
             <div className="bg-[#f0f2f5] dark:bg-[#262626] p-4 rounded-xl flex items-center mb-8">
                 <img
-                    src={user?.profilePicture || 'https://via.placeholder.com/150'}
+                    src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.username || 'User'}&background=random`}
                     alt={user?.username}
                     className="w-[50px] h-[50px] rounded-full object-cover mr-4 ring-1 ring-black/10 dark:ring-white/10"
                 />

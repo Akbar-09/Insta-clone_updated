@@ -10,6 +10,7 @@ const CloseFriends = () => {
     const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [closeFriends, setCloseFriends] = useState([]); // Array of IDs
+    const [cfProfiles, setCfProfiles] = useState([]); // Array of User Objects
     const [candidates, setCandidates] = useState([]); // All following
     const [searchResults, setSearchResults] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +28,7 @@ const CloseFriends = () => {
 
                     if (cfRes.data.status === 'success') {
                         setCloseFriends(cfRes.data.data.map(u => u.userId));
+                        setCfProfiles(cfRes.data.data);
                     }
                     if (followingRes.status === 'success') {
                         setCandidates(followingRes.data);
@@ -49,8 +51,11 @@ const CloseFriends = () => {
                 try {
                     const res = await searchUsers(searchQuery);
                     if (res.status === 'success') {
-                        // Filter out yourself from search results
-                        const filtered = res.data.filter(u => String(u.userId) !== String(user.id));
+                        // Filter out yourself from search results (handles both userId and referenceId)
+                        const filtered = res.data.filter(u => {
+                            const resultId = u.userId || u.referenceId || u.id;
+                            return String(resultId) !== String(user.id || user.userId);
+                        });
                         setSearchResults(filtered);
                     }
                 } catch (err) {
@@ -66,11 +71,17 @@ const CloseFriends = () => {
         return () => clearTimeout(timer);
     }, [searchQuery, user.id]);
 
-    const handleToggle = async (friendId) => {
+    const handleToggle = async (friend) => {
+        const friendId = friend.userId || friend.referenceId || friend.id;
         const isAdded = closeFriends.includes(friendId);
 
         // Optimistic Update
         setCloseFriends(prev => isAdded ? prev.filter(id => id !== friendId) : [...prev, friendId]);
+        if (!isAdded) {
+            setCfProfiles(prev => [...prev, friend]);
+        } else {
+            setCfProfiles(prev => prev.filter(p => (p.userId || p.referenceId || p.id) !== friendId));
+        }
 
         try {
             if (isAdded) {
@@ -82,21 +93,45 @@ const CloseFriends = () => {
             console.error('Failed to update status', err);
             // Revert
             setCloseFriends(prev => isAdded ? [...prev, friendId] : prev.filter(id => id !== friendId));
+            if (!isAdded) {
+                setCfProfiles(prev => prev.filter(p => (p.userId || p.referenceId || p.id) !== friendId));
+            } else {
+                setCfProfiles(prev => [...prev, friend]);
+            }
         }
     };
 
-    // If searching globally (more than 1 char), show search results. Otherwise show following.
-    const displayList = searchQuery.trim().length > 1 ? searchResults : candidates;
+    // If searching globally (more than 1 char), show search results. 
+    // Otherwise show combined following list and close friends profiles.
+    let displayList = [];
+    if (searchQuery.trim().length > 1) {
+        displayList = searchResults;
+    } else {
+        // Merge candidates and cfProfiles, ensuring no duplicates
+        // Use a Set of normalized IDs for fast lookup
+        const candidateIds = new Set(candidates.map(c => String(c.userId || c.id || '')));
+        const uniqueCfProfiles = cfProfiles.filter(p => {
+            const pId = String(p.userId || p.referenceId || p.id || '');
+            return !candidateIds.has(pId);
+        });
+        displayList = [...uniqueCfProfiles, ...candidates];
+    }
 
     // Sort: Global Search results don't need sorting, but Following List should have Close Friends first
     const finalDisplay = searchQuery.trim().length > 1
         ? displayList
         : [...displayList].sort((a, b) => {
-            const aIsCF = closeFriends.includes(a.userId);
-            const bIsCF = closeFriends.includes(b.userId);
+            const aId = a.userId || a.referenceId || a.id;
+            const bId = b.userId || b.referenceId || b.id;
+            const aIsCF = closeFriends.includes(aId);
+            const bIsCF = closeFriends.includes(bId);
+
             if (aIsCF && !bIsCF) return -1;
             if (!aIsCF && bIsCF) return 1;
-            return a.username.localeCompare(b.username);
+
+            const aName = (a.username || a.content || '').toLowerCase();
+            const bName = (b.username || b.content || '').toLowerCase();
+            return aName.localeCompare(bName);
         });
 
     if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
@@ -136,20 +171,39 @@ const CloseFriends = () => {
                 ) : finalDisplay.length === 0 ? (
                     <div className="text-center text-text-secondary py-10">No users found.</div>
                 ) : (
-                    finalDisplay.map(friend => {
-                        const isClose = closeFriends.includes(friend.userId);
+                    finalDisplay.map((friend, index) => {
+                        const currentId = friend.userId || friend.referenceId || friend.id;
+                        const isClose = closeFriends.includes(currentId);
+
+                        // Fallback username for search results where enrichment might be partial
+                        const displayName = friend.username || friend.content || 'Unknown User';
+
+                        // Use currentId as key, but add index as fallback to ensure uniqueness if data is inconsistent
+                        const uniqueKey = currentId ? `friend-${currentId}` : `index-${index}`;
+
+                        const getAvatarUrl = (profilePic) => {
+                            if (!profilePic) return `https://ui-avatars.com/api/?name=${displayName}&background=random`;
+                            if (profilePic.startsWith('http') || profilePic.startsWith('data:')) return profilePic;
+                            // Ensure it starts with / for proxy to catch it if it's a relative path like 'uploads/...'
+                            return profilePic.startsWith('/') ? profilePic : `/${profilePic}`;
+                        };
+
                         return (
                             <div
-                                key={friend.userId}
-                                className="flex items-center justify-between py-2 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded-lg cursor-pointer transition-colors"
-                                onClick={() => handleToggle(friend.userId)}
+                                key={uniqueKey}
+                                className="flex items-center justify-between py-2 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded-lg cursor-pointer transition-colors group"
+                                onClick={() => handleToggle(friend)}
                             >
                                 <div className="flex items-center">
                                     <div className="relative">
                                         <img
-                                            src={friend.profilePicture || '/default-avatar.png'}
-                                            alt={friend.username}
+                                            src={getAvatarUrl(friend.profilePicture || friend.metadata?.profilePicture)}
+                                            alt={displayName}
                                             className="w-12 h-12 rounded-full object-cover border border-border"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = `https://ui-avatars.com/api/?name=${displayName}&background=random`;
+                                            }}
                                         />
                                         {isClose && (
                                             <div className="absolute -bottom-1 -right-1 bg-white dark:bg-[#121212] rounded-full p-0.5 shadow-sm">
@@ -159,13 +213,13 @@ const CloseFriends = () => {
                                     </div>
                                     <div className="ml-3">
                                         <div className="font-semibold text-sm flex items-center gap-1">
-                                            {friend.username}
+                                            {displayName}
                                         </div>
-                                        <div className="text-text-secondary text-xs">{friend.fullName}</div>
+                                        <div className="text-text-secondary text-xs">{friend.fullName || friend.fullname || friend.metadata?.fullName || ''}</div>
                                     </div>
                                 </div>
 
-                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-200 ${isClose ? 'bg-[#0095f6] border-[#0095f6]' : 'border-gray-300 dark:border-gray-600'}`}>
+                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-200 ${isClose ? 'bg-[#0095f6] border-[#0095f6]' : 'border-gray-400 dark:border-gray-500 group-hover:border-gray-600 dark:group-hover:border-gray-400'}`}>
                                     {isClose && <Check size={14} className="text-white" strokeWidth={3} />}
                                 </div>
                             </div>

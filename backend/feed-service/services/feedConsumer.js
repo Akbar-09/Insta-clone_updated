@@ -14,8 +14,8 @@ const connectRabbitMQ = async () => {
 
         // Bind to POST_CREATED
         await channel.bindQueue(q.queue, exchange, 'POST_CREATED');
-        // Bind to USER_FOLLOWED (To be implemented in User Service)
-        await channel.bindQueue(q.queue, exchange, 'USER_FOLLOWED');
+        // Bind to POST_DELETED
+        await channel.bindQueue(q.queue, exchange, 'POST_DELETED');
 
         console.log('Listening for Feed events...');
 
@@ -27,14 +27,41 @@ const connectRabbitMQ = async () => {
                 console.log(`Received ${routingKey}:`, data);
 
                 if (routingKey === 'POST_CREATED') {
-                    // In a real app, we'd find all followers of data.userId and push to their feed lists.
-                    // For this MVP, we will push to a "global_feed" list in Redis for simplicity, 
-                    // or simulate pushing to a specific user's feed if followers were provided.
-
+                    // Push to "global_feed" list in Redis
                     await client.lPush('global_feed', JSON.stringify(data));
                     // Keep only last 100 items
                     await client.lTrim('global_feed', 0, 99);
                     console.log('Added post to global_feed in Redis');
+                } else if (routingKey === 'POST_DELETED') {
+                    // Remove from "global_feed"
+                    console.log(`Removing post ${data.postId} from global_feed`);
+
+                    // Fetch all items
+                    const items = await client.lRange('global_feed', 0, -1);
+                    const filtered = items.filter(itemStr => {
+                        try {
+                            const item = JSON.parse(itemStr);
+                            // Keep item if ID does not match
+                            return String(item.id) !== String(data.postId);
+                        } catch (e) {
+                            return true;
+                        }
+                    });
+
+                    if (items.length !== filtered.length) {
+                        // Replace list if changed
+                        await client.del('global_feed');
+                        // Push back in reverse order because lPush puts at head
+                        // Originally: [newest, ..., oldest]
+                        // lPush loop: push oldest -> [oldest], push next -> [next, oldest]...
+                        // So we should iterate from end of 'filtered' to start.
+                        for (let i = filtered.length - 1; i >= 0; i--) {
+                            await client.lPush('global_feed', filtered[i]);
+                        }
+                        console.log(`Removed post ${data.postId} from Redis cache`);
+                    } else {
+                        console.log(`Post ${data.postId} not found in cache`);
+                    }
                 }
 
                 channel.ack(msg);

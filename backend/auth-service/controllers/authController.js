@@ -59,8 +59,10 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
+    console.log('[AuthSvc] Login request started');
     try {
         const { email, password, deviceId } = req.body; // Expect deviceId
+        console.log(`[AuthSvc] Login attempt for: ${email}, deviceId: ${deviceId}`);
 
         const user = await User.findOne({ where: { email } });
         if (!user) {
@@ -78,6 +80,7 @@ const login = async (req, res) => {
 
         // Create or Update Session
         if (deviceId) {
+            console.log(`[AuthSvc] Creating session for user ${user.id} on device ${deviceId}`);
             await UserSession.create({
                 userId: user.id,
                 deviceId: deviceId,
