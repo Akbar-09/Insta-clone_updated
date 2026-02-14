@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import {
-    reportPost, unfollowUser, deletePost, copyLink, favoriteUser,
-    hideLikeCount, toggleComments, getEmbedCode, followUser
+    reportPost, deletePost, copyLink,
+    hideLikeCount, toggleComments, getEmbedCode
 } from '../api/postActionsApi';
+import { blockUser, restrictUser } from '../api/userApi';
 import * as adApi from '../api/adApi';
 
 const PostOptionsMenu = ({
@@ -102,23 +103,7 @@ const PostOptionsMenu = ({
                         onClose();
                     }
                     break;
-                case 'follow':
-                    await followUser(post.userId);
-                    alert(`Following @${post.username}`);
-                    onClose();
-                    break;
-                case 'unfollow':
-                    if (window.confirm(`Unfollow @${post.username}?`)) {
-                        await unfollowUser(post.userId);
-                        alert(`Unfollowed @${post.username}`);
-                        onClose();
-                    }
-                    break;
-                case 'favorites':
-                    await favoriteUser(post.userId);
-                    alert('Updated favorites!');
-                    onClose();
-                    break;
+
                 case 'hideLikes':
                     if (isAd) {
                         await adApi.hideLikeCount(post.id);
@@ -146,6 +131,32 @@ const PostOptionsMenu = ({
                         document.body.appendChild(msg);
                         setTimeout(() => msg.remove(), 2000);
                     }
+                    onClose();
+                    break;
+                case 'block':
+                    if (window.confirm(`Block @${post.username}? They won't be able to find your profile, posts or story on Instagram. Instagram won't let them know you blocked them.`)) {
+                        await blockUser(post.userId);
+                        alert(`Blocked @${post.username}`);
+                        // Optionally trigger a refresh or hide post
+                        if (onDeleteSuccess) onDeleteSuccess(post.id); // Re-using this to remove post from view
+                    }
+                    onClose();
+                    break;
+                case 'restrict':
+                    if (window.confirm(`Restrict @${post.username}?`)) {
+                        await restrictUser(post.userId);
+                        alert(`Restricted @${post.username}`);
+                    }
+                    onClose();
+                    break;
+                case 'copyProfileUrl':
+                    const profileUrl = `${window.location.origin}/profile/${post.username}`;
+                    await navigator.clipboard.writeText(profileUrl);
+                    const msg = document.createElement('div');
+                    msg.textContent = 'Link copied to clipboard';
+                    msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
+                    document.body.appendChild(msg);
+                    setTimeout(() => msg.remove(), 2000);
                     onClose();
                     break;
                 case 'embed':
@@ -220,18 +231,11 @@ const PostOptionsMenu = ({
                     </>
                 ) : (
                     <>
+                        <ActionButton label="Block" action="block" color="text-[#ed4956]" isBold />
+                        <ActionButton label="Restrict" action="restrict" color="text-[#ed4956]" isBold />
                         <ActionButton label="Report" action="report" color="text-[#ed4956]" isBold />
-                        {isFollowing ? (
-                            <ActionButton label="Unfollow" action="unfollow" color="text-[#ed4956]" isBold />
-                        ) : (
-                            <ActionButton label="Follow" action="follow" color="text-[#0095f6]" isBold />
-                        )}
-                        <ActionButton label="Add to favorites" action="favorites" />
-                        <ActionButton label="Go to post" action="goToPost" />
-                        <ActionButton label="Share to..." action="share" />
-                        <ActionButton label="Copy link" action="copyLink" />
-                        <ActionButton label="Embed" action="embed" />
                         <ActionButton label="About this account" action="aboutAccount" />
+                        <ActionButton label="Copy profile URL" action="copyProfileUrl" />
                         <ActionButton label="Cancel" action="cancel" />
                     </>
                 )}
