@@ -109,11 +109,7 @@ export const useMessages = (socket, userId, initialConversationId) => {
             const updated = conversations.find(c => c.id === selectedConversation.id);
             if (updated) {
                 setSelectedConversation(prev => {
-                    // Start with a shallow check or just update. 
-                    // Since specific fields like isBlocked are critical, we update.
-                    // We merge preventing regression of local state if any.
-                    // However, we must ensure we don't trigger infinite loops if this causes re-fetch.
-                    // fetchMessages depends on selectedConversation.
+                    if (!prev) return prev;
 
                     // Simple equality check to minimize updates
                     if (JSON.stringify(prev.otherUser) === JSON.stringify(updated.otherUser) &&

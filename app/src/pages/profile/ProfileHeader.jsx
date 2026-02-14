@@ -120,7 +120,16 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollo
                                             {isFollowing ? 'Following' : 'Follow'}
                                         </button>
                                         <button
-                                            onClick={() => navigate(`/messages`)}
+                                            onClick={() => navigate(`/messages`, {
+                                                state: {
+                                                    startChatWith: {
+                                                        userId: profile.userId,
+                                                        username: profile.username,
+                                                        fullName: profile.fullName,
+                                                        profilePicture: profile.profilePicture
+                                                    }
+                                                }
+                                            })}
                                             className="bg-[#efefef] dark:bg-[#363636] hover:bg-[#dbdbdb] dark:hover:bg-[#262626] text-black dark:text-white px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors"
                                         >
                                             Message
