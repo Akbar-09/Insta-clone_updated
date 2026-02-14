@@ -1,1 +1,0 @@
-http://localhost:5000/api/v1/media/files/Jaadoe/posts/images/temp_9fd53978-ff27-48c0-955c-292a21a7ed51_opt.webp

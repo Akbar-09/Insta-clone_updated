@@ -23,7 +23,9 @@ const services = [
 ];
 
 
-console.log('Starting services...');
+const fs = require('fs');
+const logDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
 
 services.forEach(service => {
     const servicePath = path.join(__dirname, service.dir);
@@ -31,8 +33,10 @@ services.forEach(service => {
 
     const port = getPort(service.name);
 
-    // On Windows, 'npm' is an executable script (npm.cmd), so we need shell: true
-    // Using 'npm run dev' to leverage nodemon if available, or just index.js
+    // Write to log files
+    const stdoutLog = fs.createWriteStream(path.join(logDir, `${service.name}.log`), { flags: 'a' });
+    const stderrLog = fs.createWriteStream(path.join(logDir, `${service.name}-error.log`), { flags: 'a' });
+
     const child = spawn('npm', ['run', 'dev'], {
         cwd: servicePath,
         shell: true,
@@ -40,7 +44,8 @@ services.forEach(service => {
     });
 
     child.stdout.on('data', (data) => {
-        // Prefix log with service name
+        stdoutLog.write(data);
+        // Prefix log with service name for console visibility
         const lines = data.toString().split('\n');
         lines.forEach(line => {
             if (line.trim()) console.log(`[${service.name}] ${line.trim()}`);
@@ -48,11 +53,14 @@ services.forEach(service => {
     });
 
     child.stderr.on('data', (data) => {
+        stderrLog.write(data);
         console.error(`[${service.name} ERROR] ${data}`);
     });
 
     child.on('error', (err) => {
-        console.error(`[${service.name} FAILED] ${err.message}`);
+        const errMsg = `[${service.name} FAILED] ${err.message}\n`;
+        stderrLog.write(errMsg);
+        console.error(errMsg);
     });
 });
 

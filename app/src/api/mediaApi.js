@@ -70,18 +70,9 @@ export const uploadMediaToR2 = async (file, context = 'feed') => {
     return { url: publicUrl, key, id: finalizeRes.data.data.id };
 };
 
-// Default export uses R2 flow with local fallback
+// Default export - use local upload (backend handles R2 if configured)
+// This avoids CORS issues with direct R2 uploads
 export const uploadMedia = async (file, context = 'feed') => {
-    try {
-        console.log(`Attempting R2 upload for ${file.name}...`);
-        return await uploadMediaToR2(file, context);
-    } catch (error) {
-        console.warn('R2 Upload failed, falling back to local upload:', error.message);
-        try {
-            return await uploadMediaLocal(file);
-        } catch (localError) {
-            console.error('Local upload also failed:', localError.message);
-            throw localError;
-        }
-    }
+    console.log(`Uploading ${file.name} via backend...`);
+    return await uploadMediaLocal(file);
 };

@@ -113,6 +113,7 @@ router.get('/activity/account-history', profileController.getAccountHistory);
 // Dynamic Routes LAST
 router.get('/:username', profileController.getUserProfile);
 router.get('/:userId/posts', profileController.getUserPosts);
+router.get('/:userId/reels', profileController.getUserReels);
 router.get('/:userId/followers', profileController.getFollowersList);
 router.get('/:userId/following', profileController.getFollowingList);
 router.delete('/followers/:followerId', profileController.removeFollower);

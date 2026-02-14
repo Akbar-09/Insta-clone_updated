@@ -1,4 +1,5 @@
 import { useState, useRef, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Send, MoreHorizontal, Bookmark } from 'lucide-react';
 import CommentSection from './comments/CommentSection';
 import ShareModal from './ShareModal';
@@ -18,6 +19,7 @@ import * as adApi from '../api/adApi';
 
 const PostCard = ({ post, onLikeUpdate }) => {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
 
     // Internal state for optimism/updates
     const [currentPost, setCurrentPost] = useState(post);
@@ -213,14 +215,17 @@ const PostCard = ({ post, onLikeUpdate }) => {
         <article ref={cardRef} className="bg-white dark:bg-black border-b border-border md:border md:border-border md:rounded-lg mb-4 w-full overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between py-2 px-3">
-                <div className="flex items-center gap-3 cursor-pointer">
+                <div
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => navigate(`/profile/${currentPost.username}`)}
+                >
                     <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[1.5px]">
                         <div className="w-full h-full rounded-full bg-white dark:bg-black p-[1.5px]">
                             <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden border border-border flex items-center justify-center text-[10px] font-bold text-gray-500 uppercase">
                                 {currentPost.userAvatar ? (
                                     <img src={getMediaUrl(currentPost.userAvatar)} alt={currentPost.username} className="w-full h-full object-cover" />
                                 ) : (
-                                    currentPost.username?.charAt(0) || '?'
+                                    <img src={`https://ui-avatars.com/api/?name=${currentPost.username}&background=random`} alt={currentPost.username} className="w-full h-full object-cover" />
                                 )}
                             </div>
                         </div>
@@ -347,7 +352,12 @@ const PostCard = ({ post, onLikeUpdate }) => {
 
             {/* Caption */}
             <div className="px-3 pb-1.5">
-                <span className="font-semibold text-[13px] mr-2 cursor-pointer hover:text-gray-500">{currentPost.username}</span>
+                <span
+                    className="font-semibold text-[13px] mr-2 cursor-pointer hover:text-gray-500"
+                    onClick={() => navigate(`/profile/${currentPost.username}`)}
+                >
+                    {currentPost.username}
+                </span>
                 <span className="text-[13px] dropdown-caption leading-relaxed" dangerouslySetInnerHTML={{ __html: formatCaption(currentPost.caption) }} />
             </div>
 

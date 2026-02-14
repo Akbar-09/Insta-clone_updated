@@ -464,4 +464,15 @@ export const getAuditLogs = async (params) => {
     return response.data;
 };
 
+// Monitoring
+export const getServiceStatuses = async () => {
+    const response = await adminApi.get('monitoring/statuses');
+    return response.data;
+};
+
+export const getServiceLogs = async (serviceName, type = 'logs') => {
+    const response = await adminApi.get(`monitoring/logs/${serviceName}/${type}`);
+    return response.data;
+};
+
 export default adminApi;

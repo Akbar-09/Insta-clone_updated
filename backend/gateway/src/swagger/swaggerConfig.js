@@ -14,11 +14,11 @@ const options = {
         },
         servers: [
             {
-                url: 'http://localhost:5000/api/v1',
+                url: 'http://192.168.1.15:5000/api/v1',
                 description: 'Local Development Gateway'
             },
             {
-                url: 'http://localhost:8000/api/v1',
+                url: 'http://192.168.1.15:8000/api/v1',
                 description: 'Production Gateway'
             }
         ],

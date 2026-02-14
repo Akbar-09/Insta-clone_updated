@@ -1,4 +1,5 @@
 import { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Heart, Trash2 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { likeComment, unlikeComment, deleteComment } from '../../api/commentApi';
@@ -6,6 +7,7 @@ import * as adApi from '../../api/adApi';
 
 const CommentItem = ({ comment, postId, isAd = false, onDelete, onReply }) => {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [liked, setLiked] = useState(comment.isLiked || false);
     const [likesCount, setLikesCount] = useState(comment.likesCount || 0);
     const [isHovered, setIsHovered] = useState(false);
@@ -76,10 +78,16 @@ const CommentItem = ({ comment, postId, isAd = false, onDelete, onReply }) => {
                     src={comment.userAvatar || `https://ui-avatars.com/api/?name=${comment.username}&background=random`}
                     alt={comment.username}
                     className="w-8 h-8 rounded-full object-cover shrink-0 cursor-pointer"
+                    onClick={() => navigate(`/profile/${comment.username}`)}
                 />
                 <div className="flex flex-col">
                     <div className="text-sm">
-                        <span className="font-semibold text-text-primary mr-2 cursor-pointer">{comment.username}</span>
+                        <span
+                            className="font-semibold text-text-primary mr-2 cursor-pointer"
+                            onClick={() => navigate(`/profile/${comment.username}`)}
+                        >
+                            {comment.username}
+                        </span>
                         <span className="text-text-primary whitespace-pre-wrap break-words">{commentContent}</span>
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-text-secondary">

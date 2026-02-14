@@ -103,6 +103,7 @@ function App() {
                   <Route path="/explore" element={<ExplorePage />} />
                   <Route path="/explore/people" element={<SuggestedPeoplePage />} />
                   <Route path="/reels" element={<Reels />} />
+                  <Route path="/reels/:reelId" element={<Reels />} />
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/messages/:conversationId" element={<Messages />} />
                   <Route path="/profile/:id" element={<Profile />} />
