@@ -208,6 +208,7 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollo
             {showOptionsModal && (
                 <ProfileOptionsModal
                     onClose={() => setShowOptionsModal(false)}
+                    profile={profile}
                 />
             )}
 

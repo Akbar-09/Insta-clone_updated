@@ -1,14 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
-import { X, Heart, Send } from 'lucide-react';
-import { getComments, addComment, likeComment, unlikeComment } from '../api/commentApi';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getComments, addComment, likeComment, unlikeComment } from '../api/commentApi';
+import StickerPicker from './messages/StickerPicker';
 
 const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, variant = 'drawer' }) => {
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [showStickers, setShowStickers] = useState(false);
+
     const commentsEndRef = useRef(null);
+    const inputRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -16,8 +21,10 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
             if (!postId) return;
             setLoading(true);
             try {
-                const data = await getComments(postId);
-                setComments(Array.isArray(data) ? data : []);
+                const res = await getComments(postId);
+                // The API returns { status: 'success', data: [...] }
+                const commentsData = res.data || (Array.isArray(res) ? res : []);
+                setComments(commentsData);
             } catch (error) {
                 console.error('Failed to load comments', error);
             } finally {
@@ -28,28 +35,39 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
         fetchComments();
     }, [postId]);
 
-    const handleAddComment = async (e) => {
-        e.preventDefault();
-        if (!newComment.trim() || submitting) return;
+    const handleAddComment = async (e, sticker = null) => {
+        if (e) e.preventDefault();
+
+        const text = sticker ? 'Sent a sticker' : newComment;
+        if (!text.trim() && !sticker) return;
+        if (submitting) return;
 
         setSubmitting(true);
         try {
-            const addedComment = await addComment(postId, newComment, currentUser);
+            const extra = {
+                type: sticker ? 'sticker' : 'text',
+                mediaUrl: sticker ? sticker.url : null,
+                targetType: 'reel'
+            };
+            const parentId = replyingTo?.id;
 
-            // Construct comment for state with fallbacks in case API response is partial
+            const res = await addComment(postId, text, currentUser, parentId, extra);
+            const addedComment = res.data || res;
+
+            // Construct comment for state
             const commentState = {
-                ...addedComment.data,
-                id: addedComment.data?.id || addedComment.id || Date.now(),
-                text: addedComment.data?.text || addedComment.text || newComment, // Fallback to input text
-                createdAt: addedComment.data?.createdAt || addedComment.createdAt || new Date().toISOString(),
-                username: addedComment.data?.username || addedComment.username || currentUser.username,
-                userAvatar: addedComment.data?.userAvatar || addedComment.userAvatar || currentUser.profilePicture
+                ...addedComment,
+                username: currentUser.username,
+                userAvatar: currentUser.profilePicture
             };
 
             setComments(prev => [...prev, commentState]);
             setNewComment('');
+            setReplyingTo(null);
+            setShowStickers(false);
+
             if (onCommentAdded) onCommentAdded();
-            // Scroll to bottom
+
             setTimeout(() => {
                 commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
@@ -60,14 +78,19 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
         }
     };
 
-    const handleLikeComment = async (commentId, isLiked, likesCount) => {
+    const handleReply = (comment) => {
+        setReplyingTo(comment);
+        setNewComment(`@${comment.username} `);
+        inputRef.current?.focus();
+    };
+
+    const handleLikeComment = async (commentId, isLiked) => {
         try {
             if (isLiked) {
                 await unlikeComment(commentId, currentUser.id);
             } else {
                 await likeComment(commentId, currentUser.id);
             }
-            // Refresh comments or manually toggle in state
             setComments(prev => prev.map(c => {
                 if (c.id === commentId) {
                     return {
@@ -84,6 +107,21 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
     };
 
     const isInline = variant === 'inline';
+
+    // Organize comments: Parents followed by their replies
+    const organizedComments = (() => {
+        const parents = comments.filter(c => !c.parentId);
+        const replies = comments.filter(c => c.parentId);
+        const result = [];
+        parents.forEach(p => {
+            result.push(p);
+            replies.filter(r => String(r.parentId) === String(p.id)).forEach(r => result.push(r));
+        });
+        // Catch any orphans
+        const resultIds = result.map(c => c.id);
+        replies.filter(r => !resultIds.includes(r.id)).forEach(r => result.push(r));
+        return result;
+    })();
 
     return (
         <div className={`
@@ -109,14 +147,14 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                     <div className="flex justify-center mt-10">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-300 dark:border-white"></div>
                     </div>
-                ) : comments.length === 0 ? (
+                ) : organizedComments.length === 0 ? (
                     <div className="text-center text-gray-500 dark:text-gray-400 mt-10 text-sm">
                         No comments yet. Start the conversation.
                     </div>
                 ) : (
                     <div className="flex flex-col gap-4">
-                        {comments.map((comment) => (
-                            <div key={comment.id} className="flex gap-3">
+                        {organizedComments.map((comment) => (
+                            <div key={comment.id} className={`flex gap-3 ${comment.parentId ? 'ml-8' : ''}`}>
                                 <div
                                     className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden shrink-0 cursor-pointer"
                                     onClick={() => navigate(`/profile/${comment.username}`)}
@@ -137,18 +175,29 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                                         </span>
                                         <span className="text-gray-400 text-[10px]">1w</span>
                                     </div>
-                                    <p className="text-gray-800 dark:text-white text-[13px] mt-0.5 leading-snug">{comment.text}</p>
+                                    {comment.type === 'sticker' ? (
+                                        <div className="w-20 h-20 my-1">
+                                            <img src={comment.mediaUrl} alt="sticker" className="w-full h-full object-contain" />
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-800 dark:text-white text-[13px] mt-0.5 leading-snug">{comment.text}</p>
+                                    )}
                                     <div className="flex items-center gap-3 mt-1">
                                         {comment.likesCount > 0 && (
                                             <span className="text-xs text-gray-400 font-medium">{comment.likesCount} {comment.likesCount === 1 ? 'like' : 'likes'}</span>
                                         )}
-                                        <button className="text-[11px] text-gray-500 font-semibold hover:text-gray-700 dark:hover:text-gray-300">Reply</button>
+                                        <button
+                                            onClick={() => handleReply(comment)}
+                                            className="text-[11px] text-gray-500 font-semibold hover:text-gray-700 dark:hover:text-gray-300"
+                                        >
+                                            Reply
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="pt-1.5 overflow-visible">
                                     <button
                                         className="text-gray-400 hover:opacity-70 transition-colors"
-                                        onClick={() => handleLikeComment(comment.id, comment.isLiked, comment.likesCount)}
+                                        onClick={() => handleLikeComment(comment.id, comment.isLiked)}
                                     >
                                         <Heart
                                             size={12}
@@ -165,7 +214,22 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
             </div>
 
             {/* Input Area */}
-            <div className="p-3 border-t border-gray-100 dark:border-white/10 bg-white dark:bg-[#1a1a1a] flex flex-col gap-2">
+            <div className="p-3 border-t border-gray-100 dark:border-white/10 bg-white dark:bg-[#1a1a1a] flex flex-col gap-2 relative">
+                {replyingTo && (
+                    <div className="px-3 py-1 flex justify-between items-center bg-gray-50 dark:bg-black/20 text-[11px] text-gray-500 border-l-2 border-blue-500 mb-1">
+                        <span>Replying to {replyingTo.username}</span>
+                        <button onClick={() => { setReplyingTo(null); setNewComment(''); }} className="hover:text-black dark:hover:text-white">
+                            <X size={12} />
+                        </button>
+                    </div>
+                )}
+
+                {showStickers && (
+                    <div className="absolute bottom-full left-0 w-full z-50">
+                        <StickerPicker onSelect={(s) => handleAddComment(null, s)} onClose={() => setShowStickers(false)} />
+                    </div>
+                )}
+
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden shrink-0">
                         <img
@@ -176,6 +240,7 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                     </div>
                     <form onSubmit={handleAddComment} className="flex-1 flex items-center bg-gray-50 dark:bg-[#262626] rounded-full px-4 py-2 border border-gray-200 dark:border-white/10 focus-within:border-gray-400 transition-colors">
                         <input
+                            ref={inputRef}
                             type="text"
                             placeholder="Add a comment..."
                             className="bg-transparent text-black dark:text-white text-[13px] w-full focus:outline-none placeholder-gray-500"
@@ -193,8 +258,12 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                                     Post
                                 </button>
                             ) : (
-                                <button type="button" className="text-gray-400 hover:opacity-70">
-                                    <svg aria-label="Emoji" color="currentColor" fill="currentColor" height="20" role="img" viewBox="0 0 24 24" width="20"><path d="M15.83 10.997a1.167 1.167 0 1 0 1.167 1.167 1.167 1.167 0 0 0-1.167-1.167Zm-6.5 1.167a1.167 1.167 0 1 0-1.166 1.167 1.167 1.167 0 0 0 1.166-1.167Zm5.163 3.24a3.406 3.406 0 0 1-4.982.007 1 1 0 1 0-1.552 1.266 5.402 5.402 0 0 0 8.085-.011 1 1 0 0 0-1.551-1.262ZM12 .5a11.5 11.5 0 1 0 11.5 11.5A11.513 11.513 0 0 0 12 .5Zm0 21a9.5 9.5 0 1 1 9.5-9.5 9.51 9.51 0 0 1-9.5 9.5Z"></path></svg>
+                                <button
+                                    type="button"
+                                    className={`hover:opacity-70 ${showStickers ? 'text-blue-500' : 'text-gray-400'}`}
+                                    onClick={() => setShowStickers(!showStickers)}
+                                >
+                                    <svg aria-label="Stickers" color="currentColor" fill="currentColor" height="20" role="img" viewBox="0 0 24 24" width="20"><path d="M15.83 10.997a1.167 1.167 0 1 0 1.167 1.167 1.167 1.167 0 0 0-1.167-1.167Zm-6.5 1.167a1.167 1.167 0 1 0-1.166 1.167 1.167 1.167 0 0 0 1.166-1.167Zm5.163 3.24a3.406 3.406 0 0 1-4.982.007 1 1 0 1 0-1.552 1.266 5.402 5.402 0 0 0 8.085-.011 1 1 0 0 0-1.551-1.262ZM12 .5a11.5 11.5 0 1 0 11.5 11.5A11.513 11.513 0 0 0 12 .5Zm0 21a9.5 9.5 0 1 1 9.5-9.5 9.51 9.51 0 0 1-9.5 9.5Z"></path></svg>
                                 </button>
                             )}
                         </div>

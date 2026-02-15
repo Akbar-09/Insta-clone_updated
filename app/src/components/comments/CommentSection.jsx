@@ -4,7 +4,7 @@ import CommentInput from './CommentInput';
 import { getComments } from '../../api/commentApi';
 import * as adApi from '../../api/adApi';
 
-const CommentSection = ({ postId, isAd = false, initialCount = 0, initialComments = [], isExpanded = false, onToggle, inputRef }) => {
+const CommentSection = ({ postId, isAd = false, targetType = 'post', initialCount = 0, initialComments = [], isExpanded = false, onToggle, inputRef }) => {
     const [comments, setComments] = useState(initialComments);
     const [loading, setLoading] = useState(false);
     const [internalExpanded, setInternalExpanded] = useState(false);
@@ -145,6 +145,7 @@ const CommentSection = ({ postId, isAd = false, initialCount = 0, initialComment
                 ref={inputRef}
                 postId={postId}
                 isAd={isAd}
+                targetType={targetType}
                 onCommentAdded={handleCommentAdded}
                 replyingTo={replyingTo}
                 onClearReply={() => setReplyingTo(null)}

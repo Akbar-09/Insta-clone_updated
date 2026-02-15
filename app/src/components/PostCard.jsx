@@ -108,20 +108,12 @@ const PostCard = ({ post, onLikeUpdate }) => {
             return `/api/v1/media/files/${url}`;
         }
 
-        // Convert absolute local gateway URLs to relative to use Vite proxy
-        // This handles http://localhost:5000, http://127.0.0.1:5000, etc.
         try {
-            // Check for frontend dev server IP with port 5175
-            if (url.startsWith('http://192.168.1.15:5175/api/v1/')) {
-                return url.replace('http://192.168.1.15:5175', '');
-            }
+            // Remove full origin if it matches any local IP/Port variations to make it relative
+            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
 
-            // Check for old backend IP with port 5000
-            if (url.startsWith('http://192.168.1.15:5000')) {
-                return url.replace('http://192.168.1.15:5000', '');
-            }
-            if (url.startsWith('http://localhost:5000') || url.startsWith('http://127.0.0.1:5000') || url.startsWith('http://192.168.1.15:5000')) {
-                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.15):5000/, '');
+            if (cleanedUrl !== url) {
+                return cleanedUrl;
             }
 
             // If it's an R2 URL directly, try to convert it to our proxied endpoint

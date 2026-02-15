@@ -24,19 +24,19 @@ const connectRabbitMQ = async () => {
                 console.log(`Received ${routingKey} for reel sync`);
 
                 try {
-                    if (routingKey === 'COMMENT_ADDED') {
-                        const reelId = data.postId; // In our system, postId is used universally in comment service
+                    const reelId = data.postId;
+                    const targetType = data.targetType;
+
+                    if (targetType === 'reel') {
                         const reel = await Reel.findByPk(reelId);
                         if (reel) {
-                            await reel.increment('commentsCount');
-                            console.log(`Incremented commentsCount for reel ${reelId}`);
-                        }
-                    } else if (routingKey === 'COMMENT_DELETED') {
-                        const reelId = data.postId;
-                        const reel = await Reel.findByPk(reelId);
-                        if (reel) {
-                            await reel.decrement('commentsCount');
-                            console.log(`Decremented commentsCount for reel ${reelId}`);
+                            if (routingKey === 'COMMENT_ADDED') {
+                                await reel.increment('commentsCount');
+                                console.log(`Incremented commentsCount for reel ${reelId}`);
+                            } else if (routingKey === 'COMMENT_DELETED') {
+                                await reel.decrement('commentsCount');
+                                console.log(`Decremented commentsCount for reel ${reelId}`);
+                            }
                         }
                     }
                 } catch (err) {

@@ -125,8 +125,11 @@ const ChatInfoPanel = ({ conversationId, onClose, onUpdate }) => {
         if (typeof url !== 'string') return url;
         if (url.startsWith('blob:')) return url;
         try {
-            if (url.startsWith('http://localhost:5000') || url.startsWith('http://127.0.0.1:5000') || url.startsWith('http://192.168.1.15:5000')) {
-                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.15):5000/, '');
+            // Remove full origin if it matches any local IP/Port variations to make it relative
+            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
+
+            if (cleanedUrl !== url) {
+                return cleanedUrl;
             }
             if (url.includes('r2.dev')) {
                 const parts = url.split('.dev/');

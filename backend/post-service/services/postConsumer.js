@@ -25,19 +25,19 @@ const connectRabbitMQ = async () => {
                 console.log(`Received ${routingKey} for post sync`);
 
                 try {
-                    if (routingKey === 'COMMENT_ADDED') {
-                        const postId = data.postId;
+                    const postId = data.postId;
+                    const targetType = data.targetType || 'post';
+
+                    if (targetType === 'post') {
                         const post = await Post.findByPk(postId);
                         if (post) {
-                            await post.increment('commentsCount');
-                            console.log(`Incremented commentsCount for post ${postId}`);
-                        }
-                    } else if (routingKey === 'COMMENT_DELETED') {
-                        const postId = data.postId;
-                        const post = await Post.findByPk(postId);
-                        if (post) {
-                            await post.decrement('commentsCount');
-                            console.log(`Decremented commentsCount for post ${postId}`);
+                            if (routingKey === 'COMMENT_ADDED') {
+                                await post.increment('commentsCount');
+                                console.log(`Incremented commentsCount for post ${postId}`);
+                            } else if (routingKey === 'COMMENT_DELETED') {
+                                await post.decrement('commentsCount');
+                                console.log(`Decremented commentsCount for post ${postId}`);
+                            }
                         }
                     } else if (routingKey === 'MEDIA.OPTIMIZED') {
                         const { originalUrl, optimizedUrl, thumbnailUrl, type } = data;

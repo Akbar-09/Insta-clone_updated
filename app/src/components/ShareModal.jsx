@@ -54,15 +54,20 @@ const ShareModal = ({ post, onClose, title, actionLabel, onAction, ...props }) =
                 return;
             }
 
-            let content = '';
-            if (post) {
-                content = `Check out this post: ${window.location.origin}/post/${post.id} `;
-            } else if (props.story) { // assuming passed as props
-                content = `Check out this story: ${window.location.origin}/stories/${props.story.username}/${props.story.id}`;
-            }
-
             // Send to each user
-            await Promise.all(userIds.map(uid => sendMessage(uid, content)));
+            await Promise.all(userIds.map(uid => {
+                const shareContent = {
+                    id: post?.id || props.story?.id,
+                    postId: post?.id || props.story?.id,
+                    type: post ? 'post' : 'story',
+                    username: post?.username || props.story?.username || 'User',
+                    thumbnailUrl: post?.mediaUrl || post?.imageUrl || props.story?.mediaUrl,
+                    caption: post?.caption || '',
+                    text: post ? `Shared a post: /posts/${post.id}` : `Shared a story`
+                };
+
+                return sendMessage(uid, JSON.stringify(shareContent), post ? 'post_share' : 'story_share');
+            }));
             alert('Sent!');
             onClose();
         } catch (e) {

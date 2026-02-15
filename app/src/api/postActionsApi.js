@@ -53,15 +53,23 @@ export const copyLink = async (postId) => {
 };
 
 export const fetchPostById = async (postId) => {
-    const response = await api.get(`/posts/${postId}`);
-    return response.data;
+    try {
+        const response = await api.get(`/posts/${postId}`);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            const response = await api.get(`/reels/${postId}`);
+            return response.data;
+        }
+        throw error;
+    }
 };
 
 export const searchUsers = async (query) => {
     return api.get(`/search/users?q=${query}`);
 };
 
-export const sendMessage = async (userId, content) => {
+export const sendMessage = async (userId, content, type = 'text') => {
     // Intercept Mock
     if (String(userId).startsWith('mock-')) {
         return { status: 'success' };
@@ -70,7 +78,7 @@ export const sendMessage = async (userId, content) => {
     return api.post('/messages/send', {
         receiverId: userId,
         content,
-        type: 'text'
+        type: type
     });
 };
 

@@ -67,6 +67,7 @@ async function updateDB(config, label) {
                 if (table === 'Posts' || table === 'posts') columnsToCheck = ['mediaUrl', 'thumbnailUrl'];
                 if (table === 'UserProfiles' || table === 'user_profiles') columnsToCheck = ['profilePicture'];
                 if (table === 'Stories' || table === 'stories') columnsToCheck = ['mediaUrl'];
+                if (table === 'Reels' || table === 'reels') columnsToCheck = ['videoUrl', 'imageUrl'];
             }
 
             if (columnsToCheck.length > 0) {

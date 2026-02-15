@@ -3,7 +3,7 @@ import { X, Search, Send, Check, Copy } from 'lucide-react';
 import { searchUsers, sendPostViaDM } from '../api/shareApi';
 import ReactDOM from 'react-dom';
 
-const SharePostModal = ({ postId, mediaUrl, onClose }) => {
+const SharePostModal = ({ postId, mediaUrl, onClose, isReel = false }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -31,7 +31,11 @@ const SharePostModal = ({ postId, mediaUrl, onClose }) => {
 
     const handleSend = async (user) => {
         try {
-            await sendPostViaDM(user.userId || user.id, postId);
+            await sendPostViaDM(user.userId || user.id, postId, isReel ? 'reel' : 'post', {
+                username: username,
+                mediaUrl: mediaUrl,
+                caption: caption
+            });
             setSentUsers(prev => new Set(prev).add(user.userId || user.id));
         } catch (error) {
             console.error("Failed to send", error);

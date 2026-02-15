@@ -5,8 +5,10 @@ import {
     reportPost, deletePost, copyLink,
     hideLikeCount, toggleComments, getEmbedCode
 } from '../api/postActionsApi';
-import { blockUser, restrictUser } from '../api/userApi';
+import { restrictUser } from '../api/userApi';
+import { blockUser } from '../api/privacyApi';
 import * as adApi from '../api/adApi';
+import BlockConfirmModal from './BlockConfirmModal';
 
 const PostOptionsMenu = ({
     post,
@@ -17,21 +19,22 @@ const PostOptionsMenu = ({
     onShare,
     onUpdatePost,
     onReport,
-    isFollowing = false // New prop to determine if user is following the post owner
+    isFollowing = false
 }) => {
     const navigate = useNavigate();
     const menuRef = useRef(null);
     const [loading, setLoading] = useState(false);
+    const [showBlockConfirm, setShowBlockConfirm] = useState(false);
 
     // Close on click outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target) && !loading) {
+            if (menuRef.current && !menuRef.current.contains(event.target) && !loading && !showBlockConfirm) {
                 onClose();
             }
         };
         const handleEscape = (event) => {
-            if (event.key === 'Escape' && !loading) onClose();
+            if (event.key === 'Escape' && !loading && !showBlockConfirm) onClose();
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -43,7 +46,7 @@ const PostOptionsMenu = ({
             document.removeEventListener('keydown', handleEscape);
             document.body.style.overflow = 'unset';
         };
-    }, [onClose, loading]);
+    }, [onClose, loading, showBlockConfirm]);
 
     const handleAction = async (action, label) => {
         if (loading) return;
@@ -64,6 +67,9 @@ const PostOptionsMenu = ({
             case 'aboutAccount':
                 navigate(`/profile/${post.username}`);
                 onClose();
+                return;
+            case 'block':
+                setShowBlockConfirm(true);
                 return;
             case 'cancel':
                 onClose();
@@ -133,15 +139,8 @@ const PostOptionsMenu = ({
                     }
                     onClose();
                     break;
-                case 'block':
-                    if (window.confirm(`Block @${post.username}? They won't be able to find your profile, posts or story on Instagram. Instagram won't let them know you blocked them.`)) {
-                        await blockUser(post.userId);
-                        alert(`Blocked @${post.username}`);
-                        // Optionally trigger a refresh or hide post
-                        if (onDeleteSuccess) onDeleteSuccess(post.id); // Re-using this to remove post from view
-                    }
-                    onClose();
-                    break;
+                // block case removed from here
+
                 case 'restrict':
                     if (window.confirm(`Restrict @${post.username}?`)) {
                         await restrictUser(post.userId);
@@ -191,6 +190,20 @@ const PostOptionsMenu = ({
         }
     };
 
+    const handleBlockConfirm = async () => {
+        try {
+            await blockUser(post.userId);
+            alert(`Blocked @${post.username}`);
+            if (onDeleteSuccess) onDeleteSuccess(post.id); // Re-using this to remove post from view
+        } catch (error) {
+            console.error('Block failed', error);
+            alert('Failed to block user');
+        } finally {
+            setShowBlockConfirm(false);
+            onClose(); // Close the main menu after block action
+        }
+    };
+
     const ActionButton = ({ label, action, color = 'text-black dark:text-white', isBold = false }) => (
         <button
             onClick={() => handleAction(action, label)}
@@ -202,45 +215,56 @@ const PostOptionsMenu = ({
     );
 
     return ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
-            <div
-                ref={menuRef}
-                className="bg-white dark:bg-[#262626] w-full max-w-[400px] rounded-xl flex flex-col items-center overflow-hidden shadow-2xl animate-zoom-in text-black dark:text-white"
-            >
-                {loading && (
-                    <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            <span className="text-sm">Processing...</span>
-                        </div>
-                    </div>
-                )}
+        <>
+            {!showBlockConfirm && ( // Conditionally render the main menu
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
+                    <div
+                        ref={menuRef}
+                        className="bg-white dark:bg-[#262626] w-full max-w-[400px] rounded-xl flex flex-col items-center overflow-hidden shadow-2xl animate-zoom-in text-black dark:text-white"
+                    >
+                        {loading && (
+                            <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
+                                <div className="flex flex-col items-center gap-2">
+                                    <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span className="text-sm">Processing...</span>
+                                </div>
+                            </div>
+                        )}
 
-                {isOwnPost ? (
-                    <>
-                        <ActionButton label="Delete" action="delete" color="text-[#ed4956]" isBold />
-                        <ActionButton label="Edit" action="edit" />
-                        <ActionButton label={post.hideLikes ? "Unhide like count" : "Hide like count"} action="hideLikes" />
-                        <ActionButton label={post.commentsDisabled ? "Turn on commenting" : "Turn off commenting"} action="toggleComments" />
-                        <ActionButton label="Go to post" action="goToPost" />
-                        <ActionButton label="Share to..." action="share" />
-                        <ActionButton label="Copy link" action="copyLink" />
-                        <ActionButton label="Embed" action="embed" />
-                        <ActionButton label="About this account" action="aboutAccount" />
-                        <ActionButton label="Cancel" action="cancel" />
-                    </>
-                ) : (
-                    <>
-                        <ActionButton label="Block" action="block" color="text-[#ed4956]" isBold />
-                        <ActionButton label="Restrict" action="restrict" color="text-[#ed4956]" isBold />
-                        <ActionButton label="Report" action="report" color="text-[#ed4956]" isBold />
-                        <ActionButton label="About this account" action="aboutAccount" />
-                        <ActionButton label="Copy profile URL" action="copyProfileUrl" />
-                        <ActionButton label="Cancel" action="cancel" />
-                    </>
-                )}
-            </div>
-        </div>,
+                        {isOwnPost ? (
+                            <>
+                                <ActionButton label="Delete" action="delete" color="text-[#ed4956]" isBold />
+                                <ActionButton label="Edit" action="edit" />
+                                <ActionButton label={post.hideLikes ? "Unhide like count" : "Hide like count"} action="hideLikes" />
+                                <ActionButton label={post.commentsDisabled ? "Turn on commenting" : "Turn off commenting"} action="toggleComments" />
+                                <ActionButton label="Go to post" action="goToPost" />
+                                <ActionButton label="Share to..." action="share" />
+                                <ActionButton label="Copy link" action="copyLink" />
+                                <ActionButton label="Embed" action="embed" />
+                                <ActionButton label="About this account" action="aboutAccount" />
+                                <ActionButton label="Cancel" action="cancel" />
+                            </>
+                        ) : (
+                            <>
+                                <ActionButton label="Block" action="block" color="text-[#ed4956]" isBold />
+                                <ActionButton label="Restrict" action="restrict" color="text-[#ed4956]" isBold />
+                                <ActionButton label="Report" action="report" color="text-[#ed4956]" isBold />
+                                <ActionButton label="About this account" action="aboutAccount" />
+                                <ActionButton label="Copy profile URL" action="copyProfileUrl" />
+                                <ActionButton label="Cancel" action="cancel" />
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <BlockConfirmModal
+                isOpen={showBlockConfirm}
+                onClose={() => { setShowBlockConfirm(false); }} // Only close the modal, not the main menu yet
+                onConfirm={handleBlockConfirm}
+                username={post.username}
+            />
+        </>,
         document.body
     );
 };
