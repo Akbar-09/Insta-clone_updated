@@ -5,6 +5,49 @@ const { publishEvent } = require('../config/rabbitmq');
 const sequelize = require('../config/database');
 const { Op } = require('sequelize');
 
+const getPostsByUsers = async (req, res) => {
+    try {
+        const { userIds, limit = 20, offset = 0 } = req.body;
+        const currentUserId = req.headers['x-user-id'] || req.body.currentUserId;
+
+        if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+            return res.json({ status: 'success', data: [] });
+        }
+
+        const posts = await Post.findAll({
+            where: {
+                userId: {
+                    [Op.in]: userIds
+                }
+            },
+            order: [['createdAt', 'DESC']],
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            raw: true
+        });
+
+        // Add isLiked status if currentUserId is present
+        let likedPostIds = new Set();
+        if (currentUserId) {
+            const likes = await Like.findAll({
+                where: { userId: currentUserId, postId: posts.map(p => p.id) },
+                attributes: ['postId']
+            });
+            likedPostIds = new Set(likes.map(l => l.postId));
+        }
+
+        const postsWithLikeStatus = posts.map(post => ({
+            ...post,
+            isLiked: likedPostIds.has(post.id)
+        }));
+
+        res.json({ status: 'success', data: postsWithLikeStatus });
+    } catch (error) {
+        console.error('Get Posts By Users Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 // Set up associations
 Post.hasMany(Like, { foreignKey: 'postId' });
 Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
@@ -23,7 +66,7 @@ const createPost = async (req, res) => {
             username,
             caption,
             mediaUrl,
-            mediaType
+            mediaType: mediaType ? mediaType.toUpperCase() : 'IMAGE'
         });
 
         // Publish Event
@@ -40,42 +83,128 @@ const getExplorePosts = async (req, res) => {
     try {
         const { limit = 20, offset = 0 } = req.query;
         const currentUserId = req.headers['x-user-id'] || req.query.userId;
+        const limitCnt = parseInt(limit);
+        const offsetCnt = parseInt(offset);
 
-        // Fetch posts
+        // Fetch randomized posts (exclude problematic external URLs)
         let posts = [];
         try {
             posts = await Post.findAll({
+                where: {
+                    [Op.and]: [
+                        { mediaUrl: { [Op.notILike]: '%w3schools%' } },
+                        { mediaUrl: { [Op.notILike]: '%googleapis.com%' } },
+                        { mediaUrl: { [Op.notILike]: '%storage.googleapis.com%' } },
+                        { mediaUrl: { [Op.notILike]: '%gtv-videos-bucket%' } }
+                    ]
+                },
                 order: [
-                    ['likesCount', 'DESC'],
-                    ['commentsCount', 'DESC'],
-                    ['createdAt', 'DESC']
+                    [sequelize.literal('RANDOM()')]
                 ],
-                limit: parseInt(limit),
-                offset: parseInt(offset),
+                limit: Math.ceil(limitCnt / 2),
                 raw: true
             });
+            // Mark them as type POST
+            posts = posts.map(p => ({ ...p, type: 'POST' }));
         } catch (dbError) {
-            console.error('DB FindAll Error:', dbError);
+            console.error('DB FindAll Posts Error:', dbError);
             posts = [];
         }
 
-        if (!posts || !Array.isArray(posts)) {
-            posts = [];
+        // Fetch randomized reels (exclude problematic external URLs)
+        let reels = [];
+        try {
+            const [results] = await sequelize.query(`
+                SELECT 
+                    id, 
+                    "userId", 
+                    username, 
+                    caption, 
+                    "videoUrl" as "mediaUrl", 
+                    "likesCount", 
+                    "commentsCount", 
+                    "createdAt",
+                    'VIDEO' as "mediaType",
+                    'REEL' as type
+                FROM "Reels" 
+                WHERE "isHidden" = false 
+                AND "videoUrl" NOT ILIKE '%w3schools%'
+                AND "videoUrl" NOT ILIKE '%googleapis.com%'
+                AND "videoUrl" NOT ILIKE '%storage.googleapis.com%'
+                AND "videoUrl" NOT ILIKE '%gtv-videos-bucket%'
+                ORDER BY RANDOM() 
+                LIMIT ${Math.ceil(limitCnt / 2)}
+            `);
+            reels = results;
+        } catch (dbError) {
+            console.error('DB FindAll Reels Error:', dbError);
+            reels = [];
         }
+
+        // Combine and Deduplicate
+        const seenUrls = new Set();
+        const combined = [];
+
+        // Helper to normalize URL for matching
+        const normalizeUrl = (url) => {
+            if (!url) return '';
+            let n = url.replace(/^https?:\/\/[^\/]+/, '');
+            if (n.includes('/uploads/')) n = n.substring(n.indexOf('/uploads/'));
+            return n;
+        };
+
+        // Prioritize Reels for Explore if they exist
+        reels.forEach(r => {
+            const norm = normalizeUrl(r.mediaUrl);
+            if (!seenUrls.has(norm)) {
+                combined.push(r);
+                seenUrls.add(norm);
+            }
+        });
+
+        posts.forEach(p => {
+            const norm = normalizeUrl(p.mediaUrl);
+            if (!seenUrls.has(norm)) {
+                combined.push(p);
+                seenUrls.add(norm);
+            }
+        });
+
+        // Shuffle mixed content
+        combined.sort(() => Math.random() - 0.5);
 
         // Add isLiked status if user is logged in
         let likedPostIds = new Set();
-        if (currentUserId && posts.length > 0) {
-            const likes = await Like.findAll({
-                where: { userId: currentUserId, postId: posts.map(p => p.id) },
-                attributes: ['postId']
-            });
-            likedPostIds = new Set(likes.map(l => l.postId));
+        let likedReelIds = new Set();
+
+        if (currentUserId && combined.length > 0) {
+            const postIds = combined.filter(c => c.type === 'POST').map(c => c.id);
+            if (postIds.length > 0) {
+                const likes = await Like.findAll({
+                    where: { userId: currentUserId, postId: postIds },
+                    attributes: ['postId']
+                });
+                likedPostIds = new Set(likes.map(l => l.postId));
+            }
+
+            const reelIds = combined.filter(c => c.type === 'REEL').map(c => c.id);
+            if (reelIds.length > 0) {
+                try {
+                    const [reelLikes] = await sequelize.query(`
+                        SELECT "reelId" FROM "ReelLikes" 
+                        WHERE "userId" = ${parseInt(currentUserId)} 
+                        AND "reelId" IN (${reelIds.join(',')})
+                    `);
+                    likedReelIds = new Set(reelLikes.map(l => l.reelId));
+                } catch (e) {
+                    console.error('ReelLikes Fetch Error:', e);
+                }
+            }
         }
 
-        const data = posts.map(post => ({
-            ...post,
-            isLiked: likedPostIds.has(post.id)
+        const data = combined.map(item => ({
+            ...item,
+            isLiked: item.type === 'POST' ? likedPostIds.has(item.id) : likedReelIds.has(item.id)
         }));
 
         res.json({ status: 'success', data });
@@ -124,19 +253,68 @@ const getPosts = async (req, res) => {
 const getPostById = async (req, res) => {
     try {
         const postId = req.params.id;
-        const userId = req.headers['x-user-id'] || req.query.userId;
+        const currentUserId = req.headers['x-user-id'] || req.query.userId;
 
-        const post = await Post.findByPk(postId, { raw: true });
+        let post = await Post.findByPk(postId, { raw: true });
+        let isReel = false;
+
+        // Fallback to Reels if not found in regular posts
+        if (!post) {
+            try {
+                const [reelResults] = await sequelize.query(`
+                    SELECT *, 'VIDEO' as "mediaType", 'REEL' as type 
+                    FROM "Reels" 
+                    WHERE id = ? LIMIT 1
+                `, {
+                    replacements: [postId]
+                });
+
+                if (reelResults && reelResults.length > 0) {
+                    const reel = reelResults[0];
+                    post = {
+                        ...reel,
+                        mediaUrl: reel.videoUrl, // Unify for frontend
+                        type: 'REEL'
+                    };
+                    isReel = true;
+                }
+            } catch (reelErr) {
+                console.error('Reel Fallback Error:', reelErr);
+            }
+        }
 
         if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
+            return res.status(404).json({ message: 'Post/Reel not found' });
         }
 
         let isLiked = false;
-        if (userId) {
-            const like = await Like.findOne({ where: { userId, postId } });
-            isLiked = !!like;
+        if (currentUserId) {
+            if (isReel) {
+                try {
+                    const [reelLikes] = await sequelize.query(`
+                        SELECT id FROM "ReelLikes" 
+                        WHERE "userId" = ? AND "reelId" = ? LIMIT 1
+                    `, {
+                        replacements: [currentUserId, postId]
+                    });
+                    isLiked = reelLikes.length > 0;
+                } catch (e) {
+                    console.error('ReelLike check error:', e);
+                }
+            } else {
+                const like = await Like.findOne({ where: { userId: currentUserId, postId } });
+                isLiked = !!like;
+            }
         }
+
+        // Publish View Event for Analytics (only for regular posts or if needed for reels)
+        await publishEvent('POST_VIEWED', {
+            ownerId: post.userId,
+            contentId: post.id,
+            viewerId: currentUserId || null,
+            type: isReel ? 'REEL' : 'POST',
+            timestamp: new Date()
+        });
 
         res.json({ status: 'success', data: { ...post, isLiked } });
     } catch (error) {
@@ -208,19 +386,31 @@ const deletePost = async (req, res) => {
         const postId = req.params.id;
         const userId = req.headers['x-user-id'] || req.body.userId;
 
+        console.log(`[PostService] Delete request for post ${postId} by user ${userId}`);
+
         const post = await Post.findByPk(postId);
         if (!post) {
+            console.log(`[PostService] Post ${postId} not found for deletion.`);
             // Idempotent success: post already gone
             return res.status(200).json({ status: 'success', message: 'Post already deleted' });
         }
 
+        console.log(`[PostService] Post found. Owner: ${post.userId}, Requestor: ${userId}`);
+
         if (String(post.userId) !== String(userId)) {
+            console.log(`[PostService] Unauthorized deletion attempt. Owner: ${post.userId}, Requestor: ${userId}`);
             return res.status(403).json({ message: 'Unauthorized' });
         }
 
+        const mediaUrl = post.mediaUrl;
         await post.destroy();
-        // Also delete likes, comments etc ideally
-        // But cascading might handle or just leave for mvp
+        console.log(`[PostService] Post ${postId} destroyed.`);
+
+        // Publish Event for media cleanup
+        await publishEvent('POST_DELETED', {
+            postId,
+            mediaUrl
+        });
 
         res.json({ status: 'success', message: 'Post deleted' });
     } catch (error) {
@@ -633,5 +823,6 @@ module.exports = {
     reportPost,
     getEmbedCode,
     getActivityLikes,
-    getActivityPosts
+    getActivityPosts,
+    getPostsByUsers
 };

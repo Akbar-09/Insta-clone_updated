@@ -6,12 +6,12 @@ const Review = require('../models/Review');
 
 const createComment = async (req, res) => {
     try {
-        const { postId, text } = req.body;
+        const { postId, text, parentId, type, mediaUrl, targetType } = req.body;
         const userId = req.headers['x-user-id'] || req.body.userId;
         const username = req.headers['x-user-username'] || req.body.username;
         const userAvatar = req.body.userAvatar; // Avatar usually not in headers, maybe body or fetch from user service (but simplified here)
 
-        if (!postId || !userId || !text) {
+        if (!postId || !userId || (!text && !mediaUrl)) {
             return res.status(400).json({ status: 'error', message: 'Missing required fields' });
         }
 
@@ -19,8 +19,12 @@ const createComment = async (req, res) => {
             postId,
             userId,
             username,
-            text,
-            likesCount: 0
+            text: text || '',
+            likesCount: 0,
+            parentId: parentId || null,
+            type: type || 'text',
+            mediaUrl: mediaUrl || null,
+            targetType: targetType || 'post'
         });
 
         // Publish Event

@@ -11,14 +11,18 @@ export const getComments = async (postId) => {
 };
 
 // Add a comment to a post
-export const addComment = async (postId, text, user) => {
+export const addComment = async (postId, text, user, parentId = null, extra = {}) => {
     try {
         const response = await api.post(`/comments`, {
             postId,
             text,
-            userId: user.id,
+            userId: user.id || user.userId,
             username: user.username,
-            userAvatar: user.profilePicture // Assuming this exists on user object
+            userAvatar: user.profilePicture || user.avatarUrl,
+            parentId,
+            type: extra.type || 'text',
+            mediaUrl: extra.mediaUrl || null,
+            targetType: extra.targetType || 'post'
         });
         return response.data;
     } catch (error) {

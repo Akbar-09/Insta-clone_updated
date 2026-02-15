@@ -16,12 +16,16 @@ const services = [
     { name: 'socket-service', dir: 'socket-service' },
     { name: 'media-service', dir: 'media-service' },
     { name: 'ad-service', dir: 'ad-service' },
+    { name: 'insight-service', dir: 'insight-service' },
     { name: 'live-service', dir: 'live-service' },
-    { name: 'admin-service', dir: 'admin-service' }
+    { name: 'admin-service', dir: 'admin-service' },
+    { name: 'help-service', dir: 'help-service' }
 ];
 
 
-console.log('Starting services...');
+const fs = require('fs');
+const logDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
 
 services.forEach(service => {
     const servicePath = path.join(__dirname, service.dir);
@@ -29,8 +33,10 @@ services.forEach(service => {
 
     const port = getPort(service.name);
 
-    // On Windows, 'npm' is an executable script (npm.cmd), so we need shell: true
-    // Using 'npm run dev' to leverage nodemon if available, or just index.js
+    // Write to log files
+    const stdoutLog = fs.createWriteStream(path.join(logDir, `${service.name}.log`), { flags: 'a' });
+    const stderrLog = fs.createWriteStream(path.join(logDir, `${service.name}-error.log`), { flags: 'a' });
+
     const child = spawn('npm', ['run', 'dev'], {
         cwd: servicePath,
         shell: true,
@@ -38,7 +44,8 @@ services.forEach(service => {
     });
 
     child.stdout.on('data', (data) => {
-        // Prefix log with service name
+        stdoutLog.write(data);
+        // Prefix log with service name for console visibility
         const lines = data.toString().split('\n');
         lines.forEach(line => {
             if (line.trim()) console.log(`[${service.name}] ${line.trim()}`);
@@ -46,11 +53,14 @@ services.forEach(service => {
     });
 
     child.stderr.on('data', (data) => {
+        stderrLog.write(data);
         console.error(`[${service.name} ERROR] ${data}`);
     });
 
     child.on('error', (err) => {
-        console.error(`[${service.name} FAILED] ${err.message}`);
+        const errMsg = `[${service.name} FAILED] ${err.message}\n`;
+        stderrLog.write(errMsg);
+        console.error(errMsg);
     });
 });
 
@@ -71,7 +81,9 @@ function getPort(name) {
         'media-service': 5013,
         'ad-service': 5014,
         'live-service': 5015,
-        'admin-service': 5016
+        'insight-service': 5017,
+        'admin-service': 5016,
+        'help-service': 5060
     };
     return ports[name] || 0; // 0 will let OS assign random port if not found, but we want our ports
 }

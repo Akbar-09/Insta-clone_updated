@@ -28,6 +28,7 @@ import ExploreControl from './pages/explore';
 // Systems
 import RoleManagement from './pages/roles';
 import AuditLogs from './pages/logs';
+import Monitoring from './pages/monitoring';
 
 // Reports
 import Reports from './pages/reports';
@@ -47,6 +48,7 @@ import Settings from './pages/settings';
 import LanguageManagement from './pages/settings/Languages';
 import NotificationManagement from './pages/notifications';
 import CMSPages from './pages/cms';
+import HelpCentreCMS from './pages/help-centre/HelpCentreCMS';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -91,6 +93,7 @@ function App() {
 
                         {/* Settings & CMS */}
                         <Route path="cms" element={<CMSPages />} />
+                        <Route path="help-centre-cms" element={<HelpCentreCMS />} />
                         <Route path="languages" element={<LanguageManagement />} />
                         <Route path="settings" element={<Settings />} />
 
@@ -106,6 +109,7 @@ function App() {
                         {/* System */}
                         <Route path="roles" element={<RoleManagement />} />
                         <Route path="logs" element={<AuditLogs />} />
+                        <Route path="monitoring" element={<Monitoring />} />
                     </Route>
                 </Routes>
             </BrowserRouter>

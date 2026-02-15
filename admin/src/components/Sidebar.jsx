@@ -21,7 +21,8 @@ import {
     Compass,
     Lock,
     Activity,
-    Layers
+    Layers,
+    Server
 } from 'lucide-react';
 
 import jaadoeLogo from '../assets/jaadoe_logo.svg';
@@ -83,12 +84,13 @@ const Sidebar = () => {
             title: 'System & Config',
             key: 'settings',
             items: [
-                { name: 'CMS & Pages', icon: <FileEdit size={20} />, path: '/cms' },
+                { name: 'Help Centre', icon: <Layers size={20} />, path: '/help-centre-cms' },
                 { name: 'Notifications', icon: <Bell size={20} />, path: '/notifications' },
                 { name: 'Languages', icon: <Globe size={20} />, path: '/languages' },
                 { name: 'Platform Settings', icon: <Settings size={20} />, path: '/settings' },
                 { name: 'Roles & Perms', icon: <Lock size={20} />, path: '/roles' },
-                { name: 'Audit Logs', icon: <Activity size={20} />, path: '/logs' }
+                { name: 'Audit Logs', icon: <Activity size={20} />, path: '/logs' },
+                { name: 'Monitoring', icon: <Server size={20} />, path: '/monitoring' }
             ]
         }
     ];

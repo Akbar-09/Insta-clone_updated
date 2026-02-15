@@ -1,10 +1,11 @@
 import { Grid, Bookmark, UserSquare2, Clapperboard } from 'lucide-react';
 
-const ProfileTabs = ({ activeTab, setActiveTab }) => {
+const ProfileTabs = ({ activeTab, setActiveTab, isOwnProfile }) => {
     const tabs = [
         { id: 'posts', label: 'POSTS', icon: Grid },
-        // { id: 'saved', label: 'SAVED', icon: Bookmark }, // Saved tab logic if available
-        // { id: 'tagged', label: 'TAGGED', icon: UserSquare2 }, // Tagged tab logic if available
+        ...(!isOwnProfile ? [{ id: 'reels', label: 'REELS', icon: Clapperboard }] : []),
+        ...(isOwnProfile ? [{ id: 'saved', label: 'SAVED', icon: Bookmark }] : []),
+        { id: 'tagged', label: 'TAGGED', icon: UserSquare2 },
     ];
 
     return (
@@ -13,7 +14,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
                 <div
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-1.5 h-[52px] -mt-px px-0 mx-8 cursor-pointer transition-colors ${activeTab === tab.id
+                    className={`flex items-center gap-1.5 h-[52px] -mt-px px-0 mx-4 md:mx-8 cursor-pointer transition-colors ${activeTab === tab.id
                         ? 'border-t border-text-primary text-text-primary'
                         : 'text-text-secondary border-t border-transparent hover:text-text-primary'
                         }`}
@@ -22,14 +23,6 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
                     <span>{tab.label}</span>
                 </div>
             ))}
-            <div onClick={() => setActiveTab('saved')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-0 mx-8 cursor-pointer transition-colors ${activeTab === 'saved' ? 'border-t border-text-primary text-text-primary' : 'text-text-secondary border-t border-transparent hover:text-text-primary'}`}>
-                <Bookmark size={12} strokeWidth={activeTab === 'saved' ? 3 : 2} />
-                <span>SAVED</span>
-            </div>
-            <div onClick={() => setActiveTab('tagged')} className={`flex items-center gap-1.5 h-[52px] -mt-px px-0 mx-8 cursor-pointer transition-colors ${activeTab === 'tagged' ? 'border-t border-text-primary text-text-primary' : 'text-text-secondary border-t border-transparent hover:text-text-primary'}`}>
-                <UserSquare2 size={12} strokeWidth={activeTab === 'tagged' ? 3 : 2} />
-                <span>TAGGED</span>
-            </div>
         </div>
     );
 };

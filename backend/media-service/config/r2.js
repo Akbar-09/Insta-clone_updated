@@ -1,0 +1,27 @@
+const { S3Client } = require('@aws-sdk/client-s3');
+require('dotenv').config();
+
+const accountId = process.env.R2_ACCOUNT_ID;
+const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+
+if (!accountId || !accessKeyId || !secretAccessKey) {
+    console.warn('WARNING: Cloudflare R2 credentials missing. Uploads will fail.');
+}
+
+const r2Client = new S3Client({
+    region: 'auto',
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    forcePathStyle: true, // Crucial for R2 to avoid SSL errors with bucket subdomains
+    credentials: {
+        accessKeyId: accessKeyId || 'placeholder',
+        secretAccessKey: secretAccessKey || 'placeholder',
+    },
+});
+
+const isConfigured = accountId &&
+    !accountId.toLowerCase().includes('your_') &&
+    accessKeyId &&
+    !accessKeyId.toLowerCase().includes('your_');
+
+module.exports = { r2Client, isConfigured };

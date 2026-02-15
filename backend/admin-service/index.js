@@ -1,3 +1,4 @@
+// Admin Service initialized (Secret updated)
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -66,6 +67,8 @@ app.use('/cms', cmsRoutes);
 app.use('/notifications', adminNotificationRoutes);
 app.use('/messages', dmSafetyRoutes);
 app.use('/dm-oversight', dmOversightRoutes);
+const monitoringRoutes = require('./routes/monitoringRoutes');
+app.use('/monitoring', monitoringRoutes);
 app.use('/default-avatars', mediaDefaultRoutes);
 
 // Health check

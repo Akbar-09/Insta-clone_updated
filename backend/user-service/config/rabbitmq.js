@@ -14,26 +14,52 @@ const connectRabbitMQ = async () => {
         // Create queue for User Service
         const q = await channel.assertQueue('user-service-queue', { durable: true });
 
-        // Bind queue to USER_CREATED
+        // Bind queue to USER_CREATED and MEDIA.OPTIMIZED
         await channel.bindQueue(q.queue, exchange, 'USER_CREATED');
+        await channel.bindQueue(q.queue, exchange, 'MEDIA.OPTIMIZED');
 
-        console.log('Listening for USER_CREATED events...');
+        console.log('User Service listening for events...');
 
         channel.consume(q.queue, async (msg) => {
             if (msg.content) {
                 const data = JSON.parse(msg.content.toString());
-                console.log('Received USER_CREATED:', data);
+                const routingKey = msg.fields.routingKey;
+                console.log(`Received ${routingKey}:`, data);
 
                 try {
-                    // Create Profile
-                    await UserProfile.create({
-                        userId: data.id,
-                        username: data.username,
-                        fullName: data.fullName,
-                    });
-                    console.log('User Profile Created');
+                    if (routingKey === 'USER_CREATED') {
+                        // Upsert Profile (Update if exists, Create if not)
+                        const [profile, created] = await UserProfile.findOrCreate({
+                            where: { userId: data.id },
+                            defaults: {
+                                username: data.username,
+                                fullName: data.fullName || data.username,
+                            }
+                        });
+
+                        if (!created) {
+                            console.log(`User Profile for ID ${data.id} already exists (placeholder found). Updating profile...`);
+                            profile.username = data.username;
+                            profile.fullName = data.fullName || data.username;
+                            profile.createdAt = new Date(); // Reset creation date to now since this is a new registration
+                            await profile.save();
+                        }
+                        console.log('User Profile Synced');
+                    } else if (routingKey === 'MEDIA.OPTIMIZED') {
+                        const { originalUrl, optimizedUrl } = data;
+                        console.log(`Optimizing profile pic update: ${originalUrl} -> ${optimizedUrl}`);
+
+                        // Update all users who were using the original temp URL
+                        const [updatedCount] = await UserProfile.update(
+                            { profilePic: optimizedUrl },
+                            { where: { profilePic: originalUrl } }
+                        );
+                        if (updatedCount > 0) {
+                            console.log(`Updated ${updatedCount} user profiles with optimized pic.`);
+                        }
+                    }
                 } catch (err) {
-                    console.error('Error creating profile:', err);
+                    console.error('Error handling event:', err);
                 }
 
                 channel.ack(msg);

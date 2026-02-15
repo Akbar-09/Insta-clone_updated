@@ -25,19 +25,23 @@ const Messages = () => {
         setSelectedConversation,
         startConversationWithUser,
         handleSendMessage,
+        updateOptimisticMessage,
+        commitMessage,
         isTyping,
         handleTyping,
-        refreshConversations
+        refreshConversations,
+        loadingConversations
     } = useMessages(socket, user?.id, conversationId);
 
     // Handle incoming chat requests (e.g. from Profile Message button)
+    // Handle incoming chat requests (e.g. from Profile Message button)
     useEffect(() => {
-        if (location.state?.startChatWith) {
+        if (!loadingConversations && location.state?.startChatWith) {
             startConversationWithUser(location.state.startChatWith);
             // Clear state to avoid re-triggering on refreshes or subsequent navigations
             navigate(location.pathname, { replace: true, state: {} });
         }
-    }, [location.state, startConversationWithUser, navigate, location.pathname]);
+    }, [location.state, startConversationWithUser, navigate, location.pathname, loadingConversations]);
 
     const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);
     const [showInfoPanel, setShowInfoPanel] = useState(false);
@@ -85,6 +89,8 @@ const Messages = () => {
                             messages={messages}
                             currentUser={user}
                             onSendMessage={handleSendMessage}
+                            updateOptimisticMessage={updateOptimisticMessage}
+                            commitMessage={commitMessage}
                             onToggleInfo={() => setShowInfoPanel(!showInfoPanel)}
                             isTyping={isTyping}
                             handleTyping={handleTyping}

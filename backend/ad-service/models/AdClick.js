@@ -9,12 +9,13 @@ const AdClick = sequelize.define('AdClick', {
         primaryKey: true,
     },
     adId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+        type: DataTypes.UUID,
+        allowNull: false,
         references: {
-            model: Ad,
+            model: 'ads',
             key: 'id'
-        }
+        },
+        onDelete: 'CASCADE'
     },
     clickerId: {
         type: DataTypes.INTEGER,
@@ -24,6 +25,9 @@ const AdClick = sequelize.define('AdClick', {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     }
+}, {
+    tableName: 'ad_clicks',
+    timestamps: true
 });
 
 // Association

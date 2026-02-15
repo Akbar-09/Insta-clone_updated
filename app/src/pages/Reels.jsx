@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Music, Volume2, VolumeX, ChevronUp, ChevronDown, X } from 'lucide-react';
 import { reelsApi } from '../services/reelsApi';
 import { usePostLikes } from '../hooks/usePostLikes';
@@ -25,7 +25,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
         handleDoubleTap,
         isAnimating,
         setIsAnimating
-    } = usePostLikes(reel);
+    } = usePostLikes(reel, null, 'reel');
 
     // Local states
     const [showComments, setShowComments] = useState(false);
@@ -84,8 +84,45 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
         }
     };
 
+    const getProxiedUrl = (url) => {
+        if (!url) return '';
+        if (typeof url !== 'string') return url;
+
+        // Handle bare filenames (likely R2/Media Service uploads)
+        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
+            return `/api/v1/media/files/${url}`;
+        }
+
+        try {
+            // Remove full origin if it matches any local IP/Port variations to make it relative
+            // This handles localhost, 127.0.0.1, and any 192.168.1.x IP with common dev ports
+            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
+
+            if (cleanedUrl !== url) {
+                return cleanedUrl;
+            }
+
+            // If it's an R2 URL directly, try to convert it to our proxied endpoint
+            if (url.includes('r2.dev')) {
+                const parts = url.split('.dev/');
+                if (parts.length > 1) {
+                    return `/api/v1/media/files/${parts[1]}`;
+                }
+            }
+
+            // Ensure media files are always routed through the api/v1 prefix
+            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
+                return url.replace('/media/files', '/api/v1/media/files');
+            }
+        } catch (e) {
+            console.warn('URL proxying failed:', e);
+        }
+
+        return url;
+    };
+
     return (
-        <div className="flex flex-col items-center snap-start h-screen group-snap-item">
+        <div className="flex flex-col items-center h-screen">
             <div className={`flex items-end gap-16 relative h-full w-full max-h-screen transition-all duration-500 ease-in-out px-4 pb-4 ${showComments ? 'justify-center' : 'justify-center'}`}>
 
                 {/* Video & Actions Wrapper */}
@@ -95,7 +132,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
                     <div className="w-full h-full bg-black rounded-xl overflow-hidden shadow-2xl relative border border-white/10">
                         <video
                             ref={videoRef}
-                            src={reel.videoUrl}
+                            src={getProxiedUrl(reel.videoUrl)}
                             className="w-full h-full object-cover cursor-pointer"
                             loop
                             muted={isMuted}
@@ -216,7 +253,10 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
                     <SharePostModal
                         postId={reel.id}
                         mediaUrl={reel.videoUrl}
+                        username={reel.username}
+                        caption={reel.caption}
                         onClose={() => setShowShareModal(false)}
+                        isReel={true}
                     />
                 )}
 
@@ -281,6 +321,7 @@ const NavButton = ({ icon: Icon, onClick }) => (
 );
 
 const Reels = () => {
+    const { reelId } = useParams();
     const { user } = useContext(AuthContext);
     const [muted, setMuted] = useState(true);
     const [reels, setReels] = useState([]);
@@ -292,34 +333,61 @@ const Reels = () => {
     useEffect(() => {
         const fetchReelsAndProfiles = async () => {
             try {
-                // 1. Fetch Reels
+                let fetchedReels = [];
+
+                // 1. Fetch Standard Reels Feed
+                // If deep linking, we might want to fetch recommendations based on that reel, but for now just mixed feed
                 const data = await reelsApi.getReels();
                 if (data && data.data) {
-                    const fetchedReels = data.data;
-                    setReels(fetchedReels);
+                    fetchedReels = data.data;
+                }
 
-                    // 2. Extract unique user IDs
-                    const userIds = [...new Set(fetchedReels.map(r => r.userId))];
+                // 2. Handle specific reel request
+                if (reelId) {
+                    const existingIndex = fetchedReels.findIndex(r => String(r.id) === String(reelId));
 
-                    if (userIds.length > 0) {
+                    if (existingIndex !== -1) {
+                        // Move to top
+                        const targetReel = fetchedReels[existingIndex];
+                        fetchedReels.splice(existingIndex, 1);
+                        fetchedReels.unshift(targetReel);
+                    } else {
+                        // Fetch individual reel
                         try {
-                            // 3. Fetch User Profiles for these IDs
-                            const profilesRes = await api.post('/users/profile/batch', {
-                                userIds,
-                                currentUserId: user?.id
-                            });
-                            if (profilesRes.data.status === 'success' && Array.isArray(profilesRes.data.data)) {
-                                const profilesMap = {};
-                                profilesRes.data.data.forEach(p => {
-                                    profilesMap[p.userId] = p;
-                                });
-                                setUserProfiles(profilesMap);
+                            const singleRes = await reelsApi.getReelById(reelId);
+                            if (singleRes.status === 'success') {
+                                fetchedReels.unshift(singleRes.data);
                             }
-                        } catch (profileError) {
-                            console.error('Failed to load user profiles for reels', profileError);
+                        } catch (e) {
+                            console.error('Failed to fetch specific reel', e);
+                            // If failed, just show feed
                         }
                     }
                 }
+
+                setReels(fetchedReels);
+
+                // 3. Extract unique user IDs for profiles
+                const userIds = [...new Set(fetchedReels.map(r => r.userId))];
+
+                if (userIds.length > 0) {
+                    try {
+                        const profilesRes = await api.post('/users/profile/batch', {
+                            userIds,
+                            currentUserId: user?.id
+                        });
+                        if (profilesRes.data.status === 'success' && Array.isArray(profilesRes.data.data)) {
+                            const profilesMap = {};
+                            profilesRes.data.data.forEach(p => {
+                                profilesMap[p.userId] = p;
+                            });
+                            setUserProfiles(profilesMap);
+                        }
+                    } catch (profileError) {
+                        console.error('Failed to load user profiles for reels', profileError);
+                    }
+                }
+
             } catch (error) {
                 console.error('Failed to load reels', error);
             } finally {
@@ -327,14 +395,37 @@ const Reels = () => {
             }
         };
         fetchReelsAndProfiles();
-    }, [user?.id]);
+    }, [user?.id, reelId]);
+
+    const [activeIndex, setActiveIndex] = useState(0);
 
     const scrollToIndex = (index) => {
         const items = document.querySelectorAll('.group-snap-item');
         if (items[index]) {
-            items[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            items[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     };
+
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const index = parseInt(entry.target.getAttribute('data-index'));
+                    if (!isNaN(index)) {
+                        setActiveIndex(index);
+                    }
+                }
+            });
+        }, {
+            threshold: 0.5,
+            rootMargin: '0px'
+        });
+
+        const items = document.querySelectorAll('.group-snap-item');
+        items.forEach(item => observer.observe(item));
+
+        return () => observer.disconnect();
+    }, [reels, loading]);
 
     if (loading) {
         return (
@@ -366,7 +457,7 @@ const Reels = () => {
                     {reels.map((reel, index) => {
                         const profile = userProfiles[reel.userId] || {};
                         return (
-                            <div key={reel.id} className="group-snap-item w-full flex justify-center">
+                            <div key={reel.id} className="group-snap-item w-full flex justify-center snap-start" data-index={index}>
                                 <ReelItem
                                     reel={{
                                         ...reel,
@@ -374,7 +465,7 @@ const Reels = () => {
                                         isFollowing: profile.isFollowing || false,
                                         music: reel.music || 'Original Audio'
                                     }}
-                                    isActive={true} // In a real snapped list, this would depend on scroll position
+                                    isActive={index === activeIndex}
                                     isMuted={muted}
                                     toggleMute={() => setMuted(!muted)}
                                     onNext={() => scrollToIndex(index + 1)}

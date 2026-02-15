@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5016/';
+const API_URL = `http://${window.location.hostname}:5174/api/v1/admin/`;
 
 const adminApi = axios.create({
     baseURL: API_URL,
@@ -461,6 +461,17 @@ export const deleteAdmin = async (id) => {
 
 export const getAuditLogs = async (params) => {
     const response = await adminApi.get('audit', { params });
+    return response.data;
+};
+
+// Monitoring
+export const getServiceStatuses = async () => {
+    const response = await adminApi.get('monitoring/statuses');
+    return response.data;
+};
+
+export const getServiceLogs = async (serviceName, type = 'logs') => {
+    const response = await adminApi.get(`monitoring/logs/${serviceName}/${type}`);
     return response.data;
 };
 

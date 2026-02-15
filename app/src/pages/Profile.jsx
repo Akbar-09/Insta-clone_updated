@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { Grid, Clapperboard, UserSquare2, Heart, MessageCircle, Settings, UserPlus, ChevronDown, Link as LinkIcon, MoreHorizontal, Bookmark } from 'lucide-react';
+import { Grid, Bookmark, Clapperboard, MonitorPlay, Heart, UserSquare2 } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import ProfileHeader from '../components/profile/ProfileHeader';
-import { getSavedPosts } from '../api/bookmarkApi';
+import { getSavedPosts, getSavedReels } from '../api/bookmarkApi';
 
 const VerifiedBadge = () => (
     <svg aria-label="Verified" className="ml-2 w-[18px] h-[18px] text-[#0095f6]" fill="rgb(0, 149, 246)" height="18" role="img" viewBox="0 0 40 40" width="18">
@@ -20,12 +20,21 @@ const Profile = ({ section }) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(section || 'posts');
+    const [totalPostsCount, setTotalPostsCount] = useState(0);
 
     useEffect(() => {
         if (section) {
             setActiveTab(section);
         }
     }, [section]);
+
+    useEffect(() => {
+        if (profile?.username && activeTab !== 'posts') {
+            api.get(`/posts?username=${profile.username}`).then(res => {
+                if (res.data.status === 'success') setTotalPostsCount(res.data.data.length);
+            }).catch(console.error);
+        }
+    }, [profile?.username, activeTab]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -62,17 +71,38 @@ const Profile = ({ section }) => {
                     const targetId = id === 'me' ? currentUser?.id : profile?.id;
                     // We can only see saved posts for ourselves
                     if (currentUser?.id === targetId || id === 'me') {
-                        const res = await getSavedPosts(targetId);
-                        if (res.status === 'success') {
-                            data = res.data;
-                        } else if (Array.isArray(res)) {
-                            data = res;
+                        const [postsRes, reelsRes] = await Promise.allSettled([
+                            getSavedPosts(targetId),
+                            getSavedReels(targetId)
+                        ]);
+
+                        let savedPosts = [];
+                        let savedReels = [];
+
+                        if (postsRes.status === 'fulfilled') {
+                            const res = postsRes.value;
+                            savedPosts = res.data || (Array.isArray(res) ? res : []);
                         }
+
+                        if (reelsRes.status === 'fulfilled') {
+                            const res = reelsRes.value;
+                            savedReels = (res.data || (Array.isArray(res) ? res : [])).map(r => ({ ...r, isReel: true }));
+                        }
+
+                        data = [...savedPosts, ...savedReels].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    }
+                } else if (activeTab === 'reels') {
+                    const res = await api.get(`/reels/user?username=${profile.username}`);
+                    if (res.data.status === 'success') {
+                        data = res.data.data.map(r => ({ ...r, isReel: true }));
                     }
                 } else if (activeTab === 'posts') {
                     const postsRes = await api.get(`/posts?username=${profile.username}`);
                     if (postsRes.data.status === 'success') {
                         data = postsRes.data.data;
+                        if (id !== 'me' || profile?.id) {
+                            setTotalPostsCount(data.length);
+                        }
                     }
                 }
                 // Extend for other tabs like Reels if needed
@@ -105,7 +135,7 @@ const Profile = ({ section }) => {
             <ProfileHeader
                 key={profile.id} // Important to reset state when profile changes
                 profile={profile}
-                postsCount={posts.length}
+                postsCount={totalPostsCount}
                 isOwnProfile={isOwnProfile}
             />
 
@@ -135,8 +165,15 @@ const Profile = ({ section }) => {
             <div className="grid grid-cols-3 gap-1 max-md:gap-[3px]">
                 {posts.map((post) => (
                     <div key={post.id} className="relative aspect-square group cursor-pointer bg-secondary">
-                        {post.mediaType === 'VIDEO' ? (
-                            <video src={post.mediaUrl} className="w-full h-full object-cover" />
+                        {post.isReel || post.mediaType === 'VIDEO' ? (
+                            <div className="relative w-full h-full">
+                                <video src={post.videoUrl || post.mediaUrl} className="w-full h-full object-cover" />
+                                {post.isReel && (
+                                    <div className="absolute top-2 right-2 text-white drop-shadow-md">
+                                        <Clapperboard size={18} />
+                                    </div>
+                                )}
+                            </div>
                         ) : (
                             <img src={post.mediaUrl || post.imageUrl} alt="Post" className="w-full h-full object-cover" />
                         )}

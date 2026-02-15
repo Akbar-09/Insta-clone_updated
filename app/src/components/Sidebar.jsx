@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getUnreadNotificationCount } from '../api/notificationApi';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -29,6 +30,7 @@ const Sidebar = () => {
     const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
 
     const { user } = useContext(AuthContext);
+    const { t } = useLanguage();
     const [unreadCount, setUnreadCount] = useState(0);
 
     // Fetch unread count
@@ -226,30 +228,30 @@ const Sidebar = () => {
                 </Link>
 
                 <div className="flex flex-col w-full relative">
-                    <NavItem to="/feed" path="/feed" icon={Home} label="Home" />
+                    <NavItem to="/feed" path="/feed" icon={Home} label={t('Home')} />
                     <NavItem
                         onClick={() => toggleDrawer('search')}
                         drawerName="search"
                         icon={Search}
-                        label="Search"
+                        label={t('Search')}
                     />
-                    <NavItem to="/explore" path="/explore" icon={Compass} label="Explore" />
-                    <NavItem to="/reels" path="/reels" icon={Clapperboard} label="Reels" />
-                    <NavItem to="/messages" path="/messages" icon={MessageCircle} label="Messages" badge="6" />
+                    <NavItem to="/explore" path="/explore" icon={Compass} label={t('Explore')} />
+                    <NavItem to="/reels" path="/reels" icon={Clapperboard} label={t('Reels')} />
+                    <NavItem to="/messages" path="/messages" icon={MessageCircle} label={t('Messages')} badge="6" />
                     <NavItem
                         onClick={() => toggleDrawer('notifications')}
                         drawerName="notifications"
                         icon={Heart}
-                        label="Notifications"
+                        label={t('Notifications')}
                         badge={unreadCount > 0 ? (unreadCount > 9 ? '9+' : unreadCount) : null}
                     />
                     <NavItem
                         onClick={toggleCreateMenu}
                         icon={PlusSquare}
-                        label="Create"
+                        label={t('Create')}
                         isCreateBtn={true}
                     />
-                    <NavItem to="/dashboard" path="/dashboard" icon={BarChart2} label="Dashboard" />
+                    <NavItem to="/dashboard" path="/dashboard" icon={BarChart2} label={t('Dashboard')} />
 
                     <Link to="/profile/me" className="block mt-1 no-underline">
                         <div className={`flex items-center p-3 my-1 rounded-lg text-text-primary transition-colors cursor-pointer hover:bg-black/5
@@ -262,7 +264,7 @@ const Sidebar = () => {
                                 max-[1264px]:mr-0`} />
                             <span className={`text-base leading-6 whitespace-nowrap 
                                 ${isNarrow ? 'hidden' : 'block'}
-                                max-[1264px]:hidden`}>Profile</span>
+                                max-[1264px]:hidden`}>{t('Profile')}</span>
                         </div>
                     </Link>
 
@@ -276,19 +278,19 @@ const Sidebar = () => {
                             `}
                         >
                             <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between" onClick={handleCreatePostClick}>
-                                <span className="text-sm font-semibold">Post</span>
+                                <span className="text-sm font-semibold">{t('Post')}</span>
                                 <ImageIcon size={20} className="text-text-primary" />
                             </div>
                             <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between border-t border-border" onClick={handleLiveVideoClick}>
-                                <span className="text-sm font-semibold">Live video</span>
+                                <span className="text-sm font-semibold">{t('Live video')}</span>
                                 <Video size={20} className="text-text-primary" />
                             </div>
                             <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between border-t border-border" onClick={handleAdClick}>
-                                <span className="text-sm font-semibold">Ad</span>
+                                <span className="text-sm font-semibold">{t('Ad')}</span>
                                 <BarChart2 size={20} className="text-text-primary" />
                             </div>
                             <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between border-t border-border">
-                                <span className="text-sm font-semibold">AI Studio</span>
+                                <span className="text-sm font-semibold">{t('AI Studio')}</span>
                                 <Sparkles size={20} className="text-text-primary" />
                             </div>
                         </div>
@@ -298,7 +300,7 @@ const Sidebar = () => {
                 <div className="mt-auto w-full relative">
                     <NavItem
                         icon={Menu}
-                        label="More"
+                        label={t('More')}
                         onClick={toggleMoreMenu}
                         isMoreBtn={true}
                     />
@@ -316,7 +318,7 @@ const Sidebar = () => {
                     <div className="mt-[10px] max-[1264px]:hidden">
                         <Link to="#" className="flex items-center p-3 my-1 rounded-lg text-text-primary transition-colors cursor-pointer hover:bg-black/5">
                             <Box size={20} className="mr-4 text-text-primary" />
-                            <span className="text-base leading-6 whitespace-nowrap">Also from Jaadoe</span>
+                            <span className="text-base leading-6 whitespace-nowrap">{t('Also from Jaadoe')}</span>
                         </Link>
                     </div>
                 )}

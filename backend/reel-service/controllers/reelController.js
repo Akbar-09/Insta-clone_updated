@@ -1,5 +1,6 @@
 const Reel = require('../models/Reel');
 const ReelLike = require('../models/ReelLike');
+const ReelBookmark = require('../models/ReelBookmark');
 const { publishEvent } = require('../config/rabbitmq');
 const { Op } = require('sequelize');
 
@@ -55,12 +56,16 @@ const getReels = async (req, res) => {
 
 const getUserReels = async (req, res) => {
     try {
-        const userId = req.headers['x-user-id'] || req.query.userId;
+        const { username, userId: queryUserId } = req.query;
+        const userId = req.headers['x-user-id'] || queryUserId;
         const { sort = 'newest', startDate, endDate } = req.query;
 
-        if (!userId) return res.status(400).json({ message: 'User ID required' });
+        console.log(`[ReelService] getUserReels query: username=${username}, userId=${userId}`);
 
-        const whereClause = { userId };
+        const whereClause = {};
+        if (username) whereClause.username = username;
+        if (userId) whereClause.userId = userId;
+
         if (startDate && endDate) {
             whereClause.createdAt = {
                 [Op.between]: [new Date(startDate), new Date(endDate)]
@@ -74,6 +79,43 @@ const getUserReels = async (req, res) => {
         res.json({ status: 'success', data: reels });
     } catch (error) {
         console.error('Get User Reels Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const getReelById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const currentUserId = req.headers['x-user-id'] || req.query.userId;
+
+        const reel = await Reel.findByPk(id);
+
+        if (!reel) {
+            return res.status(404).json({ message: 'Reel not found' });
+        }
+
+        let isLiked = false;
+        if (currentUserId) {
+            const like = await ReelLike.findOne({
+                where: {
+                    reelId: id,
+                    userId: currentUserId
+                }
+            });
+            isLiked = !!like;
+        }
+
+        // Return object structure matching what frontend expects
+        res.json({
+            status: 'success',
+            data: {
+                ...reel.toJSON(),
+                isLiked,
+                comments: reel.commentsCount || 0
+            }
+        });
+    } catch (error) {
+        console.error('Get Reel By ID Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
@@ -201,12 +243,65 @@ const getActivityReels = async (req, res) => {
     }
 };
 
+const bookmarkReel = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.headers['x-user-id'] || req.body.userId;
+
+        if (!userId) return res.status(400).json({ message: 'User ID required' });
+
+        const existing = await ReelBookmark.findOne({ where: { reelId: id, userId } });
+        if (existing) return res.json({ status: 'success', message: 'Already bookmarked' });
+
+        await ReelBookmark.create({ reelId: id, userId });
+        res.json({ status: 'success' });
+    } catch (error) {
+        console.error('Bookmark Reel Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const unbookmarkReel = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.headers['x-user-id'] || req.query.userId;
+
+        if (!userId) return res.status(400).json({ message: 'User ID required' });
+
+        await ReelBookmark.destroy({ where: { reelId: id, userId } });
+        res.json({ status: 'success' });
+    } catch (error) {
+        console.error('Unbookmark Reel Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+const getSavedReels = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || req.query.userId;
+        if (!userId) return res.status(400).json({ message: 'User ID required' });
+
+        const bookmarks = await ReelBookmark.findAll({ where: { userId } });
+        const reelIds = bookmarks.map(b => b.reelId);
+
+        const reels = await Reel.findAll({ where: { id: reelIds } });
+        res.json({ status: 'success', data: reels });
+    } catch (error) {
+        console.error('Get Saved Reels Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     createReel,
     getReels,
     getUserReels,
+    getReelById,
     likeReel,
     unlikeReel,
     getLikedReels,
-    getActivityReels
+    getActivityReels,
+    bookmarkReel,
+    unbookmarkReel,
+    getSavedReels
 };

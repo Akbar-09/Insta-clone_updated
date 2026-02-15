@@ -22,6 +22,16 @@ const UserHiddenSettings = sequelize.define('UserHiddenSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         field: 'hide_message_requests'
+    },
+    customHideComments: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: 'custom_hide_comments'
+    },
+    customHideMessageRequests: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: 'custom_hide_message_requests'
     }
 }, {
     tableName: 'user_hidden_settings',

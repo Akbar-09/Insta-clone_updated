@@ -26,8 +26,13 @@ const SavedPosts = () => {
         }
     };
 
-    const handlePostClick = (postId) => {
-        navigate(`/post/${postId}`);
+    const handlePostClick = (postId, index) => {
+        navigate(`/post/${postId}`, {
+            state: {
+                postIds: savedPosts.map(p => p.id),
+                currentIndex: index
+            }
+        });
     };
 
     if (loading) {
@@ -59,10 +64,10 @@ const SavedPosts = () => {
 
     return (
         <div className="grid grid-cols-3 gap-1 md:gap-7">
-            {savedPosts.map((post) => (
+            {savedPosts.map((post, index) => (
                 <div
-                    key={post.id}
-                    onClick={() => handlePostClick(post.id)}
+                    key={`${post.id}-${index}`}
+                    onClick={() => handlePostClick(post.id, index)}
                     className="relative aspect-square cursor-pointer group overflow-hidden bg-gray-900"
                 >
                     {/* Post Image/Video */}

@@ -10,15 +10,25 @@ const LanguageManagement = () => {
         fetchLanguages();
     }, []);
 
+    const [error, setError] = useState(null);
+
     const fetchLanguages = async () => {
         try {
             setLoading(true);
+            setError(null);
             const res = await adminApi.getLanguages();
-            if (res.success) {
-                setLanguages(res.data.languages);
+            console.log('Languages API Response:', res);
+
+            if (res && res.data) {
+                // Handle different response structures gracefully
+                const langs = res.data.languages || (Array.isArray(res.data) ? res.data : []);
+                setLanguages(langs);
+            } else {
+                setLanguages([]);
             }
         } catch (error) {
             console.error('Failed to fetch languages', error);
+            setError('Failed to load languages. Please check if the admin service is running.');
         } finally {
             setLoading(false);
         }
@@ -59,6 +69,22 @@ const LanguageManagement = () => {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <Loader2 className="animate-spin text-pink-500" size={32} />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+                <div className="p-4 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg mb-4">
+                    {error}
+                </div>
+                <button
+                    onClick={fetchLanguages}
+                    className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                >
+                    Retry
+                </button>
             </div>
         );
     }
@@ -148,12 +174,18 @@ const LanguageManagement = () => {
 
                         <div className="flex gap-2">
                             <button
-                                onClick={() => toggleStatus(language.id, language.isActive)}
+                                onClick={() => {
+                                    if (language.isDefault) {
+                                        alert("You cannot disable the default language. Please set another language as default first.");
+                                        return;
+                                    }
+                                    toggleStatus(language.id, language.isActive);
+                                }}
                                 className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${language.isActive
                                     ? 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
                                     : 'bg-green-500 text-white hover:bg-green-600'
-                                    }`}
-                                disabled={language.isDefault} // Cannot disable default
+                                    } ${language.isDefault ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            // removed disabled attribute to allow click for alert, added visual cue instead
                             >
                                 {language.isActive ? 'Disable' : 'Enable'}
                             </button>

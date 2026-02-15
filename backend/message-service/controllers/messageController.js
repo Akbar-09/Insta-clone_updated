@@ -23,8 +23,8 @@ const getConversations = async (req, res) => {
 
         // Identify other users to fetch profiles
         const otherUserIds = conversationsRaw.map(c =>
-            c.user1Id === userId ? c.user2Id : c.user1Id
-        );
+            String(c.user1Id) === String(userId) ? c.user2Id : c.user1Id
+        ).filter(id => id != null);
 
         // Fetch user profiles from user-service
         let profilesMap = {};
@@ -44,7 +44,7 @@ const getConversations = async (req, res) => {
 
         // Fetch unread counts for each conversation
         const hydratedConversations = await Promise.all(conversationsRaw.map(async (conv) => {
-            const otherUserId = conv.user1Id === userId ? conv.user2Id : conv.user1Id;
+            const otherUserId = String(conv.user1Id) === String(userId) ? conv.user2Id : conv.user1Id;
             const unreadCount = await Message.count({
                 where: {
                     conversationId: conv.id,
@@ -172,6 +172,8 @@ const sendMessage = async (req, res) => {
         else if (type === 'story_reply') snippet = '✉️ Replied to your story';
         else if (type === 'sticker') snippet = '🖼️ Sticker';
         else if (type === 'voice') snippet = '🎤 Voice message';
+        else if (type === 'post_share') snippet = '📤 Shared a post';
+        else if (type === 'reel_share') snippet = '🎬 Shared a reel';
 
         await conversation.update({
             lastMessageContent: snippet ? snippet.substring(0, 50) : '',
@@ -182,7 +184,7 @@ const sendMessage = async (req, res) => {
         // 4. Publish to RabbitMQ
         const channel = getRabbitMQChannel();
         if (channel) {
-            const otherUserId = conversation.user1Id === senderId ? conversation.user2Id : conversation.user1Id;
+            const otherUserId = String(conversation.user1Id) === String(senderId) ? conversation.user2Id : conversation.user1Id;
             const event = {
                 type: 'MESSAGE_SENT',
                 payload: {
@@ -213,7 +215,7 @@ const getConversationDetails = async (req, res) => {
         const conversation = await Conversation.findByPk(conversationId);
         if (!conversation) return res.status(404).json({ status: 'error', message: 'Not found' });
 
-        const otherUserId = conversation.user1Id === userId ? conversation.user2Id : conversation.user1Id;
+        const otherUserId = String(conversation.user1Id) === String(userId) ? conversation.user2Id : conversation.user1Id;
 
         // Fetch other user profile
         let otherUser = { userId: otherUserId, username: 'User' };
@@ -277,11 +279,29 @@ const toggleMute = async (req, res) => {
     }
 };
 
+const { publishEvent } = require('../config/rabbitmq');
+
 const deleteConversation = async (req, res) => {
     try {
         const { conversationId } = req.params;
-        // In a real app, we might soft delete or mark as hidden for this user.
-        // For simplicity, we'll hard delete messages or the conversation.
+
+        // Find messages with media before deleting
+        const messagesWithMedia = await Message.findAll({
+            where: {
+                conversationId,
+                type: { [Op.in]: ['image', 'video', 'sticker', 'voice'] },
+                mediaUrl: { [Op.ne]: null }
+            }
+        });
+
+        // Publish deletion events for each media
+        for (const msg of messagesWithMedia) {
+            await publishEvent('MESSAGE_DELETED', {
+                messageId: msg.id,
+                mediaUrl: msg.mediaUrl
+            });
+        }
+
         await Message.destroy({ where: { conversationId } });
         await Conversation.destroy({ where: { id: conversationId } });
         res.json({ status: 'success' });

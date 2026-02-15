@@ -120,6 +120,25 @@ const ChatInfoPanel = ({ conversationId, onClose, onUpdate }) => {
     const { otherUser, conversation, media } = details;
     const isBlocked = otherUser.isBlocked;
 
+    const getProxiedUrl = (url) => {
+        if (!url) return '';
+        if (typeof url !== 'string') return url;
+        if (url.startsWith('blob:')) return url;
+        try {
+            // Remove full origin if it matches any local IP/Port variations to make it relative
+            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
+
+            if (cleanedUrl !== url) {
+                return cleanedUrl;
+            }
+            if (url.includes('r2.dev')) {
+                const parts = url.split('.dev/');
+                if (parts.length > 1) return `/api/v1/media/files/${parts[1]}`;
+            }
+        } catch (e) { }
+        return url;
+    };
+
     return (
         <>
             <div className="w-[350px] h-full border-l border-gray-200 dark:border-[#363636] bg-white dark:bg-black overflow-y-auto flex flex-col max-md:fixed max-md:inset-0 max-md:w-full max-md:z-[200]">
@@ -165,9 +184,9 @@ const ChatInfoPanel = ({ conversationId, onClose, onUpdate }) => {
                     </div>
                     {media.length > 0 ? (
                         <div className="grid grid-cols-3 gap-1 px-4">
-                            {media.filter(m => (m.type === 'image' || m.type === 'video') && !m.mediaUrl?.startsWith('blob:') && !m.content?.startsWith('blob:')).slice(0, 6).map((m, i) => (
+                            {media.filter(m => (m.type === 'image' || m.type === 'video')).slice(0, 6).map((m, i) => (
                                 <div key={m.id} className="aspect-square bg-gray-100 dark:bg-gray-900 rounded overflow-hidden cursor-pointer group relative">
-                                    <img src={m.mediaUrl || m.content} className="w-full h-full object-cover group-hover:opacity-90 transition-opacity" alt="Media" />
+                                    <img src={getProxiedUrl(m.mediaUrl || m.content)} className="w-full h-full object-cover group-hover:opacity-90 transition-opacity" alt="Media" />
                                 </div>
                             ))}
                         </div>

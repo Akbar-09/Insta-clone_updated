@@ -56,6 +56,10 @@ exports.removeCloseFriend = async (req, res) => {
 
         if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
 
+        if (!/^\d+$/.test(friendId)) {
+            return res.status(400).json({ status: 'error', message: 'Invalid Friend ID. Expected Integer.' });
+        }
+
         await CloseFriend.destroy({
             where: { userId, friendId }
         });

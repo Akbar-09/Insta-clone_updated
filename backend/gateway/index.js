@@ -12,10 +12,13 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'testsecret';
 
 app.use(cors());
-app.use(helmet({
-    crossOriginResourcePolicy: false, // Disable default CORP to allow external image loading
-    crossOriginEmbedderPolicy: false
-}));
+// Completely disable helmet for local IP access to avoid browser forcing HTTPS and COOP/COEP issues
+app.use((req, res, next) => {
+    res.setHeader('Strict-Transport-Security', 'max-age=0'); // Clear HSTS if previously set
+    res.setHeader('Cross-Origin-Opener-Policy', 'unsafe-none');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+    next();
+});
 app.use(morgan('dev'));
 
 app.use((req, res, next) => {
@@ -28,9 +31,18 @@ const swaggerSpec = require('./src/swagger/swaggerConfig');
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Health check
+// Basic health check and welcome
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        message: 'Instagram Clone API Gateway is running',
+        docs: '/api-docs',
+        health: '/health'
+    });
+});
+
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK', service: 'API Gateway' });
+    res.status(200).json({ status: 'OK', service: 'API Gateway', timestamp: new Date() });
 });
 
 // Rate Limiter
@@ -44,6 +56,7 @@ app.use(limiter);
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
     const openPaths = [
+        '/',
         '/api/v1/auth/login',
         '/api/v1/auth/signup',
         '/api/v1/auth/register',
@@ -55,23 +68,31 @@ const authenticateToken = (req, res, next) => {
         '/socket.io',
         '/api/v1/socket.io',
         '/api/v1/ads/active',
+        '/api/v1/media/files',
+        '/api/v1/ads/media',
+        // Help Centre Public Routes
+        '/api/v1/help/categories',
+        '/api/v1/help/category',
+        '/api/v1/help/articles',
+        '/api/v1/help/article',
+        '/api/v1/help/search',
+        '/api/v1/help/feedback',
         // Add specific admin debug route just in case
         '/api/v1/admin/health-check'
     ];
 
-    if (openPaths.some(path => req.path.startsWith(path))) {
-        return next();
-    }
-
+    const isOpenPath = openPaths.some(path => req.path.startsWith(path));
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
+        if (isOpenPath) return next();
         return res.status(401).json({ status: 'error', message: 'Access Denied: No Token Provided' });
     }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
+            if (isOpenPath) return next();
             return res.status(403).json({ status: 'error', message: 'Invalid token' });
         }
         req.user = user;
@@ -95,9 +116,11 @@ const services = [
     { route: '/reels', target: process.env.REEL_SERVICE_URL || 'http://localhost:5005' },
     { route: '/media', target: process.env.MEDIA_SERVICE_URL || 'http://localhost:5013' },
     { route: '/ads', target: process.env.AD_SERVICE_URL || 'http://localhost:5014' },
+    { route: '/insights', target: process.env.INSIGHT_SERVICE_URL || 'http://127.0.0.1:5017' },
     { route: '/live', target: process.env.LIVE_SERVICE_URL || 'http://localhost:5015' },
     // Ensure 5016 is correct for admin
     { route: '/admin', target: process.env.ADMIN_SERVICE_URL || 'http://localhost:5016' },
+    { route: '/help', target: process.env.HELP_SERVICE_URL || 'http://localhost:5060' },
     { route: '/socket.io', target: process.env.SOCKET_SERVICE_URL || 'http://localhost:5011', ws: true },
 ];
 

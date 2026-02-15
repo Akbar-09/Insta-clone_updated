@@ -4,14 +4,46 @@ const RestrictedAccount = require('../models/RestrictedAccount');
 const UserHiddenSettings = require('../models/UserHiddenSettings');
 const UserCustomWord = require('../models/UserCustomWord');
 const UserProfile = require('../models/UserProfile');
+const Follow = require('../models/Follow');
+const { Op } = require('sequelize');
 
 // --- Comments ---
 exports.getCommentSettings = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'];
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
         const [settings] = await UserCommentSettings.findOrCreate({ where: { userId }, defaults: { userId } });
-        res.json({ status: 'success', data: settings });
+
+        // Fetch counts for the UI (Instagram style)
+        const followingCount = await Follow.count({ where: { followerId: userId } });
+        const followersCount = await Follow.count({ where: { followingId: userId } });
+
+        // Mutual Count (People you follow AND follow you back)
+        // We can do this with a raw query or by finding the intersection
+        const following = await Follow.findAll({ where: { followerId: userId }, attributes: ['followingId'] });
+        const followingIds = following.map(f => f.followingId);
+
+        const mutualCount = await Follow.count({
+            where: {
+                followerId: { [Op.in]: followingIds },
+                followingId: userId
+            }
+        });
+
+        res.json({
+            status: 'success',
+            data: {
+                ...settings.toJSON(),
+                counts: {
+                    following: followingCount,
+                    followers: followersCount,
+                    mutual: mutualCount
+                }
+            }
+        });
     } catch (err) {
+        console.error('getCommentSettings error:', err);
         res.status(500).json({ status: 'error', message: err.message });
     }
 };
@@ -133,6 +165,8 @@ exports.updateHiddenWordsSettings = async (req, res) => {
         if (req.body.hideComments !== undefined) settings.hideComments = req.body.hideComments;
         if (req.body.advancedFilter !== undefined) settings.advancedFilter = req.body.advancedFilter;
         if (req.body.hideMessageRequests !== undefined) settings.hideMessageRequests = req.body.hideMessageRequests;
+        if (req.body.customHideComments !== undefined) settings.customHideComments = req.body.customHideComments;
+        if (req.body.customHideMessageRequests !== undefined) settings.customHideMessageRequests = req.body.customHideMessageRequests;
 
         await settings.save();
         res.json({ status: 'success', data: settings });

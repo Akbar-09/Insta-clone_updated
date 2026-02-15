@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect, useContext, useCallback } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Volume2, VolumeX, Music, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { fetchPostById, addComment, getComments } from '../api/postActionsApi';
@@ -15,6 +15,7 @@ import FollowButton from '../components/FollowButton';
 const PostPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { user } = useContext(AuthContext);
 
     const [post, setPost] = useState(null);
@@ -24,7 +25,74 @@ const PostPage = () => {
     const [submittingComment, setSubmittingComment] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
     const [isPlaying, setIsPlaying] = useState(true);
+    const [videoFailed, setVideoFailed] = useState(false);
     const videoRef = useRef(null);
+
+    // Navigation State
+    const postMetadata = location.state?.postMetadata || [];
+    const postIds = location.state?.postIds || postMetadata.map(m => m.id) || [];
+    const [currentIndex, setCurrentIndex] = useState(location.state?.currentIndex ?? -1);
+
+    // Sync current index
+    useEffect(() => {
+        if (postIds.length > 0 && (currentIndex === -1 || postIds[currentIndex] != id)) {
+            const index = postIds.findIndex(pid => String(pid) === String(id));
+            if (index !== -1) setCurrentIndex(index);
+        }
+    }, [id, postIds, currentIndex]);
+
+    const navigateToPost = useCallback((newIndex) => {
+        if (newIndex >= 0 && newIndex < postIds.length) {
+            const nextId = postIds[newIndex];
+            const nextType = postMetadata[newIndex]?.type || 'POST';
+            navigate(`/post/${nextId}`, {
+                state: { postMetadata, postIds, currentIndex: newIndex, type: nextType },
+                replace: true
+            });
+        }
+    }, [postIds, postMetadata, navigate]);
+
+    const handlePrev = useCallback((e) => {
+        e?.stopPropagation();
+        if (currentIndex > 0) navigateToPost(currentIndex - 1);
+    }, [currentIndex, navigateToPost]);
+
+    const handleNext = useCallback((e) => {
+        e?.stopPropagation();
+        if (currentIndex < postIds.length - 1) navigateToPost(currentIndex + 1);
+    }, [currentIndex, postIds.length, navigateToPost]);
+
+    // Keyboard and Wheel Navigation
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'ArrowLeft') handlePrev();
+            if (e.key === 'ArrowRight') handleNext();
+        };
+
+        let lastWheelTime = 0;
+        const handleWheel = (e) => {
+            const now = Date.now();
+            if (now - lastWheelTime < 1000) return;
+
+            if (Math.abs(e.deltaY) > 50) {
+                if (e.deltaY > 0) handleNext();
+                else handlePrev();
+                lastWheelTime = now;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('wheel', handleWheel);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('wheel', handleWheel);
+        };
+    }, [handlePrev, handleNext]);
+
+    // Reset video failure on post change
+    useEffect(() => {
+        setVideoFailed(false);
+    }, [id]);
 
     // Modals
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -50,15 +118,21 @@ const PostPage = () => {
 
     // Fetch Data
     useEffect(() => {
+        setLoading(true);
+        setPost(null);
         const loadData = async () => {
             try {
                 const response = await fetchPostById(id);
-                setPost(response.data || response);
+                const postData = response.data || response;
 
-                const commentsRes = await getComments(id);
-                setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
+                if (postData) {
+                    setPost(postData);
+                    // Fetch comments (works for both posts and reels)
+                    const commentsRes = await getComments(id);
+                    setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
+                }
             } catch (error) {
-                console.error("Failed to load post", error);
+                console.error("Failed to load post/reel:", error);
             } finally {
                 setLoading(false);
             }
@@ -89,6 +163,44 @@ const PostPage = () => {
         }
     };
 
+    const getProxiedUrl = (url) => {
+        if (!url) return '';
+        if (typeof url !== 'string') return url;
+
+        // Handle bare filenames (likely R2/Media Service uploads)
+        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
+            return `/api/v1/media/files/${url}`;
+        }
+
+        try {
+            // Remove full origin if it matches any local IP/Port variations to make it relative
+            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
+
+            if (cleanedUrl !== url) {
+                return cleanedUrl;
+            }
+
+            if (url.includes('r2.dev')) {
+                const parts = url.split('.dev/');
+                if (parts.length > 1) {
+                    return `/api/v1/media/files/${parts[1]}`;
+                }
+            }
+
+            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
+                return url.replace('/media/files', '/api/v1/media/files');
+            }
+        } catch (e) {
+            console.warn('URL proxying failed:', e);
+        }
+
+        return url;
+    };
+
+    const getMediaUrl = (url) => {
+        return getProxiedUrl(url);
+    };
+
     const handleAddComment = async () => {
         if (!commentText.trim() || submittingComment) return;
         setSubmittingComment(true);
@@ -103,23 +215,60 @@ const PostPage = () => {
         }
     };
 
-    const togglePlay = (e) => {
-        e.stopPropagation();
+    const togglePlay = async (e) => {
+        e?.stopPropagation();
         if (videoRef.current) {
-            if (isPlaying) {
-                videoRef.current.pause();
+            try {
+                if (isPlaying) {
+                    videoRef.current.pause();
+                    setIsPlaying(false);
+                } else {
+                    const playPromise = videoRef.current.play();
+                    if (playPromise !== undefined) {
+                        await playPromise;
+                    }
+                    setIsPlaying(true);
+                }
+            } catch (err) {
+                console.error("Playback error:", err);
                 setIsPlaying(false);
-            } else {
-                videoRef.current.play();
-                setIsPlaying(true);
             }
         }
     };
 
     const toggleMute = (e) => {
-        e.stopPropagation();
+        e?.stopPropagation();
         setIsMuted(!isMuted);
     };
+
+    // HLS Support
+    useEffect(() => {
+        if (post && (post.mediaType === 'VIDEO' || post.videoUrl)) {
+            const video = videoRef.current;
+            const videoUrl = getMediaUrl(post.mediaUrl || post.videoUrl);
+
+            if (video && videoUrl && videoUrl.endsWith('.m3u8')) {
+                let hls;
+                import('hls.js').then((HlsModule) => {
+                    const Hls = HlsModule.default;
+                    if (Hls.isSupported()) {
+                        hls = new Hls();
+                        hls.loadSource(videoUrl);
+                        hls.attachMedia(video);
+                        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                            if (!isMuted) video.play().catch(() => { });
+                        });
+                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                        video.src = videoUrl;
+                    }
+                });
+
+                return () => {
+                    if (hls) hls.destroy();
+                };
+            }
+        }
+    }, [post, isMuted]);
 
     if (loading) return (
         <div className="flex justify-center items-center h-screen bg-gray-50">
@@ -160,12 +309,22 @@ const PostPage = () => {
             </button>
 
             {/* Navigation Arrows */}
-            <button className="fixed left-4 top-1/2 -translate-y-1/2 z-40 text-white p-2 hover:opacity-70 transition-opacity hidden md:block">
-                <ChevronLeft size={48} strokeWidth={1.5} />
-            </button>
-            <button className="fixed right-4 top-1/2 -translate-y-1/2 z-40 text-white p-2 hover:opacity-70 transition-opacity hidden md:block">
-                <ChevronRight size={48} strokeWidth={1.5} />
-            </button>
+            {currentIndex > 0 && (
+                <button
+                    onClick={handlePrev}
+                    className="fixed left-4 top-1/2 -translate-y-1/2 z-40 text-white p-2 hover:opacity-70 transition-opacity hidden md:block"
+                >
+                    <ChevronLeft size={48} strokeWidth={1.5} />
+                </button>
+            )}
+            {currentIndex < postIds.length - 1 && (
+                <button
+                    onClick={handleNext}
+                    className="fixed right-4 top-1/2 -translate-y-1/2 z-40 text-white p-2 hover:opacity-70 transition-opacity hidden md:block"
+                >
+                    <ChevronRight size={48} strokeWidth={1.5} />
+                </button>
+            )}
 
             <div className="flex w-full max-w-[1100px] h-full max-h-[90vh] glass shadow-2xl overflow-hidden rounded-lg border border-white/20 relative z-10">
 
@@ -173,16 +332,30 @@ const PostPage = () => {
                 <div className="flex-1 bg-black flex items-center justify-center relative cursor-pointer" onClick={togglePlay} onDoubleClick={handleDoubleTap}>
                     <HeartOverlay visible={isAnimating} onAnimationEnd={() => setIsAnimating(false)} />
 
-                    {post.mediaType === 'VIDEO' || post.videoUrl ? (
+                    {(!videoFailed && (post.mediaType === 'VIDEO' || post.videoUrl)) ? (
                         <>
                             <video
+                                key={post.id}
                                 ref={videoRef}
-                                src={post.mediaUrl || post.videoUrl}
+                                src={getMediaUrl(post.mediaUrl || post.videoUrl)}
                                 className="w-full h-full object-cover"
                                 autoPlay
                                 loop
                                 muted={isMuted}
                                 playsInline
+                                poster={getMediaUrl(post.imageUrl || post.thumbnailUrl)}
+                                onError={(e) => {
+                                    const videoUrl = post.mediaUrl || post.videoUrl;
+                                    const error = e.target.error;
+                                    console.error("Video playback failed:", {
+                                        url: videoUrl,
+                                        proxiedUrl: getMediaUrl(videoUrl),
+                                        errorCode: error?.code,
+                                        errorMessage: error?.message,
+                                        post: post
+                                    });
+                                    setVideoFailed(true);
+                                }}
                             />
 
                             {/* Video Overlays */}
@@ -207,9 +380,18 @@ const PostPage = () => {
                         </>
                     ) : (
                         <img
-                            src={post.mediaUrl || post.imageUrl}
+                            src={getMediaUrl(
+                                videoFailed
+                                    ? (post.imageUrl || post.thumbnailUrl || post.mediaUrl)
+                                    : (post.mediaUrl || post.imageUrl)
+                            )}
                             alt="Post"
                             className="max-w-full max-h-full object-contain"
+                            onError={(e) => {
+                                console.warn("Image fallback failed for post:", post.id);
+                                e.target.onerror = null;
+                                e.target.src = 'https://ui-avatars.com/api/?name=Post&background=f3f4f6&color=9ca3af&size=512&semibold=true&format=svg';
+                            }}
                         />
                     )}
                 </div>
@@ -225,7 +407,7 @@ const PostPage = () => {
                                 onClick={() => navigate(`/profile/${post.username}`)}
                             >
                                 <img
-                                    src={post.userAvatar || `https://ui-avatars.com/api/?name=${post.username}&background=random`}
+                                    src={post.userAvatar ? getMediaUrl(post.userAvatar) : `https://ui-avatars.com/api/?name=${post.username}&background=random`}
                                     alt={post.username}
                                     className="w-full h-full rounded-full object-cover"
                                 />
@@ -269,7 +451,7 @@ const PostPage = () => {
                             <div className="flex gap-3 mb-6">
                                 <div className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden shrink-0">
                                     <img
-                                        src={post.userAvatar || `https://ui-avatars.com/api/?name=${post.username}&background=random`}
+                                        src={post.userAvatar ? getMediaUrl(post.userAvatar) : `https://ui-avatars.com/api/?name=${post.username}&background=random`}
                                         alt={post.username}
                                         className="w-full h-full object-cover rounded-full"
                                     />
@@ -297,7 +479,7 @@ const PostPage = () => {
                                         onClick={() => navigate(`/profile/${comment.username || comment.User?.username}`)}
                                     >
                                         <img
-                                            src={comment.userAvatar || comment.User?.profilePicture || `https://ui-avatars.com/api/?name=${comment.username || 'User'}&background=random`}
+                                            src={comment.userAvatar ? getMediaUrl(comment.userAvatar) : comment.User?.profilePicture ? getMediaUrl(comment.User.profilePicture) : `https://ui-avatars.com/api/?name=${comment.username || 'User'}&background=random`}
                                             className="w-full h-full object-cover"
                                             alt=""
                                         />
@@ -391,28 +573,32 @@ const PostPage = () => {
             </div>
 
             {/* Modals */}
-            {showOptionsMenu && (
-                <PostOptionsMenu
-                    post={post}
-                    isOwnPost={isOwnPost}
-                    onClose={() => setShowOptionsMenu(false)}
-                    onDeleteSuccess={() => navigate('/')}
-                    onEdit={() => setShowEditModal(true)}
-                    onShare={() => setShowShareModal(true)}
-                    onUpdatePost={(updated) => setPost(prev => ({ ...prev, ...updated }))}
-                    onReport={() => setShowReportModal(true)}
-                />
-            )}
+            {
+                showOptionsMenu && (
+                    <PostOptionsMenu
+                        post={post}
+                        isOwnPost={isOwnPost}
+                        onClose={() => setShowOptionsMenu(false)}
+                        onDeleteSuccess={() => navigate('/')}
+                        onEdit={() => setShowEditModal(true)}
+                        onShare={() => setShowShareModal(true)}
+                        onUpdatePost={(updated) => setPost(prev => ({ ...prev, ...updated }))}
+                        onReport={() => setShowReportModal(true)}
+                    />
+                )
+            }
             {showReportModal && <ReportModal postId={post.id} onClose={() => setShowReportModal(false)} />}
-            {showEditModal && (
-                <EditPostModal
-                    post={post}
-                    onClose={() => setShowEditModal(false)}
-                    onUpdate={(caption) => setPost(prev => ({ ...prev, caption }))}
-                />
-            )}
+            {
+                showEditModal && (
+                    <EditPostModal
+                        post={post}
+                        onClose={() => setShowEditModal(false)}
+                        onUpdate={(caption) => setPost(prev => ({ ...prev, caption }))}
+                    />
+                )
+            }
             {showShareModal && <ShareModal post={post} onClose={() => setShowShareModal(false)} />}
-        </div>
+        </div >
     );
 };
 

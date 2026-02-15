@@ -2,9 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import {
-    reportPost, unfollowUser, deletePost, copyLink, favoriteUser,
-    hideLikeCount, toggleComments, getEmbedCode, followUser
+    reportPost, deletePost, copyLink,
+    hideLikeCount, toggleComments, getEmbedCode
 } from '../api/postActionsApi';
+import { restrictUser } from '../api/userApi';
+import { blockUser } from '../api/privacyApi';
+import * as adApi from '../api/adApi';
+import BlockConfirmModal from './BlockConfirmModal';
 
 const PostOptionsMenu = ({
     post,
@@ -15,21 +19,22 @@ const PostOptionsMenu = ({
     onShare,
     onUpdatePost,
     onReport,
-    isFollowing = false // New prop to determine if user is following the post owner
+    isFollowing = false
 }) => {
     const navigate = useNavigate();
     const menuRef = useRef(null);
     const [loading, setLoading] = useState(false);
+    const [showBlockConfirm, setShowBlockConfirm] = useState(false);
 
     // Close on click outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target) && !loading) {
+            if (menuRef.current && !menuRef.current.contains(event.target) && !loading && !showBlockConfirm) {
                 onClose();
             }
         };
         const handleEscape = (event) => {
-            if (event.key === 'Escape' && !loading) onClose();
+            if (event.key === 'Escape' && !loading && !showBlockConfirm) onClose();
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -41,7 +46,7 @@ const PostOptionsMenu = ({
             document.removeEventListener('keydown', handleEscape);
             document.body.style.overflow = 'unset';
         };
-    }, [onClose, loading]);
+    }, [onClose, loading, showBlockConfirm]);
 
     const handleAction = async (action, label) => {
         if (loading) return;
@@ -63,6 +68,9 @@ const PostOptionsMenu = ({
                 navigate(`/profile/${post.username}`);
                 onClose();
                 return;
+            case 'block':
+                setShowBlockConfirm(true);
+                return;
             case 'cancel':
                 onClose();
                 return;
@@ -72,49 +80,57 @@ const PostOptionsMenu = ({
 
         setLoading(true);
         try {
+            // If it's an ad, restrict most post-service specific actions
+            const isAd = post.isAd;
+
             switch (action) {
                 case 'report':
+                    if (isAd) {
+                        await adApi.reportAd?.(post.id); // If implemented later
+                        alert("Ad reported. Thank you for your feedback.");
+                        onClose();
+                        return;
+                    }
                     if (onReport) onReport();
                     onClose();
                     break;
                 case 'delete':
+                    if (isAd) {
+                        if (window.confirm('Delete this ad? This will remove it from the platform.')) {
+                            await adApi.deleteAd(post.id);
+                            if (onDeleteSuccess) onDeleteSuccess(post.id);
+                            onClose();
+                        }
+                        return;
+                    }
                     if (window.confirm('Delete this post? This cannot be undone.')) {
                         await deletePost(post.id);
                         if (onDeleteSuccess) onDeleteSuccess(post.id);
                         onClose();
                     }
                     break;
-                case 'follow':
-                    await followUser(post.userId);
-                    alert(`Following @${post.username}`);
-                    onClose();
-                    break;
-                case 'unfollow':
-                    if (window.confirm(`Unfollow @${post.username}?`)) {
-                        await unfollowUser(post.userId);
-                        alert(`Unfollowed @${post.username}`);
-                        onClose();
-                    }
-                    break;
-                case 'favorites':
-                    await favoriteUser(post.userId);
-                    alert('Updated favorites!');
-                    onClose();
-                    break;
+
                 case 'hideLikes':
-                    await hideLikeCount(post.id);
+                    if (isAd) {
+                        await adApi.hideLikeCount(post.id);
+                    } else {
+                        await hideLikeCount(post.id);
+                    }
                     if (onUpdatePost) onUpdatePost({ ...post, hideLikes: !post.hideLikes });
                     onClose();
                     break;
                 case 'toggleComments':
-                    await toggleComments(post.id);
+                    if (isAd) {
+                        await adApi.toggleComments(post.id);
+                    } else {
+                        await toggleComments(post.id);
+                    }
                     if (onUpdatePost) onUpdatePost({ ...post, commentsDisabled: !post.commentsDisabled });
                     onClose();
                     break;
                 case 'copyLink':
                     const success = await copyLink(post.id);
                     if (success) {
-                        // Show a temporary success message
                         const msg = document.createElement('div');
                         msg.textContent = 'Link copied to clipboard';
                         msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
@@ -123,10 +139,33 @@ const PostOptionsMenu = ({
                     }
                     onClose();
                     break;
+                // block case removed from here
+
+                case 'restrict':
+                    if (window.confirm(`Restrict @${post.username}?`)) {
+                        await restrictUser(post.userId);
+                        alert(`Restricted @${post.username}`);
+                    }
+                    onClose();
+                    break;
+                case 'copyProfileUrl':
+                    const profileUrl = `${window.location.origin}/profile/${post.username}`;
+                    await navigator.clipboard.writeText(profileUrl);
+                    const msg = document.createElement('div');
+                    msg.textContent = 'Link copied to clipboard';
+                    msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
+                    document.body.appendChild(msg);
+                    setTimeout(() => msg.remove(), 2000);
+                    onClose();
+                    break;
                 case 'embed':
                     try {
-                        const embedData = await getEmbedCode(post.id);
-                        // Copy embed code to clipboard
+                        let embedData;
+                        if (isAd) {
+                            embedData = await adApi.getEmbedCode(post.id);
+                        } else {
+                            embedData = await getEmbedCode(post.id);
+                        }
                         await navigator.clipboard.writeText(embedData.data.embedHtml);
                         const msg = document.createElement('div');
                         msg.textContent = 'Embed code copied to clipboard';
@@ -151,6 +190,20 @@ const PostOptionsMenu = ({
         }
     };
 
+    const handleBlockConfirm = async () => {
+        try {
+            await blockUser(post.userId);
+            alert(`Blocked @${post.username}`);
+            if (onDeleteSuccess) onDeleteSuccess(post.id); // Re-using this to remove post from view
+        } catch (error) {
+            console.error('Block failed', error);
+            alert('Failed to block user');
+        } finally {
+            setShowBlockConfirm(false);
+            onClose(); // Close the main menu after block action
+        }
+    };
+
     const ActionButton = ({ label, action, color = 'text-black dark:text-white', isBold = false }) => (
         <button
             onClick={() => handleAction(action, label)}
@@ -162,52 +215,56 @@ const PostOptionsMenu = ({
     );
 
     return ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
-            <div
-                ref={menuRef}
-                className="bg-white dark:bg-[#262626] w-full max-w-[400px] rounded-xl flex flex-col items-center overflow-hidden shadow-2xl animate-zoom-in text-black dark:text-white"
-            >
-                {loading && (
-                    <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            <span className="text-sm">Processing...</span>
-                        </div>
-                    </div>
-                )}
-
-                {isOwnPost ? (
-                    <>
-                        <ActionButton label="Delete" action="delete" color="text-[#ed4956]" isBold />
-                        <ActionButton label="Edit" action="edit" />
-                        <ActionButton label={post.hideLikes ? "Unhide like count" : "Hide like count"} action="hideLikes" />
-                        <ActionButton label={post.commentsDisabled ? "Turn on commenting" : "Turn off commenting"} action="toggleComments" />
-                        <ActionButton label="Go to post" action="goToPost" />
-                        <ActionButton label="Share to..." action="share" />
-                        <ActionButton label="Copy link" action="copyLink" />
-                        <ActionButton label="Embed" action="embed" />
-                        <ActionButton label="About this account" action="aboutAccount" />
-                        <ActionButton label="Cancel" action="cancel" />
-                    </>
-                ) : (
-                    <>
-                        <ActionButton label="Report" action="report" color="text-[#ed4956]" isBold />
-                        {isFollowing ? (
-                            <ActionButton label="Unfollow" action="unfollow" color="text-[#ed4956]" isBold />
-                        ) : (
-                            <ActionButton label="Follow" action="follow" color="text-[#0095f6]" isBold />
+        <>
+            {!showBlockConfirm && ( // Conditionally render the main menu
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
+                    <div
+                        ref={menuRef}
+                        className="bg-white dark:bg-[#262626] w-full max-w-[400px] rounded-xl flex flex-col items-center overflow-hidden shadow-2xl animate-zoom-in text-black dark:text-white"
+                    >
+                        {loading && (
+                            <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
+                                <div className="flex flex-col items-center gap-2">
+                                    <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span className="text-sm">Processing...</span>
+                                </div>
+                            </div>
                         )}
-                        <ActionButton label="Add to favorites" action="favorites" />
-                        <ActionButton label="Go to post" action="goToPost" />
-                        <ActionButton label="Share to..." action="share" />
-                        <ActionButton label="Copy link" action="copyLink" />
-                        <ActionButton label="Embed" action="embed" />
-                        <ActionButton label="About this account" action="aboutAccount" />
-                        <ActionButton label="Cancel" action="cancel" />
-                    </>
-                )}
-            </div>
-        </div>,
+
+                        {isOwnPost ? (
+                            <>
+                                <ActionButton label="Delete" action="delete" color="text-[#ed4956]" isBold />
+                                <ActionButton label="Edit" action="edit" />
+                                <ActionButton label={post.hideLikes ? "Unhide like count" : "Hide like count"} action="hideLikes" />
+                                <ActionButton label={post.commentsDisabled ? "Turn on commenting" : "Turn off commenting"} action="toggleComments" />
+                                <ActionButton label="Go to post" action="goToPost" />
+                                <ActionButton label="Share to..." action="share" />
+                                <ActionButton label="Copy link" action="copyLink" />
+                                <ActionButton label="Embed" action="embed" />
+                                <ActionButton label="About this account" action="aboutAccount" />
+                                <ActionButton label="Cancel" action="cancel" />
+                            </>
+                        ) : (
+                            <>
+                                <ActionButton label="Block" action="block" color="text-[#ed4956]" isBold />
+                                <ActionButton label="Restrict" action="restrict" color="text-[#ed4956]" isBold />
+                                <ActionButton label="Report" action="report" color="text-[#ed4956]" isBold />
+                                <ActionButton label="About this account" action="aboutAccount" />
+                                <ActionButton label="Copy profile URL" action="copyProfileUrl" />
+                                <ActionButton label="Cancel" action="cancel" />
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <BlockConfirmModal
+                isOpen={showBlockConfirm}
+                onClose={() => { setShowBlockConfirm(false); }} // Only close the modal, not the main menu yet
+                onConfirm={handleBlockConfirm}
+                username={post.username}
+            />
+        </>,
         document.body
     );
 };

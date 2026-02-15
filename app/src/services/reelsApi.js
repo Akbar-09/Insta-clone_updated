@@ -18,5 +18,19 @@ const getReels = async () => {
 };
 
 export const reelsApi = {
-    getReels
+    getReels,
+    getReelById: async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_BASE_URL}/reels/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching reel by id:', error);
+            throw error;
+        }
+    }
 };
