@@ -88,7 +88,13 @@ const CommentItem = ({ comment, postId, isAd = false, onDelete, onReply }) => {
                         >
                             {comment.username}
                         </span>
-                        <span className="text-text-primary whitespace-pre-wrap break-words">{commentContent}</span>
+                        {comment.type === 'sticker' ? (
+                            <div className="w-20 h-20 my-1">
+                                <img src={comment.mediaUrl} alt="sticker" className="w-full h-full object-contain" />
+                            </div>
+                        ) : (
+                            <span className="text-text-primary whitespace-pre-wrap break-words">{commentContent}</span>
+                        )}
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-text-secondary">
                         <span>{formatTimeAgo(comment.createdAt)}</span>
@@ -110,15 +116,17 @@ const CommentItem = ({ comment, postId, isAd = false, onDelete, onReply }) => {
                 </div>
             </div>
 
-            {!isAd && (
-                <button
-                    onClick={handleLikeToggle}
-                    className={`pt-1 hover:opacity-60 transition-opacity ${liked ? 'text-red-500' : 'text-text-secondary'}`}
-                >
-                    <Heart size={12} fill={liked ? 'currentColor' : 'none'} />
-                </button>
-            )}
-        </div>
+            {
+                !isAd && (
+                    <button
+                        onClick={handleLikeToggle}
+                        className={`pt-1 hover:opacity-60 transition-opacity ${liked ? 'text-red-500' : 'text-text-secondary'}`}
+                    >
+                        <Heart size={12} fill={liked ? 'currentColor' : 'none'} />
+                    </button>
+                )
+            }
+        </div >
     );
 };
 

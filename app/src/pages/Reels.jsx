@@ -25,7 +25,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
         handleDoubleTap,
         isAnimating,
         setIsAnimating
-    } = usePostLikes(reel);
+    } = usePostLikes(reel, null, 'reel');
 
     // Local states
     const [showComments, setShowComments] = useState(false);
@@ -94,20 +94,15 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
         }
 
         try {
-            // Check for frontend dev server IP with port 5175
-            if (url.startsWith('http://192.168.1.15:5175/api/v1/')) {
-                return url.replace('http://192.168.1.15:5175', '');
+            // Remove full origin if it matches any local IP/Port variations to make it relative
+            // This handles localhost, 127.0.0.1, and any 192.168.1.x IP with common dev ports
+            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
+
+            if (cleanedUrl !== url) {
+                return cleanedUrl;
             }
 
-            // Check for old backend IP with port 5000
-            if (url.startsWith('http://192.168.1.15:5000')) {
-                return url.replace('http://192.168.1.15:5000', '');
-            }
-
-            if (url.startsWith('http://localhost:5000') || url.startsWith('http://127.0.0.1:5000') || url.startsWith('http://192.168.1.15:5000')) {
-                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.15):5000/, '');
-            }
-
+            // If it's an R2 URL directly, try to convert it to our proxied endpoint
             if (url.includes('r2.dev')) {
                 const parts = url.split('.dev/');
                 if (parts.length > 1) {
@@ -115,6 +110,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
                 }
             }
 
+            // Ensure media files are always routed through the api/v1 prefix
             if (url.includes('/media/files') && !url.includes('/api/v1/')) {
                 return url.replace('/media/files', '/api/v1/media/files');
             }
@@ -257,7 +253,10 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
                     <SharePostModal
                         postId={reel.id}
                         mediaUrl={reel.videoUrl}
+                        username={reel.username}
+                        caption={reel.caption}
                         onClose={() => setShowShareModal(false)}
+                        isReel={true}
                     />
                 )}
 

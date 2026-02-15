@@ -78,7 +78,7 @@ export const getFollowersList = async (userId) => {
 
 export const blockUser = async (userId) => {
     try {
-        const response = await api.post(`/users/block/${userId}`);
+        const response = await api.post(`/users/profile/block/${userId}`);
         return response.data;
     } catch (error) {
         throw error;

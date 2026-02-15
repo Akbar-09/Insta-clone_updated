@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { likePost, unlikePost } from '../api/likeApi';
 import * as adApi from '../api/adApi';
 
-export const usePostLikes = (post, onLikeUpdate) => {
+export const usePostLikes = (post, onLikeUpdate, itemType) => {
     // Initialize state from props (safely handle null post)
     const [isLiked, setIsLiked] = useState(!!(post?.isLiked || post?.likedByYou));
     const [likesCount, setLikesCount] = useState(post?.likesCount || 0);
@@ -39,14 +39,17 @@ export const usePostLikes = (post, onLikeUpdate) => {
         isRequesting.current = true;
         const isAd = post.isAd;
 
+        // Detect if it's a reel if type not provided
+        const finalType = itemType || (post.videoUrl && !post.mediaUrl ? 'reel' : 'post');
+
         try {
             if (isAd) {
                 await adApi.likeAd(post.id);
             } else {
                 if (previousLiked) {
-                    await unlikePost(post.id);
+                    await unlikePost(post.id, finalType);
                 } else {
-                    await likePost(post.id);
+                    await likePost(post.id, finalType);
                 }
             }
         } catch (error) {

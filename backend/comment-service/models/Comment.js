@@ -43,6 +43,20 @@ const Comment = sequelize.define('Comment', {
         type: DataTypes.INTEGER,
         allowNull: true,
         field: 'parent_id'
+    },
+    type: {
+        type: DataTypes.ENUM('text', 'sticker'),
+        defaultValue: 'text'
+    },
+    mediaUrl: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: 'media_url'
+    },
+    targetType: {
+        type: DataTypes.ENUM('post', 'reel'),
+        defaultValue: 'post',
+        field: 'target_type'
     }
 });
 

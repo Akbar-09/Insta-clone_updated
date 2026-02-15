@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Phone, Video, Info, Smile, Image as ImageIcon, Mic, X, Play, Pause, Square } from 'lucide-react';
+import { Phone, Video, Info, Smile, Image as ImageIcon, Mic, X, Play, Pause, Square, Clapperboard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StickerPicker from './StickerPicker';
 import EmojiPicker from './EmojiPicker';
@@ -88,11 +88,11 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
 
         // Convert absolute local gateway URLs to relative to use Vite proxy
         try {
-            // Handle variants of localhost:5000 (backend)
-            if (url.startsWith('http://localhost:5000') ||
-                url.startsWith('http://127.0.0.1:5000') ||
-                url.startsWith('http://192.168.1.15:5000')) {
-                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.15):5000/, '');
+            // Remove full origin if it matches any local IP/Port variations to make it relative
+            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
+
+            if (cleanedUrl !== url) {
+                return cleanedUrl;
             }
 
             // If it's an R2 URL directly, try to convert it to our proxied endpoint
@@ -426,6 +426,84 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                                                     </div>
                                                 </div>
                                             )}
+
+                                            {/* Shared Post/Reel Content */}
+                                            {(msg.type === 'post_share' || msg.type === 'reel_share') && (() => {
+                                                let shareData = {};
+                                                let isLegacy = false;
+
+                                                try {
+                                                    const content = msg.content;
+                                                    if (typeof content === 'string' && content.trim().startsWith('{')) {
+                                                        shareData = JSON.parse(content);
+                                                    } else {
+                                                        isLegacy = true;
+                                                        shareData = typeof content === 'object' ? content : {};
+                                                    }
+                                                } catch (e) {
+                                                    isLegacy = true;
+                                                }
+
+                                                if (isLegacy && typeof msg.content === 'string') {
+                                                    const idMatch = msg.content.match(/\/(reels|posts)\/(\d+)/);
+                                                    shareData = {
+                                                        id: idMatch ? idMatch[2] : null,
+                                                        postId: idMatch ? idMatch[2] : null,
+                                                        username: 'User',
+                                                        text: msg.content
+                                                    };
+                                                }
+
+                                                if (!shareData.id && !shareData.postId) {
+                                                    return <div className="p-3 text-xs italic opacity-50 bg-gray-100 dark:bg-white/5 rounded-xl">Shared content unavailable</div>;
+                                                }
+
+                                                const isReel = msg.type === 'reel_share';
+                                                const displayId = shareData.postId || shareData.id;
+                                                const displayThumb = shareData.thumbnailUrl || shareData.mediaUrl;
+
+                                                return (
+                                                    <div
+                                                        className={`rounded-2xl overflow-hidden mb-1 border border-gray-200 dark:border-gray-800 cursor-pointer hover:opacity-90 transition-opacity bg-white dark:bg-zinc-800 shadow-sm max-w-[240px]`}
+                                                        onClick={() => {
+                                                            if (isReel) navigate(`/reels/${displayId}`);
+                                                            else navigate(`/post/${displayId}`);
+                                                        }}
+                                                    >
+                                                        <div className="p-2.5 flex flex-col gap-2">
+                                                            <div className="flex items-center gap-2 px-1">
+                                                                <div className="w-5 h-5 rounded-full bg-gray-200 overflow-hidden ring-1 ring-black/5">
+                                                                    <img src={`https://ui-avatars.com/api/?name=${shareData.username || 'User'}&background=random`} className="w-full h-full object-cover" />
+                                                                </div>
+                                                                <span className="text-[11px] font-bold text-text-primary">
+                                                                    {shareData.username || 'User'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="aspect-[4/5] w-full bg-black rounded-lg overflow-hidden relative group">
+                                                                {displayThumb ? (
+                                                                    <img src={getProxiedUrl(displayThumb)} alt="" className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-zinc-700">
+                                                                        <Clapperboard color="white" size={24} className="opacity-40" />
+                                                                    </div>
+                                                                )}
+                                                                {isReel && (
+                                                                    <div className="absolute bottom-2 left-2 bg-black/20 backdrop-blur-md rounded-full p-1 border border-white/20">
+                                                                        <Clapperboard size={12} color="white" />
+                                                                    </div>
+                                                                )}
+                                                                <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
+                                                            </div>
+                                                            {shareData.caption && (
+                                                                <p className="text-[12px] px-1 line-clamp-2 leading-tight text-text-primary opacity-90">
+                                                                    <span className="font-semibold mr-1.5">{shareData.username}</span>
+                                                                    {shareData.caption}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
 
                                             {msg.content && (msg.type === 'text' || msg.type === 'story_reply' || (msg.type === 'image' && msg.content !== 'Sent an image')) && (
                                                 <div
