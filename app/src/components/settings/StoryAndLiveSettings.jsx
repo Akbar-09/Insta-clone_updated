@@ -1,13 +1,17 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 
 const StoryAndLiveSettings = () => {
     const navigate = useNavigate();
 
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl mx-auto pb-10">
-            <h2 className="text-xl font-bold mb-8 mt-1 text-center md:text-left">Hide story and live</h2>
+            <div className="flex items-center mb-8 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
+                </button>
+                <h2 className="text-xl font-bold">Hide story and live</h2>
+            </div>
 
             <div className="bg-white dark:bg-[#1c1c1c] border border-border rounded-xl overflow-hidden shadow-sm">
                 <div

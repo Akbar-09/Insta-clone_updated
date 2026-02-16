@@ -33,7 +33,7 @@ const SensitiveContentControl = () => {
                 type="radio"
                 checked={level === value}
                 onChange={() => handleChange(value)}
-                className="w-5 h-5 accent-black dark:accent-white mt-1"
+                className="custom-radio mt-1"
             />
         </label>
     );
@@ -41,7 +41,7 @@ const SensitiveContentControl = () => {
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl h-full pb-10">
             <div className="flex items-center mb-6 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                     <ArrowLeft />
                 </button>
                 <h2 className="text-xl font-bold">Sensitive content control</h2>

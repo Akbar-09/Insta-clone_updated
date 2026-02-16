@@ -17,7 +17,7 @@ const ToggleGroup = ({ label, description, name, checked, onChange }) => (
                 onChange={(e) => onChange(name, e.target.checked)}
                 className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-[#dbdbdb] dark:bg-[#363636] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white"></div>
+            <div className="toggle-pill"></div>
         </label>
     </div>
 );
@@ -66,8 +66,8 @@ const EmailNotifications = () => {
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl pb-10">
             <div className="flex items-center mb-6 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 flex hover:bg-gray-100 dark:hover:bg-zinc-800 p-2 rounded-full transition-colors">
-                    <ArrowLeft className="w-6 h-6" />
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
                 </button>
                 <h2 className="text-xl font-bold">Email notifications</h2>
             </div>

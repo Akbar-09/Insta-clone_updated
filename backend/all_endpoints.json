@@ -321,6 +321,22 @@
   },
   {
     "service": "admin-service",
+    "file": "monitoringRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/admin/monitoring/logs/:serviceName/:type",
+    "originalPath": "/logs/:serviceName/:type",
+    "body": []
+  },
+  {
+    "service": "admin-service",
+    "file": "monitoringRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/admin/monitoring/statuses",
+    "originalPath": "/statuses",
+    "body": []
+  },
+  {
+    "service": "admin-service",
     "file": "moderationRoutes.js",
     "method": "GET",
     "path": "/api/v1/admin/reels",
@@ -1243,7 +1259,7 @@
     "service": "help-service",
     "file": "helpRoutes.js",
     "method": "POST",
-    "path": "/api/v1/help/api/help/feedback",
+    "path": "/api/v1/help/feedback",
     "originalPath": "/feedback",
     "body": []
   },
@@ -1251,7 +1267,7 @@
     "service": "help-service",
     "file": "helpRoutes.js",
     "method": "GET",
-    "path": "/api/v1/help/api/help/search",
+    "path": "/api/v1/help/search",
     "originalPath": "/search",
     "body": []
   },
@@ -1259,15 +1275,23 @@
     "service": "help-service",
     "file": "helpRoutes.js",
     "method": "GET",
-    "path": "/api/v1/help/api/help/articles/:slug",
-    "originalPath": "/articles/:slug",
+    "path": "/api/v1/help/article/:slug",
+    "originalPath": "/article/:slug",
     "body": []
   },
   {
     "service": "help-service",
     "file": "helpRoutes.js",
     "method": "GET",
-    "path": "/api/v1/help/api/help/articles/featured",
+    "path": "/api/v1/help/articles",
+    "originalPath": "/articles",
+    "body": []
+  },
+  {
+    "service": "help-service",
+    "file": "helpRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/help/articles/featured",
     "originalPath": "/articles/featured",
     "body": []
   },
@@ -1275,8 +1299,72 @@
     "service": "help-service",
     "file": "helpRoutes.js",
     "method": "GET",
-    "path": "/api/v1/help/api/help/categories",
+    "path": "/api/v1/help/category/:slug",
+    "originalPath": "/category/:slug",
+    "body": []
+  },
+  {
+    "service": "help-service",
+    "file": "helpRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/help/categories",
     "originalPath": "/categories",
+    "body": []
+  },
+  {
+    "service": "help-service",
+    "file": "adminRoutes.js",
+    "method": "DELETE",
+    "path": "/api/v1/help/admin/article/:id",
+    "originalPath": "/article/:id",
+    "body": []
+  },
+  {
+    "service": "help-service",
+    "file": "adminRoutes.js",
+    "method": "PUT",
+    "path": "/api/v1/help/admin/article/:id",
+    "originalPath": "/article/:id",
+    "body": []
+  },
+  {
+    "service": "help-service",
+    "file": "adminRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/help/admin/articles",
+    "originalPath": "/articles",
+    "body": []
+  },
+  {
+    "service": "help-service",
+    "file": "adminRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/help/admin/article",
+    "originalPath": "/article",
+    "body": []
+  },
+  {
+    "service": "help-service",
+    "file": "adminRoutes.js",
+    "method": "DELETE",
+    "path": "/api/v1/help/admin/category/:id",
+    "originalPath": "/category/:id",
+    "body": []
+  },
+  {
+    "service": "help-service",
+    "file": "adminRoutes.js",
+    "method": "PUT",
+    "path": "/api/v1/help/admin/category/:id",
+    "originalPath": "/category/:id",
+    "body": []
+  },
+  {
+    "service": "help-service",
+    "file": "adminRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/help/admin/category",
+    "originalPath": "/category",
     "body": []
   },
   {
@@ -1779,6 +1867,14 @@
     "service": "post-service",
     "file": "postRoutes.js",
     "method": "POST",
+    "path": "/api/v1/posts/feed",
+    "originalPath": "/feed",
+    "body": []
+  },
+  {
+    "service": "post-service",
+    "file": "postRoutes.js",
+    "method": "POST",
     "path": "/api/v1/posts/",
     "originalPath": "/",
     "body": []
@@ -1906,6 +2002,38 @@
   {
     "service": "reel-service",
     "file": "reelRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/reels/:id",
+    "originalPath": "/:id",
+    "body": []
+  },
+  {
+    "service": "reel-service",
+    "file": "reelRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/reels/user",
+    "originalPath": "/user",
+    "body": []
+  },
+  {
+    "service": "reel-service",
+    "file": "reelRoutes.js",
+    "method": "DELETE",
+    "path": "/api/v1/reels/:id/bookmark",
+    "originalPath": "/:id/bookmark",
+    "body": []
+  },
+  {
+    "service": "reel-service",
+    "file": "reelRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/reels/:id/bookmark",
+    "originalPath": "/:id/bookmark",
+    "body": []
+  },
+  {
+    "service": "reel-service",
+    "file": "reelRoutes.js",
     "method": "DELETE",
     "path": "/api/v1/reels/:id/like",
     "originalPath": "/:id/like",
@@ -1933,6 +2061,14 @@
     "method": "GET",
     "path": "/api/v1/reels/activity/reels",
     "originalPath": "/activity/reels",
+    "body": []
+  },
+  {
+    "service": "reel-service",
+    "file": "reelRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/reels/saved",
+    "originalPath": "/saved",
     "body": []
   },
   {
@@ -2245,6 +2381,14 @@
     "method": "GET",
     "path": "/api/v1/users/profile/:userId/followers",
     "originalPath": "/:userId/followers",
+    "body": []
+  },
+  {
+    "service": "user-service",
+    "file": "profileRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/users/profile/:userId/reels",
+    "originalPath": "/:userId/reels",
     "body": []
   },
   {

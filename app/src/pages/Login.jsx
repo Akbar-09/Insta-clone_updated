@@ -75,15 +75,11 @@ const Login = () => {
                         {isSubmitting ? t('Logging in...') : t('Log in')}
                     </button>
 
-                    <div className="flex items-center w-full my-6 text-text-secondary text-[12px] font-bold tracking-wider opacity-60 before:h-px before:bg-white/30 before:flex-1 before:mr-4 after:h-px after:bg-white/30 after:flex-1 after:ml-4">{t('OR')}</div>
 
-                    <div className="text-indigo-900 dark:text-indigo-300 font-semibold text-sm cursor-pointer hover:text-indigo-700 dark:hover:text-white transition-colors flex items-center justify-center gap-2">
-                        <span>{t('Log in with Facebook')}</span>
-                    </div>
                 </form>
 
                 <div className="mt-8 text-xs text-text-secondary/80">
-                    <span className="cursor-pointer hover:underline">{t('Forgot password?')}</span>
+                    <Link to="/forgot-password" size="xs" className="text-blue-600 dark:text-blue-400 font-bold ml-1.5 hover:text-blue-500 transition-colors">{t('Forgot password?')}</Link>
                 </div>
             </div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react';
 import { reportPost } from '../api/reportApi';
+import { reelsApi } from '../services/reelsApi';
 
 const REPORT_CATEGORIES = [
     {
@@ -80,11 +81,13 @@ const REPORT_CATEGORIES = [
     }
 ];
 
-const ReportModal = ({ postId, onClose, onReport }) => {
+const ReportModal = ({ postId, userId, type = 'post', onClose, onReport }) => {
     const [step, setStep] = useState('categories'); // categories, subcategories, submitted
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [loading, setLoading] = useState(false);
     const [animating, setAnimating] = useState(false);
+
+    const isPost = type === 'post';
 
     // Close on ESC
     useEffect(() => {
@@ -121,8 +124,12 @@ const ReportModal = ({ postId, onClose, onReport }) => {
             // Send category.id (enum value) instead of label
             if (onReport) {
                 await onReport(selectedCategory.id, detail);
-            } else {
+            } else if (type === 'reel' && postId) {
+                await reelsApi.reportReel(postId, selectedCategory.id, detail);
+            } else if (isPost && postId) {
                 await reportPost(postId, selectedCategory.id, detail);
+            } else {
+                console.warn("Report modal used without onReport or (postId and type=post/reel)");
             }
             setStep('submitted');
         } catch (error) {
@@ -135,10 +142,11 @@ const ReportModal = ({ postId, onClose, onReport }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="bg-[#262626] w-full max-w-[400px] rounded-xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh] relative animate-scale-in"
+                className="bg-[#262626] w-full max-w-[400px] rounded-xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] relative"
                 onClick={e => e.stopPropagation()}
+                style={{ animation: 'scaleIn 0.2s ease-out forwards' }}
             >
                 {/* Header */}
                 <div className="border-b border-[#363636] px-4 py-3 flex items-center justify-between sticky top-0 bg-[#262626] z-10">
@@ -160,10 +168,10 @@ const ReportModal = ({ postId, onClose, onReport }) => {
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     {step === 'categories' && (
-                        <div className={`p-0 transition-opacity duration-300 ${animating ? 'opacity-0 translate-x-[-20px]' : 'opacity-100'}`}>
-                            <div className="p-4">
-                                <h2 className="text-white font-bold text-lg mb-1">Why are you reporting this post?</h2>
-                                <p className="text-[#A8A8A8] text-sm">
+                        <div className={`p-0 transition-all duration-300 ${animating ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'}`}>
+                            <div className="p-4 bg-[#262626]">
+                                <h2 className="text-white font-bold text-lg mb-1">Why are you reporting this {isPost ? 'post' : 'account'}?</h2>
+                                <p className="text-[#A8A8A8] text-sm leading-tight">
                                     Your report is anonymous, except if you're reporting an intellectual property infringement.
                                     If someone is in immediate danger, call the local emergency services - don't wait.
                                 </p>
@@ -172,11 +180,11 @@ const ReportModal = ({ postId, onClose, onReport }) => {
                                 {REPORT_CATEGORIES.map(category => (
                                     <button
                                         key={category.id}
-                                        onClick={() => handleCategorySelect(category)} // Fixed: Wrap in function
+                                        onClick={() => handleCategorySelect(category)}
                                         className="flex items-center justify-between px-4 py-3.5 hover:bg-[#363636] transition-colors border-b border-[#363636]/30 last:border-none group text-left w-full"
                                     >
                                         <span className="text-white text-base">{category.label}</span>
-                                        <ChevronRight size={20} className="text-[#A8A8A8] group-hover:text-white" />
+                                        <ChevronRight size={20} className="text-[#A8A8A8] group-hover:text-white transition-colors" />
                                     </button>
                                 ))}
                             </div>
@@ -184,11 +192,11 @@ const ReportModal = ({ postId, onClose, onReport }) => {
                     )}
 
                     {step === 'subcategories' && selectedCategory && (
-                        <div className={`p-0 transition-opacity duration-300 ${animating ? 'opacity-0 translate-x-[20px]' : 'opacity-100'}`}>
-                            <div className="p-4">
+                        <div className={`p-0 transition-all duration-300 ${animating ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
+                            <div className="p-4 bg-[#262626]">
                                 <h2 className="text-white font-bold text-lg mb-1">{selectedCategory.label}</h2>
                                 <p className="text-[#A8A8A8] text-sm">
-                                    Choose the best match.
+                                    Choose the best match for your report.
                                 </p>
                             </div>
                             <div className="flex flex-col">
@@ -197,10 +205,14 @@ const ReportModal = ({ postId, onClose, onReport }) => {
                                         key={sub}
                                         onClick={() => handleSubmit(sub)}
                                         disabled={loading}
-                                        className="flex items-center justify-between px-4 py-3.5 hover:bg-[#363636] transition-colors border-b border-[#363636]/30 last:border-none text-left w-full"
+                                        className="flex items-center justify-between px-4 py-3.5 hover:bg-[#363636] transition-colors border-b border-[#363636]/30 last:border-none text-left w-full group"
                                     >
-                                        <span className="text-white text-base">{sub}</span>
-                                        {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+                                        <span className="text-white text-base group-hover:text-white/90">{sub}</span>
+                                        {loading ? (
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        ) : (
+                                            <ChevronRight size={20} className="text-[#A8A8A8] group-hover:text-white" />
+                                        )}
                                     </button>
                                 ))}
                             </div>
@@ -208,17 +220,17 @@ const ReportModal = ({ postId, onClose, onReport }) => {
                     )}
 
                     {step === 'submitted' && (
-                        <div className="p-8 flex flex-col items-center text-center animate-fade-in">
-                            <div className="w-16 h-16 rounded-full border-2 border-green-500 flex items-center justify-center mb-4 text-green-500">
+                        <div className="p-8 flex flex-col items-center text-center animate-fade-in bg-[#262626]">
+                            <div className="w-16 h-16 rounded-full border-2 border-green-500 flex items-center justify-center mb-6 text-green-500">
                                 <CheckCircle size={32} />
                             </div>
-                            <h2 className="text-white font-bold text-xl mb-2">Thanks for letting us know</h2>
-                            <p className="text-[#A8A8A8] text-sm mb-6">
-                                Your report helps keep our community safe. We'll review the post and remove it if it goes against our Community Guidelines.
+                            <h2 className="text-white font-bold text-xl mb-3">Thanks for letting us know</h2>
+                            <p className="text-[#A8A8A8] text-[15px] leading-snug mb-8">
+                                Your report helps keep our community safe. We'll review this {isPost ? 'post' : 'account'} and take action if it goes against our Community Guidelines.
                             </p>
                             <button
                                 onClick={onClose}
-                                className="w-full bg-[#0095F6] hover:bg-[#1877F2] text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                                className="w-full bg-[#0095F6] hover:bg-[#1877F2] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm"
                             >
                                 Close
                             </button>
@@ -226,6 +238,23 @@ const ReportModal = ({ postId, onClose, onReport }) => {
                     )}
                 </div>
             </div>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                @keyframes scaleIn {
+                    from { opacity: 0; transform: scale(1.1); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #363636;
+                    border-radius: 10px;
+                }
+            `}} />
         </div>
     );
 };

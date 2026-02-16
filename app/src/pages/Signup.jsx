@@ -92,7 +92,7 @@ const Signup = () => {
                     />
 
                     <div className="text-xs text-text-secondary/70 text-center my-4 px-2 leading-relaxed">
-                        People who use our service may have uploaded your contact information to Jaadoe. <span className="font-semibold cursor-pointer hover:text-text-primary">Learn More</span>
+                        People who use our service may have uploaded your contact information to Jaadoe. <Link to="/help" className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 hover:underline">Learn More</Link>
                     </div>
 
                     <button

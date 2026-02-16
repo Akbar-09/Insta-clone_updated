@@ -254,7 +254,7 @@ const Sidebar = () => {
                     <NavItem to="/dashboard" path="/dashboard" icon={BarChart2} label={t('Dashboard')} />
 
                     <Link to="/profile/me" className="block mt-1 no-underline">
-                        <div className={`flex items-center p-3 my-1 rounded-lg text-text-primary transition-colors cursor-pointer hover:bg-black/5
+                        <div className={`flex items-center p-3 my-1 rounded-lg text-text-primary dark:text-white transition-colors cursor-pointer hover:bg-black/5 dark:hover:bg-white/10
                              ${isActive('/profile/me') ? 'font-bold' : ''}
                              ${isNarrow ? 'justify-center p-3' : ''} 
                              max-[1264px]:justify-center max-[1264px]:p-3`}>
@@ -277,21 +277,21 @@ const Sidebar = () => {
                                 max-[1264px]:left-[80px] max-[1264px]:bottom-auto max-[1264px]:top-[350px]
                             `}
                         >
-                            <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between" onClick={handleCreatePostClick}>
-                                <span className="text-sm font-semibold">{t('Post')}</span>
-                                <ImageIcon size={20} className="text-text-primary" />
+                            <div className="flex items-center px-4 py-3 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer justify-between transition-colors" onClick={handleCreatePostClick}>
+                                <span className="text-sm font-semibold text-text-primary dark:text-white">{t('Post')}</span>
+                                <ImageIcon size={20} className="text-text-primary dark:text-white" />
                             </div>
-                            <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between border-t border-border" onClick={handleLiveVideoClick}>
-                                <span className="text-sm font-semibold">{t('Live video')}</span>
-                                <Video size={20} className="text-text-primary" />
+                            <div className="flex items-center px-4 py-3 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer justify-between border-t border-border transition-colors" onClick={handleLiveVideoClick}>
+                                <span className="text-sm font-semibold text-text-primary dark:text-white">{t('Live video')}</span>
+                                <Video size={20} className="text-text-primary dark:text-white" />
                             </div>
-                            <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between border-t border-border" onClick={handleAdClick}>
-                                <span className="text-sm font-semibold">{t('Ad')}</span>
-                                <BarChart2 size={20} className="text-text-primary" />
+                            <div className="flex items-center px-4 py-3 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer justify-between border-t border-border transition-colors" onClick={handleAdClick}>
+                                <span className="text-sm font-semibold text-text-primary dark:text-white">{t('Ad')}</span>
+                                <BarChart2 size={20} className="text-text-primary dark:text-white" />
                             </div>
-                            <div className="flex items-center px-4 py-3 hover:bg-[#fafafa] cursor-pointer justify-between border-t border-border">
-                                <span className="text-sm font-semibold">{t('AI Studio')}</span>
-                                <Sparkles size={20} className="text-text-primary" />
+                            <div className="flex items-center px-4 py-3 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer justify-between border-t border-border transition-colors">
+                                <span className="text-sm font-semibold text-text-primary dark:text-white">{t('AI Studio')}</span>
+                                <Sparkles size={20} className="text-text-primary dark:text-white" />
                             </div>
                         </div>
                     )}
@@ -316,7 +316,7 @@ const Sidebar = () => {
 
                 {(!isNarrow) && (
                     <div className="mt-[10px] max-[1264px]:hidden">
-                        <Link to="#" className="flex items-center p-3 my-1 rounded-lg text-text-primary transition-colors cursor-pointer hover:bg-black/5">
+                        <Link to="#" className="flex items-center p-3 my-1 rounded-lg text-text-primary dark:text-white transition-colors cursor-pointer hover:bg-black/5 dark:hover:bg-white/10">
                             <Box size={20} className="mr-4 text-text-primary" />
                             <span className="text-base leading-6 whitespace-nowrap">{t('Also from Jaadoe')}</span>
                         </Link>

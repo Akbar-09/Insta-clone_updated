@@ -30,7 +30,7 @@ app.use('/', authRoutes);
 // Start
 const startServer = async () => {
     try {
-        await sequelize.sync(); // Auto-create tables for now
+        await sequelize.sync({ alter: true }); // Auto-create or update tables
         await connectRabbitMQ();
         app.listen(PORT, () => {
             console.log(`Auth Service running on port ${PORT}`);

@@ -150,12 +150,31 @@ const PostOptionsMenu = ({
                     break;
                 case 'copyProfileUrl':
                     const profileUrl = `${window.location.origin}/profile/${post.username}`;
-                    await navigator.clipboard.writeText(profileUrl);
-                    const msg = document.createElement('div');
-                    msg.textContent = 'Link copied to clipboard';
-                    msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
-                    document.body.appendChild(msg);
-                    setTimeout(() => msg.remove(), 2000);
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            await navigator.clipboard.writeText(profileUrl);
+                        } else {
+                            // Fallback for non-secure contexts
+                            const textArea = document.createElement("textarea");
+                            textArea.value = profileUrl;
+                            textArea.style.position = "fixed";
+                            textArea.style.left = "-999999px";
+                            textArea.style.top = "-999999px";
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            document.execCommand('copy');
+                            textArea.remove();
+                        }
+                        const msg = document.createElement('div');
+                        msg.textContent = 'Link copied to clipboard';
+                        msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
+                        document.body.appendChild(msg);
+                        setTimeout(() => msg.remove(), 2000);
+                    } catch (err) {
+                        console.error('Copy failed:', err);
+                        alert('Failed to copy link');
+                    }
                     onClose();
                     break;
                 case 'embed':
@@ -166,7 +185,23 @@ const PostOptionsMenu = ({
                         } else {
                             embedData = await getEmbedCode(post.id);
                         }
-                        await navigator.clipboard.writeText(embedData.data.embedHtml);
+                        const textToCopy = embedData.data.embedHtml;
+
+                        if (navigator.clipboard && window.isSecureContext) {
+                            await navigator.clipboard.writeText(textToCopy);
+                        } else {
+                            const textArea = document.createElement("textarea");
+                            textArea.value = textToCopy;
+                            textArea.style.position = "fixed";
+                            textArea.style.left = "-999999px";
+                            textArea.style.top = "-999999px";
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            document.execCommand('copy');
+                            textArea.remove();
+                        }
+
                         const msg = document.createElement('div');
                         msg.textContent = 'Embed code copied to clipboard';
                         msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';

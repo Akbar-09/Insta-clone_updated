@@ -492,6 +492,11 @@ const bookmarkPost = async (req, res) => {
 
         if (!userId) return res.status(400).json({ message: 'User ID required' });
 
+        const post = await Post.findByPk(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
         await SavedPost.findOrCreate({
             where: { userId, postId }
         });
@@ -506,12 +511,15 @@ const bookmarkPost = async (req, res) => {
 const unbookmarkPost = async (req, res) => {
     try {
         const postId = req.params.id;
-        const { userId } = req.body; // Usually from query or auth middleware if DELETE body not supported, but we'll assume body or query for now. 
-        // Better to use req.user.id if available, but for now follow pattern.
-        // DELETE requests *can* have body but often discouraged. Let's support query.
+        const { userId } = req.body;
         const effectiveUserId = userId || req.query.userId;
 
         if (!effectiveUserId) return res.status(400).json({ message: 'User ID required' });
+
+        const post = await Post.findByPk(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
 
         await SavedPost.destroy({
             where: { userId: effectiveUserId, postId }

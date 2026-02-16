@@ -54,8 +54,8 @@ const Language = () => {
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl h-full pb-10">
             <div className="flex items-center mb-6 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
-                    <ArrowLeft />
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
                 </button>
                 <h2 className="text-xl font-bold">{t('Language')}</h2>
             </div>
@@ -81,7 +81,7 @@ const Language = () => {
                             type="radio"
                             checked={language === lang.code}
                             onChange={() => changeLanguage(lang.code)}
-                            className="w-5 h-5 accent-black dark:accent-white"
+                            className="custom-radio"
                         />
                     </label>
                 ))}
