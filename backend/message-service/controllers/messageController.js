@@ -193,7 +193,19 @@ const sendMessage = async (req, res) => {
                 }
             };
             channel.sendToQueue('socket_events', Buffer.from(JSON.stringify(event)));
+
+            // Push to notification_queue
+            const senderUsername = req.headers['x-user-username'] || 'Someone';
+            const { publishNotification } = require('../config/rabbitmq');
+            await publishNotification({
+                userId: otherUserId,
+                type: 'message',
+                title: 'New Message',
+                message: `${senderUsername}: ${snippet ? snippet.substring(0, 50) : 'Sent a message'}`,
+                link: `/direct/t/${convId}`
+            });
         }
+
 
         res.status(201).json({
             status: 'success',

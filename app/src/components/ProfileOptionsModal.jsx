@@ -5,17 +5,33 @@ import { restrictUser } from '../api/userApi';
 import { blockUser } from '../api/privacyApi';
 import { reportProblem } from '../api/reportApi';
 import BlockConfirmModal from './BlockConfirmModal';
+import { useAuth } from '../context/AuthContext';
 
 const ProfileOptionsModal = ({ onClose, profile }) => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [showBlockConfirm, setShowBlockConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const handleAction = async (action) => {
         if (loading) return;
 
+        // Auth Check
+        const authActions = ['block', 'report', 'restrict'];
+        if (authActions.includes(action) && !user) {
+            onClose();
+            navigate('/login');
+            return;
+        }
+
         switch (action) {
             case 'block':
+                if (!profile?.userId) {
+                    console.error('UserId missing on profile', profile);
+                    alert('Cannot block unknown user');
+                    onClose();
+                    return;
+                }
                 setShowBlockConfirm(true);
                 return;
             case 'report':
@@ -60,6 +76,12 @@ const ProfileOptionsModal = ({ onClose, profile }) => {
     };
 
     const handleBlockConfirm = async () => {
+        if (!profile?.userId) {
+            alert('Error: User ID missing');
+            setShowBlockConfirm(false);
+            onClose();
+            return;
+        }
         try {
             setLoading(true);
             await blockUser(profile.userId);

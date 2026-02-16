@@ -329,7 +329,7 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                                 className="w-full h-full object-cover"
                             />
                         </div>
-                        <h2 className="text-xl font-bold text-text-primary tracking-tight">{otherUser.fullName || displayName}</h2>
+                        <h2 className="text-xl font-bold text-text-primary tracking-tight">{(otherUser.fullName && !/^User \d+$/.test(otherUser.fullName)) ? otherUser.fullName : displayName}</h2>
                         <div className="flex items-center gap-1 text-sm text-text-secondary mt-1">
                             <span>{displayName}</span>
                             <span>•</span>

@@ -38,7 +38,16 @@ const Reel = sequelize.define('Reel', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    hideLikes: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    commentsDisabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     createdAt: {
+
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     },

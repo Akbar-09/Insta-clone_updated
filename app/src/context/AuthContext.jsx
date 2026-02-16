@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
+import { registerServiceWorker, requestNotificationPermission } from '../utils/pushNotifications';
 
 export const AuthContext = createContext();
 
@@ -20,6 +21,13 @@ export const AuthProvider = ({ children }) => {
     });
 
     useEffect(() => {
+        const initPush = async () => {
+            await registerServiceWorker();
+        };
+        initPush();
+    }, []);
+
+    useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
                 const storedToken = localStorage.getItem('token');
@@ -29,6 +37,8 @@ export const AuthProvider = ({ children }) => {
                     const { data } = await api.get('auth/me');
                     if (data.status === 'success') {
                         setUser(data.data);
+                        // Request notification permission if not already granted
+                        requestNotificationPermission();
                     }
                 }
             } catch (err) {
@@ -42,6 +52,7 @@ export const AuthProvider = ({ children }) => {
         fetchCurrentUser();
     }, []);
 
+
     const login = async (email, password) => {
         try {
             const { data } = await api.post('auth/login', { email, password });
@@ -50,7 +61,11 @@ export const AuthProvider = ({ children }) => {
                 setToken(data.data.token);
                 setUser(data.data.user);
 
+                // Request notification permission
+                requestNotificationPermission();
+
                 // Add to sessions list
+
                 setSessions(prev => {
                     const exists = prev.find(s => s.userId === data.data.user.id);
                     if (exists) {

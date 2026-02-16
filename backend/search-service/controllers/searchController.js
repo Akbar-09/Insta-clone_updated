@@ -26,6 +26,7 @@ exports.search = async (req, res) => {
         if (currentUserId && userResults.length > 0) {
             try {
                 const userIds = userResults.map(r => r.referenceId);
+                console.log(`[SearchService] Fetching batch profiles for: ${userIds}, CurrentUser: ${currentUserId}`);
 
                 // Call User Service to check follow status
                 // Using global fetch (Node 18+)
@@ -35,8 +36,15 @@ exports.search = async (req, res) => {
                     body: JSON.stringify({ userIds, currentUserId })
                 });
 
+                if (!response.ok) {
+                    console.error(`[SearchService] Batch profile fetch failed: ${response.status} ${response.statusText}`);
+                    const text = await response.text();
+                    console.error(`[SearchService] Response body: ${text}`);
+                }
+
                 if (response.ok) {
                     const data = await response.json();
+                    console.log(`[SearchService] Batch profile response status: ${data.status}`);
                     if (data.status === 'success') {
                         const profileMap = {};
                         data.data.forEach(p => {
@@ -47,21 +55,29 @@ exports.search = async (req, res) => {
                                 profilePicture: p.profilePicture
                             };
                         });
+                        console.log(`[SearchService] Profile Map Keys: ${Object.keys(profileMap)}`);
 
                         plainResults.forEach(r => {
-                            if (r.type === 'USER' && profileMap[r.referenceId] !== undefined) {
-                                const profile = profileMap[r.referenceId];
-                                r.isFollowing = profile.isFollowing;
-                                // Add these fields so frontend components (like Share modal) can find them easily
-                                r.username = profile.username;
-                                r.fullName = profile.fullName;
-                                r.profilePicture = profile.profilePicture;
+                            if (r.type === 'USER') {
+                                const profile = profileMap[r.referenceId] || profileMap[String(r.referenceId)];
+                                // Ensure userId is always available for frontend use
+                                r.userId = r.referenceId;
+
+                                if (profile) {
+                                    console.log(`[SearchService] Enriching ${r.content} (ID: ${r.referenceId}) - isFollowing: ${profile.isFollowing}`);
+                                    r.isFollowing = profile.isFollowing;
+                                    // Add these fields so frontend components (like Share modal) can find them easily
+                                    r.username = profile.username;
+                                    r.fullName = profile.fullName;
+                                    r.profilePicture = profile.profilePicture;
+                                }
                             }
                         });
                     }
                 }
             } catch (err) {
                 console.error("Failed to fetch follow status enrichments:", err.message);
+                console.error(err.stack);
             }
         }
 

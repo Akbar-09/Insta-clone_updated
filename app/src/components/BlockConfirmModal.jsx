@@ -9,7 +9,7 @@ const BlockConfirmModal = ({ isOpen, onClose, onConfirm, username }) => {
                 <div className="px-8 pb-6">
                     <h3 className="text-xl font-bold mb-2 text-black dark:text-white">Block {username}?</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 leading-5">
-                        They won't be able to find your profile, posts or story on Instagram. Instagram won't let them know you blocked them.
+                        They won't be able to find your profile, posts or story here. They won't be notified that you blocked them.
                     </p>
                 </div>
                 <div className="w-full flex flex-col border-t border-gray-200 dark:border-[#363636]">

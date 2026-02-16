@@ -94,6 +94,24 @@ export const restrictUser = async (userId) => {
     }
 };
 
+export const unrestrictUser = async (userId) => {
+    try {
+        const response = await api.delete(`/users/profile/settings/restricted/${userId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getRestrictedUsers = async () => {
+    try {
+        const response = await api.get('/users/profile/settings/restricted');
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const reportProblem = async (data) => {
     try {
         const response = await api.post('/users/report-problem', data);

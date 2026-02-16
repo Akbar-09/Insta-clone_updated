@@ -3,7 +3,7 @@ import { X, Search, Send, Check, Copy } from 'lucide-react';
 import { searchUsers, sendPostViaDM } from '../api/shareApi';
 import ReactDOM from 'react-dom';
 
-const SharePostModal = ({ postId, mediaUrl, onClose, isReel = false }) => {
+const SharePostModal = ({ postId, mediaUrl, username, caption, onClose, isReel = false }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);

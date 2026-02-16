@@ -86,8 +86,11 @@ const ReportModal = ({ postId, userId, type = 'post', onClose, onReport }) => {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [loading, setLoading] = useState(false);
     const [animating, setAnimating] = useState(false);
+    const [error, setError] = useState(null);
+
 
     const isPost = type === 'post';
+
 
     // Close on ESC
     useEffect(() => {
@@ -120,6 +123,8 @@ const ReportModal = ({ postId, userId, type = 'post', onClose, onReport }) => {
 
     const handleSubmit = async (detail) => {
         setLoading(true);
+        setError(null);
+        console.log(`[Report] Submitting ${type} report for ID: ${postId}`, { category: selectedCategory.id, detail });
         try {
             // Send category.id (enum value) instead of label
             if (onReport) {
@@ -133,13 +138,22 @@ const ReportModal = ({ postId, userId, type = 'post', onClose, onReport }) => {
             }
             setStep('submitted');
         } catch (error) {
-            console.error("Report failed", error);
             const serverMessage = error.response?.data?.message || 'Failed to submit report. Please try again.';
-            alert(serverMessage);
+
+            // Graceful handling for already reported
+            if (serverMessage.toLowerCase().includes('already reported')) {
+                setStep('submitted');
+            } else {
+                console.error("Report failed:", serverMessage, error);
+                setError(serverMessage);
+                setTimeout(() => setError(null), 5000);
+            }
         } finally {
+
             setLoading(false);
         }
     };
+
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
@@ -219,7 +233,15 @@ const ReportModal = ({ postId, userId, type = 'post', onClose, onReport }) => {
                         </div>
                     )}
 
+                    {/* Error Message */}
+                    {error && (
+                        <div className="mx-4 mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg animate-fade-in">
+                            <p className="text-red-500 text-xs text-center font-medium">{error}</p>
+                        </div>
+                    )}
+
                     {step === 'submitted' && (
+
                         <div className="p-8 flex flex-col items-center text-center animate-fade-in bg-[#262626]">
                             <div className="w-16 h-16 rounded-full border-2 border-green-500 flex items-center justify-center mb-6 text-green-500">
                                 <CheckCircle size={32} />

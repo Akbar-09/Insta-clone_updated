@@ -1,6 +1,7 @@
 const UserProfile = require('../models/UserProfile');
 const Follow = require('../models/Follow');
 const BlockedUser = require('../models/BlockedUser');
+const RestrictedAccount = require('../models/RestrictedAccount');
 const AccountHistory = require('../models/AccountHistory');
 const { publishEvent } = require('../config/rabbitmq');
 const axios = require('axios');
@@ -108,7 +109,7 @@ exports.getMyProfile = async (req, res) => {
         // Get posts count from post-service
         let postsCount = 0;
         try {
-            const postsRes = await axios.get(`http://localhost:5003/?username=${profile.username}`);
+            const postsRes = await axios.get(`http://localhost:5003/?authorId=${profile.userId}`);
             if (postsRes.data.status === 'success') {
                 postsCount = postsRes.data.data.length;
             }
@@ -160,7 +161,7 @@ exports.getUserProfile = async (req, res) => {
         // Get posts count
         let postsCount = 0;
         try {
-            const postsRes = await axios.get(`http://localhost:5003/?username=${profile.username}`);
+            const postsRes = await axios.get(`http://localhost:5003/?authorId=${profile.userId}`);
             if (postsRes.data.status === 'success') {
                 postsCount = postsRes.data.data.length;
             }
@@ -187,6 +188,14 @@ exports.getUserProfile = async (req, res) => {
                 }
             });
             isBlocked = !!block;
+
+            const restriction = await RestrictedAccount.findOne({
+                where: {
+                    userId: currentUserId,
+                    restrictedUserId: profile.userId
+                }
+            });
+            isRestricted = !!restriction;
         }
 
         // Update counts
@@ -204,7 +213,8 @@ exports.getUserProfile = async (req, res) => {
                 followersCount,
                 followingCount,
                 isFollowing,
-                isBlocked
+                isBlocked,
+                isRestricted
             }
         });
     } catch (error) {
@@ -339,7 +349,7 @@ exports.getUserPosts = async (req, res) => {
 
         // Fetch posts from post-service
         try {
-            const url = `http://localhost:5003/?username=${profile.username}`;
+            const url = `http://localhost:5003/?authorId=${userId}`;
             console.log(`[UserService] Fetching posts from: ${url}`);
             const postsRes = await axios.get(url);
 
@@ -382,7 +392,7 @@ exports.getUserReels = async (req, res) => {
         }
 
         try {
-            const url = `http://localhost:5004/user?username=${profile.username}`;
+            const url = `http://localhost:5004/user?userId=${userId}`;
             console.log(`[UserService] Fetching reels from: ${url}`);
             const reelsRes = await axios.get(url);
             res.json({ status: 'success', data: reelsRes.data.data || [] });
@@ -408,22 +418,35 @@ exports.getMySavedPosts = async (req, res) => {
             return res.status(401).json({ status: 'error', message: 'Unauthorized' });
         }
 
-        // Fetch saved posts from post-service
+        let combinedSaved = [];
+
+        // 1. Fetch saved posts from post-service
         try {
             const savedRes = await axios.get(`http://localhost:5003/saved?userId=${userId}`);
-
-            if (savedRes.data.status === 'success') {
-                res.json({
-                    status: 'success',
-                    data: savedRes.data.data
-                });
-            } else {
-                res.json({ status: 'success', data: [] });
+            if (savedRes.data.status === 'success' && Array.isArray(savedRes.data.data)) {
+                combinedSaved = [...combinedSaved, ...savedRes.data.data.map(p => ({ ...p, type: 'POST' }))];
             }
         } catch (error) {
             console.error('Error fetching saved posts:', error.message);
-            res.json({ status: 'success', data: [] });
         }
+
+        // 2. Fetch saved reels from reel-service
+        try {
+            const savedReelsRes = await axios.get(`http://localhost:5005/saved?userId=${userId}`);
+            if (savedReelsRes.data.status === 'success' && Array.isArray(savedReelsRes.data.data)) {
+                combinedSaved = [...combinedSaved, ...savedReelsRes.data.data.map(r => ({ ...r, type: 'REEL' }))];
+            }
+        } catch (error) {
+            console.error('Error fetching saved reels:', error.message);
+        }
+
+        // Sort by createdAt if available
+        combinedSaved.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        res.json({
+            status: 'success',
+            data: combinedSaved
+        });
     } catch (error) {
         console.error('Get Saved Posts Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
@@ -692,6 +715,7 @@ exports.getBatchProfiles = async (req, res) => {
 
         let followingMap = {};
         let blockedMap = {};
+        let restrictedMap = {};
 
         if (currentUserId) {
             const following = await Follow.findAll({
@@ -715,12 +739,24 @@ exports.getBatchProfiles = async (req, res) => {
             blocked.forEach(b => {
                 blockedMap[b.blockedId] = true;
             });
+
+            const restricted = await RestrictedAccount.findAll({
+                where: {
+                    userId: currentUserId,
+                    restrictedUserId: userIds
+                },
+                attributes: ['restrictedUserId']
+            });
+            restricted.forEach(r => {
+                restrictedMap[r.restrictedUserId] = true;
+            });
         }
 
         const result = profiles.map(p => ({
             ...p.toJSON(),
             isFollowing: !!followingMap[p.userId],
-            isBlocked: !!blockedMap[p.userId]
+            isBlocked: !!blockedMap[p.userId],
+            isRestricted: !!restrictedMap[p.userId]
         }));
 
         res.json({ status: 'success', data: result });

@@ -12,6 +12,7 @@ import HeartOverlay from './HeartOverlay';
 
 import ReportModal from './ReportModal';
 import EditPostModal from './EditPostModal';
+import { usePrivacy } from '../context/PrivacyContext';
 // ShareModal is already imported as SharePostModal, so no need to re-import.
 // The instruction mentioned "ShareModal" but the existing component is "SharePostModal".
 // I will assume the instruction meant to use the existing SharePostModal.
@@ -41,6 +42,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+    const { isUserBlocked } = usePrivacy();
 
     // Saved State
     const [isSaved, setIsSaved] = useState(currentPost.isSaved || false);
@@ -94,10 +96,13 @@ const PostCard = ({ post, onLikeUpdate }) => {
     const commentInputRef = useRef(null);
     const commentSectionRef = useRef(null);
 
-    if (isDeleted) return null;
+    const isBlocked = isUserBlocked(currentPost.userId);
+
+    if (isDeleted || isBlocked) return null;
 
     // Is Own Post Logic
-    const isOwnPost = user && (user.id === currentPost.userId || user.username === currentPost.username);
+    const isOwnPost = user && currentPost.userId && (String(user.id) === String(currentPost.userId) || user.username === currentPost.username);
+
 
     const getProxiedUrl = (url) => {
         if (!url) return '';
@@ -128,11 +133,17 @@ const PostCard = ({ post, onLikeUpdate }) => {
             if (url.includes('/media/files') && !url.includes('/api/v1/')) {
                 return url.replace('/media/files', '/api/v1/media/files');
             }
+
+            // Route local /uploads/ through the robust files endpoint
+            if (url.startsWith('/uploads/')) {
+                return url.replace('/uploads/', '/api/v1/media/files/');
+            }
         } catch (e) {
             console.warn('URL proxying failed:', e);
         }
 
         return url;
+
     };
 
     const getMediaUrl = (url) => {
@@ -173,9 +184,9 @@ const PostCard = ({ post, onLikeUpdate }) => {
                 await adApi.bookmarkAd(currentPost.id);
             } else {
                 if (!previousState) {
-                    await savePost(post.id, user.id || user.userId);
+                    await savePost(post.id, user.id || user.userId, currentPost.type || 'POST');
                 } else {
-                    await unsavePost(post.id, user.id || user.userId);
+                    await unsavePost(post.id, user.id || user.userId, currentPost.type || 'POST');
                 }
             }
         } catch (error) {
@@ -391,6 +402,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
             {showReportModal && !currentPost.isAd && (
                 <ReportModal
                     postId={currentPost.id}
+                    type={currentPost.type?.toLowerCase() || 'post'}
                     onClose={() => setShowReportModal(false)}
                 />
             )}

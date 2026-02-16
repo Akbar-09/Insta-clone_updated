@@ -30,7 +30,25 @@ const createComment = async (req, res) => {
         // Publish Event
         await publishEvent('COMMENT_ADDED', comment.toJSON());
 
+        // Push to notification_queue
+        const postOwnerId = req.body.postOwnerId;
+        if (postOwnerId && String(postOwnerId) !== String(userId)) {
+            const { publishNotification } = require('../config/rabbitmq');
+            await publishNotification({
+                userId: postOwnerId,
+                fromUserId: userId,
+                fromUsername: username,
+                fromUserAvatar: userAvatar || '',
+                type: 'comment',
+                title: 'New Comment',
+                message: `${username} commented: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`,
+                link: `/p/${postId}`
+            });
+        }
+
+
         // Return comment with user info (frontend needs it)
+
         const responseData = {
             ...comment.toJSON(),
             userAvatar // Pass back if creating, or frontend provides it

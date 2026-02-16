@@ -27,10 +27,16 @@ const SavedPosts = () => {
     };
 
     const handlePostClick = (postId, index) => {
+        const postMetadata = savedPosts.map(p => ({
+            id: p.id,
+            type: p.type || (p.videoUrl ? 'REEL' : 'POST')
+        }));
+
         navigate(`/post/${postId}`, {
             state: {
-                postIds: savedPosts.map(p => p.id),
-                currentIndex: index
+                postMetadata,
+                currentIndex: index,
+                type: savedPosts[index].type || (savedPosts[index].videoUrl ? 'REEL' : 'POST')
             }
         });
     };
@@ -71,15 +77,15 @@ const SavedPosts = () => {
                     className="relative aspect-square cursor-pointer group overflow-hidden bg-gray-900"
                 >
                     {/* Post Image/Video */}
-                    {post.mediaType === 'VIDEO' ? (
+                    {(post.type === 'REEL' || post.mediaType === 'VIDEO' || post.videoUrl) ? (
                         <video
-                            src={post.mediaUrl}
+                            src={post.videoUrl || post.mediaUrl}
                             className="w-full h-full object-cover"
                         />
                     ) : (
                         <img
-                            src={post.mediaUrl || post.imageUrl}
-                            alt="Saved post"
+                            src={post.mediaUrl || post.imageUrl || post.videoUrl}
+                            alt="Saved content"
                             className="w-full h-full object-cover"
                         />
                     )}
@@ -96,8 +102,8 @@ const SavedPosts = () => {
                         </div>
                     </div>
 
-                    {/* Video/Multiple indicator */}
-                    {post.mediaType === 'VIDEO' && (
+                    {/* Video/Reel indicator */}
+                    {(post.type === 'REEL' || post.mediaType === 'VIDEO') && (
                         <div className="absolute top-2 right-2">
                             <svg className="w-5 h-5 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z" />

@@ -32,11 +32,12 @@ const ShareModal = ({ post, onClose, title, actionLabel, onAction, ...props }) =
     }, [query]);
 
     const toggleUser = (user) => {
+        const userId = user.userId || user.id;
         const newMap = new Map(selectedUsersMap);
-        if (newMap.has(user.id)) {
-            newMap.delete(user.id);
+        if (newMap.has(userId)) {
+            newMap.delete(userId);
         } else {
-            newMap.set(user.id, user);
+            newMap.set(userId, user);
         }
         setSelectedUsersMap(newMap);
     };
@@ -138,9 +139,9 @@ const ShareModal = ({ post, onClose, title, actionLabel, onAction, ...props }) =
                             <div className={`
                                 w-6 h-6 rounded-full border border-gray-300 dark:border-gray-500 
                                 flex items-center justify-center transition-all
-                                ${selectedUsersMap.has(u.id) ? 'bg-[#0095f6] border-transparent' : 'bg-transparent'}
+                                ${selectedUsersMap.has(u.userId || u.id) ? 'bg-[#0095f6] border-transparent' : 'bg-transparent'}
                             `}>
-                                {selectedUsersMap.has(u.id) && (
+                                {selectedUsersMap.has(u.userId || u.id) && (
                                     <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="w-4 h-4"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 )}
                             </div>

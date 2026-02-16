@@ -64,7 +64,12 @@ const handleEvent = (event) => {
         case 'LIVE_STREAM_STATUS':
             io.to(`live:${payload.streamId}`).emit('stream-status', payload.status);
             break;
+        case 'new_notification':
+            console.log(`Emitting new_notification to user:${payload.userId}`);
+            io.to(`user:${payload.userId}`).emit('new_notification', payload.notification);
+            break;
         default:
+
             // console.warn('Unknown event type:', event.type);
             break;
     }

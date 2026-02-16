@@ -1,201 +1,164 @@
-const { r2Client, isConfigured } = require('../config/r2');
-const { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
-const { v4: uuidv4 } = require('uuid');
-const path = require('path');
-const { Op } = require('sequelize');
+const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const Media = require('../models/Media');
-const { processImage } = require('../utils/imageProcessor');
-const { processVideo } = require('../utils/videoProcessor');
-const { connectRabbitMQ, publishEvent } = require('../config/rabbitmq');
+const path = require('path');
 const fs = require('fs');
-const { pipeline } = require('stream/promises');
+const { Op } = require('sequelize');
+const sharp = require('sharp');
 
-connectRabbitMQ();
+require('dotenv').config();
 
-const BUCKET_NAME = process.env.R2_BUCKET_NAME || 'test-bucket';
-const PUBLIC_DOMAIN = process.env.R2_PUBLIC_DOMAIN || 'http://localhost:5013/uploads';
-const FOLDER_NAME = 'Jaadoe'; // Root folder in R2 bucket
+const r2Client = new S3Client({
+    region: "auto",
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    },
+});
+
+const BUCKET_NAME = process.env.R2_BUCKET_NAME || 'omretesting';
+const FOLDER_NAME = 'Jaadoe'; // Root folder for the app in R2
 
 const getPresignedUrl = async (req, res) => {
     try {
-        if (!isConfigured) {
-            return res.status(400).json({ status: 'error', message: 'Cloudflare R2 is not configured' });
-        }
-        const { filename, fileType, context } = req.body;
+        const { filename, fileType, contentType, context } = req.body;
+        const userId = req.headers['x-user-id'] || 'anonymous';
+        const timestamp = Date.now();
+        const uuid = require('crypto').randomUUID();
 
-        if (!filename || !fileType) {
-            return res.status(400).json({ status: 'error', message: 'Missing filename or fileType' });
-        }
-
-        const ext = path.extname(filename);
-        const uuid = uuidv4();
-        // Use a temp prefix for raw uploads under folder name
-        const key = `${FOLDER_NAME}/temp/${uuid}${ext}`;
+        // Final Path: Jaadoe/temp/UUID.ext
+        const extension = path.extname(filename);
+        const key = `${FOLDER_NAME}/temp/${uuid}${extension}`;
 
         const command = new PutObjectCommand({
             Bucket: BUCKET_NAME,
             Key: key,
-            ContentType: fileType,
+            ContentType: contentType,
         });
 
         const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
 
-        res.json({
-            status: 'success',
-            data: {
-                uploadUrl,
-                key, // Frontend sends this back after upload
-                uuid,
-                publicUrl: `${PUBLIC_DOMAIN}/${key}`
-            }
+        // Create initial media record
+        const media = await Media.create({
+            id: uuid,
+            filename: `${uuid}${extension}`,
+            originalName: filename,
+            url: `${process.env.R2_PUBLIC_DOMAIN}/${key}`,
+            r2Key: key,
+            tempKey: key,
+            type: fileType === 'video' ? 'video' : 'image',
+            mimeType: contentType,
+            uploadStatus: 'uploading'
         });
 
+        res.json({
+            uploadUrl,
+            key,
+            mediaId: media.id
+        });
     } catch (error) {
-        console.error('Presigned URL Error:', error);
-        res.status(500).json({ status: 'error', message: error.message });
+        console.error('Error generating presigned URL:', error);
+        res.status(500).json({ error: 'Failed to generate upload URL' });
     }
 };
 
 const finalizeUpload = async (req, res) => {
     try {
-        const { key, filename, fileType, size, context = 'feed' } = req.body;
+        const { mediaId, key, context, metadata } = req.body;
 
-        if (!key) return res.status(400).json({ error: 'Key is required' });
+        const media = await Media.findByPk(mediaId);
+        if (!media) return res.status(404).json({ error: 'Media record not found' });
 
-        const isVideo = fileType.startsWith('video/');
-        const type = isVideo ? 'video' : 'image';
+        // Update status to processing
+        await media.update({ uploadStatus: 'processing' });
 
-        // Create DB record
-        const media = await Media.create({
-            filename: key, // Initially the temp key
-            originalName: filename,
-            r2Key: key,
-            tempKey: key, // Store temp key for fallback
-            url: `${PUBLIC_DOMAIN}/${key}`,
-            cdnUrl: `${PUBLIC_DOMAIN}/${key}`,
-            type: type,
-            mimeType: fileType,
-            size: size,
-            uploadStatus: 'processing' // Queued for processing
-        });
+        // Background: Download from R2, process (resize/optimize), upload back to R2, delete temp
+        processInBackground(mediaId, key, context, metadata);
 
-        res.status(201).json({
-            status: 'success',
-            message: 'Upload finalized, processing started.',
-            data: media
-        });
-
-        // Trigger processing
-        processR2MediaBackground(media.id, key, type, context);
-
+        res.json({ message: 'Upload finalized, processing started', mediaId });
     } catch (error) {
-        console.error('Finalize Upload Error:', error);
-        res.status(500).json({ status: 'error', message: error.message });
+        console.error('Error finalizing upload:', error);
+        res.status(500).json({ error: 'Failed to finalize upload' });
     }
 };
 
-const processR2MediaBackground = async (mediaId, tempKey, type, context) => {
-    const tempDownloadPath = path.join(__dirname, '../uploads', `temp_${path.basename(tempKey)}`);
-
+const processInBackground = async (mediaId, key, context, metadata) => {
+    const tempDownloadPath = path.join(__dirname, '../uploads', `temp_${mediaId}`);
     try {
-        console.log(`[R2] Processing ${mediaId}... downloading ${tempKey}`);
+        // 1. Download from R2
+        const getCommand = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key });
+        const { Body } = await r2Client.send(getCommand);
 
-        // 1. Download from R2 temp
-        const getCommand = new GetObjectCommand({
-            Bucket: BUCKET_NAME,
-            Key: tempKey
+        const writer = fs.createWriteStream(tempDownloadPath);
+        await new Promise((resolve, reject) => {
+            Body.pipe(writer);
+            writer.on('finish', resolve);
+            writer.on('error', reject);
         });
-        const data = await r2Client.send(getCommand);
-        await pipeline(data.Body, fs.createWriteStream(tempDownloadPath));
 
-        // 2. Process Locally
-        let result;
-        if (type === 'image') {
-            result = await processImage(tempDownloadPath, context);
-        } else if (type === 'video') {
-            result = await processVideo(tempDownloadPath, context);
+        // 2. Process based on type
+        const media = await Media.findByPk(mediaId);
+        let finalKey = key;
+        let cdnUrl = media.url;
+
+        if (media.type === 'image') {
+            const processedFilename = `temp_${mediaId}_opt.webp`;
+            const processedPath = path.join(__dirname, '../uploads', processedFilename);
+
+            await sharp(tempDownloadPath)
+                .webp({ quality: 80 })
+                .toFile(processedPath);
+
+            // Upload processed image
+            const folder = context === 'story' ? 'stories' : (context === 'profile' ? 'profiles' : 'posts/images');
+            finalKey = `${FOLDER_NAME}/${folder}/${processedFilename}`;
+
+            const uploadCommand = new PutObjectCommand({
+                Bucket: BUCKET_NAME,
+                Key: finalKey,
+                Body: fs.readFileSync(processedPath),
+                ContentType: 'image/webp'
+            });
+            await r2Client.send(uploadCommand);
+
+            cdnUrl = `${process.env.R2_PUBLIC_DOMAIN}/${finalKey}`;
+
+            // Cleanup processed local file
+            if (fs.existsSync(processedPath)) fs.unlinkSync(processedPath);
+        } else {
+            // For videos, we just move them to the right folder for now
+            const folder = context === 'story' ? 'stories' : 'posts/videos';
+            finalKey = `${FOLDER_NAME}/${folder}/${media.filename}`;
+
+            const uploadCommand = new PutObjectCommand({
+                Bucket: BUCKET_NAME,
+                Key: finalKey,
+                Body: fs.readFileSync(tempDownloadPath),
+                ContentType: media.mimeType
+            });
+            await r2Client.send(uploadCommand);
+            cdnUrl = `${process.env.R2_PUBLIC_DOMAIN}/${finalKey}`;
         }
 
-        // 3. Upload Optimized to R2 (Final Path)
-        // Determine prefix based on context
-        let prefix = 'posts/images';
-        if (type === 'video') prefix = 'posts/videos';
-
-        switch (context) {
-            case 'story': prefix = 'stories'; break;
-            case 'profile': prefix = 'profiles'; break;
-            case 'messages': prefix = 'messages/attachments'; break;
-            case 'ads': prefix = 'ads/media'; break;
-            case 'posts':
-            default:
-                if (type === 'video') prefix = 'posts/videos';
-                else prefix = 'posts/images';
-        }
-
-        const finalKey = `${FOLDER_NAME}/${prefix}/${result.filename}`;
-
-        await r2Client.send(new PutObjectCommand({
-            Bucket: BUCKET_NAME,
-            Key: finalKey,
-            Body: fs.createReadStream(result.path),
-            ContentType: result.mimetype,
-            CacheControl: 'public, max-age=31536000' // 1 Year Cache
-        }));
-
-        let thumbnailKey = null;
-        if (result.thumbnailFilename) {
-            thumbnailKey = `${FOLDER_NAME}/thumbnails/${result.thumbnailFilename}`;
-            // Assuming thumbnail generated in same dir as result.path
-            const thumbPath = path.join(path.dirname(result.path), result.thumbnailFilename);
-            if (fs.existsSync(thumbPath)) {
-                await r2Client.send(new PutObjectCommand({
-                    Bucket: BUCKET_NAME,
-                    Key: thumbnailKey,
-                    Body: fs.createReadStream(thumbPath),
-                    ContentType: 'image/jpeg',
-                    CacheControl: 'public, max-age=31536000'
-                }));
-                // Cleanup thumb
-                fs.unlinkSync(thumbPath);
-            }
-        }
-
-        console.log(`[R2] Uploaded optimized: ${finalKey}`);
-
-        // 4. Update DB
-        const finalUrl = `${PUBLIC_DOMAIN}/${finalKey}`;
-        const finalThumbnailUrl = thumbnailKey ? `${PUBLIC_DOMAIN}/${thumbnailKey}` : null;
-
+        // 3. Update Database
         await Media.update({
+            uploadStatus: 'completed',
             r2Key: finalKey,
-            url: finalUrl,
-            cdnUrl: finalUrl,
-            filename: result.filename,
-            mimeType: result.mimetype,
-            size: result.size,
-            width: result.width,
-            height: result.height,
-            duration: result.duration || null,
-            thumbnailUrl: finalThumbnailUrl,
-            uploadStatus: 'completed'
+            url: cdnUrl,
+            cdnUrl: cdnUrl
         }, { where: { id: mediaId } });
 
-        // 5. Cleanup
-        fs.unlinkSync(tempDownloadPath); // Local temp
-        fs.unlinkSync(result.path); // Local optimized
+        // 4. Cleanup temp R2 and local
+        try {
+            // Delete original temp from R2
+            const deleteCommand = require('@aws-sdk/client-s3').DeleteObjectCommand;
+            await r2Client.send(new deleteCommand({ Bucket: BUCKET_NAME, Key: key }));
+        } catch (e) {
+            console.warn('Failed to delete temp R2 object:', e);
+        }
 
-        // Delete R2 temp file
-        await r2Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: tempKey }));
-
-        // 6. Publish Event
-        await publishEvent('MEDIA.OPTIMIZED', {
-            mediaId,
-            originalUrl: `${PUBLIC_DOMAIN}/${tempKey}`, // Old URL the frontend might have
-            optimizedUrl: finalUrl,
-            thumbnailUrl: finalThumbnailUrl,
-            type: type
-        });
+        if (fs.existsSync(tempDownloadPath)) fs.unlinkSync(tempDownloadPath);
 
     } catch (err) {
         console.error(`[R2] Processing failed for ${mediaId}`, err);
@@ -219,75 +182,77 @@ const serveFile = async (req, res) => {
                 Bucket: BUCKET_NAME,
                 Key: key
             });
-            const { Body, ContentType } = await r2Client.send(command);
+            const { Body, ContentType } = await r2Client.send(command).catch(err => {
+                // Throw error to be caught by inner catch if R2 fails
+                throw err;
+            });
+
             res.set('Content-Type', ContentType);
             res.set('Cache-Control', 'public, max-age=31536000');
             res.set('Access-Control-Allow-Origin', '*');
             res.set('Cross-Origin-Resource-Policy', 'cross-origin');
             return Body.pipe(res);
         } catch (r2Error) {
-            // 2. If not found, check if it's a reference to a processed file
-            if (r2Error.name === 'NoSuchKey' || r2Error.$metadata?.httpStatusCode === 404) {
-                // Try searching the database for this key (it might have been the original temp key)
-                const mediaRecord = await Media.findOne({
-                    where: {
-                        [Op.or]: [
-                            { r2Key: key },
-                            { tempKey: key }, // Check temp key
-                            { url: { [Op.like]: `%${key}%` } }
-                        ]
-                    }
-                });
+            // 2. If not found, check if it's a reference in the database
+            const mediaRecord = await Media.findOne({
+                where: {
+                    [Op.or]: [
+                        { r2Key: key },
+                        { tempKey: key },
+                        { url: { [Op.like]: `%${key}%` } }
+                    ]
+                }
+            });
 
-                if (mediaRecord && mediaRecord.r2Key !== key) {
-                    console.log(`[R2] Found fallback key in DB for ${key} -> ${mediaRecord.r2Key}`);
+            if (mediaRecord && mediaRecord.r2Key && mediaRecord.r2Key !== key) {
+                console.log(`[R2] Found fallback key in DB for ${key} -> ${mediaRecord.r2Key}`);
+                try {
+                    const fallbackCommand = new GetObjectCommand({
+                        Bucket: BUCKET_NAME,
+                        Key: mediaRecord.r2Key
+                    });
+                    const { Body: fBody, ContentType: fContentType } = await r2Client.send(fallbackCommand);
+                    res.set('Content-Type', fContentType);
+                    res.set('Cache-Control', 'public, max-age=31536000');
+                    res.set('Access-Control-Allow-Origin', '*');
+                    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+                    return fBody.pipe(res);
+                } catch (e) {
+                    console.log(`[R2] DB Fallback fetch failed for ${mediaRecord.r2Key}`);
+                }
+            }
+
+            // 3. Last ditch effort: regex UUID fallback
+            const uuidMatch = key.match(/([0-9a-f-]{36})/);
+            if (uuidMatch) {
+                const uuid = uuidMatch[1];
+                const possiblePaths = [
+                    `${FOLDER_NAME}/stories/temp_${uuid}_opt.webp`,
+                    `${FOLDER_NAME}/posts/images/temp_${uuid}_opt.webp`,
+                    `${FOLDER_NAME}/profiles/temp_${uuid}_opt.webp`,
+                    `${FOLDER_NAME}/posts/videos/temp_${uuid}_opt.mp4`,
+                    `${FOLDER_NAME}/messages/attachments/temp_${uuid}_opt.webp`,
+                    `${FOLDER_NAME}/temp/${uuid}.mp4`,
+                    `${FOLDER_NAME}/temp/${uuid}.jpg`,
+                    `${FOLDER_NAME}/temp/${uuid}.png`,
+                    `${FOLDER_NAME}/temp/${uuid}.webp`,
+                    `${uuid}.webp`,
+                    `${uuid}.mp4`,
+                    `${FOLDER_NAME}/${uuid}_opt.webp`
+                ];
+
+                for (const fKey of possiblePaths) {
                     try {
-                        const fallbackCommand = new GetObjectCommand({
-                            Bucket: BUCKET_NAME,
-                            Key: mediaRecord.r2Key
-                        });
-                        const { Body: fBody, ContentType: fContentType } = await r2Client.send(fallbackCommand);
+                        const fCommand = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: fKey });
+                        const { Body: fBody, ContentType: fContentType } = await r2Client.send(fCommand);
                         res.set('Content-Type', fContentType);
                         res.set('Cache-Control', 'public, max-age=31536000');
                         res.set('Access-Control-Allow-Origin', '*');
                         res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+                        console.log(`[R2 Fallback] SUCCESS -> Serving ${fKey}`);
                         return fBody.pipe(res);
                     } catch (e) {
-                        // Fall through to error
-                    }
-                }
-
-                // 3. Last ditch effort: regex UUID fallback if it was a temp key
-                if (key.includes('/temp/')) {
-                    const uuidMatch = key.match(/([0-9a-f-]{36})/);
-                    if (uuidMatch) {
-                        const uuid = uuidMatch[1];
-                        console.log(`[R2 Fallback] Searching for UUID: ${uuid}`);
-
-                        const possiblePaths = [
-                            // Optimized Video
-                            `${FOLDER_NAME}/posts/videos/temp_${uuid}_opt.mp4`,
-                            // Optimized Image
-                            `${FOLDER_NAME}/posts/images/temp_${uuid}_opt.webp`,
-                            // Original Temp (if processing failed but file exists?)
-                            `${FOLDER_NAME}/temp/${uuid}.mp4`,
-                            `${FOLDER_NAME}/temp/${uuid}.jpg`,
-                            `${FOLDER_NAME}/temp/${uuid}.png`
-                        ];
-
-                        for (const fKey of possiblePaths) {
-                            try {
-                                // console.log(`[R2 Fallback] Trying: ${fKey}`);
-                                const fCommand = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: fKey });
-                                const { Body: fBody, ContentType: fContentType } = await r2Client.send(fCommand);
-                                res.set('Content-Type', fContentType);
-                                res.set('Cache-Control', 'public, max-age=31536000');
-                                console.log(`[R2 Fallback] SUCCESS -> Serving ${fKey}`);
-                                return fBody.pipe(res);
-                            } catch (e) {
-                                // Continue
-                            }
-                        }
+                        // Continue to next path
                     }
                 }
             }
@@ -301,13 +266,10 @@ const serveFile = async (req, res) => {
                 return res.sendFile(localPath);
             }
 
-            throw r2Error;
-        }
-    } catch (error) {
-        console.error('Serve File Error:', error);
-        if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404 || error.code === 'ENOENT') {
             return res.status(404).send('File not found');
         }
+    } catch (error) {
+        console.error('Serve File Global Error:', error);
         res.status(500).send('Error serving file');
     }
 };

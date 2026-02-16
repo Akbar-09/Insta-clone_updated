@@ -1,90 +1,133 @@
 const fs = require('fs');
 const path = require('path');
+const swaggerJsdoc = require('swagger-jsdoc');
 
-const collectionPath = path.join(__dirname, 'Instagram_API_Collection.json');
-const reportPath = path.join(__dirname, 'final_api_report.md');
-const outputPath = path.join(__dirname, 'Instagram_API_Documentation_Full.md');
+// Load Swagger Config
+// Note: We need to adapt the path since we are in backend root, not gateway root
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Instagram Clone API',
+            version: '1.0.0',
+            description: 'API Documentation for Flutter Developers',
+        },
+        servers: [
+            { url: 'http://192.168.1.5:5000/api/v1', description: 'Local Development Gateway' }
+        ],
+    },
+    apis: ['./gateway/src/swagger/*.js'], // Adjusted path relative to backend root
+};
 
-if (!fs.existsSync(collectionPath)) {
-    console.error('Postman collection not found!');
-    process.exit(1);
-}
+const swaggerSpec = swaggerJsdoc(options);
 
-const collection = JSON.parse(fs.readFileSync(collectionPath, 'utf8'));
-const reportContent = fs.existsSync(reportPath) ? fs.readFileSync(reportPath, 'utf8') : '';
+// Helper to generate complex curl commands
+function generateCurl(method, url, params, body) {
+    let cmd = `curl -X ${method.toUpperCase()} "${url}" \\\n  -H "Content-Type: application/json"`;
 
-// Helper to find response from report
-function getResponseFromReport(method, endpoint) {
-    // Escape special characters in endpoint for regex
-    const escapedEndpoint = endpoint.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`\\| [^|]+ \\| ${method} \\| ${escapedEndpoint} \\| [^|]+ \\| (\`{1,3})([\\s\\S]*?)\\1`, 'i');
-    const match = reportContent.match(regex);
-    if (match) {
-        return match[2].trim();
+    // Add Authorization header
+    cmd += ` \\\n  -H "Authorization: Bearer <YOUR_TOKEN>"`;
+
+    if (body) {
+        cmd += ` \\\n  -d '${JSON.stringify(body, null, 2)}'`;
     }
-    return '{"status": "success", "message": "API call successful"}';
+    return cmd;
 }
 
-const baseUrl = 'http://192.168.1.15:5000';
+// Generate Markdown
+let md = `# Instagram Clone API Documentation (Flutter)\n\n`;
+md += `**Base URL:** \`http://192.168.1.5:5000/api/v1\`\n\n`;
+md += `**Authentication:** All endpoints (except Auth/Public) typically require a Bearer Token via \`Authorization\` header.\n\n`;
 
-function generateCurl(item, baseUrl) {
-    const req = item.request;
-    if (!req) return null;
+// Tag Order
+const tagOrder = [
+    'Auth', 'Users', 'Posts', 'Stories', 'Reels', 'Feed', 'Comments',
+    'Messages', 'Notifications', 'Search', 'Media', 'Ads', 'Live', 'Insights', 'Admin', 'Help'
+];
 
-    let curl = `curl -X ${req.method} "${baseUrl}${req.url.path ? '/' + req.url.path.join('/') : ''}"`;
+// Group paths by tag
+const pathsByTag = {};
+Object.keys(swaggerSpec.paths).forEach(pathKey => {
+    const pathItem = swaggerSpec.paths[pathKey];
+    Object.keys(pathItem).forEach(method => {
+        const operation = pathItem[method];
+        const tag = operation.tags ? operation.tags[0] : 'Uncategorized';
 
-    if (req.header) {
-        req.header.forEach(h => {
-            curl += ` \\\n  -H "${h.key}: ${h.value}"`;
+        if (!pathsByTag[tag]) pathsByTag[tag] = [];
+        pathsByTag[tag].push({
+            method: method.toUpperCase(),
+            path: pathKey,
+            ...operation
         });
-    }
-
-    if (req.body && req.body.raw) {
-        curl += ` \\\n  -d '${req.body.raw}'`;
-    }
-
-    return curl;
-}
-
-let md = `# Instagram Clone API Documentation\n\n`;
-md += `**Base URL:** \`${baseUrl}\`\n`;
-md += `**Auth:** Most endpoints require a JWT token in the \`Authorization\` header as \`Bearer <token>\`.\n\n`;
-
-md += `## Table of Contents\n`;
-collection.item.forEach(service => {
-    md += `- [${service.name}](#${service.name.toLowerCase().replace(/\s+/g, '-')})\n`;
+    });
 });
-md += `\n---\n\n`;
 
-collection.item.forEach(service => {
-    md += `## ${service.name}\n\n`;
+// Iterate through tags
+tagOrder.forEach(tag => {
+    const endpoints = pathsByTag[tag];
+    if (!endpoints || endpoints.length === 0) return;
 
-    if (service.item) {
-        service.item.forEach(api => {
-            const req = api.request;
-            if (!req) return;
+    md += `## ${tag}\n\n`;
 
-            const method = req.method || 'GET';
-            const rawUrl = req.url.raw || '';
-            const path = req.url.path ? '/' + req.url.path.join('/') : (rawUrl.split('}}')[1] || rawUrl);
+    endpoints.forEach(endpoint => {
+        md += `### ${endpoint.summary || endpoint.description || (endpoint.method + ' ' + endpoint.path)}\n\n`;
+        md += `**Endpoint:** \`${endpoint.method} ${endpoint.path}\`\n\n`;
 
-            md += `### ${api.name}\n`;
-            md += `**Endpoint:** \`${method} ${path}\`\n\n`;
+        // Parameters
+        if (endpoint.parameters && endpoint.parameters.length > 0) {
+            md += `#### Parameters\n`;
+            md += `| Name | In | Type | Required | Description |\n`;
+            md += `|---|---|---|---|---|\n`;
+            endpoint.parameters.forEach(param => {
+                md += `| \`${param.name}\` | ${param.in} | ${param.schema?.type || 'string'} | ${param.required ? '✅' : '❌'} | ${param.description || '-'} |\n`;
+            });
+            md += `\n`;
+        }
 
-            if (req.body && req.body.raw) {
-                md += `**Request Body:**\n\`\`\`json\n${req.body.raw}\n\`\`\`\n\n`;
+        // Request Body
+        let bodyExample = null;
+        if (['POST', 'PUT', 'PATCH'].includes(endpoint.method)) {
+            // Try to infer body structure (Swagger usually has requestBody, but our auto_generated might not be complete yet)
+            // We'll create a generic example based on common patterns if not explicit
+            if (tag === 'Auth' && endpoint.path.includes('/login')) {
+                bodyExample = { email: "user@example.com", password: "password123", deviceId: "device-xyz" };
+            } else if (tag === 'Auth' && endpoint.path.includes('/register')) {
+                bodyExample = { email: "user@example.com", password: "password123", username: "newuser", fullName: "New User" };
+            } else if (tag === 'Posts' && endpoint.method === 'POST') {
+                bodyExample = { caption: "My new post", mediaUrls: ["http://..."], location: "New York" };
+            } else if (tag === 'Comments') {
+                bodyExample = { content: "Great post!" };
+            } else {
+                bodyExample = { field1: "value1", field2: "value2" };
             }
 
-            const curl = generateCurl(api, baseUrl);
-            md += `**Sample Curl Request:**\n\`\`\`bash\n${curl}\n\`\`\`\n\n`;
+            md += `#### Request Body (Example)\n\`\`\`json\n${JSON.stringify(bodyExample, null, 2)}\n\`\`\`\n\n`;
+        }
 
-            const response = getResponseFromReport(method, path);
-            md += `**Sample Response:**\n\`\`\`json\n${response}\n\`\`\`\n\n`;
+        // CURL Example
+        const fullUrl = `http://192.168.1.5:5000/api/v1${endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, '{$1}')}`;
+        // Note: curl usually doesn't like {:id} syntax, but for documentation it's clear. 
+        // Let's replace simple params with placeholders.
+        const curlUrl = `http://192.168.1.5:5000/api/v1${endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, '123')}`;
 
-            md += `---\n\n`;
-        });
-    }
+        md += `#### Sample Request (CURL)\n\`\`\`bash\n${generateCurl(endpoint.method, curlUrl, null, bodyExample)}\n\`\`\`\n\n`;
+
+        // Response Example
+        md += `#### Sample Response\n\`\`\`json\n{\n  "status": "success",\n  "data": { ... }\n}\n\`\`\`\n\n`;
+
+        md += `---\n\n`;
+    });
 });
 
-fs.writeFileSync(outputPath, md);
-console.log(`Documentation generated at: ${outputPath}`);
+// Sort uncategorized if any
+if (pathsByTag['Uncategorized']) {
+    md += `## Uncategorized\n\n`;
+    pathsByTag['Uncategorized'].forEach(endpoint => {
+        md += `### ${endpoint.method} ${endpoint.path}\n`;
+        // ... (simplified)
+        md += `\n`;
+    });
+}
+
+fs.writeFileSync('api_docs_flutter.md', md);
+console.log('Documentation generated: api_docs_flutter.md');

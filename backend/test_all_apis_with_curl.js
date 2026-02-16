@@ -9,9 +9,16 @@ const ENDPOINTS_FILE = path.join(__dirname, 'all_endpoints.json');
 const REPORT_FILE = path.join(__dirname, 'api_test_report_curl.md');
 
 // Test credentials - you may need to update these
+const TEST_ID = Date.now();
 let AUTH_TOKEN = null;
 let ADMIN_TOKEN = null;
 let TEST_USER_ID = null;
+const TEST_USERNAME = `testuser_${TEST_ID}`;
+const TEST_EMAIL = `test_${TEST_ID}@example.com`;
+const TEST_PASSWORD = 'password123';
+
+const ADMIN_EMAIL = 'admin@jaadoe.com';
+const ADMIN_PASSWORD = 'adminpassword123';
 
 // Color codes for console output
 const colors = {
@@ -49,13 +56,20 @@ function executeCurl(method, url, headers = {}, body = null, timeout = 5000) {
         // Add body for POST, PUT, PATCH
         if (body && ['POST', 'PUT', 'PATCH'].includes(method)) {
             const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
-            curlCmd += ` -d '${bodyStr.replace(/'/g, "\\'")}'`;
+            // On Windows cmd.exe, we need to use double quotes and escape internal double quotes with \
+            const escapedBody = bodyStr.replace(/"/g, '\\"');
+            curlCmd += ` -d "${escapedBody}"`;
         }
 
         const output = execSync(curlCmd, { encoding: 'utf8', timeout });
         const lines = output.trim().split('\n');
         const statusCode = parseInt(lines[lines.length - 1]);
         const responseBody = lines.slice(0, -1).join('\n');
+
+        if (statusCode >= 400) {
+            console.log(`${colors.yellow}  [Debug] Cmd: ${curlCmd}${colors.reset}`);
+            console.log(`${colors.yellow}  [Debug] Response: ${responseBody}${colors.reset}`);
+        }
 
         return {
             statusCode,
@@ -82,20 +96,20 @@ function setupAuthentication() {
             'POST',
             `${GATEWAY_URL}/api/v1/auth/login`,
             { 'Content-Type': 'application/json' },
-            { email: 'test@example.com', password: 'password123' }
+            { email: TEST_EMAIL, password: TEST_PASSWORD }
         );
 
         // If login fails, try to create the user
         if (loginResponse.statusCode !== 200) {
-            console.log(`${colors.yellow}  User doesn't exist, creating test user...${colors.reset}`);
+            console.log(`${colors.yellow}  User doesn't exist, creating test user: ${TEST_USERNAME}...${colors.reset}`);
             const signupResponse = executeCurl(
                 'POST',
                 `${GATEWAY_URL}/api/v1/auth/signup`,
                 { 'Content-Type': 'application/json' },
                 {
-                    username: 'testuser',
-                    email: 'test@example.com',
-                    password: 'password123',
+                    username: TEST_USERNAME,
+                    email: TEST_EMAIL,
+                    password: TEST_PASSWORD,
                     fullName: 'Test User'
                 }
             );
@@ -107,7 +121,7 @@ function setupAuthentication() {
                     'POST',
                     `${GATEWAY_URL}/api/v1/auth/login`,
                     { 'Content-Type': 'application/json' },
-                    { email: 'test@example.com', password: 'password123' }
+                    { email: TEST_EMAIL, password: TEST_PASSWORD }
                 );
             }
         }
@@ -115,11 +129,18 @@ function setupAuthentication() {
         if (loginResponse.statusCode === 200) {
             try {
                 const data = JSON.parse(loginResponse.body);
-                AUTH_TOKEN = data.token || data.data?.token;
-                TEST_USER_ID = data.user?.id || data.data?.user?.id;
-                console.log(`${colors.green}✓ User authentication successful${colors.reset}`);
+                // Handle different nested formats
+                const tokenData = data.data || data;
+                AUTH_TOKEN = tokenData.token;
+                TEST_USER_ID = (tokenData.user?.id || tokenData.user?._id || tokenData.userId);
+
+                if (AUTH_TOKEN) {
+                    console.log(`${colors.green}✓ User authentication successful${colors.reset}`);
+                } else {
+                    console.log(`${colors.yellow}⚠ Login succeeded but no token found in body: ${loginResponse.body.substring(0, 100)}${colors.reset}`);
+                }
             } catch (e) {
-                console.log(`${colors.yellow}⚠ Could not parse login response${colors.reset}`);
+                console.log(`${colors.yellow}⚠ Could not parse login response: ${e.message}${colors.reset}`);
             }
         } else {
             console.log(`${colors.yellow}⚠ User login failed (${loginResponse.statusCode}), some tests may fail${colors.reset}`);
@@ -134,14 +155,19 @@ function setupAuthentication() {
             'POST',
             `${GATEWAY_URL}/api/v1/admin/auth/login`,
             { 'Content-Type': 'application/json' },
-            { email: 'admin@example.com', password: 'admin123' }
+            { email: ADMIN_EMAIL, password: ADMIN_PASSWORD }
         );
 
         if (adminLoginResponse.statusCode === 200) {
             try {
                 const data = JSON.parse(adminLoginResponse.body);
-                ADMIN_TOKEN = data.token || data.data?.token;
-                console.log(`${colors.green}✓ Admin authentication successful${colors.reset}`);
+                const tokenData = data.data || data;
+                ADMIN_TOKEN = tokenData.token;
+                if (ADMIN_TOKEN) {
+                    console.log(`${colors.green}✓ Admin authentication successful${colors.reset}`);
+                } else {
+                    console.log(`${colors.yellow}⚠ Admin login succeeded but no token found${colors.reset}`);
+                }
             } catch (e) {
                 console.log(`${colors.yellow}⚠ Could not parse admin login response${colors.reset}`);
             }
@@ -151,25 +177,89 @@ function setupAuthentication() {
     } catch (error) {
         console.log(`${colors.yellow}⚠ Admin login error: ${error.message}${colors.reset}`);
     }
+
+    // Discover resources for better testing
+    discoverResources();
+}
+
+const discoveredResources = {
+    adId: null,
+    postId: null,
+    reelId: null,
+    storyId: null,
+    commentId: null,
+    conversationId: null
+};
+
+function discoverResources() {
+    console.log(`${colors.cyan}Discovering resources for testing targets...${colors.reset}`);
+
+    // Discover Ads
+    try {
+        const res = executeCurl('GET', `${GATEWAY_URL}/api/v1/ads/active`);
+        if (res.statusCode === 200) {
+            const data = JSON.parse(res.body);
+            const ads = data.data || data;
+            if (Array.isArray(ads) && ads.length > 0) {
+                discoveredResources.adId = ads[0].id || ads[0]._id;
+                console.log(`${colors.green}  ✓ Discovered Ad ID: ${discoveredResources.adId}${colors.reset}`);
+            }
+        }
+    } catch (e) { }
+
+    // Discover Posts
+    try {
+        const res = executeCurl('GET', `${GATEWAY_URL}/api/v1/posts/`);
+        if (res.statusCode === 200) {
+            const data = JSON.parse(res.body);
+            const posts = data.data || data;
+            if (Array.isArray(posts) && posts.length > 0) {
+                discoveredResources.postId = posts[0].id || posts[0]._id;
+                console.log(`${colors.green}  ✓ Discovered Post ID: ${discoveredResources.postId}${colors.reset}`);
+            }
+        }
+    } catch (e) { }
+
+    // Discover Reels
+    try {
+        const res = executeCurl('GET', `${GATEWAY_URL}/api/v1/reels/`);
+        if (res.statusCode === 200) {
+            const data = JSON.parse(res.body);
+            const reels = data.data || data;
+            if (Array.isArray(reels) && reels.length > 0) {
+                discoveredResources.reelId = reels[0].id || reels[0]._id;
+                console.log(`${colors.green}  ✓ Discovered Reel ID: ${discoveredResources.reelId}${colors.reset}`);
+            }
+        }
+    } catch (e) { }
 }
 
 // Replace path parameters with test values
 function replacePath(path, service) {
+    const isPostgres = service === 'admin-service'; // Admin service uses Integer IDs for most things
+
+    // Default ID based on service type
+    let defaultId = discoveredResources.adId || discoveredResources.postId || '724aea3d-51d9-482a-92e1-9533f064f2c8';
+    if (isPostgres && !path.includes('/reports/')) {
+        defaultId = '1';
+    }
+
     const replacements = {
-        ':id': 'test-id-123',
-        ':userId': TEST_USER_ID || 'test-user-123',
-        ':postId': 'test-post-123',
-        ':storyId': 'test-story-123',
-        ':reelId': 'test-reel-123',
-        ':commentId': 'test-comment-123',
-        ':conversationId': 'test-conversation-123',
-        ':messageId': 'test-message-123',
-        ':notificationId': 'test-notification-123',
-        ':adId': 'test-ad-123',
-        ':topicId': 'test-topic-123',
+        ':id': defaultId,
+        ':userId': TEST_USER_ID || '1',
+        ':postId': discoveredResources.postId || (isPostgres ? '1' : '724aea3d-51d9-482a-92e1-9533f064f2c8'),
+        ':storyId': discoveredResources.storyId || (isPostgres ? '1' : '724aea3d-51d9-482a-92e1-9533f064f2c8'),
+        ':reelId': discoveredResources.reelId || (isPostgres ? '1' : '724aea3d-51d9-482a-92e1-9533f064f2c8'),
+        ':commentId': discoveredResources.commentId || (isPostgres ? '1' : '724aea3d-51d9-482a-92e1-9533f064f2c8'),
+        ':conversationId': discoveredResources.conversationId || (isPostgres ? '1' : '724aea3d-51d9-482a-92e1-9533f064f2c8'),
+        ':messageId': (isPostgres ? '1' : '724aea3d-51d9-482a-92e1-9533f064f2c8'),
+        ':notificationId': (isPostgres ? '1' : '724aea3d-51d9-482a-92e1-9533f064f2c8'),
+        ':adId': discoveredResources.adId || '724aea3d-51d9-482a-92e1-9533f064f2c8',
+        ':topicId': '1',
         ':hashtag': 'test',
-        ':username': 'testuser',
-        ':streamId': 'test-stream-123'
+        ':username': 'admin',
+        ':streamId': '724aea3d-51d9-482a-92e1-9533f064f2c8',
+        ':avatarId': '1'
     };
 
     let newPath = path;
@@ -251,10 +341,7 @@ function testEndpoint(endpoint) {
     }
 
     // Prepare body for POST/PUT/PATCH
-    let body = null;
-    if (['POST', 'PUT', 'PATCH'].includes(method)) {
-        body = { test: true, data: 'test-data' };
-    }
+    const body = getTestBody(service, method, path);
 
     // Execute request
     const response = executeCurl(method, fullUrl, headers, body);
@@ -401,6 +488,51 @@ function generateReport() {
     report += `You can test individual endpoints interactively using the Swagger UI.\n`;
 
     return report;
+}
+
+function getTestBody(service, method, path) {
+    if (!['POST', 'PUT', 'PATCH'].includes(method)) return null;
+
+    // Default bodies for specific services/paths
+    if (path.includes('/auth/login') || path.includes('/auth/register')) {
+        return { email: TEST_EMAIL, password: TEST_PASSWORD, username: TEST_USERNAME, fullName: 'Test Name' };
+    }
+
+    if (service === 'ad-service') {
+        if (path.includes('/click') || path.includes('/impression')) {
+            return { adId: discoveredResources.adId || '724aea3d-51d9-482a-92e1-9533f064f2c8', viewerId: 1 };
+        }
+        if (path.includes('/comments')) {
+            return { content: 'Test ad comment' };
+        }
+        if (path.includes('/targeting')) {
+            return { targetType: 'AUTOMATIC', ageRange: '18-65', locations: ['US'], interests: ['Technology'] };
+        }
+        if (path.includes('/budget')) {
+            return { dailyBudget: 10, durationDays: 7, startDate: new Date().toISOString() };
+        }
+        return { adType: 'NEW_MEDIA', caption: 'Test Ad', mediaItems: [{ mediaType: 'IMAGE', url: 'https://example.com/ad.jpg' }] };
+    }
+
+    if (service === 'post-service' || service === 'reel-service' || service === 'story-service') {
+        return { caption: 'Test content', mediaUrl: 'https://example.com/media.jpg', videoUrl: 'https://example.com/video.mp4' };
+    }
+
+    if (service === 'comment-service') {
+        return { content: 'test comment content', text: 'test comment text' };
+    }
+
+    if (service === 'admin-service') {
+        if (path.includes('/reports')) {
+            return { reason: 'Test report', reportType: 'INAPPROPRIATE' };
+        }
+        if (path.includes('/settings')) {
+            return { maintenanceMode: false, siteName: 'Jaadoe' };
+        }
+    }
+
+    // Generic fallback
+    return { test: true, data: 'test-data', content: 'test payload content' };
 }
 
 // Main execution
