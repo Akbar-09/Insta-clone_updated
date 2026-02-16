@@ -3,7 +3,7 @@ import { getCloseFriends, addCloseFriend, removeCloseFriend } from '../../api/pr
 import { getFollowingList } from '../../api/userApi';
 import { searchUsers } from '../../api/searchApi';
 import { AuthContext } from '../../context/AuthContext';
-import { Loader2, Search, X, Check, Star } from 'lucide-react';
+import { Loader2, Search, X, Check, Star, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CloseFriends = () => {
@@ -138,7 +138,10 @@ const CloseFriends = () => {
 
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl pb-10 h-full overflow-hidden">
-            <div className="flex items-center justify-between mb-4 mt-1">
+            <div className="flex items-center mb-4 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
+                </button>
                 <h2 className="text-xl font-bold">Close Friends</h2>
             </div>
 
@@ -219,8 +222,8 @@ const CloseFriends = () => {
                                     </div>
                                 </div>
 
-                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-200 ${isClose ? 'bg-[#0095f6] border-[#0095f6]' : 'border-gray-400 dark:border-gray-500 group-hover:border-gray-600 dark:group-hover:border-gray-400'}`}>
-                                    {isClose && <Check size={14} className="text-white" strokeWidth={3} />}
+                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-200 ${isClose ? 'bg-white border-white' : 'border-gray-400 dark:border-gray-500 group-hover:border-gray-600 dark:group-hover:border-gray-400'}`}>
+                                    {isClose && <Check size={14} className="text-black" strokeWidth={3} />}
                                 </div>
                             </div>
                         );
