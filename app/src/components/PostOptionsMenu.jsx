@@ -5,10 +5,12 @@ import {
     reportPost, deletePost, copyLink,
     hideLikeCount, toggleComments, getEmbedCode
 } from '../api/postActionsApi';
-import { restrictUser } from '../api/userApi';
-import { blockUser } from '../api/privacyApi';
+import { restrictUser, unrestrictUser } from '../api/userApi';
+import { blockUser, unblockUser } from '../api/privacyApi';
 import * as adApi from '../api/adApi';
 import BlockConfirmModal from './BlockConfirmModal';
+import { usePrivacy } from '../context/PrivacyContext';
+import { useAuth } from '../context/AuthContext';
 
 const PostOptionsMenu = ({
     post,
@@ -22,9 +24,14 @@ const PostOptionsMenu = ({
     isFollowing = false
 }) => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const menuRef = useRef(null);
     const [loading, setLoading] = useState(false);
     const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+    const { isUserBlocked, isUserRestricted, block, unblock, restrict, unrestrict } = usePrivacy();
+
+    const isBlocked = post?.userId ? isUserBlocked(post.userId) : false;
+    const isRestricted = post?.userId ? isUserRestricted(post.userId) : false;
 
     // Close on click outside
     useEffect(() => {
@@ -51,15 +58,28 @@ const PostOptionsMenu = ({
     const handleAction = async (action, label) => {
         if (loading) return;
 
+        // Validations for actions requiring Auth or User ID
+        const authActions = ['block', 'unblock', 'restrict', 'report', 'hideLikes', 'toggleComments', 'delete'];
+        if (authActions.includes(action) && !user) {
+            onClose();
+            navigate('/login');
+            return;
+        }
+
         switch (action) {
             case 'edit':
                 onEdit();
                 onClose();
                 return;
             case 'share':
-                onShare();
+                if (typeof onShare === 'function') {
+                    onShare();
+                } else {
+                    console.warn('onShare prop missing or not a function in PostOptionsMenu');
+                }
                 onClose();
                 return;
+
             case 'goToPost':
                 navigate(`/post/${post.id}`);
                 onClose();
@@ -69,6 +89,12 @@ const PostOptionsMenu = ({
                 onClose();
                 return;
             case 'block':
+                if (!post?.userId) {
+                    console.error('Cannot block: userId missing', post);
+                    alert('Cannot block this user');
+                    onClose();
+                    return;
+                }
                 setShowBlockConfirm(true);
                 return;
             case 'cancel':
@@ -142,10 +168,23 @@ const PostOptionsMenu = ({
                 // block case removed from here
 
                 case 'restrict':
-                    if (window.confirm(`Restrict @${post.username}?`)) {
-                        await restrictUser(post.userId);
-                        alert(`Restricted @${post.username}`);
+                    if (isRestricted) {
+                        await unrestrict(post.userId);
+                        if (onUpdatePost) onUpdatePost({ ...post, isRestricted: false });
+                        alert(`Unrestricted @${post.username}`);
+                    } else {
+                        if (window.confirm(`Restrict @${post.username}?`)) {
+                            await restrict(post.userId);
+                            if (onUpdatePost) onUpdatePost({ ...post, isRestricted: true });
+                            alert(`Restricted @${post.username}`);
+                        }
                     }
+                    onClose();
+                    break;
+                case 'unblock':
+                    await unblock(post.userId);
+                    if (onUpdatePost) onUpdatePost({ ...post, isBlocked: false });
+                    alert(`Unblocked @${post.username}`);
                     onClose();
                     break;
                 case 'copyProfileUrl':
@@ -226,20 +265,33 @@ const PostOptionsMenu = ({
     };
 
     const handleBlockConfirm = async () => {
+        if (!post?.userId) {
+            alert('Error: User ID missing');
+            setShowBlockConfirm(false);
+            onClose();
+            return;
+        }
         try {
-            await blockUser(post.userId);
-            alert(`Blocked @${post.username}`);
-            if (onDeleteSuccess) onDeleteSuccess(post.id); // Re-using this to remove post from view
+            if (isBlocked) {
+                await unblock(post.userId);
+                alert(`Unblocked @${post.username}`);
+                if (onUpdatePost) onUpdatePost({ ...post, isBlocked: false });
+            } else {
+                await block(post.userId);
+                alert(`Blocked @${post.username}`);
+                if (onUpdatePost) onUpdatePost({ ...post, isBlocked: true });
+                if (onDeleteSuccess) onDeleteSuccess(post.id); // Re-using this to remove post from view
+            }
         } catch (error) {
-            console.error('Block failed', error);
-            alert('Failed to block user');
+            console.error('Block/Unblock failed', error);
+            alert('Failed to update block status');
         } finally {
             setShowBlockConfirm(false);
-            onClose(); // Close the main menu after block action
+            onClose(); // Close the main menu
         }
     };
 
-    const ActionButton = ({ label, action, color = 'text-black dark:text-white', isBold = false }) => (
+    const ActionButton = ({ label, action, color = 'text-text-primary', isBold = false }) => (
         <button
             onClick={() => handleAction(action, label)}
             disabled={loading}
@@ -281,9 +333,13 @@ const PostOptionsMenu = ({
                             </>
                         ) : (
                             <>
-                                <ActionButton label="Block" action="block" color="text-[#ed4956]" isBold />
-                                <ActionButton label="Restrict" action="restrict" color="text-[#ed4956]" isBold />
+                                <ActionButton label={isBlocked ? "Unblock" : "Block"} action={isBlocked ? "unblock" : "block"} color="text-[#ed4956]" isBold />
+                                <ActionButton label={isRestricted ? "Unrestrict" : "Restrict"} action="restrict" color="text-[#ed4956]" isBold />
                                 <ActionButton label="Report" action="report" color="text-[#ed4956]" isBold />
+                                <ActionButton label="Go to post" action="goToPost" />
+                                <ActionButton label="Share to..." action="share" />
+                                <ActionButton label="Copy link" action="copyLink" />
+                                <ActionButton label="Embed" action="embed" />
                                 <ActionButton label="About this account" action="aboutAccount" />
                                 <ActionButton label="Copy profile URL" action="copyProfileUrl" />
                                 <ActionButton label="Cancel" action="cancel" />

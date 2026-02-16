@@ -1,20 +1,20 @@
 /**
  * @swagger
  * tags:
+ *   - name: Auth
  *   - name: Users
  *   - name: Posts
- *   - name: Auth
  *   - name: Stories
- *   - name: Comments
+ *   - name: Reels
  *   - name: Feed
+ *   - name: Comments
+ *   - name: Messages
  *   - name: Notifications
  *   - name: Search
- *   - name: Messages
- *   - name: Reels
  *   - name: Media
  *   - name: Ads
- *   - name: Insights
  *   - name: Live
+ *   - name: Insights
  *   - name: Admin
  *   - name: Help
  */

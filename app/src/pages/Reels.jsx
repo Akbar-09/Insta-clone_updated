@@ -12,8 +12,9 @@ import SharePostModal from '../components/SharePostModal';
 import PostOptionsMenu from '../components/PostOptionsMenu';
 import api from '../api/axios';
 import ReportModal from '../components/ReportModal';
+import { usePrivacy } from '../context/PrivacyContext';
 
-const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
+const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDeleteReel, onUpdateReel }) => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
@@ -35,6 +36,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     const [isPlaying, setIsPlaying] = useState(isActive);
+    const { isUserBlocked } = usePrivacy();
     const videoRef = useRef(null);
 
     // Sync save state from props
@@ -74,9 +76,9 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
         setIsSaved(!prev); // Optimistic
         try {
             if (prev) {
-                await unsavePost(reel.id, user.id);
+                await unsavePost(reel.id, user.id, 'REEL');
             } else {
-                await savePost(reel.id, user.id);
+                await savePost(reel.id, user.id, 'REEL');
             }
         } catch (error) {
             console.error("Failed to toggle save", error);
@@ -114,11 +116,17 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
             if (url.includes('/media/files') && !url.includes('/api/v1/')) {
                 return url.replace('/media/files', '/api/v1/media/files');
             }
+
+            // Route local /uploads/ through the robust files endpoint
+            if (url.startsWith('/uploads/')) {
+                return url.replace('/uploads/', '/api/v1/media/files/');
+            }
         } catch (e) {
             console.warn('URL proxying failed:', e);
         }
 
         return url;
+
     };
 
     return (
@@ -175,6 +183,9 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
                                         userId={reel.userId || reel.id}
                                         initialIsFollowing={reel.isFollowing}
                                         variant="outline"
+                                        onToggle={(newIsFollowing) => {
+                                            onUpdateReel({ ...reel, isFollowing: newIsFollowing });
+                                        }}
                                     />
                                 </div>
                             </div>
@@ -266,15 +277,19 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
                         post={{
                             ...reel,
                             id: reel.id,
-                            userId: reel.userId || reel.id,
+                            userId: reel.userId,
                             username: reel.username
                         }}
-                        isOwnPost={user?.id === (reel.userId || reel.id)}
+                        isOwnPost={user && reel.userId ? String(user.id) === String(reel.userId) : false}
                         isFollowing={reel.isFollowing}
                         onClose={() => setShowOptionsMenu(false)}
+                        onShare={() => setShowShareModal(true)}
                         onReport={() => setShowReportModal(true)}
+                        onDeleteSuccess={onDeleteReel}
+                        onUpdatePost={onUpdateReel}
                     />
                 )}
+
 
                 {showReportModal && (
                     <ReportModal
@@ -324,12 +339,16 @@ const NavButton = ({ icon: Icon, onClick }) => (
 const Reels = () => {
     const { reelId } = useParams();
     const { user } = useContext(AuthContext);
+    const { isUserBlocked } = usePrivacy();
     const [muted, setMuted] = useState(true);
-    const [reels, setReels] = useState([]);
+    const [reels, updateReelsState] = useState([]);
     const [loading, setLoading] = useState(true);
     const containerRef = useRef(null);
     const navigate = useNavigate();
     const [userProfiles, setUserProfiles] = useState({});
+
+    // Filtered Reels based on Privacy
+    const visibleReels = reels.filter(reel => !isUserBlocked(reel.userId));
 
     useEffect(() => {
         const fetchReelsAndProfiles = async () => {
@@ -366,7 +385,7 @@ const Reels = () => {
                     }
                 }
 
-                setReels(fetchedReels);
+                updateReelsState(fetchedReels);
 
                 // 3. Extract unique user IDs for profiles
                 const userIds = [...new Set(fetchedReels.map(r => r.userId))];
@@ -449,13 +468,13 @@ const Reels = () => {
                 <X className="text-black dark:text-white" size={28} style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
             </div>
 
-            {reels.length === 0 ? (
+            {visibleReels.length === 0 ? (
                 <div className="flex items-center justify-center h-screen text-black dark:text-white">
                     <p>No reels found.</p>
                 </div>
             ) : (
                 <div ref={containerRef} className="w-full flex flex-col items-center bg-transparent">
-                    {reels.map((reel, index) => {
+                    {visibleReels.map((reel, index) => {
                         const profile = userProfiles[reel.userId] || {};
                         return (
                             <div key={reel.id} className="group-snap-item w-full flex justify-center snap-start" data-index={index}>
@@ -464,6 +483,8 @@ const Reels = () => {
                                         ...reel,
                                         userAvatar: profile.profilePicture || `https://ui-avatars.com/api/?name=${reel.username}&background=random`,
                                         isFollowing: profile.isFollowing || false,
+                                        isBlocked: profile.isBlocked || false,
+                                        isRestricted: profile.isRestricted || false,
                                         music: reel.music || 'Original Audio'
                                     }}
                                     isActive={index === activeIndex}
@@ -471,6 +492,26 @@ const Reels = () => {
                                     toggleMute={() => setMuted(!muted)}
                                     onNext={() => scrollToIndex(index + 1)}
                                     onPrev={() => scrollToIndex(index - 1)}
+                                    onDeleteReel={(id) => {
+                                        updateReelsState(prev => prev.filter(r => String(r.id) !== String(id)));
+                                    }}
+                                    onUpdateReel={(updated) => {
+                                        // 1. Update the reels list (for content like captions, etc.)
+                                        updateReelsState(prev => prev.map(r => String(r.id) === String(updated.id) ? { ...r, ...updated } : r));
+
+                                        // 2. Update the profile cache (for consistency across multiple reels/posts by same user)
+                                        if (updated.userId) {
+                                            setUserProfiles(prev => ({
+                                                ...prev,
+                                                [updated.userId]: {
+                                                    ...(prev[updated.userId] || {}),
+                                                    isFollowing: updated.isFollowing !== undefined ? updated.isFollowing : prev[updated.userId]?.isFollowing,
+                                                    isBlocked: updated.isBlocked !== undefined ? updated.isBlocked : prev[updated.userId]?.isBlocked,
+                                                    isRestricted: updated.isRestricted !== undefined ? updated.isRestricted : prev[updated.userId]?.isRestricted
+                                                }
+                                            }));
+                                        }
+                                    }}
                                 />
                             </div>
                         );

@@ -154,8 +154,8 @@ const PostPage = () => {
         setIsSaved(!prev);
         setSaving(true);
         try {
-            if (!prev) await savePost(post.id, user.id);
-            else await unsavePost(post.id, user.id);
+            if (!prev) await savePost(post.id, user.id, post.type || 'POST');
+            else await unsavePost(post.id, user.id, post.type || 'POST');
         } catch (e) {
             setIsSaved(prev);
         } finally {
@@ -397,13 +397,13 @@ const PostPage = () => {
                 </div>
 
                 {/* RIGHT: Sidebar Section */}
-                <div className="w-[450px] flex flex-col bg-white/40 dark:bg-black/20 backdrop-blur-xl border-l border-white/20">
+                <div className="w-[450px] flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-xl border-l border-white/20">
 
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-white/20">
                         <div className="flex items-center gap-3">
                             <div
-                                className="w-9 h-9 rounded-full bg-gray-100 overflow-hidden cursor-pointer p-[1px] border border-gray-200"
+                                className="w-9 h-9 rounded-full bg-secondary overflow-hidden cursor-pointer p-[1px] border border-border"
                                 onClick={() => navigate(`/profile/${post.username}`)}
                             >
                                 <img
@@ -415,14 +415,14 @@ const PostPage = () => {
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-1.5">
                                     <span
-                                        className="text-black font-semibold text-[14px] cursor-pointer hover:underline"
+                                        className="text-text-primary font-semibold text-[14px] cursor-pointer hover:underline"
                                         onClick={() => navigate(`/profile/${post.username}`)}
                                     >
                                         {post.username}
                                     </span>
                                     {!isOwnPost && (
                                         <>
-                                            <span className="text-gray-400 text-xs">•</span>
+                                            <span className="text-text-secondary text-xs">•</span>
                                             <FollowButton
                                                 userId={post.userId}
                                                 initialIsFollowing={post.isFollowing}
@@ -433,13 +433,13 @@ const PostPage = () => {
                                 </div>
                                 {post.music && (
                                     <div className="flex items-center gap-1 opacity-80">
-                                        <Music size={10} className="text-black" />
+                                        <Music size={10} className="text-text-primary" />
                                         <span className="text-[11px] font-medium leading-none">{post.music || 'Original Audio'}</span>
                                     </div>
                                 )}
                             </div>
                         </div>
-                        <button onClick={() => setShowOptionsMenu(true)} className="text-black hover:opacity-50">
+                        <button onClick={() => setShowOptionsMenu(true)} className="text-text-primary hover:opacity-50">
                             <MoreHorizontal size={20} />
                         </button>
                     </div>
@@ -449,7 +449,7 @@ const PostPage = () => {
                         {/* Caption Container */}
                         {post.caption && (
                             <div className="flex gap-3 mb-6">
-                                <div className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden shrink-0">
+                                <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden shrink-0">
                                     <img
                                         src={post.userAvatar ? getMediaUrl(post.userAvatar) : `https://ui-avatars.com/api/?name=${post.username}&background=random`}
                                         alt={post.username}
@@ -461,9 +461,9 @@ const PostPage = () => {
                                         <span className="font-semibold mr-2 cursor-pointer hover:underline" onClick={() => navigate(`/profile/${post.username}`)}>
                                             {post.username}
                                         </span>
-                                        <span className="text-gray-800 break-words">{post.caption}</span>
+                                        <span className="text-text-primary break-words">{post.caption}</span>
                                     </p>
-                                    <div className="flex items-center gap-3 mt-2 text-gray-500 text-[12px]">
+                                    <div className="flex items-center gap-3 mt-2 text-text-secondary text-[12px]">
                                         <span>{formatTime(post.createdAt)}</span>
                                     </div>
                                 </div>
@@ -475,7 +475,7 @@ const PostPage = () => {
                             {comments.map(comment => (
                                 <div key={comment.id} className="flex gap-3 group">
                                     <div
-                                        className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden shrink-0 cursor-pointer"
+                                        className="w-8 h-8 rounded-full bg-secondary overflow-hidden shrink-0 cursor-pointer"
                                         onClick={() => navigate(`/profile/${comment.username || comment.User?.username}`)}
                                     >
                                         <img
@@ -494,10 +494,10 @@ const PostPage = () => {
                                             </span>
                                             {comment.text}
                                         </p>
-                                        <div className="flex items-center gap-3 mt-2 text-[11px] font-semibold text-gray-500 uppercase tracking-tighter">
+                                        <div className="flex items-center gap-3 mt-2 text-[11px] font-semibold text-text-secondary uppercase tracking-tighter">
                                             <span>{formatTime(comment.createdAt)}</span>
                                             {comment.likesCount > 0 && <span>{comment.likesCount} {comment.likesCount === 1 ? 'like' : 'likes'}</span>}
-                                            <button className="hover:text-black transition-colors">Reply</button>
+                                            <button className="hover:text-text-primary transition-colors">Reply</button>
                                         </div>
                                     </div>
                                     <button className="text-gray-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 scale-75">
@@ -514,47 +514,47 @@ const PostPage = () => {
                             <div className="flex gap-4">
                                 <button
                                     onClick={toggleLike}
-                                    className={`hover:opacity-50 transition-all ${isLiked ? 'text-[#ff3040] animate-in zoom-in duration-200' : 'text-black'}`}
+                                    className={`hover:opacity-50 transition-all ${isLiked ? 'text-[#ff3040] animate-in zoom-in duration-200' : 'text-text-primary'}`}
                                 >
                                     <Heart size={24} fill={isLiked ? 'currentColor' : 'none'} strokeWidth={isLiked ? 0 : 2} />
                                 </button>
-                                <button className="text-black hover:opacity-50" onClick={() => document.getElementById('post-comment-input').focus()}>
+                                <button className="text-text-primary hover:opacity-50" onClick={() => document.getElementById('post-comment-input').focus()}>
                                     <MessageCircle size={24} />
                                 </button>
-                                <button onClick={() => setShowShareModal(true)} className="text-black hover:opacity-50">
+                                <button onClick={() => setShowShareModal(true)} className="text-text-primary hover:opacity-50">
                                     <Send size={24} />
                                 </button>
                             </div>
-                            <button onClick={handleToggleSave} className="text-black hover:opacity-50">
-                                <Bookmark size={24} fill={isSaved ? 'black' : 'none'} />
+                            <button onClick={handleToggleSave} className="text-text-primary hover:opacity-50">
+                                <Bookmark size={24} fill={isSaved ? 'currentColor' : 'none'} />
                             </button>
                         </div>
 
                         <div className="flex flex-col gap-0.5 mb-2">
-                            <div className="text-[14px] font-bold text-black">
+                            <div className="text-[14px] font-bold text-text-primary">
                                 {likesCount.toLocaleString()} {likesCount === 1 ? 'like' : 'likes'}
                             </div>
                             {comments.length > 0 && (
-                                <div className="text-[13px] text-gray-500 font-medium">
+                                <div className="text-[13px] text-text-secondary font-medium">
                                     {comments.length.toLocaleString()} {comments.length === 1 ? 'comment' : 'comments'}
                                 </div>
                             )}
                         </div>
 
-                        <div className="text-gray-400 text-[10px] uppercase tracking-wide mb-3">
+                        <div className="text-text-secondary text-[10px] uppercase tracking-wide mb-3">
                             {new Date(post.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </div>
 
                         {/* Add Comment Input */}
                         <div className="flex items-center gap-3 border-t border-white/20 pt-3">
-                            <button className="text-black hover:opacity-50">
+                            <button className="text-text-primary hover:opacity-50">
                                 <svg aria-label="Emoji" color="currentColor" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M15.83 10.997a1.167 1.167 0 1 0 1.167 1.167 1.167 1.167 0 0 0-1.167-1.167Zm-6.5 1.167a1.167 1.167 0 1 0-1.166 1.167 1.167 1.167 0 0 0 1.166-1.167Zm5.163 3.24a3.406 3.406 0 0 1-4.982.007 1 1 0 1 0-1.552 1.266 5.402 5.402 0 0 0 8.085-.011 1 1 0 0 0-1.551-1.262ZM12 .5a11.5 11.5 0 1 0 11.5 11.5A11.513 11.513 0 0 0 12 .5Zm0 21a9.5 9.5 0 1 1 9.5-9.5 9.51 9.51 0 0 1-9.5 9.5Z"></path></svg>
                             </button>
                             <input
                                 id="post-comment-input"
                                 type="text"
                                 placeholder="Add a comment..."
-                                className="flex-1 bg-transparent text-sm focus:outline-none placeholder-gray-500"
+                                className="flex-1 bg-transparent text-sm focus:outline-none text-text-primary placeholder-text-secondary"
                                 value={commentText}
                                 onChange={(e) => setCommentText(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}

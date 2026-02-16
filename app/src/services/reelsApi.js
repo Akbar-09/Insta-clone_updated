@@ -46,8 +46,8 @@ export const reelsApi = {
             });
             return response.data;
         } catch (error) {
-            console.error('Error reporting reel:', error);
             throw error;
         }
+
     }
 };

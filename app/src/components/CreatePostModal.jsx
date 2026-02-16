@@ -110,13 +110,13 @@ const CreatePostModal = ({ onClose }) => {
 
             {/* Modal Container */}
             <div
-                className={`bg-white rounded-xl overflow-hidden shadow-2xl transition-all duration-300 flex flex-col
+                className={`bg-white dark:bg-zinc-900 text-text-primary rounded-xl overflow-hidden shadow-2xl transition-all duration-300 flex flex-col
                     ${preview ? 'w-[800px] h-[550px]' : 'w-[500px] h-[550px]'}
                     max-w-[95vw] max-h-[90vh]`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="h-[42px] border-b border-border flex justify-between items-center px-4 shrink-0">
+                <div className="h-[42px] border-b border-border dark:border-white/10 flex justify-between items-center px-4 shrink-0">
                     {preview ? (
                         <button onClick={clearSelection} className="border-none bg-transparent cursor-pointer p-0">
                             <ArrowLeft size={24} className="text-text-primary" />
@@ -125,7 +125,7 @@ const CreatePostModal = ({ onClose }) => {
                         <div className="w-6"></div> // Spacer
                     )}
 
-                    <h1 className="font-semibold text-base text-center flex-grow">Create new post</h1>
+                    <h1 className="font-semibold text-base text-center flex-grow text-text-primary">Create new post</h1>
 
                     {preview ? (
                         <button
@@ -146,7 +146,7 @@ const CreatePostModal = ({ onClose }) => {
                         // Upload State
                         <div
                             className={`w-full h-full flex flex-col items-center justify-center p-8 transition-colors
-                                ${isDragOver ? 'bg-gray-50' : 'bg-white'}`}
+                                ${isDragOver ? 'bg-gray-50 dark:bg-white/5' : 'bg-white dark:bg-zinc-900'}`}
                             onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
                             onDragLeave={() => setIsDragOver(false)}
                             onDrop={handleDrop}
@@ -154,7 +154,7 @@ const CreatePostModal = ({ onClose }) => {
                             <div className="mb-4 relative">
                                 <ImageIcon size={60} strokeWidth={1} className="text-text-primary scale-110" />
                             </div>
-                            <h2 className="text-xl font-light mb-5">Drag photos and videos here</h2>
+                            <h2 className="text-xl font-light mb-5 text-text-primary">Drag photos and videos here</h2>
                             <button
                                 onClick={triggerFileInput}
                                 className="bg-blue-btn hover:bg-blue-btn-hover text-white px-4 py-1.5 rounded-[4px] font-semibold text-sm transition-colors border-none cursor-pointer"
@@ -182,12 +182,12 @@ const CreatePostModal = ({ onClose }) => {
                             </div>
 
                             {/* Details Side */}
-                            <div className="w-[40%] flex flex-col border-l border-border h-full">
+                            <div className="w-[40%] flex flex-col border-l border-border dark:border-white/10 h-full">
                                 <div className="p-4 flex items-center shrink-0">
-                                    <div className="w-7 h-7 rounded-full bg-gray-200 mr-3 overflow-hidden">
+                                    <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-white/10 mr-3 overflow-hidden">
                                         <img src={user?.profileImage || "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=50&h=50&fit=crop"} alt="User" className="w-full h-full object-cover" />
                                     </div>
-                                    <span className="font-semibold text-sm">{user?.username || 'user'}</span>
+                                    <span className="font-semibold text-sm text-text-primary">{user?.username || 'user'}</span>
                                 </div>
 
                                 <div className="p-4 pt-0 flex-grow">
@@ -195,20 +195,20 @@ const CreatePostModal = ({ onClose }) => {
                                         placeholder="Write a caption..."
                                         value={caption}
                                         onChange={(e) => setCaption(e.target.value)}
-                                        className="w-full h-full resize-none border-none outline-none text-sm font-inherit leading-5"
+                                        className="w-full h-full resize-none border-none outline-none text-sm font-inherit leading-5 bg-transparent text-text-primary"
                                         autoFocus
                                     />
                                 </div>
 
-                                <div className="p-4 border-t border-border shrink-0 text-gray-400 flex justify-between items-center text-xs">
+                                <div className="p-4 border-t border-border dark:border-white/10 shrink-0 text-text-secondary flex justify-between items-center text-xs">
                                     <span>Add location</span>
                                     {/* LocationIcon */}
                                 </div>
-                                <div className="p-4 border-t border-border shrink-0 text-gray-400 flex justify-between items-center text-xs">
+                                <div className="p-4 border-t border-border dark:border-white/10 shrink-0 text-text-secondary flex justify-between items-center text-xs">
                                     <span>Accessibility</span>
                                     {/* ChevronDown */}
                                 </div>
-                                <div className="p-4 border-t border-border shrink-0 text-gray-400 flex justify-between items-center text-xs">
+                                <div className="p-4 border-t border-border dark:border-white/10 shrink-0 text-text-secondary flex justify-between items-center text-xs">
                                     <span>Advanced settings</span>
                                     {/* ChevronDown */}
                                 </div>

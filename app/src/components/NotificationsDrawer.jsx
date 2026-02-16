@@ -36,8 +36,9 @@ const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
 
     const markAllRead = async () => {
         try {
-            await markAllNotificationsRead(user.userId);
+            await markAllNotificationsRead();
             // Optimistically update local state?
+
             // Actually, backend updates it.
         } catch (err) {
             console.error("Failed to mark read", err);

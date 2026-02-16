@@ -370,21 +370,30 @@ const reportReel = async (req, res) => {
         }
 
         if (String(reel.userId) === String(userId)) {
+            console.warn(`[Reel Report] User ${userId} tried to report their own reel ${reelId}`);
             return res.status(400).json({ status: 'error', message: 'You cannot report your own reel' });
         }
 
-        const validReasons = ['spam', 'violence', 'hate', 'nudity', 'scam', 'false_information', 'bullying', 'other'];
-        if (!reason || !validReasons.includes(reason)) {
-            return res.status(400).json({ status: 'error', message: 'Please select a valid reason for reporting' });
+        if (!reason) {
+            return res.status(400).json({ status: 'error', message: 'Reason is required' });
         }
+
+        const validReasons = ['spam', 'violence', 'hate', 'nudity', 'scam', 'false_information', 'bullying', 'other'];
+        if (!validReasons.includes(reason)) {
+            console.warn(`[Reel Report] Invalid reason provided: "${reason}" from user ${userId}`);
+            return res.status(400).json({ status: 'error', message: `Invalid reason: "${reason}". Must be one of ${validReasons.join(', ')}` });
+        }
+
 
         const existingReport = await ReelReport.findOne({
             where: { reelId, userId }
         });
 
         if (existingReport) {
-            return res.status(400).json({ status: 'error', message: 'You have already reported this reel' });
+            return res.status(200).json({ status: 'success', message: 'You have already reported this reel' });
         }
+
+
 
         const report = await ReelReport.create({
             reelId,

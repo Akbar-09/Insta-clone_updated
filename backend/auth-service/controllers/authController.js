@@ -65,6 +65,10 @@ const login = async (req, res) => {
         const { email, password, deviceId } = req.body; // Expect deviceId
         console.log(`[AuthSvc] Login attempt for: ${email}, deviceId: ${deviceId}`);
 
+        if (!email || !password) {
+            return res.status(400).json({ status: 'fail', message: 'Email and password are required' });
+        }
+
         const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(401).json({ status: 'fail', message: 'Invalid credentials' });

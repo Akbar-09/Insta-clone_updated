@@ -81,4 +81,17 @@ const publishEvent = async (eventName, data) => {
     console.log(`Event Published: ${eventName}`);
 };
 
-module.exports = { connectRabbitMQ, publishEvent };
+const publishNotification = async (notification) => {
+    if (!channel) {
+        console.error('RabbitMQ channel not active');
+        return;
+    }
+    await channel.assertQueue('notification_queue', { durable: true });
+    channel.sendToQueue('notification_queue', Buffer.from(JSON.stringify(notification)), {
+        persistent: true,
+    });
+    console.log(`Notification Published: ${notification.type}`);
+};
+
+module.exports = { connectRabbitMQ, publishEvent, publishNotification };
+

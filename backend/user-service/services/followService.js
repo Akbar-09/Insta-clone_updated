@@ -7,7 +7,8 @@ const sequelize = require('../config/database');
 /**
  * Follow a user
  */
-exports.followUser = async (followerId, followingId) => {
+exports.followUser = async (followerId, followingId, followerUsername) => {
+
     if (followerId === followingId) {
         throw new Error('You cannot follow yourself');
     }
@@ -76,7 +77,24 @@ exports.followUser = async (followerId, followingId) => {
         timestamp: new Date()
     });
 
+    // Push to notification_queue
+    const { publishNotification } = require('../config/rabbitmq');
+    const followerProfile = await UserProfile.findOne({ where: { userId: followerId } });
+
+    await publishNotification({
+        userId: followingId,
+        fromUserId: followerId,
+        fromUsername: followerUsername || followerProfile?.username || 'Someone',
+        fromUserAvatar: followerProfile?.profilePicture || '',
+        type: 'follow',
+        title: 'New Follower',
+        message: `${followerUsername || followerProfile?.username || 'Someone'} started following you`,
+        link: `/profile/${followerId}`
+    });
+
+
     return {
+
         status: 'following',
         isFollowing: true,
         isRequested: false,

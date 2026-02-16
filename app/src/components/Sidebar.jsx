@@ -2,7 +2,9 @@ import { useState, useRef, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getUnreadNotificationCount } from '../api/notificationApi';
+import { useSocket } from '../hooks/useSocket';
 import { Link, useLocation } from 'react-router-dom';
+
 import {
     Home, Search, Compass, Clapperboard, MessageCircle,
     Heart, PlusSquare, Menu, BarChart2, Box, Instagram,
@@ -32,13 +34,15 @@ const Sidebar = () => {
     const { user } = useContext(AuthContext);
     const { t } = useLanguage();
     const [unreadCount, setUnreadCount] = useState(0);
+    const socket = useSocket(user?.userId || user?.id);
+
 
     // Fetch unread count
     useEffect(() => {
         const fetchUnread = async () => {
-            if (user?.userId) {
+            if (user?.userId || user?.id) {
                 try {
-                    const res = await getUnreadNotificationCount(user.userId);
+                    const res = await getUnreadNotificationCount(user.userId || user.id);
                     if (res.data.status === 'success') {
                         setUnreadCount(res.data.data.count);
                     }
@@ -49,12 +53,26 @@ const Sidebar = () => {
         };
 
         fetchUnread();
+    }, [user]);
 
-        // Optional: Poll every 30s
-        const interval = setInterval(fetchUnread, 30000);
-        return () => clearInterval(interval);
+    // Listen for real-time notifications
+    useEffect(() => {
+        if (socket) {
+            socket.on('new_notification', (notification) => {
+                console.log('Real-time notification received:', notification);
+                setUnreadCount(prev => prev + 1);
 
-    }, [user, activeDrawer]); // Re-fetch when drawer closes (might have read)
+                // Show browser notification if permissions granted and tab not active? 
+                // Actually the service worker handles push when tab is closed.
+                // When tab is open, we just update the UI badge.
+            });
+
+            return () => {
+                socket.off('new_notification');
+            };
+        }
+    }, [socket]);
+
 
     // Refs
     const sidebarRef = useRef(null);

@@ -175,7 +175,7 @@ const ProfilePage = ({ section }) => {
             <div className="max-w-[935px] w-full mx-auto pt-[30px] pb-12 px-5 max-md:px-0 max-md:pt-0">
                 <ProfileHeader
                     profile={profile}
-                    postsCount={posts.length}
+                    postsCount={posts.length + reels.length}
                     isOwnProfile={isOwnProfile}
                     isFollowing={isFollowing}
                     onFollowToggle={handleFollowToggle}

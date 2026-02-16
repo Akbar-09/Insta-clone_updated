@@ -80,7 +80,7 @@ const ConversationList = ({ conversations, selectedId, onSelect, currentUser }) 
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className={`text-sm truncate ${hasUnread ? 'font-bold text-text-primary' : 'font-normal text-text-primary'}`}>
-                                        {otherUser.fullName || otherUser.username}
+                                        {(otherUser.fullName && !/^User \d+$/.test(otherUser.fullName)) ? otherUser.fullName : otherUser.username}
                                     </div>
                                     <div className={`flex items-center gap-1 text-xs ${hasUnread ? 'font-bold text-text-primary' : 'text-text-secondary'}`}>
                                         <span className="truncate max-w-[140px]">

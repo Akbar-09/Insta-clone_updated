@@ -26,8 +26,8 @@ const FollowButton = ({ userId, initialIsFollowing, className, showChevron = fal
     const standardFollowing = "bg-[#efefef] text-black hover:bg-[#dbdbdb]";
 
     // Text Link Styles (for Sidebar)
-    const textFollow = "bg-transparent text-[#0095f6] !p-0 hover:text-[#00376b]";
-    const textFollowing = "bg-transparent text-gray-500 !p-0 hover:text-gray-700";
+    const textFollow = "bg-transparent text-[#0095f6] !p-0 hover:text-[#00376b] dark:hover:text-[#4dabf7]";
+    const textFollowing = "bg-transparent text-text-secondary !p-0 hover:text-text-primary";
 
     // Outline variant (for Reels)
     const outlineFollow = "bg-transparent text-white border border-white/60 hover:bg-white/10";

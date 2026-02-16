@@ -3,16 +3,16 @@ const followService = require('../services/followService');
 exports.followUser = async (req, res) => {
     try {
         const followingId = req.params.userId; // The user being followed
-        // Assuming auth middleware populates req.user.id or we pass it in headers/body for now
-        // The previous code used req.body.currentUserId, sticking to that for consistency if auth middleware isn't strict yet
         const followerId = req.headers['x-user-id'] || req.body.currentUserId;
+        const followerUsername = req.headers['x-user-username'] || req.body.currentUsername || 'Someone';
 
         if (!followerId) {
             return res.status(401).json({ status: 'error', message: 'Unauthorized: No user ID provided' });
         }
 
-        const result = await followService.followUser(followerId, followingId);
+        const result = await followService.followUser(followerId, followingId, followerUsername);
         res.json({ status: 'success', ...result });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: err.message });
@@ -45,8 +45,8 @@ exports.checkFollowStatus = async (req, res) => {
             return res.status(401).json({ status: 'error', message: 'Unauthorized' });
         }
 
-        const isFollowing = await followService.isFollowing(followerId, followingId);
-        res.json({ status: 'success', data: { isFollowing } });
+        const status = await followService.isFollowing(followerId, followingId);
+        res.json({ status: 'success', data: { isFollowing: status.following } });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: err.message });

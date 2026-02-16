@@ -44,7 +44,30 @@ export const favoriteUser = async (userId) => {
 
 export const copyLink = async (postId) => {
     try {
-        await navigator.clipboard.writeText(`${window.location.origin}/post/${postId}`);
+        const link = `${window.location.origin}/post/${postId}`;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(link);
+        } else {
+            // Fallback for http or non-secure contexts
+            const textArea = document.createElement("textarea");
+            textArea.value = link;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                return false;
+            } finally {
+                textArea.remove();
+            }
+        }
         return true;
     } catch (err) {
         console.error('Failed to copy link', err);

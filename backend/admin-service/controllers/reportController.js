@@ -129,10 +129,10 @@ exports.ignoreReport = async (req, res) => {
             if (AuditLog) {
                 await AuditLog.create({
                     adminId: parseInt(adminId),
-                    action: 'IGNORE_REPORT',
+                    actionType: 'IGNORE_REPORT',
                     targetType: 'report',
                     targetId: String(id),
-                    details: JSON.stringify({ type })
+                    metadata: { type }
                 }).catch(console.error);
             }
             res.json({ success: true, message: 'Report ignored/resolved' });
@@ -188,10 +188,10 @@ exports.banUserFromReport = async (req, res) => {
         if (AuditLog) {
             await AuditLog.create({
                 adminId: parseInt(adminId),
-                action: 'BAN_USER',
+                actionType: 'BAN_USER',
                 targetType: 'user',
                 targetId: String(userIdToBan),
-                details: JSON.stringify({ reportId: id, type })
+                metadata: { reportId: id, type }
             }).catch(console.error);
         }
 

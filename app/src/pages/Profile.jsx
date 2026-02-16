@@ -65,31 +65,16 @@ const Profile = ({ section }) => {
 
             try {
                 let data = [];
+                const isOwnProfile = currentUser?.id === profile.userId || id === 'me'; // Re-evaluate here for useEffect scope
                 if (activeTab === 'saved') {
-                    // Saved posts are private, only fetch if it's the current user
-                    // The check isOwnProfile will be derived from profile props, handling here for data safety
-                    const targetId = id === 'me' ? currentUser?.id : profile?.userId;
-                    // We can only see saved posts for ourselves
-                    if (currentUser?.id === targetId || id === 'me') {
-                        const [postsRes, reelsRes] = await Promise.allSettled([
-                            getSavedPosts(targetId),
-                            getSavedReels(targetId)
-                        ]);
-
-                        let savedPosts = [];
-                        let savedReels = [];
-
-                        if (postsRes.status === 'fulfilled') {
-                            const res = postsRes.value;
-                            savedPosts = res.data || (Array.isArray(res) ? res : []);
+                    if (isOwnProfile) {
+                        const res = await api.get('/users/me/saved');
+                        if (res.data.status === 'success') {
+                            data = res.data.data.map(item => ({
+                                ...item,
+                                isReel: item.type === 'REEL'
+                            }));
                         }
-
-                        if (reelsRes.status === 'fulfilled') {
-                            const res = reelsRes.value;
-                            savedReels = (res.data || (Array.isArray(res) ? res : [])).map(r => ({ ...r, isReel: true }));
-                        }
-
-                        data = [...savedPosts, ...savedReels].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                     }
                 } else if (activeTab === 'reels') {
                     const res = await api.get(`/reels/user?username=${profile.username}`);
