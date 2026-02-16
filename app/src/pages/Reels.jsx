@@ -279,6 +279,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev }) => {
                 {showReportModal && (
                     <ReportModal
                         postId={reel.id}
+                        type="reel"
                         onClose={() => setShowReportModal(false)}
                     />
                 )}

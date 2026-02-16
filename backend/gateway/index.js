@@ -9,7 +9,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'testsecret';
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 app.use(cors());
 // Completely disable helmet for local IP access to avoid browser forcing HTTPS and COOP/COEP issues
@@ -56,10 +56,10 @@ app.use(limiter);
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
     const openPaths = [
-        '/',
         '/api/v1/auth/login',
         '/api/v1/auth/signup',
         '/api/v1/auth/register',
+        '/api/v1/auth/reset-password',
         '/api/v1/admin/auth/login',
         '/api/v1/admin/',
         '/health',
@@ -81,7 +81,10 @@ const authenticateToken = (req, res, next) => {
         '/api/v1/admin/health-check'
     ];
 
-    const isOpenPath = openPaths.some(path => req.path.startsWith(path));
+    // Root paths that should be open
+    const exactOpenPaths = ['/', '/health'];
+
+    const isOpenPath = openPaths.some(path => req.path.startsWith(path)) || exactOpenPaths.includes(req.path);
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -92,6 +95,7 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
+            console.log(`[Gateway] JWT Verify Failed: ${err.message}`);
             if (isOpenPath) return next();
             return res.status(403).json({ status: 'error', message: 'Invalid token' });
         }

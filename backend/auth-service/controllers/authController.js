@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/UserModel');
 const UserSession = require('../models/UserSession'); // Added Import
 const { publishEvent } = require('../config/rabbitmq');
@@ -120,19 +121,63 @@ const checkEmail = async (req, res) => {
 };
 
 const requestPasswordReset = async (req, res) => {
-    // Mock implementation for MVP
-    const { email } = req.body;
-    // In real app: generate token, save to DB, send email
-    console.log(`Password reset requested for: ${email}`);
-    res.json({ status: 'success', message: 'Reset link sent (mock)' });
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ where: { email } });
+
+        if (!user) {
+            return res.status(404).json({ status: 'fail', message: 'User not found' });
+        }
+
+        // Generate a simple 6-digit token for demo purposes
+        const token = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiry = new Date(Date.now() + 3600000); // 1 hour
+
+        await user.update({
+            resetToken: token,
+            resetTokenExpiry: expiry
+        });
+
+        console.log(`Password reset token for ${email}: ${token}`);
+
+        res.json({
+            status: 'success',
+            message: 'Reset token generated (check logs)',
+            token: token // Sending it back for easy demo access
+        });
+    } catch (error) {
+        console.error('Reset Request Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
 };
 
 const verifyPasswordReset = async (req, res) => {
-    // Mock implementation for MVP
-    const { token, newPassword } = req.body;
-    // In real app: verify token, update password hash
-    console.log(`Password reset with token: ${token}`);
-    res.json({ status: 'success', message: 'Password updated (mock)' });
+    try {
+        const { token, newPassword } = req.body;
+
+        const user = await User.findOne({
+            where: {
+                resetToken: token,
+                resetTokenExpiry: { [Op.gt]: new Date() }
+            }
+        });
+
+        if (!user) {
+            return res.status(400).json({ status: 'fail', message: 'Invalid or expired token' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await user.update({
+            password: hashedPassword,
+            resetToken: null,
+            resetTokenExpiry: null
+        });
+
+        res.json({ status: 'success', message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Reset Verify Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
 };
 
 const logout = async (req, res) => {

@@ -68,7 +68,7 @@ const Profile = ({ section }) => {
                 if (activeTab === 'saved') {
                     // Saved posts are private, only fetch if it's the current user
                     // The check isOwnProfile will be derived from profile props, handling here for data safety
-                    const targetId = id === 'me' ? currentUser?.id : profile?.id;
+                    const targetId = id === 'me' ? currentUser?.id : profile?.userId;
                     // We can only see saved posts for ourselves
                     if (currentUser?.id === targetId || id === 'me') {
                         const [postsRes, reelsRes] = await Promise.allSettled([
@@ -121,7 +121,7 @@ const Profile = ({ section }) => {
     if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
     if (!profile) return <div className="flex justify-center items-center h-screen">User not found</div>;
 
-    const isOwnProfile = currentUser?.id === profile.id || id === 'me';
+    const isOwnProfile = currentUser?.id === profile.userId || id === 'me';
 
     const getMediaUrl = (url) => {
         if (!url) return undefined;
@@ -133,7 +133,7 @@ const Profile = ({ section }) => {
         <div className="max-w-[935px] w-full mx-auto pt-[30px] pb-12 px-5 max-md:px-0 max-md:pt-0">
             {/* Header */}
             <ProfileHeader
-                key={profile.id} // Important to reset state when profile changes
+                key={profile.userId} // Important to reset state when profile changes
                 profile={profile}
                 postsCount={totalPostsCount}
                 isOwnProfile={isOwnProfile}
@@ -164,7 +164,7 @@ const Profile = ({ section }) => {
             {/* Post Grid */}
             <div className="grid grid-cols-3 gap-1 max-md:gap-[3px]">
                 {posts.map((post) => (
-                    <div key={post.id} className="relative aspect-square group cursor-pointer bg-secondary">
+                    <div key={`${post.isReel ? 'reel' : 'post'}-${post.id}`} className="relative aspect-square group cursor-pointer bg-secondary">
                         {post.isReel || post.mediaType === 'VIDEO' ? (
                             <div className="relative w-full h-full">
                                 <video src={post.videoUrl || post.mediaUrl} className="w-full h-full object-cover" />

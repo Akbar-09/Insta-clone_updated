@@ -29,11 +29,11 @@ const StoryHighlights = () => {
 
                 <div className="pl-4 border-l-2 border-border ml-2 flex flex-col gap-3 mt-2">
                     <label className="flex items-center gap-3 cursor-pointer">
-                        <input type="radio" name="replies" className="w-4 h-4 accent-black dark:accent-white" defaultChecked />
+                        <input type="radio" name="replies" className="custom-radio" defaultChecked />
                         <span className="text-sm">Everyone</span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer">
-                        <input type="radio" name="replies" className="w-4 h-4 accent-black dark:accent-white" />
+                        <input type="radio" name="replies" className="custom-radio" />
                         <span className="text-sm">People you follow</span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer">
@@ -53,7 +53,7 @@ const StoryHighlights = () => {
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input type="checkbox" className="sr-only peer" defaultChecked />
-                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white"></div>
+                        <div className="toggle-pill"></div>
                     </label>
                 </div>
                 <div className="flex items-center justify-between mb-6">
@@ -63,7 +63,7 @@ const StoryHighlights = () => {
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input type="checkbox" className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white"></div>
+                        <div className="toggle-pill"></div>
                     </label>
                 </div>
             </div>

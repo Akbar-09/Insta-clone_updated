@@ -4,6 +4,7 @@ const { connectRabbitMQ: connectRabbitPublisher } = require('./config/rabbitmq')
 const { connectRabbitMQ: connectRabbitConsumer } = require('./services/reelConsumer');
 const sequelize = require('./config/database');
 const reelRoutes = require('./routes/reelRoutes');
+require('./models/ReelReport'); // Ensure ReelReport is synced
 require('dotenv').config();
 
 const app = express();

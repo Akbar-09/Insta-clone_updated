@@ -6,6 +6,7 @@ import FollowButton from '../FollowButton';
 import { useFollow } from '../../hooks/useFollow';
 import ProfileOptionsModal from './ProfileOptionsModal';
 import { blockUser, restrictUser, reportProblem } from '../../api/userApi';
+import ReportModal from '../ReportModal';
 
 const VerifiedBadge = () => (
     <svg aria-label="Verified" className="ml-2 w-[18px] h-[18px] text-[#0095f6]" fill="rgb(0, 149, 246)" height="18" role="img" viewBox="0 0 40 40" width="18">
@@ -19,7 +20,7 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
     // We initialize it with the profile data. 
     // Keying this component from the parent (Profile.jsx) is important so that when profile changes, this hook resets.
     const { isFollowing, followersCount, toggleFollow, loading } = useFollow(
-        profile.id,
+        profile.userId,
         profile.isFollowing,
         profile.followersCount
     );
@@ -32,11 +33,12 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
 
     const navigate = useNavigate();
     const [showOptionsModal, setShowOptionsModal] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
 
     const handleBlock = async () => {
         if (window.confirm(`Are you sure you want to block ${profile.username}?`)) {
             try {
-                await blockUser(profile.id);
+                await blockUser(profile.userId);
                 alert(`${profile.username} blocked.`);
                 navigate('/'); // Redirect to home after blocking
             } catch (error) {
@@ -48,7 +50,7 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
 
     const handleRestrict = async () => {
         try {
-            await restrictUser(profile.id);
+            await restrictUser(profile.userId);
             alert(`${profile.username} restricted.`);
         } catch (error) {
             console.error("Restrict failed", error);
@@ -57,19 +59,26 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
         }
     };
 
-    const handleReport = async (reason) => {
+    const handleReport = () => {
+        setShowOptionsModal(false);
+        setShowReportModal(true);
+    };
+
+    const handleReportSubmit = async (reason, detail) => {
         try {
             await reportProblem({
-                userId: profile.id, // Reported User
+                userId: profile.userId, // Reported User
                 reason: reason,
-                description: `Reporting user ${profile.username} (ID: ${profile.id}) for ${reason}`
+                description: `Reporting user ${profile.username} (ID: ${profile.userId}) for ${reason}. Detail: ${detail}`
             });
-            alert("Report submitted. Thank you.");
+            // Modal handled state internally for 'submitted' step usually, 
+            // but we can also handle it here if needed.
         } catch (error) {
             console.error("Report failed", error);
-            alert("Failed to submit report.");
+            throw error; // Let ReportModal catch and show alert
         }
     };
+
 
     return (
         <header className="flex mb-11 px-0 max-md:px-4 max-md:mb-6 max-md:mt-4">
@@ -100,7 +109,7 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
                             <div className="flex gap-2">
                                 {/* Follow/Following Button */}
                                 <FollowButton
-                                    userId={profile.id}
+                                    userId={profile.userId}
                                     initialIsFollowing={isFollowing}
                                     showChevron={true}
                                     onToggle={() => { }} // Hook handles state locally
@@ -130,6 +139,14 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
                                         onBlock={handleBlock}
                                         onRestrict={handleRestrict}
                                         onReport={handleReport}
+                                    />
+                                )}
+                                {showReportModal && (
+                                    <ReportModal
+                                        type="account"
+                                        userId={profile.userId}
+                                        onClose={() => setShowReportModal(false)}
+                                        onReport={handleReportSubmit}
                                     />
                                 )}
                             </div>

@@ -40,22 +40,14 @@ const TagsMentions = () => {
         }
     };
 
-    const CustomRadioButton = ({ checked, onClick }) => (
-        <div
-            onClick={onClick}
-            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-200 ${checked ? 'border-black dark:border-white' : 'border-gray-300 dark:border-gray-600'}`}
-        >
-            {checked && <div className="w-2.5 h-2.5 rounded-full bg-black dark:bg-white" />}
-        </div>
-    );
 
     if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
 
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl mx-auto pb-10">
             <div className="flex items-center mb-8 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
-                    <ArrowLeft />
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
                 </button>
                 <h2 className="text-xl font-bold">Tags and mentions</h2>
             </div>
@@ -73,15 +65,15 @@ const TagsMentions = () => {
                 <div className="bg-white dark:bg-[#1c1c1c] border border-border rounded-xl overflow-hidden shadow-sm">
                     <div className="flex items-center justify-between p-4 px-6 border-b border-border hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer" onClick={() => handleChange('allowTagsFrom', 'everyone')}>
                         <span className="text-sm font-medium">Allow tags from everyone</span>
-                        <CustomRadioButton checked={settings.allowTagsFrom === 'everyone'} />
+                        <input type="radio" className="custom-radio" checked={settings.allowTagsFrom === 'everyone'} readOnly />
                     </div>
                     <div className="flex items-center justify-between p-4 px-6 border-b border-border hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer" onClick={() => handleChange('allowTagsFrom', 'following')}>
                         <span className="text-sm font-medium">Allow tags from people that you follow</span>
-                        <CustomRadioButton checked={settings.allowTagsFrom === 'following'} />
+                        <input type="radio" className="custom-radio" checked={settings.allowTagsFrom === 'following'} readOnly />
                     </div>
                     <div className="flex items-center justify-between p-4 px-6 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer" onClick={() => handleChange('allowTagsFrom', 'no_one')}>
                         <span className="text-sm font-medium">Don't allow tags</span>
-                        <CustomRadioButton checked={settings.allowTagsFrom === 'no_one'} />
+                        <input type="radio" className="custom-radio" checked={settings.allowTagsFrom === 'no_one'} readOnly />
                     </div>
                 </div>
             </div>
@@ -107,15 +99,15 @@ const TagsMentions = () => {
                 <div className="bg-white dark:bg-[#1c1c1c] border border-border rounded-xl overflow-hidden shadow-sm">
                     <div className="flex items-center justify-between p-4 px-6 border-b border-border hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer" onClick={() => handleChange('allowMentionsFrom', 'everyone')}>
                         <span className="text-sm font-medium">Allow mentions from everyone</span>
-                        <CustomRadioButton checked={settings.allowMentionsFrom === 'everyone'} />
+                        <input type="radio" className="custom-radio" checked={settings.allowMentionsFrom === 'everyone'} readOnly />
                     </div>
                     <div className="flex items-center justify-between p-4 px-6 border-b border-border hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer" onClick={() => handleChange('allowMentionsFrom', 'following')}>
                         <span className="text-sm font-medium">Allow mentions from people you follow</span>
-                        <CustomRadioButton checked={settings.allowMentionsFrom === 'following'} />
+                        <input type="radio" className="custom-radio" checked={settings.allowMentionsFrom === 'following'} readOnly />
                     </div>
                     <div className="flex items-center justify-between p-4 px-6 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer" onClick={() => handleChange('allowMentionsFrom', 'no_one')}>
                         <span className="text-sm font-medium">Don't allow mentions</span>
-                        <CustomRadioButton checked={settings.allowMentionsFrom === 'no_one'} />
+                        <input type="radio" className="custom-radio" checked={settings.allowMentionsFrom === 'no_one'} readOnly />
                     </div>
                 </div>
             </div>

@@ -1,9 +1,17 @@
 import jaadoeLogo from '../../assets/jaadoe_logo.svg';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const About = () => {
+    const navigate = useNavigate();
     return (
-        <div className="flex flex-col w-full text-text-primary max-w-[600px]">
-            <h2 className="text-xl font-bold mb-6">About</h2>
+        <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl mx-auto pb-10">
+            <div className="flex items-center mb-8 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
+                </button>
+                <h2 className="text-xl font-bold">About</h2>
+            </div>
 
             <div className="flex flex-col gap-1">
                 {['Data Policy', 'Terms of Use'].map(item => (

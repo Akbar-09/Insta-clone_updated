@@ -1,5 +1,5 @@
 const express = require('express');
-const { createReel, getReels, getUserReels, likeReel, unlikeReel, getLikedReels, getActivityReels, getReelById, bookmarkReel, unbookmarkReel, getSavedReels } = require('../controllers/reelController');
+const { createReel, getReels, getUserReels, likeReel, unlikeReel, getLikedReels, getActivityReels, getReelById, bookmarkReel, unbookmarkReel, getSavedReels, reportReel } = require('../controllers/reelController');
 
 const router = express.Router();
 
@@ -12,6 +12,7 @@ router.post('/:id/like', likeReel);
 router.delete('/:id/like', unlikeReel);
 router.post('/:id/bookmark', bookmarkReel);
 router.delete('/:id/bookmark', unbookmarkReel);
+router.post('/:id/report', reportReel);
 router.get('/user', getUserReels);
 router.get('/:id', getReelById);
 

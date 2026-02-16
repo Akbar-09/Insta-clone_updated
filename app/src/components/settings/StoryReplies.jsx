@@ -41,7 +41,7 @@ const StoryReplies = () => {
             <span className="text-base text-text-primary">{label}</span>
             <input
                 type="radio"
-                className="w-5 h-5 accent-black dark:accent-white"
+                className="custom-radio"
                 checked={replySetting === value}
                 onChange={() => handleChange(value)}
             />
@@ -53,8 +53,8 @@ const StoryReplies = () => {
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl h-full pb-10">
             <div className="flex items-center mb-2 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 md:hidden">
-                    <ArrowLeft />
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
                 </button>
                 <h2 className="text-xl font-bold">Story replies</h2>
             </div>
