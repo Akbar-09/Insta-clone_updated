@@ -15,6 +15,16 @@ const HighlightStory = require('./models/HighlightStory');
 
 require('dotenv').config();
 
+// Global error handlers to prevent crashes from unhandled library errors
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception thrown:', err);
+});
+
+
 const app = express();
 const PORT = process.env.PORT || 5004;
 

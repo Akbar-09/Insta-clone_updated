@@ -1,5 +1,5 @@
 const express = require('express');
-const { sendMessage, getMessages, getConversations, markAsSeen, getActivityStoryReplies, getConversationDetails, toggleMute, deleteConversation, blockUser, unblockUser, reportConversation } = require('../controllers/messageController');
+const { sendMessage, getMessages, getConversations, getUnreadCount, markAsSeen, getActivityStoryReplies, getConversationDetails, toggleMute, deleteConversation, blockUser, unblockUser, reportConversation } = require('../controllers/messageController');
 
 const router = express.Router();
 
@@ -21,6 +21,7 @@ const extractUser = (req, res, next) => {
 router.use(extractUser);
 
 router.get('/activity/story-replies', getActivityStoryReplies);
+router.get('/unread-count', getUnreadCount);
 router.get('/conversations', getConversations);
 router.get('/conversations/:conversationId', getMessages);
 router.get('/conversations/:conversationId/details', getConversationDetails);

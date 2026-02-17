@@ -1893,16 +1893,7 @@
  *         description: OK
  */
 
-/**
- * @swagger
- * /auth/reset-password/verify:
- *   post:
- *     tags: [Auth]
- *     summary: POST /auth/reset-password/verify (authRoutes.js)
- *     responses:
- *       200:
- *         description: OK
- */
+
 
 /**
  * @swagger

@@ -59,12 +59,12 @@
  * @swagger
  * tags:
  *   name: Auth
- *   description: Authentication endpoints
+ *   description: Authentication and Password Management
  */
 
 /**
  * @swagger
- * /auth/signup:
+ * /auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
@@ -89,11 +89,30 @@
  *                 type: string
  *               fullName:
  *                 type: string
+ *           example:
+ *             username: "johndoe"
+ *             email: "john@example.com"
+ *             password: "securePassword123"
+ *             fullName: "John Doe"
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: User created
  *       400:
- *         description: Validation error
+ *         description: Bad request
+ */
+
+/**
+ * @swagger
+ * /auth/signup:
+ *   post:
+ *     summary: Register a new user (Alias)
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       $ref: '#/components/schemas/UserRegistration'
+ *     responses:
+ *       201:
+ *         description: User created
  */
 
 /**
@@ -117,20 +136,102 @@
  *                 type: string
  *               password:
  *                 type: string
+ *           example:
+ *             email: "john@example.com"
+ *             password: "securePassword123"
  *     responses:
  *       200:
  *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                 user:
- *                   $ref: '#/components/schemas/User'
- *       401:
- *         description: Invalid credentials
+ */
+
+/**
+ * @swagger
+ * /auth/check-username:
+ *   get:
+ *     summary: Check if username is available
+ *     tags: [Auth]
+ *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: username
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Availability status
+ */
+
+/**
+ * @swagger
+ * /auth/check-email:
+ *   get:
+ *     summary: Check if email is available
+ *     tags: [Auth]
+ *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Availability status
+ */
+
+/**
+ * @swagger
+ * /auth/reset-password/request:
+ *   post:
+ *     summary: Request password reset token
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *           example:
+ *             email: "john@example.com"
+ *     responses:
+ *       200:
+ *         description: Reset token generated
+ */
+
+/**
+ * @swagger
+ * /auth/reset-password/verify:
+ *   post:
+ *     summary: Verify token and reset password
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - newPassword
+ *             properties:
+ *               token:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *           example:
+ *             token: "123456"
+ *             newPassword: "newSecurePassword123"
+ *     responses:
+ *       200:
+ *         description: Password reset success
  */
 
 /**
@@ -142,6 +243,28 @@
  *     responses:
  *       200:
  *         description: Logout successful
+ */
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get current user details
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: User details
+ */
+
+/**
+ * @swagger
+ * /auth/history:
+ *   get:
+ *     summary: Get user account history
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: History items
  */
 
 // --- USERS ---

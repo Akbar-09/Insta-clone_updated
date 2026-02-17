@@ -15,9 +15,12 @@ const initSocket = (server) => {
 
         // Join user to their personal room
         socket.on('join', (userId) => {
+            console.log(`[SocketManager] Handle join: userId=${userId}, socketId=${socket.id}`);
             if (userId) {
                 socket.join(`user:${userId}`);
-                console.log(`User ${userId} joined room user:${userId}`);
+                console.log(`[SocketManager] Socket ${socket.id} joined room user:${userId}`);
+            } else {
+                console.warn(`[SocketManager] Join attempted with null userId for socket ${socket.id}`);
             }
         });
 

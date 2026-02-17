@@ -6,7 +6,23 @@ let channel;
 const connectRabbitMQ = async () => {
     try {
         const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
+
+        // Prevent process crash on connection errors (like heartbeat timeouts)
+        connection.on('error', (err) => {
+            console.error('[RabbitMQ] Connection error:', err.message);
+        });
+
+        connection.on('close', () => {
+            console.error('[RabbitMQ] Connection closed. Reconnecting in 5s...');
+            setTimeout(connectRabbitMQ, 5000);
+        });
+
         channel = await connection.createChannel();
+
+        channel.on('error', (err) => {
+            console.error('[RabbitMQ] Channel error:', err.message);
+        });
+
         const exchange = 'instagram-events';
         await channel.assertExchange(exchange, 'topic', { durable: true });
         const q = await channel.assertQueue('socket_events');
@@ -20,12 +36,11 @@ const connectRabbitMQ = async () => {
                     const content = JSON.parse(msg.content.toString());
                     let type = msg.fields.routingKey;
 
-                    // If routing key is not specific (e.g. just the queue name or empty),
-                    // try to extract type from the message content itself
                     if ((!type || type === 'socket_events' || type === '') && content.type) {
                         type = content.type;
                     }
 
+                    console.log(`[SocketConsumer] Received event: type=${type}`, content);
                     handleEvent({ type, payload: content.payload || content });
                     channel.ack(msg);
                 } catch (error) {
@@ -35,10 +50,11 @@ const connectRabbitMQ = async () => {
             }
         });
     } catch (error) {
-        console.error('RabbitMQ connect error:', error);
+        console.error('RabbitMQ connect error:', error.message);
         setTimeout(connectRabbitMQ, 5000);
     }
 };
+
 
 const handleEvent = (event) => {
     const io = getIO();
@@ -53,6 +69,7 @@ const handleEvent = (event) => {
             break;
         case 'MESSAGES_SEEN':
             io.to(`user:${payload.receiverId}`).emit('message:seen', payload);
+            io.to(`user:${payload.seenBy}`).emit('message:seen', payload);
             break;
         case 'LIVE_COMMENT':
         case 'LIVE_CHAT_MESSAGE':

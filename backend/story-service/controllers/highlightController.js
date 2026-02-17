@@ -105,10 +105,20 @@ exports.getUserHighlights = async (req, res) => {
     try {
         const { userId } = req.params;
 
+        // Prevent query error if userId is invalid (e.g., 'Unknown' from frontend)
+        if (!userId || isNaN(userId)) {
+            console.log(`[HighlightController] Invalid userId received: ${userId}`);
+            return res.json({
+                status: 'success',
+                data: []
+            });
+        }
+
         const highlights = await Highlight.findAll({
             where: { userId },
             order: [['createdAt', 'ASC']]
         });
+
 
         // Fetch cover stories and story counts for each highlight
         const highlightsWithDetails = await Promise.all(
@@ -276,10 +286,10 @@ exports.updateHighlight = async (req, res) => {
  */
 exports.getActivityHighlights = async (req, res) => {
     try {
-        const userId = req.headers['x-user-id'] || req.query.userId;
-        const { sort = 'newest', startDate, endDate } = req.query;
+        const userIdRaw = req.headers['x-user-id'] || req.query.userId;
+        const userId = (userIdRaw && !isNaN(userIdRaw)) ? parseInt(userIdRaw) : null;
 
-        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized or invalid User ID' });
 
         const whereClause = { userId };
         if (startDate && endDate) {

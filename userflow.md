@@ -146,4 +146,11 @@ App.jsx
  docker-compose -f docker-compose.test.yml up -d postgres redis rabbitmq            
 
 cd backend
-node test_runner.js
+node test_runner.js 
+
+
+to check which port is used
+netstat -ano | findstr :5004
+
+to stop individual microservice
+ taskkill /F /PID 25484 /T

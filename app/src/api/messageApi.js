@@ -1,5 +1,15 @@
 import api from './axios';
 
+export const getUnreadMessageCount = async () => {
+    try {
+        const response = await api.get('/messages/unread-count');
+        return response.data.data.count;
+    } catch (error) {
+        console.error("Failed to fetch unread message count", error);
+        return 0;
+    }
+};
+
 // Fetch all conversations
 export const getConversations = async () => {
     try {

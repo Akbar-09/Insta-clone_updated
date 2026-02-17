@@ -52,6 +52,30 @@ export const AuthProvider = ({ children }) => {
         fetchCurrentUser();
     }, []);
 
+    // Listen for storage changes from other tabs
+    useEffect(() => {
+        const handleStorageChange = (e) => {
+            if (e.key === 'token') {
+                if (e.newValue) {
+                    setToken(e.newValue);
+                    // Refresh user data based on new token
+                    api.get('auth/me').then(({ data }) => {
+                        if (data.status === 'success') {
+                            setUser(data.data);
+                        }
+                    }).catch(() => logout());
+                } else {
+                    // Logic for logout in other tab
+                    setUser(null);
+                    setToken(null);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
 
     const login = async (email, password) => {
         try {

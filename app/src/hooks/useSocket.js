@@ -13,12 +13,16 @@ export const useSocket = (userId) => {
         const newSocket = io(SOCKET_URL);
 
         newSocket.on('connect', () => {
-            console.log('Connected to socket server');
+            console.log(`[useSocket] Connected to socket, ID: ${newSocket.id}, joining room user:${userId}`);
             newSocket.emit('join', userId);
         });
 
+        newSocket.on('disconnect', (reason) => {
+            console.log(`[useSocket] Disconnected from socket, ID: ${newSocket.id}, reason: ${reason}`);
+        });
+
         newSocket.on('connect_error', (err) => {
-            console.error('Socket connection error:', err);
+            console.error('[useSocket] Socket connection error:', err);
         });
 
         socketRef.current = newSocket;
@@ -26,6 +30,7 @@ export const useSocket = (userId) => {
 
         return () => {
             if (socketRef.current) {
+                console.log(`[useSocket] Cleanup: disconnecting socket ${socketRef.current.id}`);
                 socketRef.current.disconnect();
                 socketRef.current = null;
             }

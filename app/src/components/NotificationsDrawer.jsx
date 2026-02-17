@@ -93,9 +93,12 @@ const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
     if (!isOpen) return null;
 
     return (
-        <div ref={ref} className="absolute top-0 left-[72px] bottom-0 w-[397px] bg-primary/95 backdrop-blur-2xl border-r border-border rounded-r-3xl p-0 z-[99] shadow-[10px_0_30px_rgba(0,0,0,0.1)] flex flex-col transition-all duration-300 animate-in slide-in-from-left">
-            <div className="px-6 pt-8 pb-4">
-                <h2 className="text-2xl font-extrabold tracking-tight">Notifications</h2>
+        <div
+            ref={ref}
+            className="absolute top-0 left-[72px] bottom-0 w-[397px] bg-white dark:bg-black border-r border-gray-200 dark:border-[#363636] rounded-r-[24px] p-0 z-[99] shadow-[10px_0_30px_rgba(0,0,0,0.15)] flex flex-col transition-all duration-300 animate-in slide-in-from-left"
+        >
+            <div className="px-6 pt-6 pb-4">
+                <h2 className="text-2xl font-bold text-text-primary dark:text-white">Notifications</h2>
             </div>
 
             <div className="flex-grow overflow-y-auto pb-5 scrollbar-none hover:scrollbar-thin scrollbar-thumb-white/20">
@@ -108,13 +111,8 @@ const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
                     sections.length > 0 ? (
                         sections.map((section) => (
                             <div key={section} className="flex flex-col">
-                                <div className="flex items-center justify-between px-6 pt-5 pb-2">
-                                    <h3 className="text-base font-bold text-text-primary">{section}</h3>
-                                    {section === 'Today' && (
-                                        <button className="text-xs font-semibold text-blue-btn hover:text-blue-btn-hover">
-                                            Clear all
-                                        </button>
-                                    )}
+                                <div className="flex items-center justify-between px-6 py-2">
+                                    <h3 className="text-[17px] font-bold text-text-primary dark:text-white">{section}</h3>
                                 </div>
                                 {grouped[section].map(item => (
                                     <div
@@ -125,25 +123,30 @@ const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
                                         <div className="mr-3.5 shrink-0 relative">
                                             <div className="w-[46px] h-[46px] rounded-full p-[1.5px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600">
                                                 <img
-                                                    src={item.fromUserAvatar || `https://ui-avatars.com/api/?name=${item.fromUsername}&background=random`}
-                                                    className="w-full h-full rounded-full object-cover border-2 border-primary"
-                                                    alt={item.fromUsername}
+                                                    src={item.fromUserAvatar || `https://ui-avatars.com/api/?name=${item.fromUsername || (item.message.includes(':') ? item.message.split(':')[0] : 'User')}&background=random`}
+                                                    className="w-full h-full rounded-full object-cover border-2 border-primary dark:border-black"
+                                                    alt={item.fromUsername || 'User'}
                                                 />
                                             </div>
                                         </div>
 
                                         <div className="flex-grow mr-3 text-[14px] leading-[1.3]">
-                                            <p className="text-text-primary">
-                                                <span className="font-bold hover:underline cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/profile/${item.fromUsername}`); }}>
-                                                    {item.fromUsername}
+                                            <p className="text-text-primary dark:text-gray-200">
+                                                <span className="font-bold hover:underline cursor-pointer dark:text-white" onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const username = item.fromUsername || (item.message.includes(':') ? item.message.split(':')[0] : 'User');
+                                                    navigate(`/profile/${username}`);
+                                                }}>
+                                                    {item.fromUsername || (item.message.includes(':') ? item.message.split(':')[0] : 'User')}
                                                 </span>
                                                 {' '}
-                                                <span className="text-text-primary font-medium">
-                                                    {item.type === 'LIKE' && 'liked your post.'}
-                                                    {item.type === 'COMMENT' && 'commented on your post.'}
-                                                    {item.type === 'REPLY' && 'replied to your comment.'}
-                                                    {item.type === 'FOLLOW' && 'started following you.'}
-                                                    {item.type === 'MENTION' && 'mentioned you.'}
+                                                <span className="text-text-primary font-medium dark:text-gray-300">
+                                                    {(item.type === 'LIKE' || item.type === 'like') && 'liked your post.'}
+                                                    {(item.type === 'COMMENT' || item.type === 'comment') && 'commented on your post.'}
+                                                    {(item.type === 'REPLY' || item.type === 'reply') && 'replied to your comment.'}
+                                                    {(item.type === 'FOLLOW' || item.type === 'follow') && 'started following you.'}
+                                                    {(item.type === 'MENTION' || item.type === 'mention') && 'mentioned you.'}
+                                                    {(item.type === 'message') && 'sent you a message.'}
                                                 </span>
                                                 <span className="text-text-secondary ml-1.5 whitespace-nowrap">
                                                     {formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })

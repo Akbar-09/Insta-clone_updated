@@ -15,8 +15,8 @@ const Messages = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Pass user ID only if available
-    const socket = useSocket(user?.id);
+    const effectiveUserId = user?.userId || user?.id;
+    const socket = useSocket(effectiveUserId);
 
     const {
         conversations,
@@ -31,7 +31,7 @@ const Messages = () => {
         handleTyping,
         refreshConversations,
         loadingConversations
-    } = useMessages(socket, user?.id, conversationId);
+    } = useMessages(socket, effectiveUserId, conversationId);
 
     // Handle incoming chat requests (e.g. from Profile Message button)
     // Handle incoming chat requests (e.g. from Profile Message button)
