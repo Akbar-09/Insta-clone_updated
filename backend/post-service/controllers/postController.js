@@ -348,7 +348,25 @@ const likePost = async (req, res) => {
             timestamp: new Date()
         });
 
+        // Push to notification_queue
+        const UserProfile = require('../models/UserProfile');
+        const actorProfile = await UserProfile.findByPk(userId);
+        const username = req.headers['x-user-username'] || actorProfile?.username || 'Someone';
+
+        await require('../config/rabbitmq').publishNotification({
+            userId: post.userId,
+            fromUserId: userId,
+            fromUsername: username,
+            fromUserAvatar: actorProfile?.profilePicture || '',
+            type: 'like',
+            title: 'New Like',
+            message: `${username} liked your post`,
+            link: `/p/${post.id}`
+        });
+
+
         res.json({ status: 'success', message: 'Post liked', data: { likesCount: post.likesCount + 1 } });
+
     } catch (error) {
         console.error('Like Post Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
@@ -447,38 +465,82 @@ const toggleHideLikes = async (req, res) => {
         const postId = req.params.id;
         const userId = req.headers['x-user-id'] || req.body.userId;
 
-        const post = await Post.findByPk(postId);
-        if (!post) return res.status(404).json({ message: 'Post not found' });
+        let post = await Post.findByPk(postId);
+        let isReel = false;
+
+        if (!post) {
+            // Check Reels
+            const [reelResults] = await sequelize.query(`SELECT * FROM "Reels" WHERE id = ? LIMIT 1`, {
+                replacements: [postId]
+            });
+            if (reelResults && reelResults.length > 0) {
+                post = reelResults[0];
+                isReel = true;
+            }
+        }
+
+        if (!post) return res.status(404).json({ message: 'Post/Reel not found' });
 
         if (String(post.userId) !== String(userId)) return res.status(403).json({ message: 'Unauthorized' });
 
-        post.hideLikes = !post.hideLikes;
-        await post.save();
-
-        res.json({ status: 'success', data: { hideLikes: post.hideLikes } });
+        if (isReel) {
+            const newStatus = !post.hideLikes;
+            await sequelize.query(`UPDATE "Reels" SET "hideLikes" = ? WHERE id = ?`, {
+                replacements: [newStatus, postId]
+            });
+            return res.json({ status: 'success', data: { hideLikes: newStatus } });
+        } else {
+            post.hideLikes = !post.hideLikes;
+            await post.save();
+            return res.json({ status: 'success', data: { hideLikes: post.hideLikes } });
+        }
     } catch (error) {
+        console.error('toggleHideLikes Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
+
 
 const toggleComments = async (req, res) => {
     try {
         const postId = req.params.id;
         const userId = req.headers['x-user-id'] || req.body.userId;
 
-        const post = await Post.findByPk(postId);
-        if (!post) return res.status(404).json({ message: 'Post not found' });
+        let post = await Post.findByPk(postId);
+        let isReel = false;
+
+        if (!post) {
+            // Check Reels
+            const [reelResults] = await sequelize.query(`SELECT * FROM "Reels" WHERE id = ? LIMIT 1`, {
+                replacements: [postId]
+            });
+            if (reelResults && reelResults.length > 0) {
+                post = reelResults[0];
+                isReel = true;
+            }
+        }
+
+        if (!post) return res.status(404).json({ message: 'Post/Reel not found' });
 
         if (String(post.userId) !== String(userId)) return res.status(403).json({ message: 'Unauthorized' });
 
-        post.commentsDisabled = !post.commentsDisabled;
-        await post.save();
-
-        res.json({ status: 'success', data: { commentsDisabled: post.commentsDisabled } });
+        if (isReel) {
+            const newStatus = !post.commentsDisabled;
+            await sequelize.query(`UPDATE "Reels" SET "commentsDisabled" = ? WHERE id = ?`, {
+                replacements: [newStatus, postId]
+            });
+            return res.json({ status: 'success', data: { commentsDisabled: newStatus } });
+        } else {
+            post.commentsDisabled = !post.commentsDisabled;
+            await post.save();
+            return res.json({ status: 'success', data: { commentsDisabled: post.commentsDisabled } });
+        }
     } catch (error) {
+        console.error('toggleComments Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
+
 
 
 const SavedPost = require('../models/SavedPost');
@@ -491,6 +553,11 @@ const bookmarkPost = async (req, res) => {
         const { userId } = req.body;
 
         if (!userId) return res.status(400).json({ message: 'User ID required' });
+
+        const post = await Post.findByPk(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
 
         await SavedPost.findOrCreate({
             where: { userId, postId }
@@ -506,12 +573,15 @@ const bookmarkPost = async (req, res) => {
 const unbookmarkPost = async (req, res) => {
     try {
         const postId = req.params.id;
-        const { userId } = req.body; // Usually from query or auth middleware if DELETE body not supported, but we'll assume body or query for now. 
-        // Better to use req.user.id if available, but for now follow pattern.
-        // DELETE requests *can* have body but often discouraged. Let's support query.
+        const { userId } = req.body;
         const effectiveUserId = userId || req.query.userId;
 
         if (!effectiveUserId) return res.status(400).json({ message: 'User ID required' });
+
+        const post = await Post.findByPk(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
 
         await SavedPost.destroy({
             where: { userId: effectiveUserId, postId }
@@ -637,9 +707,34 @@ const reportPost = async (req, res) => {
         }
 
         // Check if post exists
-        const post = await Post.findByPk(postId);
+        let post = await Post.findByPk(postId);
+        let isReel = false;
+
         if (!post) {
-            console.log('[Report] Error: Post not found:', postId);
+            // Check if it's a Reel
+            try {
+                const [reelResults] = await sequelize.query(`
+                    SELECT *, 'VIDEO' as "mediaType", 'REEL' as type 
+                    FROM "Reels" 
+                    WHERE id = ? LIMIT 1
+                `, {
+                    replacements: [postId]
+                });
+
+                if (reelResults && reelResults.length > 0) {
+                    post = {
+                        ...reelResults[0],
+                        userId: reelResults[0].userId // Ensure userId is accessible
+                    };
+                    isReel = true;
+                }
+            } catch (reelErr) {
+                console.error('Reel Fallback Error in Report:', reelErr);
+            }
+        }
+
+        if (!post) {
+            console.log('[Report] Error: Post/Reel not found:', postId);
             return res.status(404).json({ status: 'error', message: 'Post not found' });
         }
 
@@ -662,9 +757,10 @@ const reportPost = async (req, res) => {
         });
 
         if (existingReport) {
-            console.log('[Report] Error: Duplicate report');
-            return res.status(400).json({ status: 'error', message: 'You have already reported this post' });
+            console.log('[Report] Info: Duplicate report handled gracefully');
+            return res.status(200).json({ status: 'success', message: 'You have already reported this post' });
         }
+
 
         // Create report
         console.log('[Report] Creating report in DB...');
@@ -696,7 +792,32 @@ const getEmbedCode = async (req, res) => {
     try {
         const postId = req.params.id;
 
-        const post = await Post.findByPk(postId);
+        let post = await Post.findByPk(postId);
+        let isReel = false;
+
+        if (!post) {
+            // Check if it's a Reel
+            try {
+                const [reelResults] = await sequelize.query(`
+                    SELECT *, 'VIDEO' as "mediaType", 'REEL' as type 
+                    FROM "Reels" 
+                    WHERE id = ? LIMIT 1
+                `, {
+                    replacements: [postId]
+                });
+
+                if (reelResults && reelResults.length > 0) {
+                    post = {
+                        ...reelResults[0],
+                        username: reelResults[0].username // Ensure username is available
+                    };
+                    isReel = true;
+                }
+            } catch (reelErr) {
+                console.error('Reel Fallback Error in Embed:', reelErr);
+            }
+        }
+
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
         }

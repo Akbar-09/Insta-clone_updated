@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { getUserById, updateUserProfile } from '../../api/userApi';
 import AccountPrivacyModal from './AccountPrivacyModal';
@@ -77,7 +77,12 @@ const PrivacySettings = () => {
 
     return (
         <div className="flex flex-col w-full text-text-primary max-w-2xl mx-auto px-4 md:px-0 pb-10">
-            <h2 className="text-xl font-bold mb-8 mt-1 text-center md:text-left">Account privacy</h2>
+            <div className="flex items-center mb-8 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-4 md:hidden p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
+                </button>
+                <h2 className="text-xl font-bold">Account privacy</h2>
+            </div>
 
             <div className="bg-white dark:bg-[#1c1c1c] border border-border rounded-xl p-6 shadow-sm">
                 {/* Private Account Section */}
@@ -98,7 +103,7 @@ const PrivacySettings = () => {
                             onChange={handlePrivacyToggle}
                             className="sr-only peer"
                         />
-                        <div className="w-10 h-6 bg-[#dbdbdb] dark:bg-[#363636] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white transition-colors duration-200"></div>
+                        <div className="toggle-pill"></div>
                     </label>
                 </div>
 
@@ -117,7 +122,7 @@ const PrivacySettings = () => {
                             onChange={handleIndexingToggle}
                             className="sr-only peer"
                         />
-                        <div className="w-10 h-6 bg-[#dbdbdb] dark:bg-[#363636] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white transition-colors duration-200"></div>
+                        <div className="toggle-pill"></div>
                     </label>
                 </div>
             </div>

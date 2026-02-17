@@ -212,8 +212,8 @@ const HideStoryFrom = () => {
                                 </div>
 
                                 <div className="relative">
-                                    <div className={`w-6 h-6 rounded-full border transition-all duration-200 flex items-center justify-center ${isHidden ? 'border-[#0095f6] bg-[#0095f6]' : 'border-gray-400 dark:border-gray-500 group-hover:border-gray-600'}`}>
-                                        {isHidden && <Check size={14} strokeWidth={3} className="text-white" />}
+                                    <div className={`w-6 h-6 rounded-full border transition-all duration-200 flex items-center justify-center ${isHidden ? 'border-white bg-white' : 'border-gray-400 dark:border-gray-500 group-hover:border-gray-600'}`}>
+                                        {isHidden && <Check size={14} strokeWidth={3} className="text-black" />}
                                     </div>
                                 </div>
                             </div>

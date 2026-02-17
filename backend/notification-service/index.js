@@ -1,9 +1,20 @@
 const express = require('express');
 const cors = require('cors');
-const { connectRabbitMQ } = require('./services/notificationConsumer');
 const sequelize = require('./config/database');
-const notificationRoutes = require('./routes/notificationRoutes');
+const notificationRoutes = require('./notifications/notification.routes');
+const { startWorker } = require('./notifications/notification.worker');
 require('dotenv').config();
+
+// Global error handlers
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception thrown:', err);
+});
+
+
 
 const app = express();
 const PORT = process.env.PORT || 5008;
@@ -16,8 +27,15 @@ app.use('/', notificationRoutes);
 
 const startServer = async () => {
     try {
+        await sequelize.authenticate();
+        console.log('Database connected...');
+
         await sequelize.sync({ alter: true });
-        await connectRabbitMQ();
+        console.log('Models synced...');
+
+        // Start the worker
+        startWorker();
+
         app.listen(PORT, () => {
             console.log(`Notification Service running on port ${PORT}`);
         });
@@ -27,3 +45,4 @@ const startServer = async () => {
 };
 
 startServer();
+

@@ -3,17 +3,10 @@ import { X, ExternalLink, Calendar, MapPin, Flag, Ban, Slash } from 'lucide-reac
 
 const ProfileOptionsModal = ({ onClose, user, onBlock, onRestrict, onReport }) => {
     const [showAbout, setShowAbout] = useState(false);
-    const [showReport, setShowReport] = useState(false);
-    const [reportReason, setReportReason] = useState('');
 
     const handleCopyUrl = () => {
         navigator.clipboard.writeText(window.location.href);
         alert('Profile URL copied to clipboard');
-        onClose();
-    };
-
-    const handleReportSubmit = () => {
-        onReport(reportReason || 'Spam or abuse');
         onClose();
     };
 
@@ -77,36 +70,6 @@ const ProfileOptionsModal = ({ onClose, user, onBlock, onRestrict, onReport }) =
         );
     }
 
-    if (showReport) {
-        return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fade-in" onClick={onClose}>
-                <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-[#262626] rounded-xl w-[400px] max-w-full overflow-hidden shadow-xl animate-scale-in">
-                    <div className="flex items-center justify-center p-4 border-b border-gray-200 dark:border-[#363636] relative">
-                        <h3 className="font-bold text-lg dark:text-white">Report</h3>
-                        <button onClick={() => setShowReport(false)} className="absolute left-4 top-1/2 -translate-y-1/2">
-                            <X className="dark:text-white" />
-                        </button>
-                    </div>
-                    <div className="p-4 space-y-4">
-                        <p className="font-semibold text-sm dark:text-white">Why are you reporting this account?</p>
-                        <div className="space-y-0 text-sm">
-                            {['It\'s spam', 'I just don\'t like it', 'Suicide, self-injury or eating disorders', 'Sale of illegal or regulated goods', 'Nudity or sexual activity', 'Hate speech or symbols', 'Violence or dangerous organizations', 'Bullying or harassment', 'False information', 'Scam or fraud'].map((reason) => (
-                                <button
-                                    key={reason}
-                                    onClick={() => { setReportReason(reason); handleReportSubmit(); }}
-                                    className="w-full text-left py-3 px-2 hover:bg-gray-100 dark:hover:bg-[#363636] rounded transition-colors dark:text-white flex justify-between items-center group"
-                                >
-                                    {reason}
-                                    <span className="text-gray-400 group-hover:text-black dark:group-hover:text-white">&rsaquo;</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fade-in" onClick={onClose}>
             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-[#262626] rounded-xl w-[400px] max-w-full overflow-hidden shadow-xl animate-scale-in flex flex-col divide-y divide-gray-200 dark:divide-[#363636]">
@@ -116,7 +79,12 @@ const ProfileOptionsModal = ({ onClose, user, onBlock, onRestrict, onReport }) =
                 <button onClick={onRestrict} className="w-full py-3.5 text-center text-[#ED4956] font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
                     Restrict
                 </button>
-                <button onClick={() => setShowReport(true)} className="w-full py-3.5 text-center text-[#ED4956] font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
+                <button
+                    onClick={() => {
+                        onReport();
+                    }}
+                    className="w-full py-3.5 text-center text-[#ED4956] font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors"
+                >
                     Report
                 </button>
                 <button onClick={() => setShowAbout(true)} className="w-full py-3.5 text-center dark:text-white font-normal text-sm hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
@@ -132,5 +100,6 @@ const ProfileOptionsModal = ({ onClose, user, onBlock, onRestrict, onReport }) =
         </div>
     );
 };
+
 
 export default ProfileOptionsModal;

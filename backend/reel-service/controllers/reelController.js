@@ -1,6 +1,7 @@
 const Reel = require('../models/Reel');
 const ReelLike = require('../models/ReelLike');
 const ReelBookmark = require('../models/ReelBookmark');
+const ReelReport = require('../models/ReelReport');
 const { publishEvent } = require('../config/rabbitmq');
 const { Op } = require('sequelize');
 
@@ -31,20 +32,32 @@ const getReels = async (req, res) => {
         const reels = await Reel.findAll({ order: [['createdAt', 'DESC']] });
 
         let likedReelIds = new Set();
+        let savedReelIds = new Set();
+
         if (currentUserId && reels.length > 0) {
-            const likes = await ReelLike.findAll({
-                where: {
-                    userId: currentUserId,
-                    reelId: { [Op.in]: reels.map(r => r.id) }
-                }
-            });
+            const [likes, bookmarks] = await Promise.all([
+                ReelLike.findAll({
+                    where: {
+                        userId: currentUserId,
+                        reelId: { [Op.in]: reels.map(r => r.id) }
+                    }
+                }),
+                ReelBookmark.findAll({
+                    where: {
+                        userId: currentUserId,
+                        reelId: { [Op.in]: reels.map(r => r.id) }
+                    }
+                })
+            ]);
             likedReelIds = new Set(likes.map(l => l.reelId));
+            savedReelIds = new Set(bookmarks.map(b => b.reelId));
         }
 
         const enrichedReels = reels.map(reel => ({
             ...reel.toJSON(),
             isLiked: likedReelIds.has(reel.id),
-            comments: reel.commentsCount || 0 // Explicit mapping for frontend consistency
+            isSaved: savedReelIds.has(reel.id),
+            comments: reel.commentsCount || 0
         }));
 
         res.json({ status: 'success', data: enrichedReels });
@@ -57,7 +70,8 @@ const getReels = async (req, res) => {
 const getUserReels = async (req, res) => {
     try {
         const { username, userId: queryUserId } = req.query;
-        const userId = req.headers['x-user-id'] || queryUserId;
+        const currentUserId = req.headers['x-user-id'];
+        const userId = queryUserId || currentUserId;
         const { sort = 'newest', startDate, endDate } = req.query;
 
         console.log(`[ReelService] getUserReels query: username=${username}, userId=${userId}`);
@@ -76,7 +90,37 @@ const getUserReels = async (req, res) => {
             where: whereClause,
             order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]
         });
-        res.json({ status: 'success', data: reels });
+
+        // Add isLiked and isSaved status
+        let likedReelIds = new Set();
+        let savedReelIds = new Set();
+        if (currentUserId && reels.length > 0) {
+            const [likes, bookmarks] = await Promise.all([
+                ReelLike.findAll({
+                    where: {
+                        userId: currentUserId,
+                        reelId: { [Op.in]: reels.map(r => r.id) }
+                    }
+                }),
+                ReelBookmark.findAll({
+                    where: {
+                        userId: currentUserId,
+                        reelId: { [Op.in]: reels.map(r => r.id) }
+                    }
+                })
+            ]);
+            likedReelIds = new Set(likes.map(l => l.reelId));
+            savedReelIds = new Set(bookmarks.map(b => b.reelId));
+        }
+
+        const enrichedReels = reels.map(reel => ({
+            ...reel.toJSON(),
+            isLiked: likedReelIds.has(reel.id),
+            isSaved: savedReelIds.has(reel.id),
+            comments: reel.commentsCount || 0
+        }));
+
+        res.json({ status: 'success', data: enrichedReels });
     } catch (error) {
         console.error('Get User Reels Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
@@ -95,14 +139,18 @@ const getReelById = async (req, res) => {
         }
 
         let isLiked = false;
+        let isSaved = false;
         if (currentUserId) {
-            const like = await ReelLike.findOne({
-                where: {
-                    reelId: id,
-                    userId: currentUserId
-                }
-            });
+            const [like, bookmark] = await Promise.all([
+                ReelLike.findOne({
+                    where: { reelId: id, userId: currentUserId }
+                }),
+                ReelBookmark.findOne({
+                    where: { reelId: id, userId: currentUserId }
+                })
+            ]);
             isLiked = !!like;
+            isSaved = !!bookmark;
         }
 
         // Return object structure matching what frontend expects
@@ -111,6 +159,7 @@ const getReelById = async (req, res) => {
             data: {
                 ...reel.toJSON(),
                 isLiked,
+                isSaved,
                 comments: reel.commentsCount || 0
             }
         });
@@ -127,16 +176,16 @@ const likeReel = async (req, res) => {
 
         if (!userId) return res.status(400).json({ message: 'User ID required' });
 
+        const reel = await Reel.findByPk(id);
+        if (!reel) return res.status(404).json({ message: 'Reel not found' });
+
         const existing = await ReelLike.findOne({ where: { reelId: id, userId } });
         if (existing) return res.json({ status: 'success', message: 'Already liked' });
 
         await ReelLike.create({ reelId: id, userId });
 
-        const reel = await Reel.findByPk(id);
-        if (reel) {
-            reel.likesCount += 1;
-            await reel.save();
-        }
+        reel.likesCount += 1;
+        await reel.save();
 
         res.json({ status: 'success' });
     } catch (error) {
@@ -152,16 +201,16 @@ const unlikeReel = async (req, res) => {
 
         if (!userId) return res.status(400).json({ message: 'User ID required' });
 
+        const reel = await Reel.findByPk(id);
+        if (!reel) return res.status(404).json({ message: 'Reel not found' });
+
         const existing = await ReelLike.findOne({ where: { reelId: id, userId } });
         if (!existing) return res.json({ status: 'success', message: 'Not liked' });
 
         await existing.destroy();
 
-        const reel = await Reel.findByPk(id);
-        if (reel) {
-            reel.likesCount = Math.max(0, reel.likesCount - 1);
-            await reel.save();
-        }
+        reel.likesCount = Math.max(0, reel.likesCount - 1);
+        await reel.save();
 
         res.json({ status: 'success' });
     } catch (error) {
@@ -206,7 +255,8 @@ const getLikedReels = async (req, res) => {
                 orderedReels.push({
                     ...reel.toJSON(),
                     likedAt: like.createdAt,
-                    isLiked: true
+                    isLiked: true,
+                    isSaved: false // We don't fetch bookmarks here for simplicity, but could
                 });
             }
         }
@@ -250,6 +300,9 @@ const bookmarkReel = async (req, res) => {
 
         if (!userId) return res.status(400).json({ message: 'User ID required' });
 
+        const reel = await Reel.findByPk(id);
+        if (!reel) return res.status(404).json({ message: 'Reel not found' });
+
         const existing = await ReelBookmark.findOne({ where: { reelId: id, userId } });
         if (existing) return res.json({ status: 'success', message: 'Already bookmarked' });
 
@@ -264,9 +317,12 @@ const bookmarkReel = async (req, res) => {
 const unbookmarkReel = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.headers['x-user-id'] || req.query.userId;
+        const userId = req.headers['x-user-id'] || req.query.userId || req.body.userId;
 
         if (!userId) return res.status(400).json({ message: 'User ID required' });
+
+        const reel = await Reel.findByPk(id);
+        if (!reel) return res.status(404).json({ message: 'Reel not found' });
 
         await ReelBookmark.destroy({ where: { reelId: id, userId } });
         res.json({ status: 'success' });
@@ -292,6 +348,71 @@ const getSavedReels = async (req, res) => {
     }
 };
 
+const reportReel = async (req, res) => {
+    try {
+        const reelId = Number(req.params.id);
+        const { reason, details } = req.body;
+        const userId = Number(req.headers['x-user-id'] || req.body.userId);
+
+        console.log('[Reel Report] Request received:', { reelId, reason, details, userId });
+
+        if (!userId || isNaN(userId)) {
+            return res.status(401).json({ status: 'error', message: 'Unauthorized: Valid User ID required' });
+        }
+
+        if (!reelId || isNaN(reelId)) {
+            return res.status(400).json({ status: 'error', message: 'Invalid Reel ID' });
+        }
+
+        const reel = await Reel.findByPk(reelId);
+        if (!reel) {
+            return res.status(404).json({ status: 'error', message: 'Reel not found' });
+        }
+
+        if (String(reel.userId) === String(userId)) {
+            console.warn(`[Reel Report] User ${userId} tried to report their own reel ${reelId}`);
+            return res.status(400).json({ status: 'error', message: 'You cannot report your own reel' });
+        }
+
+        if (!reason) {
+            return res.status(400).json({ status: 'error', message: 'Reason is required' });
+        }
+
+        const validReasons = ['spam', 'violence', 'hate', 'nudity', 'scam', 'false_information', 'bullying', 'other'];
+        if (!validReasons.includes(reason)) {
+            console.warn(`[Reel Report] Invalid reason provided: "${reason}" from user ${userId}`);
+            return res.status(400).json({ status: 'error', message: `Invalid reason: "${reason}". Must be one of ${validReasons.join(', ')}` });
+        }
+
+
+        const existingReport = await ReelReport.findOne({
+            where: { reelId, userId }
+        });
+
+        if (existingReport) {
+            return res.status(200).json({ status: 'success', message: 'You have already reported this reel' });
+        }
+
+
+
+        const report = await ReelReport.create({
+            reelId,
+            userId,
+            reason,
+            details: details || null
+        });
+
+        res.json({
+            status: 'success',
+            message: 'Report submitted successfully.',
+            data: { reportId: report.id }
+        });
+    } catch (error) {
+        console.error('[Reel Report] Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     createReel,
     getReels,
@@ -303,5 +424,6 @@ module.exports = {
     getActivityReels,
     bookmarkReel,
     unbookmarkReel,
-    getSavedReels
+    getSavedReels,
+    reportReel
 };

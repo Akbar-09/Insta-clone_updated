@@ -1,0 +1,929 @@
+[36m═══════════════════════════════════════════════════════[0m
+[36m  Instagram Clone API - Comprehensive Endpoint Testing[0m
+[36m═══════════════════════════════════════════════════════[0m
+
+[34mChecking gateway availability...[0m
+[32m✓ Gateway is running[0m
+
+[36mSetting up authentication...[0m
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/auth/login" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -d "{\"email\":\"test_1771228677633@example.com\",\"password\":\"password123\"}"[0m
+[33m  [Debug] Response: {"status":"fail","message":"Invalid credentials"}[0m
+[33m  User doesn't exist, creating test user: testuser_1771228677633...[0m
+[32m  ✓ Test user created[0m
+[32m✓ User authentication successful[0m
+[32m✓ Admin authentication successful[0m
+
+[34mLoading endpoints from C:\Users\akbar\OneDrive\Desktop\instagram updated\Instagram\backend\all_endpoints.json...[0m
+[32m✓ Loaded 388 endpoints[0m
+
+[36mTesting endpoints...[0m
+
+[32m✓ PASS[0m POST   /api/v1/ads/ (201)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/ads/test-id-123/comments/test-comment-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-comment-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/ads/:id/comments/:commentId (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/ads/test-id-123/comments" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"notNull Violation: AdComment.content cannot be null"}[0m
+[31m✗ FAIL[0m POST   /api/v1/ads/:id/comments (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/ads/test-id-123/comments" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/ads/:id/comments (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/ads/test-id-123/bookmark" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m POST   /api/v1/ads/:id/bookmark (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/ads/test-id-123/like" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m POST   /api/v1/ads/:id/like (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/ads/test-id-123/embed" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/ads/:id/embed (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/ads/test-id-123/toggle-comments" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PUT    /api/v1/ads/:id/toggle-comments (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/ads/test-id-123/hide-likes" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PUT    /api/v1/ads/:id/hide-likes (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/ads/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PUT    /api/v1/ads/:id (500)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/ads/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/ads/:id (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/ads/click" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"notNull Violation: AdClick.adId cannot be null"}[0m
+[31m✗ FAIL[0m POST   /api/v1/ads/click (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/ads/impression" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"notNull Violation: AdImpression.adId cannot be null"}[0m
+[31m✗ FAIL[0m POST   /api/v1/ads/impression (500)
+[32m✓ PASS[0m GET    /api/v1/ads/active (200)
+[32m✓ PASS[0m GET    /api/v1/ads/eligible-content (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/ads/test-id-123/publish" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m POST   /api/v1/ads/:id/publish (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/ads/test-id-123/budget" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PUT    /api/v1/ads/:id/budget (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/ads/test-id-123/targeting" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PUT    /api/v1/ads/:id/targeting (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/ads/test-id-123/details" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PUT    /api/v1/ads/:id/details (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/ads/test-id-123/boost-content" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m POST   /api/v1/ads/:id/boost-content (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/ads/test-id-123/media" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m POST   /api/v1/ads/:id/media (500)
+[32m✓ PASS[0m POST   /api/v1/ads/draft (201)
+[32m✓ PASS[0m GET    /api/v1/admin/users/:userId/reels (200)
+[32m✓ PASS[0m GET    /api/v1/admin/users/:userId/posts (200)
+[32m✓ PASS[0m GET    /api/v1/admin/users/:userId/following (200)
+[32m✓ PASS[0m GET    /api/v1/admin/users/:userId/followers (200)
+[32m✓ PASS[0m GET    /api/v1/admin/users/:userId/details (200)
+[32m✓ PASS[0m DELETE /api/v1/admin/users/:userId (200)
+[32m✓ PASS[0m PATCH  /api/v1/admin/users/:userId/unban (200)
+[32m✓ PASS[0m PATCH  /api/v1/admin/users/:userId/ban (200)
+[32m✓ PASS[0m GET    /api/v1/admin/users/ (200)
+[32m✓ PASS[0m PUT    /api/v1/admin/settings/ (200)
+[32m✓ PASS[0m GET    /api/v1/admin/settings/ (200)
+[32m✓ PASS[0m PUT    /api/v1/admin/settings/profile (200)
+[32m✓ PASS[0m GET    /api/v1/admin/settings/profile (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/admin/reports/test-id-123/ban-user" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m POST   /api/v1/admin/reports/:id/ban-user (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/admin/reports/test-id-123/ignore" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m POST   /api/v1/admin/reports/:id/ignore (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/reports/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m GET    /api/v1/admin/reports/:id (500)
+[32m✓ PASS[0m GET    /api/v1/admin/reports/ (200)
+[32m✓ PASS[0m GET    /api/v1/admin/reports/stats (200)
+[32m✓ PASS[0m GET    /api/v1/admin/monitoring/logs/:serviceName/:type (200)
+[32m✓ PASS[0m GET    /api/v1/admin/monitoring/statuses (200)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/reels" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /reels</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m GET    /api/v1/admin/reels (404)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/posts" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /posts</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m GET    /api/v1/admin/posts (404)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/comments/test-comment-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/comments/:commentId (500)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/stories/test-story-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot DELETE /stories/test-story-123</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m DELETE /api/v1/admin/stories/:storyId (404)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/reels/test-reel-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot DELETE /reels/test-reel-123</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m DELETE /api/v1/admin/reels/:reelId (404)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/posts/test-post-123/hide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot PATCH /posts/test-post-123/hide</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m PATCH  /api/v1/admin/posts/:postId/hide (404)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/posts/test-post-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot DELETE /posts/test-post-123</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m DELETE /api/v1/admin/posts/:postId (404)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/admin/default-avatars/" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"notNull Violation: AuditLog.actionType cannot be null,\nnotNull Violation: AuditLog.targetType cannot be null"}[0m
+[31m✗ FAIL[0m POST   /api/v1/admin/default-avatars/ (500)
+[32m✓ PASS[0m GET    /api/v1/admin/default-avatars/ (200)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/languages/test-id-123/set-default" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/languages/:id/set-default (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/languages/test-id-123/disable" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/languages/:id/disable (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/languages/test-id-123/enable" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/languages/:id/enable (500)
+[32m✓ PASS[0m GET    /api/v1/admin/languages/ (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/admin/feature" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /feature</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m POST   /api/v1/admin/feature (404)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/test-id-123/block" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot PATCH /test-id-123/block</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m PATCH  /api/v1/admin/:id/block (404)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/trending" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /trending</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m GET    /api/v1/admin/trending (404)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m GET    /api/v1/admin/ (404)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/hashtags/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/hashtags/:id (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/hashtags/test-id-123/toggle-visibility" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/hashtags/:id/toggle-visibility (500)
+[32m✓ PASS[0m GET    /api/v1/admin/hashtags/trending (200)
+[32m✓ PASS[0m GET    /api/v1/admin/hashtags/ (200)
+[32m✓ PASS[0m GET    /api/v1/admin/analytics/geo-users (200)
+[32m✓ PASS[0m GET    /api/v1/admin/explore/performance-metrics (200)
+[32m✓ PASS[0m GET    /api/v1/admin/explore/category-distribution (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/explore/trending-topics/test-topic-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-topic-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/explore/trending-topics/:topicId (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/admin/explore/trending-topics" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Topic is required"}[0m
+[32m✓ PASS[0m POST   /api/v1/admin/explore/trending-topics (400)
+[32m✓ PASS[0m GET    /api/v1/admin/explore/trending-topics (200)
+[32m✓ PASS[0m PATCH  /api/v1/admin/explore/algorithm (200)
+[32m✓ PASS[0m GET    /api/v1/admin/explore/algorithm (200)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/messages/test-conversation-123/flag" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"notNull Violation: AuditLog.actionType cannot be null,\nnotNull Violation: AuditLog.targetType cannot be null"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/messages/:conversationId/flag (500)
+[32m✓ PASS[0m GET    /api/v1/admin/messages/reported (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/admin/dm-oversight/conversations/test-conversation-123/ban-users" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m POST   /api/v1/admin/dm-oversight/conversations/:conversationId/ban-users (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/dm-oversight/conversations/test-conversation-123/mark-safe" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/dm-oversight/conversations/:conversationId/mark-safe (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/dm-oversight/conversations/test-conversation-123/transcript" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m GET    /api/v1/admin/dm-oversight/conversations/:conversationId/transcript (500)
+[32m✓ PASS[0m GET    /api/v1/admin/dm-oversight/stats (200)
+[32m✓ PASS[0m GET    /api/v1/admin/dm-oversight/conversations (200)
+[32m✓ PASS[0m GET    /api/v1/admin/dashboard/recent-posts (200)
+[32m✓ PASS[0m GET    /api/v1/admin/dashboard/recent-users (200)
+[32m✓ PASS[0m GET    /api/v1/admin/dashboard/login-methods (200)
+[32m✓ PASS[0m GET    /api/v1/admin/dashboard/media-distribution (200)
+[32m✓ PASS[0m GET    /api/v1/admin/dashboard/user-growth (200)
+[32m✓ PASS[0m GET    /api/v1/admin/dashboard/activity-feed (200)
+[32m✓ PASS[0m GET    /api/v1/admin/dashboard/kpis (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/moderation/stories/test-story-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/moderation/stories/:storyId (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/moderation/stories/test-story-123/interactions" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m GET    /api/v1/admin/moderation/stories/:storyId/interactions (500)
+[32m✓ PASS[0m GET    /api/v1/admin/moderation/stories (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/moderation/reels/test-reel-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/moderation/reels/:reelId (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/moderation/reels/test-reel-123/unhide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/moderation/reels/:reelId/unhide (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/moderation/reels/test-reel-123/hide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/moderation/reels/:reelId/hide (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/moderation/reels/test-reel-123/interactions" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m GET    /api/v1/admin/moderation/reels/:reelId/interactions (500)
+[32m✓ PASS[0m GET    /api/v1/admin/moderation/reels (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/moderation/posts/test-post-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/moderation/posts/:postId (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/moderation/posts/test-post-123/unhide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/moderation/posts/:postId/unhide (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/moderation/posts/test-post-123/hide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/moderation/posts/:postId/hide (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/moderation/posts/test-post-123/interactions" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m GET    /api/v1/admin/moderation/posts/:postId/interactions (500)
+[32m✓ PASS[0m GET    /api/v1/admin/moderation/posts (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/comments/test-comment-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/comments/:commentId (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/comments/test-comment-123/remove" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/comments/:commentId/remove (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/comments/test-comment-123/approve" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/comments/:commentId/approve (500)
+[32m✓ PASS[0m GET    /api/v1/admin/comments/stats (200)
+[32m✓ PASS[0m GET    /api/v1/admin/comments/ (200)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/cms/pages/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"notNull Violation: AuditLog.actionType cannot be null,\nnotNull Violation: AuditLog.targetType cannot be null"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/cms/pages/:id (500)
+[32m✓ PASS[0m GET    /api/v1/admin/cms/pages (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/avatars/:avatarId" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 400"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/avatars/:avatarId (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/avatars/:avatarId/reject" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/avatars/:avatarId/reject (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/avatars/:avatarId/approve" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/avatars/:avatarId/approve (500)
+[32m✓ PASS[0m GET    /api/v1/admin/avatars/stats (200)
+[32m✓ PASS[0m GET    /api/v1/admin/avatars/ (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/auth/roles/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/auth/roles/:id (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/admin/auth/roles/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PUT    /api/v1/admin/auth/roles/:id (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/admin/auth/roles" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"notNull Violation: Role.name cannot be null"}[0m
+[31m✗ FAIL[0m POST   /api/v1/admin/auth/roles (500)
+[32m✓ PASS[0m GET    /api/v1/admin/auth/roles (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/admin/auth/admins/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/admin/auth/admins/:id (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/admin/auth/admins/test-id-123/role" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/admin/auth/admins/:id/role (500)
+[32m✓ PASS[0m GET    /api/v1/admin/auth/admins (200)
+[32m✓ PASS[0m GET    /api/v1/admin/auth/me (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/admin/auth/login" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"WHERE parameter \"email\" has invalid \"undefined\" value"}[0m
+[31m✗ FAIL[0m POST   /api/v1/admin/auth/login (500)
+[32m✓ PASS[0m GET    /api/v1/admin/audit/ (200)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/active-hours" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /active-hours</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m GET    /api/v1/admin/active-hours (404)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/admin/countries" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /countries</pre>
+</body>
+</html>
+[0m
+[32m✓ PASS[0m GET    /api/v1/admin/countries (404)
+[32m✓ PASS[0m GET    /api/v1/admin/analytics/active-hours (200)
+[32m✓ PASS[0m GET    /api/v1/admin/analytics/countries (200)
+[32m✓ PASS[0m GET    /api/v1/admin/analytics/top-content (200)
+[32m✓ PASS[0m GET    /api/v1/admin/analytics/engagement-trends (200)
+[32m✓ PASS[0m GET    /api/v1/admin/analytics/user-acquisition (200)
+[32m✓ PASS[0m GET    /api/v1/admin/analytics/summary (200)
+[32m✓ PASS[0m GET    /api/v1/admin/notifications/stats (200)
+[32m✓ PASS[0m GET    /api/v1/admin/notifications/history (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/admin/notifications/global" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"Request failed with status code 500"}[0m
+[31m✗ FAIL[0m POST   /api/v1/admin/notifications/global (500)
+[32m✓ PASS[0m GET    /api/v1/auth/history (200)
+[32m✓ PASS[0m GET    /api/v1/auth/me (200)
+[32m✓ PASS[0m POST   /api/v1/auth/logout (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/auth/reset-password/verify" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/auth/reset-password/verify (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/auth/reset-password/request" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/auth/reset-password/request (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/auth/check-email" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Server error"}[0m
+[31m✗ FAIL[0m GET    /api/v1/auth/check-email (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/auth/check-username" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Server error"}[0m
+[31m✗ FAIL[0m GET    /api/v1/auth/check-username (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/auth/login" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/auth/login (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/auth/signup" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/auth/signup (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/auth/register" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/auth/register (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/comments/internal/post/test-post-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-post-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/comments/internal/post/:postId (500)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/comments/internal/test-comment-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-comment-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/comments/internal/:commentId (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/comments/internal/test-comment-123/remove" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-comment-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/comments/internal/:commentId/remove (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/comments/internal/test-comment-123/approve" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-comment-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/comments/internal/:commentId/approve (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/comments/internal/test-comment-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-comment-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/comments/internal/:commentId (500)
+[32m✓ PASS[0m GET    /api/v1/comments/internal/stats (200)
+[32m✓ PASS[0m GET    /api/v1/comments/internal/list (200)
+[32m✓ PASS[0m GET    /api/v1/comments/activity/reviews (200)
+[32m✓ PASS[0m GET    /api/v1/comments/activity/comments (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/comments/check-comments" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"message":"postIds array required"}[0m
+[32m✓ PASS[0m POST   /api/v1/comments/check-comments (400)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/comments/test-id-123/like" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"userId required"}[0m
+[32m✓ PASS[0m DELETE /api/v1/comments/:id/like (400)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/comments/test-id-123/like" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"userId required"}[0m
+[32m✓ PASS[0m POST   /api/v1/comments/:id/like (400)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/comments/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Server error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/comments/:id (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/comments/" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"message":"postId query param required"}[0m
+[32m✓ PASS[0m GET    /api/v1/comments/ (400)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/comments/" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Missing required fields"}[0m
+[32m✓ PASS[0m POST   /api/v1/comments/ (400)
+[32m✓ PASS[0m GET    /api/v1/feed/ (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/help/feedback" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"notNull Violation: Feedback.articleId cannot be null,\nnotNull Violation: Feedback.isHelpful cannot be null"}[0m
+[31m✗ FAIL[0m POST   /api/v1/help/feedback (500)
+[32m✓ PASS[0m GET    /api/v1/help/search (200)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/help/article/:slug" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"fail","message":"Article not found"}[0m
+[32m✓ PASS[0m GET    /api/v1/help/article/:slug (404)
+[32m✓ PASS[0m GET    /api/v1/help/articles (200)
+[32m✓ PASS[0m GET    /api/v1/help/articles/featured (200)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/help/category/:slug" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"fail","message":"Category not found"}[0m
+[32m✓ PASS[0m GET    /api/v1/help/category/:slug (404)
+[32m✓ PASS[0m GET    /api/v1/help/categories (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/help/admin/article/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/help/admin/article/:id (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/help/admin/article/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PUT    /api/v1/help/admin/article/:id (500)
+[32m✓ PASS[0m GET    /api/v1/help/admin/articles (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/help/admin/article" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"notNull Violation: Article.title cannot be null,\nnotNull Violation: Article.slug cannot be null,\nnotNull Violation: Article.content cannot be null,\nnotNull Violation: Article.categoryId cannot be null"}[0m
+[31m✗ FAIL[0m POST   /api/v1/help/admin/article (500)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/help/admin/category/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/help/admin/category/:id (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/help/admin/category/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PUT    /api/v1/help/admin/category/:id (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/help/admin/category" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"WHERE parameter \"slug\" has invalid \"undefined\" value"}[0m
+[31m✗ FAIL[0m POST   /api/v1/help/admin/category (500)
+[32m✓ PASS[0m GET    /api/v1/insights/heatmap (200)
+[32m✓ PASS[0m GET    /api/v1/insights/content (200)
+[32m✓ PASS[0m GET    /api/v1/insights/account (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/live/webhook/done" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: Error[0m
+[31m✗ FAIL[0m POST   /api/v1/live/webhook/done (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/live/webhook/publish" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: Error[0m
+[31m✗ FAIL[0m POST   /api/v1/live/webhook/publish (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/live/test-id-123/chat" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"notNull Violation: LiveChatMessage.message cannot be null"}[0m
+[31m✗ FAIL[0m POST   /api/v1/live/:id/chat (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/live/test-id-123/end" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m POST   /api/v1/live/:id/end (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/live/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/live/:id (500)
+[32m✓ PASS[0m GET    /api/v1/live/feed (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/live/schedule" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Title and scheduled time are required"}[0m
+[32m✓ PASS[0m POST   /api/v1/live/schedule (400)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/live/go-live" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Title is required"}[0m
+[32m✓ PASS[0m POST   /api/v1/live/go-live (400)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/media/files/*" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: File not found[0m
+[32m✓ PASS[0m GET    /api/v1/media/files/* (404)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/media/finalize" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"error":"Key is required"}[0m
+[32m✓ PASS[0m POST   /api/v1/media/finalize (400)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/media/presigned-url" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Missing filename or fileType"}[0m
+[32m✓ PASS[0m POST   /api/v1/media/presigned-url (400)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/media/status/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"error":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/media/status/:id (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/media/upload" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"error":"No file uploaded"}[0m
+[32m✓ PASS[0m POST   /api/v1/media/upload (400)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/messages/seen" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"WHERE parameter \"conversation_id\" has invalid \"undefined\" value"}[0m
+[31m✗ FAIL[0m POST   /api/v1/messages/seen (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/messages/send" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Conversation not found"}[0m
+[32m✓ PASS[0m POST   /api/v1/messages/send (404)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/messages/conversations/test-conversation-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type integer: \"test-conversation-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/messages/conversations/:conversationId (500)
+[32m✓ PASS[0m POST   /api/v1/messages/conversations/:conversationId/report (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/messages/conversations/test-conversation-123/unblock" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type integer: \"test-conversation-123\""}[0m
+[31m✗ FAIL[0m POST   /api/v1/messages/conversations/:conversationId/unblock (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/messages/conversations/test-conversation-123/block" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type integer: \"test-conversation-123\""}[0m
+[31m✗ FAIL[0m POST   /api/v1/messages/conversations/:conversationId/block (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/messages/conversations/test-conversation-123/mute" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type integer: \"test-conversation-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/messages/conversations/:conversationId/mute (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/messages/conversations/test-conversation-123/details" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type integer: \"test-conversation-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/messages/conversations/:conversationId/details (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/messages/conversations/test-conversation-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Failed to fetch messages"}[0m
+[31m✗ FAIL[0m GET    /api/v1/messages/conversations/:conversationId (500)
+[32m✓ PASS[0m GET    /api/v1/messages/conversations (200)
+[32m✓ PASS[0m GET    /api/v1/messages/activity/story-replies (200)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/messages/internal/conversations/test-conversation-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-conversation-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/messages/internal/conversations/:conversationId (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/messages/internal/conversations/test-conversation-123/mark-safe" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-conversation-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/messages/internal/conversations/:conversationId/mark-safe (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/messages/internal/conversations/test-conversation-123/transcript" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-conversation-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/messages/internal/conversations/:conversationId/transcript (500)
+[32m✓ PASS[0m GET    /api/v1/messages/internal/stats (200)
+[32m✓ PASS[0m GET    /api/v1/messages/internal/conversations (200)
+[32m✓ PASS[0m GET    /api/v1/notifications/admin/stats (200)
+[32m✓ PASS[0m GET    /api/v1/notifications/admin/history (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/notifications/admin/broadcast" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJTdXBlciBBZG1pbiIsImlhdCI6MTc3MTIyODY3OCwiZXhwIjoxNzcxMzE1MDc4fQ.oCs8XFFOQVo8aIWH4ezUyX_dkCbD2XSLdM5lRXj6kwo" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"notNull Violation: AdminNotification.title cannot be null,\nnotNull Violation: AdminNotification.message cannot be null"}[0m
+[31m✗ FAIL[0m POST   /api/v1/notifications/admin/broadcast (500)
+[32m✓ PASS[0m PATCH  /api/v1/notifications/read-all (200)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/notifications/test-id-123/read" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/notifications/:id/read (500)
+[32m✓ PASS[0m GET    /api/v1/notifications/unread-count (200)
+[32m✓ PASS[0m GET    /api/v1/notifications/ (200)
+[32m✓ PASS[0m PATCH  /api/v1/notifications/settings (200)
+[32m✓ PASS[0m GET    /api/v1/notifications/settings (200)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/posts/internal/reports/test-id-123/status" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/posts/internal/reports/:id/status (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/posts/internal/reports/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-id-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/posts/internal/reports/:id (500)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/reports (200)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/reports/stats (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/posts/test-id-123/bookmark" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"message":"User ID required"}[0m
+[32m✓ PASS[0m DELETE /api/v1/posts/:id/bookmark (400)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/posts/test-id-123/bookmark" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"message":"User ID required"}[0m
+[32m✓ PASS[0m POST   /api/v1/posts/:id/bookmark (400)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/posts/test-id-123/report" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Invalid Post ID"}[0m
+[32m✓ PASS[0m POST   /api/v1/posts/:id/report (400)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/posts/test-id-123/toggle-comments" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m PUT    /api/v1/posts/:id/toggle-comments (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/posts/test-id-123/hide-likes" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m PUT    /api/v1/posts/:id/hide-likes (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/posts/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m PUT    /api/v1/posts/:id (500)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/posts/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/posts/:id (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/posts/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m GET    /api/v1/posts/:id (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/posts/test-id-123/embed" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m GET    /api/v1/posts/:id/embed (500)
+[32m✓ PASS[0m GET    /api/v1/posts/activity/posts (200)
+[32m✓ PASS[0m GET    /api/v1/posts/activity/likes (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/posts/check-likes" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"message":"User ID and postIds array required"}[0m
+[32m✓ PASS[0m POST   /api/v1/posts/check-likes (400)
+[32m✓ PASS[0m GET    /api/v1/posts/saved (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/posts/test-id-123/like" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/posts/:id/like (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/posts/test-id-123/like" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/posts/:id/like (500)
+[32m✓ PASS[0m GET    /api/v1/posts/ (200)
+[32m✓ PASS[0m GET    /api/v1/posts/explore (200)
+[32m✓ PASS[0m POST   /api/v1/posts/feed (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/posts/" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/posts/ (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/posts/internal/test-post-123/bookmarks" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-post-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/posts/internal/:postId/bookmarks (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/posts/internal/test-post-123/likes" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-post-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/posts/internal/:postId/likes (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/posts/internal/test-post-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-post-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/posts/internal/:postId (500)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/posts/internal/test-post-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-post-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/posts/internal/:postId (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/posts/internal/test-post-123/unhide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-post-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/posts/internal/:postId/unhide (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/posts/internal/test-post-123/hide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-post-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/posts/internal/:postId/hide (500)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/user/:userId (200)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/stats/user/:userId (200)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/list (200)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/recent (200)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/top (200)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/engagement/trends (200)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/stats/engagement (200)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/stats/overall (200)
+[32m✓ PASS[0m GET    /api/v1/posts/internal/stats (200)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/reels/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m GET    /api/v1/reels/:id (500)
+[32m✓ PASS[0m GET    /api/v1/reels/user (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/reels/test-id-123/bookmark" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/reels/:id/bookmark (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/reels/test-id-123/bookmark" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/reels/:id/bookmark (500)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/reels/test-id-123/like" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/reels/:id/like (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/reels/test-id-123/like" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/reels/:id/like (500)
+[32m✓ PASS[0m GET    /api/v1/reels/activity/likes (200)
+[32m✓ PASS[0m GET    /api/v1/reels/activity/reels (200)
+[32m✓ PASS[0m GET    /api/v1/reels/saved (200)
+[32m✓ PASS[0m GET    /api/v1/reels/ (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/reels/" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/reels/ (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/reels/internal/test-reel-123/likes" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-reel-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/reels/internal/:reelId/likes (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/reels/internal/test-reel-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-reel-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/reels/internal/:reelId (500)
+[32m✓ PASS[0m GET    /api/v1/reels/internal/recent (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/reels/internal/test-reel-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-reel-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/reels/internal/:reelId (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/reels/internal/test-reel-123/unhide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-reel-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/reels/internal/:reelId/unhide (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/reels/internal/test-reel-123/hide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-reel-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/reels/internal/:reelId/hide (500)
+[32m✓ PASS[0m GET    /api/v1/reels/internal/list (200)
+[32m✓ PASS[0m GET    /api/v1/reels/internal/user/:userId (200)
+[32m✓ PASS[0m GET    /api/v1/reels/internal/stats/user/:userId (200)
+[32m✓ PASS[0m GET    /api/v1/reels/internal/stats/overall (200)
+[32m✓ PASS[0m GET    /api/v1/reels/internal/stats (200)
+[32m✓ PASS[0m GET    /api/v1/search/users (200)
+[32m✓ PASS[0m GET    /api/v1/search/ (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/stories/test-id-123/react" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/stories/:id/react (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/stories/test-id-123/react" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/stories/:id/react (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/stories/test-id-123/view" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/stories/:id/view (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/stories/test-id-123/report" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/stories/:id/report (500)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/stories/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/stories/:id (500)
+[32m✓ PASS[0m GET    /api/v1/stories/activity/story-replies (200)
+[32m✓ PASS[0m GET    /api/v1/stories/archive (200)
+[32m✓ PASS[0m GET    /api/v1/stories/ (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/stories/" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/stories/ (500)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/stories/internal/test-story-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \"test-story-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/stories/internal/:storyId (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/stories/internal/test-story-123/likes" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-story-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/stories/internal/:storyId/likes (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/stories/internal/test-story-123/views" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type integer: \"test-story-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/stories/internal/:storyId/views (500)
+[32m✓ PASS[0m GET    /api/v1/stories/internal/list (200)
+[32m✓ PASS[0m GET    /api/v1/stories/internal/stats (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/stories/highlights/:highlightId" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/stories/highlights/:highlightId (500)
+[33m  [Debug] Cmd: curl -X PUT "http://localhost:5000/api/v1/stories/highlights/:highlightId" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Title is required"}[0m
+[32m✓ PASS[0m PUT    /api/v1/stories/highlights/:highlightId (400)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/stories/highlights/:highlightId/stories" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m GET    /api/v1/stories/highlights/:highlightId/stories (500)
+[32m✓ PASS[0m GET    /api/v1/stories/highlights/:userId (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/stories/highlights" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Title is required"}[0m
+[32m✓ PASS[0m POST   /api/v1/stories/highlights (400)
+[32m✓ PASS[0m GET    /api/v1/stories/activity/highlights (200)
+[32m✓ PASS[0m GET    /api/v1/stories/stories/me (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/users/profile/followers/:followerId" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/users/profile/followers/:followerId (500)
+[32m✓ PASS[0m GET    /api/v1/users/profile/:userId/following (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/:userId/followers (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/:userId/reels (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/:userId/posts (200)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/users/profile/testuser" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"User not found"}[0m
+[32m✓ PASS[0m GET    /api/v1/users/profile/:username (404)
+[32m✓ PASS[0m GET    /api/v1/users/profile/activity/account-history (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/profile/batch" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"userIds array required"}[0m
+[32m✓ PASS[0m POST   /api/v1/users/profile/batch (400)
+[32m✓ PASS[0m GET    /api/v1/users/profile/suggestions (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/me/saved (200)
+[32m✓ PASS[0m DELETE /api/v1/users/profile/profile-photo (200)
+[32m✓ PASS[0m POST   /api/v1/users/profile/profile-photo (200)
+[32m✓ PASS[0m PUT    /api/v1/users/profile/me (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/me (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/profile/help/feedback" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Rating is required"}[0m
+[32m✓ PASS[0m POST   /api/v1/users/profile/help/feedback (400)
+[32m✓ PASS[0m GET    /api/v1/users/profile/help/support-requests (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/help/feature-limits (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/help/violations (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/help/account-status (200)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/users/profile/settings/apps/test-id-123/revoke" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Invalid App ID format. Expected UUID."}[0m
+[32m✓ PASS[0m PATCH  /api/v1/users/profile/settings/apps/:id/revoke (400)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/apps (200)
+[32m✓ PASS[0m PATCH  /api/v1/users/profile/settings/general (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/general (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/subscriptions (200)
+[32m✓ PASS[0m PATCH  /api/v1/users/profile/settings/like-share (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/like-share (200)
+[32m✓ PASS[0m PATCH  /api/v1/users/profile/settings/content-preferences (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/content-preferences (200)
+[32m✓ PASS[0m DELETE /api/v1/users/profile/settings/muted/:userId (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/profile/settings/muted/125" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Cannot mute yourself"}[0m
+[32m✓ PASS[0m POST   /api/v1/users/profile/settings/muted/:userId (400)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/muted (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/users/profile/settings/hidden-words/words/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m DELETE /api/v1/users/profile/settings/hidden-words/words/:id (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/profile/settings/hidden-words/words" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Word is required"}[0m
+[32m✓ PASS[0m POST   /api/v1/users/profile/settings/hidden-words/words (400)
+[32m✓ PASS[0m PUT    /api/v1/users/profile/settings/hidden-words (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/hidden-words (200)
+[32m✓ PASS[0m DELETE /api/v1/users/profile/settings/restricted/:userId (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/profile/settings/restricted/125" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Cannot restrict yourself"}[0m
+[32m✓ PASS[0m POST   /api/v1/users/profile/settings/restricted/:userId (400)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/restricted (200)
+[32m✓ PASS[0m PUT    /api/v1/users/profile/settings/sharing (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/sharing (200)
+[32m✓ PASS[0m PUT    /api/v1/users/profile/settings/comments (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/comments (200)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/users/profile/tags/test-id-123/remove" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/users/profile/tags/:id/remove (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/users/profile/tags/test-id-123/approve" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/users/profile/tags/:id/approve (500)
+[32m✓ PASS[0m GET    /api/v1/users/profile/tags/pending (200)
+[32m✓ PASS[0m PATCH  /api/v1/users/profile/settings/tags-mentions (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/tags-mentions (200)
+[32m✓ PASS[0m PATCH  /api/v1/users/profile/settings/activity-status (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/activity-status (200)
+[32m✓ PASS[0m PATCH  /api/v1/users/profile/settings/story-replies (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/story-replies (200)
+[32m✓ PASS[0m PATCH  /api/v1/users/profile/settings/messages (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/settings/messages (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/users/profile/story-privacy/unhide/:hiddenUserId" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m DELETE /api/v1/users/profile/story-privacy/unhide/:hiddenUserId (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/profile/story-privacy/hide" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Hidden User ID required"}[0m
+[32m✓ PASS[0m POST   /api/v1/users/profile/story-privacy/hide (400)
+[32m✓ PASS[0m GET    /api/v1/users/profile/story-privacy/hidden-users (200)
+[32m✓ PASS[0m DELETE /api/v1/users/profile/unblock/:userId (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/profile/block/125" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Cannot block yourself"}[0m
+[32m✓ PASS[0m POST   /api/v1/users/profile/block/:userId (400)
+[32m✓ PASS[0m GET    /api/v1/users/profile/blocked-users (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/users/profile/close-friends/:friendId" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"status":"error","message":"Invalid Friend ID. Expected Integer."}[0m
+[32m✓ PASS[0m DELETE /api/v1/users/profile/close-friends/:friendId (400)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/profile/close-friends/:friendId" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Internal Server Error"}[0m
+[31m✗ FAIL[0m POST   /api/v1/users/profile/close-friends/:friendId (500)
+[32m✓ PASS[0m GET    /api/v1/users/profile/close-friends (200)
+[32m✓ PASS[0m GET    /api/v1/users/profile/reports/me (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/profile/report-problem" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"Please provide some details or attach a file."}[0m
+[32m✓ PASS[0m POST   /api/v1/users/profile/report-problem (400)
+[32m✓ PASS[0m GET    /api/v1/users/internal/:userId/follow-counts (200)
+[32m✓ PASS[0m GET    /api/v1/users/internal/:userId (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/internal/bulk" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"userIds must be an array"}[0m
+[32m✓ PASS[0m POST   /api/v1/users/internal/bulk (400)
+[32m✓ PASS[0m GET    /api/v1/users/internal/recent (200)
+[32m✓ PASS[0m DELETE /api/v1/users/internal/:userId (200)
+[32m✓ PASS[0m PATCH  /api/v1/users/internal/:userId/unban (200)
+[32m✓ PASS[0m PATCH  /api/v1/users/internal/:userId/ban (200)
+[32m✓ PASS[0m GET    /api/v1/users/internal/list (200)
+[32m✓ PASS[0m GET    /api/v1/users/internal/countries (200)
+[32m✓ PASS[0m GET    /api/v1/users/internal/login-methods (200)
+[32m✓ PASS[0m GET    /api/v1/users/internal/growth (200)
+[33m  [Debug] Cmd: curl -X DELETE "http://localhost:5000/api/v1/users/internal/avatars/:avatarId" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"message":"Invalid Avatar ID. Expected Integer."}[0m
+[32m✓ PASS[0m DELETE /api/v1/users/internal/avatars/:avatarId (400)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/users/internal/avatars/:avatarId/reject" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \":avatarId\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/users/internal/avatars/:avatarId/reject (500)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/users/internal/avatars/:avatarId/approve" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"error":"invalid input syntax for type integer: \":avatarId\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/users/internal/avatars/:avatarId/approve (500)
+[32m✓ PASS[0m GET    /api/v1/users/internal/avatars/stats (200)
+[32m✓ PASS[0m GET    /api/v1/users/internal/avatars (200)
+[32m✓ PASS[0m GET    /api/v1/users/internal/stats (200)
+[33m  [Debug] Cmd: curl -X PATCH "http://localhost:5000/api/v1/users/internal/reports/test-id-123/status" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m PATCH  /api/v1/users/internal/reports/:id/status (500)
+[33m  [Debug] Cmd: curl -X GET "http://localhost:5000/api/v1/users/internal/reports/test-id-123" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA"[0m
+[33m  [Debug] Response: {"success":false,"message":"invalid input syntax for type uuid: \"test-id-123\""}[0m
+[31m✗ FAIL[0m GET    /api/v1/users/internal/reports/:id (500)
+[32m✓ PASS[0m GET    /api/v1/users/internal/reports (200)
+[32m✓ PASS[0m GET    /api/v1/users/internal/reports/stats (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/requests/reject" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"WHERE parameter \"requesterId\" has invalid \"undefined\" value"}[0m
+[31m✗ FAIL[0m POST   /api/v1/users/requests/reject (500)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/requests/accept" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"WHERE parameter \"requesterId\" has invalid \"undefined\" value"}[0m
+[31m✗ FAIL[0m POST   /api/v1/users/requests/accept (500)
+[32m✓ PASS[0m GET    /api/v1/users/requests (200)
+[32m✓ PASS[0m GET    /api/v1/users/:userId/following (200)
+[32m✓ PASS[0m GET    /api/v1/users/:userId/followers (200)
+[32m✓ PASS[0m GET    /api/v1/users/:userId/follow/status (200)
+[32m✓ PASS[0m DELETE /api/v1/users/:userId/follow (200)
+[33m  [Debug] Cmd: curl -X POST "http://localhost:5000/api/v1/users/125/follow" -s -w "\n%{http_code}" --max-time 5 -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJ1c2VybmFtZSI6InRlc3R1c2VyXzE3NzEyMjg2Nzc2MzMiLCJpYXQiOjE3NzEyMjg2NzgsImV4cCI6MTc3MTgzMzQ3OH0.IE68rPa-SnklqQV41ArpsZ8kOl2NjqyObS9qv7UTjNA" -d "{\"test\":true,\"data\":\"test-data\"}"[0m
+[33m  [Debug] Response: {"status":"error","message":"You cannot follow yourself"}[0m
+[31m✗ FAIL[0m POST   /api/v1/users/:userId/follow (500)
+
+[36m═══════════════════════════════════════════════════════[0m
+[36m  Test Summary[0m
+[36m═══════════════════════════════════════════════════════[0m
+
+Total Endpoints:  388
+[32mPassed:           241 (62.1%)[0m
+[31mFailed:           147 (37.9%)[0m
+[33mSkipped:          0 (0.0%)[0m
+
+[34mGenerating report...[0m
+[32m✓ Report saved to: C:\Users\akbar\OneDrive\Desktop\instagram updated\Instagram\backend\api_test_report_curl.md[0m
+
+[36mSwagger Documentation: http://localhost:5000/api-docs[0m
+

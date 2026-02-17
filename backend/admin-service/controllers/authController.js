@@ -4,6 +4,11 @@ const { Admin, Role, AuditLog } = require('../models');
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: 'Email and password are required' });
+        }
+
         const admin = await Admin.findOne({
             where: { email },
             include: [{ model: Role, as: 'role' }]

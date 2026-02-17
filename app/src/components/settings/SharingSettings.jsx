@@ -55,14 +55,6 @@ const SharingSettings = () => {
         }
     };
 
-    const CustomRadioButton = ({ checked, onClick }) => (
-        <div
-            onClick={onClick}
-            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-200 ${checked ? 'border-black dark:border-white' : 'border-gray-300 dark:border-gray-600'}`}
-        >
-            {checked && <div className="w-2.5 h-2.5 rounded-full bg-black dark:bg-white" />}
-        </div>
-    );
 
     const ToggleSwitch = ({ checked, onChange }) => (
         <label className="relative inline-flex items-center cursor-pointer shrink-0">
@@ -72,7 +64,7 @@ const SharingSettings = () => {
                 onChange={onChange}
                 className="sr-only peer"
             />
-            <div className="w-10 h-6 bg-[#dbdbdb] dark:bg-[#363636] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white transition-all duration-200"></div>
+            <div className="toggle-pill"></div>
         </label>
     );
 
@@ -81,7 +73,7 @@ const SharingSettings = () => {
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl mx-auto pb-10">
             <div className="flex items-center mb-8 mt-1">
-                <button onClick={() => navigate(-1)} className="mr-4 md:hidden p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                     <ArrowLeft size={24} />
                 </button>
                 <h2 className="text-xl font-bold">Sharing and reuse</h2>
@@ -128,11 +120,11 @@ const SharingSettings = () => {
                 <div className="bg-white dark:bg-[#1c1c1c] border border-border rounded-xl shadow-sm overflow-hidden">
                     <div className="flex items-center justify-between p-5 px-6 border-b border-border cursor-pointer hover:bg-black/5 dark:hover:bg-white/5" onClick={() => handleEmbedChange(true)}>
                         <span className="text-[15px] font-medium">On</span>
-                        <CustomRadioButton checked={settings.websiteEmbeds === true} />
+                        <input type="radio" className="custom-radio" checked={settings.websiteEmbeds === true} readOnly />
                     </div>
                     <div className="flex items-center justify-between p-5 px-6 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5" onClick={() => handleEmbedChange(false)}>
                         <span className="text-[15px] font-medium">Off</span>
-                        <CustomRadioButton checked={settings.websiteEmbeds === false} />
+                        <input type="radio" className="custom-radio" checked={settings.websiteEmbeds === false} readOnly />
                     </div>
                 </div>
             </div>

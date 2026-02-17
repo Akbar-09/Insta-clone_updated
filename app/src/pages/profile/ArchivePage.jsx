@@ -46,6 +46,48 @@ const ArchivePage = () => {
         return groups;
     };
 
+    const getProxiedUrl = (url) => {
+        if (!url) return '';
+        if (typeof url !== 'string') return url;
+
+        // Handle bare filenames (likely R2/Media Service uploads)
+        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
+            return `/api/v1/media/files/${url}`;
+        }
+
+        try {
+            // Remove full origin if it matches any local IP/Port variations to make it relative
+            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
+
+            if (cleanedUrl !== url) {
+                return cleanedUrl;
+            }
+
+            // If it's an R2 URL directly, try to convert it to our proxied endpoint
+            if (url.includes('r2.dev')) {
+                const parts = url.split('.dev/');
+                if (parts.length > 1) {
+                    return `/api/v1/media/files/${parts[1]}`;
+                }
+            }
+
+            // Ensure media files are always routed through the api/v1 prefix
+            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
+                return url.replace('/media/files', '/api/v1/media/files');
+            }
+
+            // Route local /uploads/ through the robust files endpoint
+            if (url.startsWith('/uploads/')) {
+                return url.replace('/uploads/', '/api/v1/media/files/');
+            }
+        } catch (e) {
+            console.warn('URL proxying failed:', e);
+        }
+
+        return url;
+    };
+
+
     return (
         <div className="min-h-screen bg-black text-white w-full max-w-[935px] mx-auto pt-4">
             {/* Header */}
@@ -78,10 +120,15 @@ const ArchivePage = () => {
                         {stories.map((story) => (
                             <div key={story.id} className="relative aspect-[9/16] bg-[#262626] rounded overflow-hidden cursor-pointer group">
                                 <img
-                                    src={story.mediaUrl}
+                                    src={getProxiedUrl(story.mediaUrl)}
                                     alt="Archived Story"
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'https://ui-avatars.com/api/?name=Story&background=262626&color=555&size=512&semibold=true&format=svg';
+                                    }}
                                 />
+
                                 <div className="absolute top-2 left-2 bg-black/60 px-2 py-1 rounded text-xs">
                                     {formatDate(story.createdAt)}
                                 </div>

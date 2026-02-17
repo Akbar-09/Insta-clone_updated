@@ -20,11 +20,10 @@ exports.updatePage = async (req, res) => {
 
         await AuditLog.create({
             adminId: req.admin.id,
-            adminUsername: req.admin.username,
-            action: 'UPDATE_CMS_PAGE',
-            resourceType: 'CMS',
-            resourceId: id,
-            details: { title }
+            actionType: 'UPDATE_CMS_PAGE',
+            targetType: 'system',
+            targetId: id.toString(),
+            metadata: { title, updatedBy: req.admin.username }
         });
 
         res.json({ success: true, message: 'Page updated successfully' });

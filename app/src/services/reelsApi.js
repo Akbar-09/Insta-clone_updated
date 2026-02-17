@@ -32,5 +32,22 @@ export const reelsApi = {
             console.error('Error fetching reel by id:', error);
             throw error;
         }
+    },
+    reportReel: async (id, reason, details) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(`${API_BASE_URL}/reels/${id}/report`, {
+                reason,
+                details
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+
     }
 };

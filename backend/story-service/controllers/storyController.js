@@ -9,6 +9,10 @@ const createStory = async (req, res) => {
     try {
         const { userId, username, mediaUrl, mediaType } = req.body;
 
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ status: 'error', message: 'Valid User ID is required' });
+        }
+
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + 24); // Expires in 24 hours
 
@@ -36,7 +40,8 @@ const StoryReaction = require('../models/StoryReaction');
 
 const getStories = async (req, res) => {
     try {
-        const userId = req.headers['x-user-id'];
+        const userIdRaw = req.headers['x-user-id'];
+        const userId = (userIdRaw && !isNaN(userIdRaw)) ? parseInt(userIdRaw) : null;
 
         // Get all valid stories
         const stories = await Story.findAll({
@@ -89,7 +94,8 @@ const getStories = async (req, res) => {
 const reactToStory = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.headers['x-user-id'];
+        const userIdRaw = req.headers['x-user-id'];
+        const userId = (userIdRaw && !isNaN(userIdRaw)) ? parseInt(userIdRaw) : null;
         const { type = 'LIKE' } = req.body;
 
         if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });

@@ -6,6 +6,7 @@ import FollowButton from '../FollowButton';
 import { useFollow } from '../../hooks/useFollow';
 import ProfileOptionsModal from './ProfileOptionsModal';
 import { blockUser, restrictUser, reportProblem } from '../../api/userApi';
+import ReportModal from '../ReportModal';
 
 const VerifiedBadge = () => (
     <svg aria-label="Verified" className="ml-2 w-[18px] h-[18px] text-[#0095f6]" fill="rgb(0, 149, 246)" height="18" role="img" viewBox="0 0 40 40" width="18">
@@ -19,24 +20,50 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
     // We initialize it with the profile data. 
     // Keying this component from the parent (Profile.jsx) is important so that when profile changes, this hook resets.
     const { isFollowing, followersCount, toggleFollow, loading } = useFollow(
-        profile.id,
+        profile.userId,
         profile.isFollowing,
         profile.followersCount
     );
 
-    const getMediaUrl = (url) => {
-        if (!url) return undefined;
-        if (url.startsWith('http') || url.startsWith('data:')) return url;
+    const getProxiedUrl = (url) => {
+        if (!url) return '';
+        if (typeof url !== 'string') return url;
+
+        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
+            return `/api/v1/media/files/${url}`;
+        }
+
+        try {
+            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
+            if (cleanedUrl !== url) return cleanedUrl;
+
+            if (url.includes('r2.dev')) {
+                const parts = url.split('.dev/');
+                if (parts.length > 1) return `/api/v1/media/files/${parts[1]}`;
+            }
+
+            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
+                return url.replace('/media/files', '/api/v1/media/files');
+            }
+
+            if (url.startsWith('/uploads/')) {
+                return url.replace('/uploads/', '/api/v1/media/files/');
+            }
+        } catch (e) {
+            console.warn('URL proxying failed:', e);
+        }
         return url;
     };
 
+
     const navigate = useNavigate();
     const [showOptionsModal, setShowOptionsModal] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
 
     const handleBlock = async () => {
         if (window.confirm(`Are you sure you want to block ${profile.username}?`)) {
             try {
-                await blockUser(profile.id);
+                await blockUser(profile.userId);
                 alert(`${profile.username} blocked.`);
                 navigate('/'); // Redirect to home after blocking
             } catch (error) {
@@ -48,7 +75,7 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
 
     const handleRestrict = async () => {
         try {
-            await restrictUser(profile.id);
+            await restrictUser(profile.userId);
             alert(`${profile.username} restricted.`);
         } catch (error) {
             console.error("Restrict failed", error);
@@ -57,19 +84,26 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
         }
     };
 
-    const handleReport = async (reason) => {
+    const handleReport = () => {
+        setShowOptionsModal(false);
+        setShowReportModal(true);
+    };
+
+    const handleReportSubmit = async (reason, detail) => {
         try {
             await reportProblem({
-                userId: profile.id, // Reported User
+                userId: profile.userId, // Reported User
                 reason: reason,
-                description: `Reporting user ${profile.username} (ID: ${profile.id}) for ${reason}`
+                description: `Reporting user ${profile.username} (ID: ${profile.userId}) for ${reason}. Detail: ${detail}`
             });
-            alert("Report submitted. Thank you.");
+            // Modal handled state internally for 'submitted' step usually, 
+            // but we can also handle it here if needed.
         } catch (error) {
             console.error("Report failed", error);
-            alert("Failed to submit report.");
+            throw error; // Let ReportModal catch and show alert
         }
     };
+
 
     return (
         <header className="flex mb-11 px-0 max-md:px-4 max-md:mb-6 max-md:mt-4">
@@ -77,7 +111,8 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
             <div className="flex-grow flex-basis-0 mr-[30px] flex justify-center max-md:flex-grow-0 max-md:mr-5">
                 <div className="w-[150px] h-[150px] rounded-full p-[2px] border bg-gradient-to-tr from-[#FFD600] via-[#FF0169] to-[#D300C5] max-md:w-[77px] max-md:h-[77px] max-md:border-none">
                     <div className="w-full h-full rounded-full p-[2px] bg-white">
-                        <img src={getMediaUrl(profile.avatar) || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+'} alt={profile.username} className="w-full h-full rounded-full object-cover" />
+                        <img src={getProxiedUrl(profile.avatar) || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iOCIgcj0iNCIvPjxwYXRoIGQ9Ik02IDIxdjItYTcgNyAwIDAgMSAxNCAwdi0yIi8+PC9zdmc+'} alt={profile.username} className="w-full h-full rounded-full object-cover" />
+
                     </div>
                 </div>
             </div>
@@ -92,15 +127,15 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
                     <div className="flex items-center gap-2 max-md:hidden ml-4">
                         {isOwnProfile ? (
                             <>
-                                <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">Edit Profile</button>
-                                <button className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">View Archive</button>
+                                <button className="bg-[#efefef] hover:bg-[#dbdbdb] dark:bg-[#363636] dark:hover:bg-[#262626] dark:text-white px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">Edit Profile</button>
+                                <button className="bg-[#efefef] hover:bg-[#dbdbdb] dark:bg-[#363636] dark:hover:bg-[#262626] dark:text-white px-4 py-[7px] rounded-lg font-semibold text-sm transition-colors">View Archive</button>
                                 <Settings size={24} className="ml-2 cursor-pointer" />
                             </>
                         ) : (
                             <div className="flex gap-2">
                                 {/* Follow/Following Button */}
                                 <FollowButton
-                                    userId={profile.id}
+                                    userId={profile.userId}
                                     initialIsFollowing={isFollowing}
                                     showChevron={true}
                                     onToggle={() => { }} // Hook handles state locally
@@ -110,13 +145,13 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
                                 {/* Message Button */}
                                 <button
                                     onClick={() => navigate('/messages', { state: { startChatWith: profile } })}
-                                    className="bg-[#efefef] hover:bg-[#dbdbdb] px-4 py-[7px] rounded-lg font-semibold text-sm text-black transition-colors"
+                                    className="bg-[#efefef] hover:bg-[#dbdbdb] dark:bg-[#363636] dark:hover:bg-[#262626] dark:text-white px-4 py-[7px] rounded-lg font-semibold text-sm text-black transition-colors"
                                 >
                                     Message
                                 </button>
 
                                 {/* Suggested Users Button */}
-                                <button className="bg-[#efefef] hover:bg-[#dbdbdb] p-[7px] rounded-lg text-black transition-colors flex items-center justify-center">
+                                <button className="bg-[#efefef] hover:bg-[#dbdbdb] dark:bg-[#363636] dark:hover:bg-[#262626] dark:text-white p-[7px] rounded-lg text-black transition-colors flex items-center justify-center">
                                     <UserPlus size={18} />
                                 </button>
 
@@ -130,6 +165,14 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
                                         onBlock={handleBlock}
                                         onRestrict={handleRestrict}
                                         onReport={handleReport}
+                                    />
+                                )}
+                                {showReportModal && (
+                                    <ReportModal
+                                        type="account"
+                                        userId={profile.userId}
+                                        onClose={() => setShowReportModal(false)}
+                                        onReport={handleReportSubmit}
                                     />
                                 )}
                             </div>
@@ -147,7 +190,7 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
                 {/* Row 3: Name, Category, Bio */}
                 <div className="text-sm leading-5 mb-4">
                     <span className="font-semibold block">{profile.fullname}</span>
-                    <span className="text-gray-500 block text-xs font-medium mb-1">Public Figure</span> {/* Mock Category */}
+                    <span className="text-text-secondary block text-xs font-medium mb-1">Public Figure</span> {/* Mock Category */}
                     <p className="whitespace-pre-wrap">{profile.bio}</p>
                     {/* Mock Website Link */}
                     {profile.website && (
@@ -162,18 +205,18 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile }) => {
                 {!isOwnProfile && (
                     <div className="flex items-center gap-2 text-[12px] text-text-secondary cursor-pointer">
                         <div className="flex -space-x-2">
-                            <div className="w-5 h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
+                            <div className="w-5 h-5 rounded-full border-2 border-white dark:border-black bg-gray-200 overflow-hidden">
                                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50&h=50&fit=crop" className="w-full h-full object-cover" />
                             </div>
-                            <div className="w-5 h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
+                            <div className="w-5 h-5 rounded-full border-2 border-white dark:border-black bg-gray-200 overflow-hidden">
                                 <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=50&h=50&fit=crop" className="w-full h-full object-cover" />
                             </div>
-                            <div className="w-5 h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
+                            <div className="w-5 h-5 rounded-full border-2 border-white dark:border-black bg-gray-200 overflow-hidden">
                                 <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=50&h=50&fit=crop" className="w-full h-full object-cover" />
                             </div>
                         </div>
                         <span>
-                            Followed by <span className="font-semibold text-black">user_one</span>, <span className="font-semibold text-black">user_two</span> + 12 more
+                            Followed by <span className="font-semibold text-text-primary">user_one</span>, <span className="font-semibold text-text-primary">user_two</span> + 12 more
                         </span>
                     </div>
                 )}

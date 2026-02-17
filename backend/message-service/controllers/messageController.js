@@ -70,6 +70,36 @@ const getConversations = async (req, res) => {
     }
 };
 
+const getUnreadCount = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // 1. Get all conversation IDs for this user
+        const conversations = await Conversation.findAll({
+            where: {
+                [Op.or]: [{ user1Id: userId }, { user2Id: userId }]
+            },
+            attributes: ['id']
+        });
+
+        const convIds = conversations.map(c => c.id);
+
+        // 2. Count unread messages in these conversations NOT sent by me
+        const count = await Message.count({
+            where: {
+                conversationId: { [Op.in]: convIds },
+                senderId: { [Op.ne]: userId },
+                isSeen: false
+            }
+        });
+
+        res.json({ status: 'success', data: { count } });
+    } catch (error) {
+        console.error('Error getting unread message count:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to fetch count' });
+    }
+};
+
 // Fetch messages for a specific conversation
 const getMessages = async (req, res) => {
     try {
@@ -183,16 +213,42 @@ const sendMessage = async (req, res) => {
 
         // 4. Publish to RabbitMQ
         const channel = getRabbitMQChannel();
+        const senderUsername = req.headers['x-user-username'] || 'Someone';
+        const senderAvatar = req.headers['x-user-avatar'] || null;
+        const otherUserId = String(conversation.user1Id) === String(senderId) ? conversation.user2Id : conversation.user1Id;
+
         if (channel) {
-            const otherUserId = String(conversation.user1Id) === String(senderId) ? conversation.user2Id : conversation.user1Id;
             const event = {
                 type: 'MESSAGE_SENT',
                 payload: {
-                    message,
+                    message: {
+                        ...message.toJSON(),
+                        sender: {
+                            id: senderId,
+                            username: senderUsername,
+                            avatar: senderAvatar
+                        }
+                    },
                     receiverId: otherUserId
                 }
             };
+            console.log(`[MessageService] Publishing MESSAGE_SENT event for receiver ${otherUserId}`);
             channel.sendToQueue('socket_events', Buffer.from(JSON.stringify(event)));
+
+            // Push to notification_queue
+            const { publishNotification } = require('../config/rabbitmq');
+            console.log(`[MessageService] Sending notification. Sender: ${senderUsername}, Avatar: ${senderAvatar}`);
+
+            await publishNotification({
+                userId: otherUserId,
+                type: 'message',
+                title: 'New Message',
+                fromUserId: senderId,
+                fromUsername: senderUsername,
+                fromUserAvatar: senderAvatar,
+                message: `${senderUsername}: ${snippet ? snippet.substring(0, 50) : 'Sent a message'}`,
+                link: `/messages/${convId}`
+            });
         }
 
         res.status(201).json({
@@ -200,10 +256,9 @@ const sendMessage = async (req, res) => {
             data: message,
             conversationId: convId
         });
-
     } catch (error) {
-        console.error('Error sending message:', error);
-        res.status(500).json({ status: 'error', message: 'Failed to send message' });
+        console.error('Send message error:', error);
+        res.status(500).json({ status: 'error', message: error.message });
     }
 };
 
@@ -430,6 +485,7 @@ const reportConversation = async (req, res) => {
 
 module.exports = {
     getConversations,
+    getUnreadCount,
     getMessages,
     sendMessage,
     markAsSeen,

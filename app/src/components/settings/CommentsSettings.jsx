@@ -40,14 +40,6 @@ const CommentsSettings = () => {
         }
     };
 
-    const CustomRadioButton = ({ checked, onClick }) => (
-        <div
-            onClick={onClick}
-            className={`w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-200 shrink-0 mr-4 ${checked ? 'border-black dark:border-white' : 'border-gray-300 dark:border-gray-600'}`}
-        >
-            {checked && <div className="w-2.5 h-2.5 rounded-full bg-black dark:bg-white" />}
-        </div>
-    );
 
     if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
 
@@ -66,13 +58,13 @@ const CommentsSettings = () => {
                 <div className="flex flex-col space-y-6">
 
                     <div className="flex items-center cursor-pointer group" onClick={() => handleChange('allowFrom', 'everyone')}>
-                        <CustomRadioButton checked={settings.allowFrom === 'everyone'} />
+                        <input type="radio" className="custom-radio mr-4" checked={settings.allowFrom === 'everyone'} readOnly />
                         <span className="text-[15px] font-medium">Everyone</span>
                     </div>
 
                     <div className="flex items-start cursor-pointer group" onClick={() => handleChange('allowFrom', 'following')}>
                         <div className="pt-0.5">
-                            <CustomRadioButton checked={settings.allowFrom === 'following'} />
+                            <input type="radio" className="custom-radio mr-4" checked={settings.allowFrom === 'following'} readOnly />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[15px] font-medium leading-tight">People you follow</span>
@@ -82,7 +74,7 @@ const CommentsSettings = () => {
 
                     <div className="flex items-start cursor-pointer group" onClick={() => handleChange('allowFrom', 'followers')}>
                         <div className="pt-0.5">
-                            <CustomRadioButton checked={settings.allowFrom === 'followers'} />
+                            <input type="radio" className="custom-radio mr-4" checked={settings.allowFrom === 'followers'} readOnly />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[15px] font-medium leading-tight">Your followers</span>
@@ -92,7 +84,7 @@ const CommentsSettings = () => {
 
                     <div className="flex items-start cursor-pointer group" onClick={() => handleChange('allowFrom', 'mutual')}>
                         <div className="pt-0.5">
-                            <CustomRadioButton checked={settings.allowFrom === 'mutual'} />
+                            <input type="radio" className="custom-radio mr-4" checked={settings.allowFrom === 'mutual'} readOnly />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[15px] font-medium leading-tight">People you follow and your followers</span>
@@ -101,7 +93,7 @@ const CommentsSettings = () => {
                     </div>
 
                     <div className="flex items-center cursor-pointer group" onClick={() => handleChange('allowFrom', 'off')}>
-                        <CustomRadioButton checked={settings.allowFrom === 'off'} />
+                        <input type="radio" className="custom-radio mr-4" checked={settings.allowFrom === 'off'} readOnly />
                         <span className="text-[15px] font-medium">Off</span>
                     </div>
                 </div>
@@ -118,7 +110,7 @@ const CommentsSettings = () => {
                             onChange={() => handleChange('allowGif', !settings.allowGif)}
                             className="sr-only peer"
                         />
-                        <div className="w-10 h-6 bg-[#dbdbdb] dark:bg-[#363636] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white transition-all duration-200"></div>
+                        <div className="toggle-pill"></div>
                     </label>
                 </div>
                 <p className="text-[13px] text-text-secondary leading-normal max-w-[500px]">

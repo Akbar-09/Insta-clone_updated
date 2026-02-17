@@ -2,7 +2,8 @@ import { useState, useEffect, useContext } from 'react';
 import { getBlockedUsers, unblockUser, blockUser } from '../../api/privacyApi';
 import { searchUsers } from '../../api/searchApi';
 import { AuthContext } from '../../context/AuthContext';
-import { Loader2, X, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, X, Search, ArrowLeft } from 'lucide-react';
 
 const BlockedAccounts = () => {
     const { user } = useContext(AuthContext);
@@ -13,6 +14,7 @@ const BlockedAccounts = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [actionId, setActionId] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -111,7 +113,12 @@ const BlockedAccounts = () => {
 
     return (
         <div className="flex flex-col w-full text-text-primary px-4 md:px-0 max-w-2xl pb-10">
-            <h2 className="text-xl font-bold mb-4 mt-1">Blocked Accounts</h2>
+            <div className="flex items-center mb-6 mt-1">
+                <button onClick={() => navigate(-1)} className="mr-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <ArrowLeft size={24} />
+                </button>
+                <h2 className="text-xl font-bold">Blocked Accounts</h2>
+            </div>
             <p className="text-sm text-text-secondary mb-6 leading-5">
                 You can block people anytime from their profiles. When you block someone, they won't be able to message you or find your profile, posts, or story on Jaadoe. They won't be notified that you blocked them.
             </p>

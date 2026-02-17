@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Heart } from 'lucide-react';
+import { X, Heart, Smile } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getComments, addComment, likeComment, unlikeComment } from '../api/commentApi';
-import StickerPicker from './messages/StickerPicker';
+import EmojiPicker from './messages/EmojiPicker';
 
 const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, variant = 'drawer' }) => {
     const [comments, setComments] = useState([]);
@@ -10,7 +10,7 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
     const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [replyingTo, setReplyingTo] = useState(null);
-    const [showStickers, setShowStickers] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
     const commentsEndRef = useRef(null);
     const inputRef = useRef(null);
@@ -64,7 +64,7 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
             setComments(prev => [...prev, commentState]);
             setNewComment('');
             setReplyingTo(null);
-            setShowStickers(false);
+            setShowEmojiPicker(false);
 
             if (onCommentAdded) onCommentAdded();
 
@@ -76,6 +76,11 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleEmojiSelect = (emoji) => {
+        setNewComment(prev => prev + emoji);
+        inputRef.current?.focus();
     };
 
     const handleReply = (comment) => {
@@ -224,10 +229,8 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                     </div>
                 )}
 
-                {showStickers && (
-                    <div className="absolute bottom-full left-0 w-full z-50">
-                        <StickerPicker onSelect={(s) => handleAddComment(null, s)} onClose={() => setShowStickers(false)} />
-                    </div>
+                {showEmojiPicker && (
+                    <EmojiPicker onSelect={handleEmojiSelect} onClose={() => setShowEmojiPicker(false)} />
                 )}
 
                 <div className="flex items-center gap-3">
@@ -239,6 +242,13 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                         />
                     </div>
                     <form onSubmit={handleAddComment} className="flex-1 flex items-center bg-gray-50 dark:bg-[#262626] rounded-full px-4 py-2 border border-gray-200 dark:border-white/10 focus-within:border-gray-400 transition-colors">
+                        <button
+                            type="button"
+                            className={`mr-2 hover:opacity-70 ${showEmojiPicker ? 'text-[#0095F6]' : 'text-gray-400'}`}
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        >
+                            <Smile size={20} />
+                        </button>
                         <input
                             ref={inputRef}
                             type="text"
@@ -249,21 +259,13 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                             disabled={submitting}
                         />
                         <div className="flex items-center gap-2">
-                            {newComment.trim() ? (
+                            {newComment.trim() && (
                                 <button
                                     type="submit"
                                     className="text-[#0095F6] text-xs font-semibold hover:text-blue-600"
                                     disabled={submitting}
                                 >
                                     Post
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    className={`hover:opacity-70 ${showStickers ? 'text-blue-500' : 'text-gray-400'}`}
-                                    onClick={() => setShowStickers(!showStickers)}
-                                >
-                                    <svg aria-label="Stickers" color="currentColor" fill="currentColor" height="20" role="img" viewBox="0 0 24 24" width="20"><path d="M15.83 10.997a1.167 1.167 0 1 0 1.167 1.167 1.167 1.167 0 0 0-1.167-1.167Zm-6.5 1.167a1.167 1.167 0 1 0-1.166 1.167 1.167 1.167 0 0 0 1.166-1.167Zm5.163 3.24a3.406 3.406 0 0 1-4.982.007 1 1 0 1 0-1.552 1.266 5.402 5.402 0 0 0 8.085-.011 1 1 0 0 0-1.551-1.262ZM12 .5a11.5 11.5 0 1 0 11.5 11.5A11.513 11.513 0 0 0 12 .5Zm0 21a9.5 9.5 0 1 1 9.5-9.5 9.51 9.51 0 0 1-9.5 9.5Z"></path></svg>
                                 </button>
                             )}
                         </div>

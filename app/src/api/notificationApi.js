@@ -17,18 +17,19 @@ export const markNotificationRead = async (id) => {
     }
 };
 
-export const markAllNotificationsRead = async (userId) => {
+export const markAllNotificationsRead = async () => {
     try {
-        return await api.patch('/notifications/read-all', { userId });
+        return await api.patch('/notifications/read-all');
     } catch (error) {
         throw error;
     }
 };
 
-export const getUnreadNotificationCount = async (userId) => {
+export const getUnreadNotificationCount = async () => {
     try {
-        return await api.get(`/notifications/unread-count?userId=${userId}`);
+        return await api.get('/notifications/unread-count');
     } catch (error) {
         throw error;
     }
 };
+
