@@ -60,6 +60,8 @@ const authenticateToken = (req, res, next) => {
         '/api/v1/auth/signup',
         '/api/v1/auth/register',
         '/api/v1/auth/reset-password',
+        '/api/v1/auth/check-username',
+        '/api/v1/auth/check-email',
         '/api/v1/admin/auth/login',
         '/api/v1/admin/',
         '/health',
@@ -148,6 +150,9 @@ services.forEach(({ route, target, ws }) => {
                     proxyReq.setHeader('x-user-id', String(req.user.id || req.user.userId || ''));
                     if (req.user.username) {
                         proxyReq.setHeader('x-user-username', String(req.user.username || ''));
+                    }
+                    if (req.user.avatar) {
+                        proxyReq.setHeader('x-user-avatar', String(req.user.avatar || ''));
                     }
                 }
             },

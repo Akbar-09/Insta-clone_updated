@@ -2,8 +2,10 @@ import { useState, useRef, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getUnreadNotificationCount } from '../api/notificationApi';
+import { getUnreadMessageCount } from '../api/messageApi';
 import { useSocket } from '../hooks/useSocket';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 
 import {
     Home, Search, Compass, Clapperboard, MessageCircle,
@@ -19,10 +21,10 @@ import ReportProblemModal from './ReportProblemModal';
 import LiveVideoModal from './LiveVideoModal';
 import jaadoeLogo from '../assets/jaadoe_logo.svg';
 
-const USER_AVATAR = 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=50&h=50&fit=crop';
-
 const Sidebar = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { showToast } = useToast();
     const [activeDrawer, setActiveDrawer] = useState(null); // 'search' | 'notifications' | null
     const [showCreateMenu, setShowCreateMenu] = useState(false);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -34,44 +36,115 @@ const Sidebar = () => {
     const { user } = useContext(AuthContext);
     const { t } = useLanguage();
     const [unreadCount, setUnreadCount] = useState(0);
+    const [unreadMessages, setUnreadMessages] = useState(0);
     const socket = useSocket(user?.userId || user?.id);
 
 
-    // Fetch unread count
+    // Fetch unread counts
     useEffect(() => {
-        const fetchUnread = async () => {
+        const fetchCounts = async () => {
             if (user?.userId || user?.id) {
                 try {
-                    const res = await getUnreadNotificationCount(user.userId || user.id);
+                    // Fetch Notifications Count
+                    const res = await getUnreadNotificationCount();
                     if (res.data.status === 'success') {
                         setUnreadCount(res.data.data.count);
                     }
+
+                    // Fetch Messages Count
+                    const msgCount = await getUnreadMessageCount();
+                    setUnreadMessages(msgCount);
                 } catch (e) {
-                    console.error('Failed to fetch unread count', e);
+                    console.error('Failed to fetch unread counts', e);
                 }
             }
         };
 
-        fetchUnread();
+        fetchCounts();
     }, [user]);
 
     // Listen for real-time notifications
     useEffect(() => {
         if (socket) {
+            const handleMessage = (message) => {
+                console.log('[Sidebar] Socket message:receive', message, 'Current Path:', location.pathname);
+
+                // Show toast if not on the messages page or if on messages page but different conversation
+                const isMessagesPath = location.pathname.startsWith('/messages');
+                const isCurrentConv = isMessagesPath && location.pathname.endsWith(`/${message.conversationId}`);
+
+                if (!isCurrentConv) {
+                    showToast({
+                        title: message.sender?.username || 'New Message',
+                        message: message.content,
+                        type: 'message',
+                        icon: message.sender?.avatar || `https://ui-avatars.com/api/?name=${message.sender?.username || 'User'}&background=random`,
+                        onClick: () => navigate(`/messages/${message.conversationId}`)
+                    });
+
+                    // Increment badge if not looking at THIS conversation
+                    setUnreadMessages(prev => prev + 1);
+                }
+            };
+
+            const handleMessageSeen = (payload) => {
+                // If the payload shows I saw messages (e.g. from another tab/window)
+                if (String(payload.seenBy) === String(user?.id || user?.userId)) {
+                    refreshCounts();
+                }
+            };
+
             socket.on('new_notification', (notification) => {
                 console.log('Real-time notification received:', notification);
                 setUnreadCount(prev => prev + 1);
 
-                // Show browser notification if permissions granted and tab not active? 
-                // Actually the service worker handles push when tab is closed.
-                // When tab is open, we just update the UI badge.
+                // Dedup: skip toast if it's a message, because handleMessage already handles it
+                if (notification.type === 'message') return;
+
+                showToast({
+                    title: notification.title || 'New Notification',
+                    message: notification.message || 'You have a new update',
+                    type: notification.type || 'notification',
+                    icon: notification.fromUserAvatar || `https://ui-avatars.com/api/?name=${notification.fromUsername || 'User'}&background=random`,
+                    onClick: () => {
+                        if (notification.link) navigate(notification.link);
+                        else toggleDrawer('notifications');
+                    }
+                });
             });
+
+            socket.on('message:receive', handleMessage);
+            socket.on('message:seen', handleMessageSeen);
 
             return () => {
                 socket.off('new_notification');
+                socket.off('message:receive', handleMessage);
+                socket.off('message:seen', handleMessageSeen);
             };
         }
-    }, [socket]);
+    }, [socket, location.pathname, user, showToast, navigate]);
+
+    // Refresh counts on navigation to messages
+    useEffect(() => {
+        if (location.pathname.startsWith('/messages')) {
+            refreshCounts();
+        }
+    }, [location.pathname]);
+
+    const refreshCounts = async () => {
+        if (user?.userId || user?.id) {
+            try {
+                const res = await getUnreadNotificationCount();
+                if (res.data.status === 'success') {
+                    setUnreadCount(res.data.data.count);
+                }
+                const msgCount = await getUnreadMessageCount();
+                setUnreadMessages(msgCount);
+            } catch (e) {
+                console.error('Failed to refresh counts', e);
+            }
+        }
+    };
 
 
     // Refs
@@ -255,7 +328,13 @@ const Sidebar = () => {
                     />
                     <NavItem to="/explore" path="/explore" icon={Compass} label={t('Explore')} />
                     <NavItem to="/reels" path="/reels" icon={Clapperboard} label={t('Reels')} />
-                    <NavItem to="/messages" path="/messages" icon={MessageCircle} label={t('Messages')} badge="6" />
+                    <NavItem
+                        to="/messages"
+                        path="/messages"
+                        icon={MessageCircle}
+                        label={t('Messages')}
+                        badge={unreadMessages > 0 ? (unreadMessages > 9 ? '9+' : unreadMessages) : null}
+                    />
                     <NavItem
                         onClick={() => toggleDrawer('notifications')}
                         drawerName="notifications"
@@ -271,15 +350,19 @@ const Sidebar = () => {
                     />
                     <NavItem to="/dashboard" path="/dashboard" icon={BarChart2} label={t('Dashboard')} />
 
-                    <Link to="/profile/me" className="block mt-1 no-underline">
+                    <Link to={`/profile/${user?.username || 'me'}`} className="block mt-1 no-underline">
                         <div className={`flex items-center p-3 my-1 rounded-lg text-text-primary dark:text-white transition-colors cursor-pointer hover:bg-black/5 dark:hover:bg-white/10
-                             ${isActive('/profile/me') ? 'font-bold' : ''}
+                             ${(isActive('/profile/me') || (user?.username && isActive(`/profile/${user.username}`))) ? 'font-bold' : ''}
                              ${isNarrow ? 'justify-center p-3' : ''} 
                              max-[1264px]:justify-center max-[1264px]:p-3`}>
-                            <img src={USER_AVATAR} alt="Profile" className={`w-6 h-6 rounded-full object-cover 
-                                ${isActive('/profile/me') ? 'border-[2px] border-text-primary p-[1px]' : ''}
-                                ${!isNarrow ? 'mr-4' : ''}
-                                max-[1264px]:mr-0`} />
+                            <img
+                                src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.username || 'User'}&background=random`}
+                                alt="Profile"
+                                className={`w-6 h-6 rounded-full object-cover 
+                                    ${(isActive('/profile/me') || (user?.username && isActive(`/profile/${user.username}`))) ? 'border-[2px] border-text-primary p-[1px]' : ''}
+                                    ${!isNarrow ? 'mr-4' : ''}
+                                    max-[1264px]:mr-0`}
+                            />
                             <span className={`text-base leading-6 whitespace-nowrap 
                                 ${isNarrow ? 'hidden' : 'block'}
                                 max-[1264px]:hidden`}>{t('Profile')}</span>

@@ -127,6 +127,9 @@ const checkEmail = async (req, res) => {
 const requestPasswordReset = async (req, res) => {
     try {
         const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ status: 'fail', message: 'Email is required' });
+        }
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
@@ -158,6 +161,10 @@ const requestPasswordReset = async (req, res) => {
 const verifyPasswordReset = async (req, res) => {
     try {
         const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({ status: 'fail', message: 'Token and newPassword are required' });
+        }
 
         const user = await User.findOne({
             where: {

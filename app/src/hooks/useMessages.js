@@ -103,10 +103,21 @@ export const useMessages = (socket, userId, initialConversationId) => {
         }
     };
 
+    // Clear unreadCount locally when a conversation is selected
+    useEffect(() => {
+        if (selectedConversation && selectedConversation.id !== 'new') {
+            setConversations(prev => prev.map(c =>
+                String(c.id) === String(selectedConversation.id)
+                    ? { ...c, unreadCount: 0 }
+                    : c
+            ));
+        }
+    }, [selectedConversation?.id]);
+
     // Sync selectedConversation with updated conversations list (e.g. for block status / online status)
     useEffect(() => {
         if (selectedConversation && selectedConversation.id !== 'new') {
-            const updated = conversations.find(c => c.id === selectedConversation.id);
+            const updated = conversations.find(c => String(c.id) === String(selectedConversation.id));
             if (updated) {
                 setSelectedConversation(prev => {
                     if (!prev) return prev;
@@ -160,12 +171,13 @@ export const useMessages = (socket, userId, initialConversationId) => {
     useEffect(() => {
         if (!socket) return;
 
-        socket.on('message:receive', (rawMessage) => {
-            console.log('[useMessages] Socket received:', rawMessage);
+        const handleReceiveMessage = (rawMessage) => {
+            console.log('[useMessages] Socket received message:', rawMessage);
             const message = normalizeMessage(rawMessage);
 
+            // Update conversations list (snippet and priority)
             setConversations(prev => {
-                const existingIndex = prev.findIndex(c => c.id === message.conversationId);
+                const existingIndex = prev.findIndex(c => String(c.id) === String(message.conversationId));
                 let newConvs = [...prev];
 
                 let snippet = message.content;
@@ -176,52 +188,83 @@ export const useMessages = (socket, userId, initialConversationId) => {
                 else if (type === 'voice') snippet = '🎤 Voice message';
 
                 if (existingIndex > -1) {
+                    const isTargetConv = selectedConversation && (String(selectedConversation.id) === String(message.conversationId));
                     const updatedConv = {
                         ...newConvs[existingIndex],
                         lastMessageContent: snippet,
                         lastMessageSenderId: message.senderId,
-                        lastMessageAt: message.createdAt
+                        lastMessageAt: message.createdAt,
+                        unreadCount: isTargetConv ? 0 : (Number(newConvs[existingIndex].unreadCount) || 0) + (String(message.senderId) !== String(userId) ? 1 : 0)
                     };
                     newConvs.splice(existingIndex, 1);
                     newConvs.unshift(updatedConv);
+                } else if (message.sender) {
+                    const isTargetConv = selectedConversation && (String(selectedConversation.id) === String(message.conversationId));
+                    const newConv = {
+                        id: message.conversationId,
+                        otherUser: {
+                            userId: message.sender.id,
+                            username: message.sender.username,
+                            profilePicture: message.sender.avatar || message.sender.profilePicture || `https://ui-avatars.com/api/?name=${message.sender.username}&background=random`
+                        },
+                        lastMessageContent: snippet,
+                        lastMessageSenderId: message.senderId,
+                        lastMessageAt: message.createdAt,
+                        unreadCount: isTargetConv ? 0 : (String(message.senderId) !== String(userId) ? 1 : 0)
+                    };
+                    newConvs.unshift(newConv);
                 }
                 return newConvs;
             });
 
-            if (selectedConversation && (String(selectedConversation.id) === String(message.conversationId))) {
-                setMessages(prev => {
-                    // Check if message ID already exists (numeric ID or same temp ID)
-                    if (prev.some(m => String(m.id) === String(message.id))) return prev;
+            // Update current messages if this is the active conversation
+            const isTargetConv = selectedConversation && (String(selectedConversation.id) === String(message.conversationId));
+            console.log('[useMessages] Checking if target conversation:', isTargetConv, 'Selected:', selectedConversation?.id, 'Incoming:', message.conversationId);
 
-                    // Optimization: If we find a temp message from us that matches this content/type, 
-                    // we could technically replace it here, but commitMessage usually handles it.
-                    // For safety, just append if it's truly new.
-                    return [...prev, message];
+            if (isTargetConv) {
+                setMessages(prev => {
+                    const isNew = !prev.some(m => String(m.id) === String(message.id));
+                    if (isNew) {
+                        console.log('[useMessages] Appending new message to state');
+                        return [...prev, message];
+                    }
+                    return prev;
                 });
                 markAsSeen(message.conversationId);
             }
-        });
+        };
 
-        socket.on('message:seen', ({ conversationId, seenBy }) => {
+        const handleSeen = ({ conversationId, seenBy }) => {
             if (selectedConversation && String(selectedConversation.id) === String(conversationId)) {
                 setMessages(prev => prev.map(m =>
                     (String(m.senderId) !== String(seenBy) && !m.isSeen) ? { ...m, isSeen: true } : m
                 ));
             }
-        });
 
-        socket.on('user:typing', ({ conversationId, isTyping: typing }) => {
+            // Also clear unread indicator for this conversation if I saw it (even in another tab)
+            if (String(seenBy) === String(userId)) {
+                setConversations(prev => prev.map(c =>
+                    String(c.id) === String(conversationId) ? { ...c, unreadCount: 0 } : c
+                ));
+            }
+        };
+
+        const handleTypingStatus = ({ conversationId, isTyping: typing }) => {
             if (selectedConversation && String(selectedConversation.id) === String(conversationId)) {
                 setIsTyping(typing);
             }
-        });
+        };
+
+        socket.on('message:receive', handleReceiveMessage);
+        socket.on('message:seen', handleSeen);
+        socket.on('user:typing', handleTypingStatus);
 
         return () => {
-            socket.off('message:receive');
-            socket.off('message:seen');
-            socket.off('user:typing');
+            socket.off('message:receive', handleReceiveMessage);
+            socket.off('message:seen', handleSeen);
+            socket.off('user:typing', handleTypingStatus);
         };
-    }, [socket, selectedConversation, markAsSeen]);
+    }, [socket, selectedConversation?.id, markAsSeen]);
 
     const handleTyping = (isTypingStatus) => {
         if (!socket || !selectedConversation || selectedConversation.id === 'new') return;

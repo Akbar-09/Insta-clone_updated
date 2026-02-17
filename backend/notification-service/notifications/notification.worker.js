@@ -16,12 +16,24 @@ let channel;
 const startWorker = async () => {
     try {
         const connection = await amqp.connect(process.env.RABBITMQ_URI || 'amqp://guest:guest@localhost:5672');
+
+        connection.on('error', (err) => {
+            console.error('[RabbitMQ Worker] Connection error:', err.message);
+        });
+
+        connection.on('close', () => {
+            console.error('[RabbitMQ Worker] Connection closed. Reconnecting in 5s...');
+            setTimeout(startWorker, 5000);
+        });
+
         channel = await connection.createChannel();
+
+        channel.on('error', (err) => {
+            console.error('[RabbitMQ Worker] Channel error:', err.message);
+        });
+
         await channel.assertQueue('notification_queue', { durable: true });
 
-        // We also need to be able to publish to socket-service if they are separate
-        // For now, we will publish a 'new_notification' event to the 'instagram-events' exchange
-        // that the socket-service is already listening to.
         const exchange = 'instagram-events';
         await channel.assertExchange(exchange, 'topic', { durable: true });
 
@@ -30,7 +42,12 @@ const startWorker = async () => {
         channel.consume('notification_queue', async (msg) => {
             if (msg !== null) {
                 const payload = JSON.parse(msg.content.toString());
-                const { userId, type, title, message, link, fromUserId, fromUsername, fromUserAvatar } = payload;
+                let { userId, type, title, message, link, fromUserId, fromUsername, fromUserAvatar } = payload;
+
+                // Fallback for missing fromUsername if message has a colon (like "username: hello")
+                if (!fromUsername && message && message.includes(':')) {
+                    fromUsername = message.split(':')[0];
+                }
 
                 try {
                     // 1. Save to PostgreSQL
@@ -65,7 +82,8 @@ const startWorker = async () => {
                         title: title,
                         body: message,
                         url: link || '/',
-                        icon: '/logo192.png' // Default icon
+                        icon: fromUserAvatar || '/vite.svg', // Use sender avatar or fallback
+                        badge: '/vite.svg'
                     });
 
                     const pushPromises = subscriptions.map(async (sub) => {
@@ -78,14 +96,15 @@ const startWorker = async () => {
                         };
 
                         try {
+                            console.log(`[PushWorker] Sending push to user ${userId} via endpoint: ${pushSubscription.endpoint.substring(0, 40)}...`);
                             await webpush.sendNotification(pushSubscription, pushPayload);
                         } catch (error) {
                             if (error.statusCode === 410 || error.statusCode === 404) {
                                 // Subscriptions expired or no longer valid
                                 await sub.destroy();
-                                console.log(`Removed invalid subscription for user ${userId}`);
+                                console.log(`[PushWorker] Removed invalid/expired subscription for user ${userId}`);
                             } else {
-                                console.error('Web Push error:', error);
+                                console.error('[PushWorker] Web Push error:', error.message);
                             }
                         }
                     });
@@ -96,17 +115,18 @@ const startWorker = async () => {
                     channel.ack(msg);
                     console.log(`Notification processed for user ${userId}: ${type}`);
                 } catch (error) {
-                    console.error('Error processing notification worker:', error);
+                    console.error('Error processing notification worker:', error.message);
                     // Optionally nack and requeue
                     channel.nack(msg, false, true);
                 }
             }
         });
     } catch (error) {
-        console.error('Notification Worker Error:', error);
+        console.error('Notification Worker Error:', error.message);
         setTimeout(startWorker, 5000);
     }
 };
+
 
 if (require.main === module) {
     startWorker();
