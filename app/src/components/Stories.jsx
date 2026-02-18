@@ -24,22 +24,6 @@ const Stories = () => {
                     allStories = response.data.data;
                 }
 
-                // --- MOCK DATA INJECTION FOR DEMO ---
-                // If we have fewer than 10 stories, add mock stories to demonstrate scrolling
-                if (allStories.length < 10) {
-                    const mockStories = Array.from({ length: 15 }).map((_, i) => ({
-                        id: `mock-story-${i}`,
-                        userId: `mock-user-${i}`,
-                        username: `user_test_${i + 1}`,
-                        userAvatar: `https://i.pravatar.cc/150?u=${i + 10}`,
-                        mediaUrl: `https://picsum.photos/seed/${i}/400/800`,
-                        mediaType: 'image',
-                        createdAt: new Date().toISOString()
-                    }));
-                    allStories = [...allStories, ...mockStories];
-                }
-                // ------------------------------------
-
                 setStories(allStories);
 
                 // 2. Extract unique user IDs (exclude mocks if they don't exist in DB)
