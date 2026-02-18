@@ -4,6 +4,8 @@ const getFeed = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'] || req.query.userId;
         let feed = [];
+        const limit = req.query.limit || 20;
+        const offset = req.query.offset || 0;
 
         // 1. If User is Logged In, Fetch Personalized Feed
         if (userId) {
@@ -17,11 +19,7 @@ const getFeed = async (req, res) => {
 
                 if (followingRes.ok) {
                     const followingData = await followingRes.json();
-                    // Handle inconsistent response format (success: true vs status: 'success')
                     if (followingData.status === 'success' || followingData.success === true) {
-                        // Assuming data is array of objects with id or userId (the user being followed)
-                        // If it's a list of Users, it has id. If it's Follow records, it might be followingId.
-                        // Let's assume it returns Users based on typical pattern.
                         if (Array.isArray(followingData.data)) {
                             followingIds = followingData.data.map(u => u.id || u.userId).filter(id => id);
                         }
@@ -32,14 +30,14 @@ const getFeed = async (req, res) => {
 
                 // Add current user to list
                 const userIds = [parseInt(userId), ...followingIds.map(id => parseInt(id))];
-                console.log(`[FeedService] Fetching posts for users: ${userIds.length} users`);
+                console.log(`[FeedService] Fetching posts for users: ${userIds.length} users (limit: ${limit}, offset: ${offset})`);
 
                 // B. Fetch Posts from Post Service
                 const postServiceUrl = process.env.POST_SERVICE_URL || 'http://localhost:5003';
                 const postsRes = await fetch(`${postServiceUrl}/feed`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
-                    body: JSON.stringify({ userIds, limit: 50 })
+                    body: JSON.stringify({ userIds, limit, offset })
                 });
 
                 if (postsRes.ok) {

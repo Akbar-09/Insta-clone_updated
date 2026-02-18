@@ -43,18 +43,51 @@ const getStories = async (req, res) => {
         const userIdRaw = req.headers['x-user-id'];
         const userId = (userIdRaw && !isNaN(userIdRaw)) ? parseInt(userIdRaw) : null;
 
-        // Get all valid stories
-        const stories = await Story.findAll({
-            where: {
-                expiresAt: {
-                    [Op.gt]: new Date()
-                }
-            },
-            order: [['createdAt', 'DESC']]
-        });
+        let stories = [];
 
-        // If user logged in, enrich with seen/liked status
         if (userId) {
+            try {
+                // A. Get Following List from User Service
+                const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+                const followingRes = await fetch(`${userServiceUrl}/${userId}/following`);
+
+                let followingIds = [];
+                if (followingRes.ok) {
+                    const followingData = await followingRes.json();
+                    if (followingData.status === 'success' || followingData.success === true) {
+                        if (Array.isArray(followingData.data)) {
+                            followingIds = followingData.data.map(u => u.id || u.userId).filter(id => id);
+                        }
+                    }
+                }
+
+                // B. Fetch Stories for User + Following
+                const userIds = [userId, ...followingIds.map(id => parseInt(id))];
+                stories = await Story.findAll({
+                    where: {
+                        userId: { [Op.in]: userIds },
+                        expiresAt: { [Op.gt]: new Date() }
+                    },
+                    order: [['createdAt', 'DESC']]
+                });
+            } catch (err) {
+                console.error("[StoryService] Failed to fetch personalized stories:", err);
+                // Fallback: Get all stories if personalization fails (optional, or return empty)
+                stories = await Story.findAll({
+                    where: { expiresAt: { [Op.gt]: new Date() } },
+                    order: [['createdAt', 'DESC']]
+                });
+            }
+        } else {
+            // Unauthenticated view: all stories
+            stories = await Story.findAll({
+                where: { expiresAt: { [Op.gt]: new Date() } },
+                order: [['createdAt', 'DESC']]
+            });
+        }
+
+        // Enrich with seen/liked status
+        if (userId && stories.length > 0) {
             const storyIds = stories.map(s => s.id);
 
             // Get Views
