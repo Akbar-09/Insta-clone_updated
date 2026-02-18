@@ -179,6 +179,9 @@ const Stories = () => {
                     stories={stories}
                     activeIndex={activeStory}
                     onClose={() => setActiveStory(null)}
+                    onSeen={(storyId) => {
+                        setStories(prev => prev.map(s => s.id === storyId ? { ...s, seen: true } : s));
+                    }}
                 />
             )}
         </>

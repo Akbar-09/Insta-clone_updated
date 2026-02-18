@@ -12,7 +12,9 @@ const StoryBubble = ({ user, count, onClick }) => {
             <div className={`
                 w-[66px] h-[66px] rounded-full p-[2px] 
                 flex justify-center items-center mb-1.5 
-                bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]
+                ${user.allSeen
+                    ? 'bg-gray-200 dark:bg-gray-700'
+                    : 'bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]'}
                 transform transition-transform duration-200 group-hover:scale-105
             `}>
                 <div className="w-full h-full rounded-full border-[2px] border-white dark:border-black overflow-hidden bg-white dark:bg-black">

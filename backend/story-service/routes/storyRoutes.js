@@ -2,6 +2,7 @@ const express = require('express');
 const {
     createStory,
     getStories,
+    getUserStories,
     getArchivedStories,
     deleteStory,
     reportStory,
@@ -16,6 +17,7 @@ const router = express.Router();
 router.post('/', createStory);
 router.get('/', getStories);
 router.get('/archive', getArchivedStories);
+router.get('/user/:targetUserId', getUserStories);
 router.get('/activity/story-replies', getStoryReplies);
 router.delete('/:id', deleteStory);
 router.post('/:id/report', reportStory);
