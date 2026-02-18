@@ -1,6 +1,6 @@
 
 import { forwardRef, useEffect, useState, useContext } from 'react';
-import { getNotifications, markAllNotificationsRead, markNotificationRead } from '../api/notificationApi';
+import { getNotifications, markAllNotificationsRead, markNotificationRead, clearAllNotifications } from '../api/notificationApi';
 import { AuthContext } from '../context/AuthContext';
 import { isThisWeek, isThisMonth, parseISO, formatDistanceToNowStrict } from 'date-fns';
 import FollowButton from './FollowButton';
@@ -34,7 +34,19 @@ const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
         }
     };
 
+    const handleClearAll = async () => {
+        if (window.confirm('Are you sure you want to clear all notifications?')) {
+            try {
+                await clearAllNotifications();
+                setNotifications([]);
+            } catch (err) {
+                console.error("Failed to clear notifications", err);
+            }
+        }
+    };
+
     const markAllRead = async () => {
+
         try {
             await markAllNotificationsRead();
             // Optimistically update local state?
@@ -97,9 +109,18 @@ const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
             ref={ref}
             className="absolute top-0 left-[72px] bottom-0 w-[397px] bg-white dark:bg-black border-r border-gray-200 dark:border-[#363636] rounded-r-[24px] p-0 z-[99] shadow-[10px_0_30px_rgba(0,0,0,0.15)] flex flex-col transition-all duration-300 animate-in slide-in-from-left"
         >
-            <div className="px-6 pt-6 pb-4">
+            <div className="px-6 pt-6 pb-4 flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-text-primary dark:text-white">Notifications</h2>
+                {notifications.length > 0 && (
+                    <button
+                        onClick={handleClearAll}
+                        className="text-sm font-semibold text-blue-btn hover:text-blue-btn-hover transition-colors"
+                    >
+                        Clear all
+                    </button>
+                )}
             </div>
+
 
             <div className="flex-grow overflow-y-auto pb-5 scrollbar-none hover:scrollbar-thin scrollbar-thumb-white/20">
                 {loading && notifications.length === 0 ? (

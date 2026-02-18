@@ -25,7 +25,17 @@ export const markAllNotificationsRead = async () => {
     }
 };
 
+export const clearAllNotifications = async () => {
+    try {
+        return await api.delete('/notifications/clear-all');
+    } catch (error) {
+        throw error;
+    }
+};
+
+
 export const getUnreadNotificationCount = async () => {
+
     try {
         return await api.get('/notifications/unread-count');
     } catch (error) {
