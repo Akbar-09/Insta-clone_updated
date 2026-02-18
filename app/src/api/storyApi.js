@@ -10,6 +10,11 @@ export const getStories = async () => {
     return response.data;
 };
 
+export const getUserStories = async (userId) => {
+    const response = await api.get(`/stories/user/${userId}`);
+    return response.data;
+};
+
 export const getArchivedStories = async () => {
     const response = await api.get('/stories/archive');
     return response.data;

@@ -15,7 +15,7 @@ import AboutAccountModal from './AboutAccountModal';
 import ShareModal from './ShareModal';
 import { sendMessage } from '../api/messageApi';
 
-const StoryViewer = ({ stories: initialStories, activeIndex = 0, onClose }) => {
+const StoryViewer = ({ stories: initialStories, activeIndex = 0, onClose, onSeen }) => {
     const { user: currentUserData } = useContext(AuthContext);
     const navigate = useNavigate();
     const [deletedStoryIds, setDeletedStoryIds] = useState(new Set());
@@ -121,9 +121,14 @@ const StoryViewer = ({ stories: initialStories, activeIndex = 0, onClose }) => {
     useEffect(() => {
         if (currentStory && !currentStory.seen) {
             viewStory(currentStory.id).catch(err => console.error("View mark failed", err));
-            // Local Seen update could happen here but usually handled by refreshed fetch
+
+            // Mark locally in viewer
+            setStories(prev => prev.map(s => s.id === currentStory.id ? { ...s, seen: true } : s));
+
+            // Notify parent to update stories bar rings
+            if (onSeen) onSeen(currentStory.id);
         }
-    }, [currentStory]);
+    }, [currentStory, onSeen]);
 
     // Auto-pause when menu is open or tab switch
     useEffect(() => {

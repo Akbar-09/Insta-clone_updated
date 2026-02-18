@@ -21,5 +21,8 @@ export const groupStoriesByUser = (stories) => {
         groups_map.get(story.userId).stories.push(story);
     });
 
-    return Array.from(groups_map.values());
+    return Array.from(groups_map.values()).map(group => ({
+        ...group,
+        allSeen: group.stories.every(s => s.seen)
+    }));
 };

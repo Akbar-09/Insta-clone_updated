@@ -307,9 +307,45 @@ const getStoryReplies = async (req, res) => {
     }
 };
 
+const getUserStories = async (req, res) => {
+    try {
+        const { targetUserId } = req.params;
+        const userIdRaw = req.headers['x-user-id'];
+        const userId = (userIdRaw && !isNaN(userIdRaw)) ? parseInt(userIdRaw) : null;
+
+        const stories = await Story.findAll({
+            where: {
+                userId: targetUserId,
+                expiresAt: { [Op.gt]: new Date() }
+            },
+            order: [['createdAt', 'DESC']]
+        });
+
+        if (userId && stories.length > 0) {
+            const storyIds = stories.map(s => s.id);
+            const views = await StoryView.findAll({
+                where: { storyId: storyIds, viewerId: userId }
+            });
+            const viewedStoryIds = new Set(views.map(v => v.storyId));
+
+            const data = stories.map(s => ({
+                ...s.toJSON(),
+                seen: viewedStoryIds.has(s.id)
+            }));
+            return res.json({ status: 'success', data: data });
+        }
+
+        res.json({ status: 'success', data: stories });
+    } catch (error) {
+        console.error("Get User Stories Error", error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     createStory,
     getStories,
+    getUserStories,
     getArchivedStories,
     deleteStory,
     reportStory,

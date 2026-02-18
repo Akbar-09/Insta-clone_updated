@@ -5,7 +5,7 @@ import FollowersFollowingModal from '../../components/FollowersFollowingModal';
 import ProfileOptionsModal from '../../components/ProfileOptionsModal';
 import ChangeProfilePhotoModal from '../../components/ChangeProfilePhotoModal';
 
-const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollowToggle, onProfileUpdate }) => {
+const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollowToggle, onProfileUpdate, hasStories, allSeen }) => {
     const navigate = useNavigate();
     const [showFollowersModal, setShowFollowersModal] = useState(false);
     const [showFollowingModal, setShowFollowingModal] = useState(false);
@@ -43,6 +43,41 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollo
         }
     };
 
+    const ProfileAvatar = () => (
+        <div
+            onClick={() => {
+                if (hasStories) {
+                    // Could open story viewer here
+                } else if (isOwnProfile) {
+                    setShowPhotoModal(true);
+                }
+            }}
+            className={`w-[150px] h-[150px] rounded-full p-[3px] max-md:w-[77px] max-md:h-[77px] group transition-transform active:scale-95
+                ${hasStories
+                    ? (allSeen
+                        ? 'bg-gray-200 dark:bg-gray-700'
+                        : 'bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]')
+                    : 'bg-transparent'}
+                ${isOwnProfile || hasStories ? 'cursor-pointer' : ''}`}
+        >
+            <div className={`w-full h-full rounded-full p-[2px] bg-black ${!hasStories ? '!p-0' : ''}`}>
+                {profile.profilePicture ? (
+                    <img
+                        src={getMediaUrl(profile.profilePicture)}
+                        alt={profile.username}
+                        className="w-full h-full rounded-full object-cover group-hover:opacity-90 transition-opacity"
+                    />
+                ) : (
+                    <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <span className="text-white text-5xl font-bold max-md:text-2xl">
+                            {profile.username?.[0]?.toUpperCase() || 'U'}
+                        </span>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
     return (
         <>
             <header className="flex mb-11 px-10 max-md:px-4 max-md:mb-6 max-md:mt-4 items-start">
@@ -56,26 +91,7 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollo
                                 <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white/10 rotate-45 transform"></div>
                             </div>
                         )}
-                        <div
-                            onClick={() => isOwnProfile && setShowPhotoModal(true)}
-                            className={`w-[150px] h-[150px] rounded-full p-[2px] bg-gradient-to-tr from-[#FFD600] via-[#FF0169] to-[#D300C5] max-md:w-[77px] max-md:h-[77px] group ${isOwnProfile ? 'cursor-pointer' : ''}`}
-                        >
-                            <div className="w-full h-full rounded-full p-[2px] bg-black">
-                                {profile.profilePicture ? (
-                                    <img
-                                        src={getMediaUrl(profile.profilePicture)}
-                                        alt={profile.username}
-                                        className="w-full h-full rounded-full object-cover group-hover:opacity-90 transition-opacity"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                        <span className="text-white text-5xl font-bold max-md:text-2xl">
-                                            {profile.username?.[0]?.toUpperCase() || 'U'}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <ProfileAvatar />
                     </div>
                 </div>
 
