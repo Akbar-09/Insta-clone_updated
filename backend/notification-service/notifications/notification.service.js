@@ -29,18 +29,24 @@ const deleteNotification = async (id, userId) => {
     });
 };
 
+const deleteAllNotifications = async (userId) => {
+    return await Notification.destroy({
+        where: { userId }
+    });
+};
+
 const getUnreadCount = async (userId) => {
     return await Notification.count({
         where: { userId, isRead: false }
     });
 };
 
-
-
 module.exports = {
     getNotifications,
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    deleteAllNotifications,
     getUnreadCount
 };
+

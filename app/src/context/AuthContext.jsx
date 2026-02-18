@@ -36,7 +36,21 @@ export const AuthProvider = ({ children }) => {
                     // Using /auth/me to get current user details
                     const { data } = await api.get('auth/me');
                     if (data.status === 'success') {
-                        setUser(data.data);
+                        const userData = data.data;
+
+                        // Fetch additional profile data from user-service
+                        try {
+                            const profileRes = await api.get(`/users/${userData.username}`);
+                            if (profileRes.data.status === 'success') {
+                                // Merge data and ensure 'avatar' is set for the sidebar
+                                userData.avatar = profileRes.data.data.profilePicture;
+                                userData.fullName = profileRes.data.data.fullName;
+                            }
+                        } catch (profileErr) {
+                            console.error("Failed to fetch profile supplemental data", profileErr);
+                        }
+
+                        setUser(userData);
                         // Request notification permission if not already granted
                         requestNotificationPermission();
                     }
@@ -51,6 +65,7 @@ export const AuthProvider = ({ children }) => {
 
         fetchCurrentUser();
     }, []);
+
 
     // Listen for storage changes from other tabs
     useEffect(() => {
@@ -83,25 +98,39 @@ export const AuthProvider = ({ children }) => {
             if (data.status === 'success') {
                 localStorage.setItem('token', data.data.token);
                 setToken(data.data.token);
-                setUser(data.data.user);
+
+                const userData = data.data.user;
+
+                // Fetch additional profile data from user-service
+                try {
+                    const profileRes = await api.get(`/users/${userData.username}`);
+                    if (profileRes.data.status === 'success') {
+                        userData.avatar = profileRes.data.data.profilePicture;
+                        userData.fullName = profileRes.data.data.fullName;
+                    }
+                } catch (profileErr) {
+                    console.error("Failed to fetch profile on login", profileErr);
+                }
+
+                setUser(userData);
 
                 // Request notification permission
                 requestNotificationPermission();
 
                 // Add to sessions list
-
                 setSessions(prev => {
-                    const exists = prev.find(s => s.userId === data.data.user.id);
+                    const exists = prev.find(s => s.userId === userData.id);
                     if (exists) {
                         // Update token/info
-                        const updated = prev.map(s => s.userId === data.data.user.id ? { ...s, token: data.data.token, ...data.data.user } : s);
+                        const updated = prev.map(s => s.userId === userData.id ? { ...s, token: data.data.token, ...userData } : s);
                         localStorage.setItem('sessions', JSON.stringify(updated));
                         return updated;
                     }
-                    const newSessions = [...prev, { ...data.data.user, userId: data.data.user.id, token: data.data.token }];
+                    const newSessions = [...prev, { ...userData, userId: userData.id, token: data.data.token }];
                     localStorage.setItem('sessions', JSON.stringify(newSessions));
                     return newSessions;
                 });
+
 
                 return { success: true };
             }
@@ -120,9 +149,21 @@ export const AuthProvider = ({ children }) => {
             if (data.status === 'success') {
                 localStorage.setItem('token', data.data.token);
                 setToken(data.data.token);
-                setUser(data.data.user);
+
+                const userData = data.data.user;
+
+                // Fetch profile (may be empty but consistent)
+                try {
+                    const profileRes = await api.get(`/users/${userData.username}`);
+                    if (profileRes.data.status === 'success') {
+                        userData.avatar = profileRes.data.data.profilePicture;
+                    }
+                } catch (e) { }
+
+                setUser(userData);
                 return { success: true };
             }
+
             return { success: false, message: 'Invalid response format' };
         } catch (error) {
             return {
