@@ -30,9 +30,10 @@ export const useSocket = (userId) => {
 
         return () => {
             if (socketRef.current) {
-                console.log(`[useSocket] Cleanup: disconnecting socket ${socketRef.current.id}`);
+                console.log(`[useSocket] Cleanup: disconnecting socket ${socketRef.current.id || 'before connection'}`);
                 socketRef.current.disconnect();
                 socketRef.current = null;
+                setSocket(null);
             }
         };
     }, [userId]);

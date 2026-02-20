@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API Documentation for the Instagram Clone Microservices
 servers:
-  - url: http://192.168.1.5:5000
+  - url: http://192.168.1.4:5000
     description: API Gateway (Remote)
   - url: http://localhost:5000
     description: API Gateway (Local)

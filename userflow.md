@@ -154,3 +154,6 @@ netstat -ano | findstr :5004
 
 to stop individual microservice
  taskkill /F /PID 25484 /T
+
+to kill the all node process
+taskkill /F /IM node.exe

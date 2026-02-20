@@ -7,23 +7,23 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://192.168.1.5:5000',
+        target: 'http://192.168.1.4:5000',
         changeOrigin: true,
         secure: false,
       },
       '/uploads': {
-        target: 'http://192.168.1.5:5000',
+        target: 'http://192.168.1.4:5000',
         changeOrigin: true,
         secure: false,
       },
       '/socket.io': {
-        target: 'http://192.168.1.5:5000',
+        target: 'http://192.168.1.4:5000',
         changeOrigin: true,
         ws: true,
         secure: false
       },
       '/live': {
-        target: 'http://192.168.1.5:8000', // Route directly to NMS HTTP port for HLS
+        target: 'http://192.168.1.4:8000', // Route directly to NMS HTTP port for HLS
         changeOrigin: true,
         secure: false
       }

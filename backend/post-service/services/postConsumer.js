@@ -1,5 +1,6 @@
 const amqp = require('amqplib');
 const Post = require('../models/Post');
+const { Op } = require('sequelize');
 
 const connectRabbitMQ = async () => {
     try {
@@ -43,8 +44,17 @@ const connectRabbitMQ = async () => {
                         const { originalUrl, optimizedUrl, thumbnailUrl, type } = data;
                         console.log(`Updating post with optimized media... ${originalUrl} -> ${optimizedUrl}`);
 
-                        // Find potential posts that use this media (originalUrl)
-                        const posts = await Post.findAll({ where: { mediaUrl: originalUrl } });
+                        const originalFilename = originalUrl.split('/').pop();
+
+                        // Find potential posts that use this media (originalUrl) or have the same filename
+                        const posts = await Post.findAll({
+                            where: {
+                                [Op.or]: [
+                                    { mediaUrl: originalUrl },
+                                    { mediaUrl: { [Op.like]: `%${originalFilename}` } }
+                                ]
+                            }
+                        });
 
                         if (posts.length > 0) {
                             for (const post of posts) {
@@ -56,7 +66,7 @@ const connectRabbitMQ = async () => {
                                 console.log(`Post ${post.id} updated with optimized media.`);
                             }
                         } else {
-                            console.log('No posts found with original URL:', originalUrl);
+                            console.log('No posts found with original URL or filename:', originalUrl);
                         }
                     }
                 } catch (err) {

@@ -23,7 +23,9 @@ router.use(extractUser);
 router.get('/activity/story-replies', getActivityStoryReplies);
 router.get('/unread-count', getUnreadCount);
 router.get('/conversations', getConversations);
-router.get('/conversations/:conversationId', getMessages);
+router.get('/conversations/:conversationId', getMessages); // Supports legacy /conversations/:id
+router.get('/conversations/:conversationId/messages', getMessages); // Matches Flutter app
+router.post('/conversations/:conversationId/messages', sendMessage); // Send to specific conv
 router.get('/conversations/:conversationId/details', getConversationDetails);
 router.patch('/conversations/:conversationId/mute', toggleMute);
 router.post('/conversations/:conversationId/block', blockUser);
