@@ -21,7 +21,7 @@ const getFeed = async (req, res) => {
                     const followingData = await followingRes.json();
                     if (followingData.status === 'success' || followingData.success === true) {
                         if (Array.isArray(followingData.data)) {
-                            followingIds = followingData.data.map(u => u.id || u.userId).filter(id => id);
+                            followingIds = followingData.data.map(u => u.userId || u.id).filter(id => id);
                         }
                     }
                 } else {
@@ -30,7 +30,7 @@ const getFeed = async (req, res) => {
 
                 // Add current user to list
                 const userIds = [parseInt(userId), ...followingIds.map(id => parseInt(id))];
-                console.log(`[FeedService] Fetching posts for users: ${userIds.length} users (limit: ${limit}, offset: ${offset})`);
+                console.log(`[FeedService] User ${userId} is following ${followingIds.length} users. Total userIds to fetch: ${userIds.join(',')}`);
 
                 // B. Fetch Posts from Post Service
                 const postServiceUrl = process.env.POST_SERVICE_URL || 'http://localhost:5003';
@@ -44,7 +44,7 @@ const getFeed = async (req, res) => {
                     const postsData = await postsRes.json();
                     if (postsData.status === 'success') {
                         feed = postsData.data;
-                        console.log(`[FeedService] Fetched ${feed.length} personalized posts`);
+                        console.log(`[FeedService] Fetched ${feed.length} personalized posts for user ${userId}`);
                     }
                 } else {
                     console.error(`[FeedService] Failed to fetch posts from Post Service: ${postsRes.status}`);
@@ -52,14 +52,18 @@ const getFeed = async (req, res) => {
             } catch (e) {
                 console.error('[FeedService] Personalized feed fetch error:', e);
             }
-        }
-
-        // 2. Fallback to Global Feed if empty
-        if (feed.length === 0) {
-            console.log('[FeedService] Personalized feed empty/failed, falling back to global_feed cache');
+        } else {
+            // 2. Fallback to Global Feed ONLY for GUESTS or if logic above is skipped
+            console.log('[FeedService] Guest user or no userId, fetching global_feed cache');
             const feedRaw = await client.lRange('global_feed', 0, 49);
             feed = feedRaw.map(item => JSON.parse(item));
         }
+
+        // 3. Optional: If even after personalized fetch it's empty, we might want to show NOTHING 
+        // as requested by the user ("show posts of logged in user and followed users")
+        // The current logic above (if (userId) { ... }) ensures that 'feed' remains what was fetched.
+        // If it's empty, it's empty.
+
 
         // Hydration Logic (existing)
         if (userId && feed.length > 0) {
