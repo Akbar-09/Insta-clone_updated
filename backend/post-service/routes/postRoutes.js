@@ -6,6 +6,7 @@ const router = express.Router();
 router.post('/', createPost);
 router.post('/feed', getPostsByUsers);
 router.get('/explore', getExplorePosts);
+router.get('/hashtag/:hashtag', getPostsByHashtag);
 router.get('/', getPosts);
 router.post('/:id/like', likePost);
 router.delete('/:id/like', unlikePost);
