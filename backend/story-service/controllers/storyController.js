@@ -56,8 +56,9 @@ const getStories = async (req, res) => {
                     const followingData = await followingRes.json();
                     if (followingData.status === 'success' || followingData.success === true) {
                         if (Array.isArray(followingData.data)) {
-                            followingIds = followingData.data.map(u => u.id || u.userId).filter(id => id);
+                            followingIds = followingData.data.map(u => u.userId || u.id).filter(id => id);
                         }
+
                     }
                 }
 
@@ -72,18 +73,13 @@ const getStories = async (req, res) => {
                 });
             } catch (err) {
                 console.error("[StoryService] Failed to fetch personalized stories:", err);
-                // Fallback: Get all stories if personalization fails (optional, or return empty)
-                stories = await Story.findAll({
-                    where: { expiresAt: { [Op.gt]: new Date() } },
-                    order: [['createdAt', 'DESC']]
-                });
+                stories = []; // Return empty if check fails, no global fallback
             }
         } else {
-            // Unauthenticated view: all stories
-            stories = await Story.findAll({
-                where: { expiresAt: { [Op.gt]: new Date() } },
-                order: [['createdAt', 'DESC']]
-            });
+            // Unauthenticated view: return empty or global depending on requirement. 
+            // The user wanted consistency, so we'll return empty for guests as well 
+            // unless they specifically want a global story feed.
+            stories = [];
         }
 
         // Enrich with seen/liked status
@@ -123,6 +119,7 @@ const getStories = async (req, res) => {
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
+
 
 const reactToStory = async (req, res) => {
     try {
