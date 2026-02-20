@@ -13,7 +13,7 @@ const options = {
             description: 'API Documentation for Flutter Developers',
         },
         servers: [
-            { url: 'http://192.168.1.5:5000/api/v1', description: 'Local Development Gateway' }
+            { url: 'http://192.168.1.4:5000/api/v1', description: 'Local Development Gateway' }
         ],
     },
     apis: ['./src/swagger/*.js', './index.js'], // Relative to gateway folder
@@ -38,7 +38,7 @@ function generateCurl(method, url, tag, path, body) {
 
 // Generate Markdown
 let md = `# Instagram Clone API Documentation (Flutter)\n\n`;
-md += `**Base URL:** \`http://192.168.1.5:5000/api/v1\`\n\n`;
+md += `**Base URL:** \`http://192.168.1.4:5000/api/v1\`\n\n`;
 md += `**Authentication:** All endpoints (except Auth/Public) typically require a Bearer Token via \`Authorization\` header.\n\n`;
 
 // Tag Order
@@ -122,7 +122,7 @@ tagOrder.forEach(tag => {
         // CURL Example
         // Replace dynamic params :id or {id} with 123 for copy-paste
         let curlPath = endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, '123').replace(/{([a-zA-Z0-9_]+)}/g, '123');
-        const fullUrl = `http://192.168.1.5:5000/api/v1${curlPath}`;
+        const fullUrl = `http://192.168.1.4:5000/api/v1${curlPath}`;
 
         md += `#### Sample Request (CURL)\n\`\`\`bash\n${generateCurl(endpoint.method, fullUrl, tag, endpoint.path, bodyExample)}\n\`\`\`\n\n`;
 
@@ -147,7 +147,7 @@ if (pathsByTag['Uncategorized']) {
         md += `**Endpoint:** \`${endpoint.method} ${endpoint.path}\`\n\n`;
 
         let curlPath = endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, '123').replace(/{([a-zA-Z0-9_]+)}/g, '123');
-        const fullUrl = `http://192.168.1.5:5000/api/v1${curlPath}`;
+        const fullUrl = `http://192.168.1.4:5000/api/v1${curlPath}`;
 
         md += `#### Sample Request\n\`\`\`bash\ncurl -X ${endpoint.method} "${fullUrl}"\n\`\`\`\n\n`;
         md += `---\n\n`;

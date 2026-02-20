@@ -3,7 +3,7 @@
 This document provides a detailed overview of all backend API endpoints across the microservices architecture.
 
 ## **Base URL (Gateway)**
-- **Development**: `http://localhost:5000/api/v1`
+- **Development**: `http://192.168.1.4:5000/api/v1`
 - **Auth required**: Most endpoints require a JWT token in the `Authorization: Bearer <token>` header.
 
 ---

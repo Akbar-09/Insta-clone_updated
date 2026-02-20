@@ -288,6 +288,7 @@ exports.getActivityHighlights = async (req, res) => {
     try {
         const userIdRaw = req.headers['x-user-id'] || req.query.userId;
         const userId = (userIdRaw && !isNaN(userIdRaw)) ? parseInt(userIdRaw) : null;
+        const { sort = 'newest', startDate, endDate } = req.query;
 
         if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized or invalid User ID' });
 

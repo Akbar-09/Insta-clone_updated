@@ -1258,6 +1258,66 @@
           }
         },
         {
+          "name": "GET /logs/:serviceName/:type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/monitoring/logs/:serviceName/:type",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "monitoring",
+                "logs",
+                ":serviceName",
+                ":type"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /statuses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/monitoring/statuses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "monitoring",
+                "statuses"
+              ]
+            }
+          }
+        },
+        {
           "name": "GET /reels",
           "request": {
             "method": "GET",
@@ -2164,7 +2224,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": 76\n}"
+              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": \"temp_user_id\"\n}"
             }
           }
         },
@@ -4791,15 +4851,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/help/api/help/feedback",
+              "raw": "{{baseUrl}}/api/v1/help/feedback",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "help",
-                "api",
                 "help",
                 "feedback"
               ]
@@ -4825,7 +4883,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/help/api/help/search",
+              "raw": "{{baseUrl}}/api/v1/help/search",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -4833,15 +4891,13 @@
                 "api",
                 "v1",
                 "help",
-                "api",
-                "help",
                 "search"
               ]
             }
           }
         },
         {
-          "name": "GET /articles/:slug",
+          "name": "GET /article/:slug",
           "request": {
             "method": "GET",
             "header": [
@@ -4855,7 +4911,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/help/api/help/articles/:slug",
+              "raw": "{{baseUrl}}/api/v1/help/article/:slug",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -4863,10 +4919,36 @@
                 "api",
                 "v1",
                 "help",
-                "api",
-                "help",
-                "articles",
+                "article",
                 ":slug"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /articles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/help/articles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "help",
+                "articles"
               ]
             }
           }
@@ -4886,7 +4968,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/help/api/help/articles/featured",
+              "raw": "{{baseUrl}}/api/v1/help/articles/featured",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -4894,10 +4976,37 @@
                 "api",
                 "v1",
                 "help",
-                "api",
-                "help",
                 "articles",
                 "featured"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /category/:slug",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/help/category/:slug",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "help",
+                "category",
+                ":slug"
               ]
             }
           }
@@ -4917,7 +5026,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/help/api/help/categories",
+              "raw": "{{baseUrl}}/api/v1/help/categories",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -4925,10 +5034,231 @@
                 "api",
                 "v1",
                 "help",
-                "api",
-                "help",
                 "categories"
               ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /article/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/help/admin/article/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "help",
+                "admin",
+                "article",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /article/:id",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/help/admin/article/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "help",
+                "admin",
+                "article",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Ad\",\n  \"budget\": 100,\n  \"duration\": 5\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /articles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/help/admin/articles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "help",
+                "admin",
+                "articles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /article",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/help/admin/article",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "help",
+                "admin",
+                "article"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Ad\",\n  \"budget\": 100,\n  \"duration\": 5\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /category/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/help/admin/category/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "help",
+                "admin",
+                "category",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /category/:id",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/help/admin/category/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "help",
+                "admin",
+                "category",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Ad\",\n  \"budget\": 100,\n  \"duration\": 5\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/help/admin/category",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "help",
+                "admin",
+                "category"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Ad\",\n  \"budget\": 100,\n  \"duration\": 5\n}"
             }
           }
         }
@@ -5470,7 +5800,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": 76\n}"
+              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": \"temp_user_id\"\n}"
             }
           }
         },
@@ -5502,7 +5832,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": 76\n}"
+              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": \"temp_user_id\"\n}"
             }
           }
         },
@@ -5599,7 +5929,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": 76\n}"
+              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": \"temp_user_id\"\n}"
             }
           }
         },
@@ -5633,7 +5963,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": 76\n}"
+              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": \"temp_user_id\"\n}"
             }
           }
         },
@@ -5667,7 +5997,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": 76\n}"
+              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": \"temp_user_id\"\n}"
             }
           }
         },
@@ -5848,7 +6178,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": 76\n}"
+              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": \"temp_user_id\"\n}"
             }
           }
         },
@@ -6860,6 +7190,38 @@
           }
         },
         {
+          "name": "POST /feed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/posts/feed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "posts",
+                "feed"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caption\": \"Test Post\",\n  \"mediaUrl\": \"https://example.com/img.jpg\",\n  \"mediaType\": \"IMAGE\"\n}"
+            }
+          }
+        },
+        {
           "name": "POST /",
           "request": {
             "method": "POST",
@@ -7349,6 +7711,124 @@
       "name": "reel-service",
       "item": [
         {
+          "name": "GET /:id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reels/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reels",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reels/user",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reels",
+                "user"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /:id/bookmark",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reels/:id/bookmark",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reels",
+                ":id",
+                "bookmark"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /:id/bookmark",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reels/:id/bookmark",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reels",
+                ":id",
+                "bookmark"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dummy_field\": \"test\"\n}"
+            }
+          }
+        },
+        {
           "name": "DELETE /:id/like",
           "request": {
             "method": "DELETE",
@@ -7464,6 +7944,34 @@
                 "reels",
                 "activity",
                 "reels"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /saved",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reels/saved",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reels",
+                "saved"
               ]
             }
           }
@@ -8645,6 +9153,36 @@
                 "profile",
                 ":userId",
                 "followers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /:userId/reels",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/profile/:userId/reels",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "profile",
+                ":userId",
+                "reels"
               ]
             }
           }
@@ -10169,7 +10707,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": 76\n}"
+              "raw": "{\n  \"content\": \"Hello message\",\n  \"receiverId\": \"temp_user_id\"\n}"
             }
           }
         },

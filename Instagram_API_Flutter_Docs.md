@@ -1,6 +1,6 @@
 # Instagram Clone API Documentation
 
-**Base URL:** `http://192.168.1.15:5000`
+**Base URL:** `http://192.168.1.4:5000`
 **Auth:** Most endpoints require a JWT token in the `Authorization` header as `Bearer <token>`.
 
 ## Table of Contents
@@ -39,7 +39,7 @@
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -61,7 +61,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/ads/:id/comments/:commentId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/ads/:id/comments/:commentId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -85,7 +85,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/ads/:id/comments/:commentId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/comments" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads/:id/comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -105,7 +105,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/ads/:id/comments" \
+curl -X GET "http://192.168.1.4:5000/api/v1/ads/:id/comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -131,7 +131,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/ads/:id/comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/bookmark" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads/:id/bookmark" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -162,7 +162,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/bookmark" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/like" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads/:id/like" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -184,7 +184,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/like" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/ads/:id/embed" \
+curl -X GET "http://192.168.1.4:5000/api/v1/ads/:id/embed" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -208,7 +208,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/ads/:id/embed" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/toggle-comments" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/ads/:id/toggle-comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -237,7 +237,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/toggle-comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/hide-likes" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/ads/:id/hide-likes" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -268,7 +268,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/hide-likes" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/ads/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -290,7 +290,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/ads/:id" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/ads/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -316,7 +316,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/ads/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads/click" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads/click" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -347,7 +347,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads/click" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads/impression" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads/impression" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -369,7 +369,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads/impression" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/ads/active" \
+curl -X GET "http://192.168.1.4:5000/api/v1/ads/active" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -386,7 +386,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/ads/active" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/ads/eligible-content" \
+curl -X GET "http://192.168.1.4:5000/api/v1/ads/eligible-content" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -412,7 +412,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/ads/eligible-content" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/publish" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads/:id/publish" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -443,7 +443,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/publish" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/budget" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/ads/:id/budget" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -474,7 +474,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/budget" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/targeting" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/ads/:id/targeting" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -505,7 +505,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/targeting" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/details" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/ads/:id/details" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -536,7 +536,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/ads/:id/details" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/boost-content" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads/:id/boost-content" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -567,7 +567,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/boost-content" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/media" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads/:id/media" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -598,7 +598,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads/:id/media" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/ads/draft" \
+curl -X POST "http://192.168.1.4:5000/api/v1/ads/draft" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -622,7 +622,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/ads/draft" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/reels" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/users/:userId/reels" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -639,7 +639,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/reels" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/posts" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/users/:userId/posts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -656,7 +656,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/posts" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/following" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/users/:userId/following" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -673,7 +673,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/following" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/followers" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/users/:userId/followers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -690,7 +690,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/followers" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/details" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/users/:userId/details" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -707,7 +707,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/users/:userId/details" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/users/:userId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/users/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -733,7 +733,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/users/:userId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/users/:userId/unban" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/users/:userId/unban" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -764,7 +764,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/users/:userId/unban" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/users/:userId/ban" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/users/:userId/ban" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -786,7 +786,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/users/:userId/ban" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/users" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/users" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -812,7 +812,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/users" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/admin/settings" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/admin/settings" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -834,7 +834,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/admin/settings" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/settings" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/settings" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -860,7 +860,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/settings" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/admin/settings/profile" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/admin/settings/profile" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -882,7 +882,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/admin/settings/profile" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/settings/profile" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/settings/profile" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -907,7 +907,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/settings/profile" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/admin/reports/:id/ban-user" \
+curl -X POST "http://192.168.1.4:5000/api/v1/admin/reports/:id/ban-user" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -936,7 +936,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/admin/reports/:id/ban-user" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/admin/reports/:id/ignore" \
+curl -X POST "http://192.168.1.4:5000/api/v1/admin/reports/:id/ignore" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -957,7 +957,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/admin/reports/:id/ignore" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/reports/:id" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/reports/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -974,7 +974,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/reports/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/reports" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/reports" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -991,7 +991,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/reports" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/reports/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/reports/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1008,7 +1008,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/reports/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/reels" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/reels" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1025,7 +1025,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/reels" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/posts" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/posts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1042,7 +1042,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/posts" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/comments/:commentId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/comments/:commentId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1059,7 +1059,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/comments/:commentId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/stories/:storyId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/stories/:storyId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1076,7 +1076,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/stories/:storyId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/reels/:reelId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/reels/:reelId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1102,7 +1102,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/reels/:reelId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/posts/:postId/hide" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/posts/:postId/hide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1124,7 +1124,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/posts/:postId/hide" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/posts/:postId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/posts/:postId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1150,7 +1150,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/posts/:postId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/admin/default-avatars" \
+curl -X POST "http://192.168.1.4:5000/api/v1/admin/default-avatars" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1172,7 +1172,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/admin/default-avatars" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/default-avatars" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/default-avatars" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1198,7 +1198,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/default-avatars" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/languages/:id/set-default" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/languages/:id/set-default" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1229,7 +1229,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/languages/:id/set-default" 
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/languages/:id/disable" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/languages/:id/disable" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1260,7 +1260,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/languages/:id/disable" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/languages/:id/enable" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/languages/:id/enable" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1282,7 +1282,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/languages/:id/enable" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/languages" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/languages" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1308,7 +1308,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/languages" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/admin/feature" \
+curl -X POST "http://192.168.1.4:5000/api/v1/admin/feature" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1339,7 +1339,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/admin/feature" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/:id/block" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/:id/block" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1361,7 +1361,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/:id/block" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/trending" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/trending" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1378,7 +1378,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/trending" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1395,7 +1395,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/hashtags/:id" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/hashtags/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1421,7 +1421,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/hashtags/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/hashtags/:id/toggle-visibility" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/hashtags/:id/toggle-visibility" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1443,7 +1443,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/hashtags/:id/toggle-visibil
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/hashtags/trending" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/hashtags/trending" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1460,7 +1460,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/hashtags/trending" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/hashtags" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/hashtags" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1477,7 +1477,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/hashtags" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/geo-users" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/analytics/geo-users" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1494,7 +1494,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/geo-users" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/explore/performance-metrics" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/explore/performance-metrics" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1511,7 +1511,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/explore/performance-metrics" 
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/explore/category-distribution" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/explore/category-distribution" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1528,7 +1528,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/explore/category-distribution
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/explore/trending-topics/:topicId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/explore/trending-topics/:topicId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1554,7 +1554,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/explore/trending-topics/:t
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/admin/explore/trending-topics" \
+curl -X POST "http://192.168.1.4:5000/api/v1/admin/explore/trending-topics" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1576,7 +1576,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/admin/explore/trending-topics" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/explore/trending-topics" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/explore/trending-topics" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1602,7 +1602,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/explore/trending-topics" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/explore/algorithm" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/explore/algorithm" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1624,7 +1624,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/explore/algorithm" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/explore/algorithm" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/explore/algorithm" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1649,7 +1649,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/explore/algorithm" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/messages/:conversationId/flag" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/messages/:conversationId/flag" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1670,7 +1670,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/messages/:conversationId/fl
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/messages/reported" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/messages/reported" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1696,7 +1696,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/messages/reported" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/admin/dm-oversight/conversations/:conversationId/ban-users" \
+curl -X POST "http://192.168.1.4:5000/api/v1/admin/dm-oversight/conversations/:conversationId/ban-users" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1727,7 +1727,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/admin/dm-oversight/conversations/:
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/dm-oversight/conversations/:conversationId/mark-safe" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/dm-oversight/conversations/:conversationId/mark-safe" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -1749,7 +1749,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/dm-oversight/conversations/
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dm-oversight/conversations/:conversationId/transcript" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dm-oversight/conversations/:conversationId/transcript" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1766,7 +1766,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dm-oversight/conversations/:c
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dm-oversight/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dm-oversight/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1783,7 +1783,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dm-oversight/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dm-oversight/conversations" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dm-oversight/conversations" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1800,7 +1800,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dm-oversight/conversations" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/recent-posts" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dashboard/recent-posts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1817,7 +1817,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/recent-posts" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/recent-users" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dashboard/recent-users" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1834,7 +1834,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/recent-users" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/login-methods" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dashboard/login-methods" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1851,7 +1851,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/login-methods" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/media-distribution" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dashboard/media-distribution" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1868,7 +1868,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/media-distribution"
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/user-growth" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dashboard/user-growth" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1885,7 +1885,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/user-growth" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/activity-feed" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dashboard/activity-feed" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1902,7 +1902,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/activity-feed" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/kpis" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/dashboard/kpis" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1919,7 +1919,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/dashboard/kpis" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/moderation/stories/:storyId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/moderation/stories/:storyId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1936,7 +1936,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/moderation/stories/:storyI
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/stories/:storyId/interactions" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/moderation/stories/:storyId/interactions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1953,7 +1953,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/stories/:storyId/i
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/stories" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/moderation/stories" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1970,7 +1970,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/stories" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/moderation/reels/:reelId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/moderation/reels/:reelId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -1996,7 +1996,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/moderation/reels/:reelId" 
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/moderation/reels/:reelId/unhide" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/moderation/reels/:reelId/unhide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2027,7 +2027,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/moderation/reels/:reelId/un
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/moderation/reels/:reelId/hide" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/moderation/reels/:reelId/hide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2049,7 +2049,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/moderation/reels/:reelId/hi
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/reels/:reelId/interactions" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/moderation/reels/:reelId/interactions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2066,7 +2066,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/reels/:reelId/inte
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/reels" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/moderation/reels" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2083,7 +2083,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/reels" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/moderation/posts/:postId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/moderation/posts/:postId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2109,7 +2109,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/moderation/posts/:postId" 
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/moderation/posts/:postId/unhide" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/moderation/posts/:postId/unhide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2140,7 +2140,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/moderation/posts/:postId/un
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/moderation/posts/:postId/hide" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/moderation/posts/:postId/hide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2162,7 +2162,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/moderation/posts/:postId/hi
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/posts/:postId/interactions" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/moderation/posts/:postId/interactions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2179,7 +2179,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/posts/:postId/inte
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/posts" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/moderation/posts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2196,7 +2196,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/moderation/posts" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/comments/:commentId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/comments/:commentId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2220,7 +2220,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/comments/:commentId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/comments/:commentId/remove" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/comments/:commentId/remove" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2247,7 +2247,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/comments/:commentId/remove"
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/comments/:commentId/approve" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/comments/:commentId/approve" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2267,7 +2267,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/comments/:commentId/approve
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/comments/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/comments/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2284,7 +2284,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/comments/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/comments" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2310,7 +2310,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/cms/pages/:id" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/cms/pages/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2332,7 +2332,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/cms/pages/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/cms/pages" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/cms/pages" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2349,7 +2349,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/cms/pages" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/avatars/:avatarId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/avatars/:avatarId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2375,7 +2375,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/avatars/:avatarId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/avatars/:avatarId/reject" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/avatars/:avatarId/reject" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2406,7 +2406,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/avatars/:avatarId/reject" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/avatars/:avatarId/approve" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/avatars/:avatarId/approve" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2428,7 +2428,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/avatars/:avatarId/approve" 
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/avatars/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/avatars/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2445,7 +2445,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/avatars/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/avatars" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/avatars" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2462,7 +2462,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/avatars" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/auth/roles/:id" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/auth/roles/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2488,7 +2488,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/auth/roles/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/admin/auth/roles/:id" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/admin/auth/roles/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2519,7 +2519,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/admin/auth/roles/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/admin/auth/roles" \
+curl -X POST "http://192.168.1.4:5000/api/v1/admin/auth/roles" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2541,7 +2541,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/admin/auth/roles" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/auth/roles" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/auth/roles" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2558,7 +2558,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/auth/roles" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/auth/admins/:id" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/admin/auth/admins/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2584,7 +2584,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/admin/auth/admins/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/auth/admins/:id/role" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/admin/auth/admins/:id/role" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2606,7 +2606,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/admin/auth/admins/:id/role" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/auth/admins" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/auth/admins" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2623,7 +2623,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/auth/admins" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/auth/me" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/auth/me" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2650,7 +2650,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/auth/me" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/admin/auth/login" \
+curl -X POST "http://192.168.1.4:5000/api/v1/admin/auth/login" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2673,7 +2673,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/admin/auth/login" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/audit" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/audit" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2690,7 +2690,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/audit" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/active-hours" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/active-hours" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2707,7 +2707,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/active-hours" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/countries" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/countries" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2724,7 +2724,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/countries" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/active-hours" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/analytics/active-hours" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2741,7 +2741,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/active-hours" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/countries" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/analytics/countries" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2758,7 +2758,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/countries" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/top-content" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/analytics/top-content" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2775,7 +2775,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/top-content" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/engagement-trends" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/analytics/engagement-trends" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2792,7 +2792,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/engagement-trends" 
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/user-acquisition" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/analytics/user-acquisition" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2809,7 +2809,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/user-acquisition" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/summary" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/analytics/summary" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2826,7 +2826,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/analytics/summary" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/notifications/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/notifications/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2843,7 +2843,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/notifications/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/admin/notifications/history" \
+curl -X GET "http://192.168.1.4:5000/api/v1/admin/notifications/history" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2869,7 +2869,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/admin/notifications/history" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/admin/notifications/global" \
+curl -X POST "http://192.168.1.4:5000/api/v1/admin/notifications/global" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2893,7 +2893,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/admin/notifications/global" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/auth/history" \
+curl -X GET "http://192.168.1.4:5000/api/v1/auth/history" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2910,7 +2910,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/auth/history" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/auth/me" \
+curl -X GET "http://192.168.1.4:5000/api/v1/auth/me" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -2934,7 +2934,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/auth/me" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/auth/logout" \
+curl -X POST "http://192.168.1.4:5000/api/v1/auth/logout" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2961,7 +2961,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/auth/logout" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/auth/reset-password/verify" \
+curl -X POST "http://192.168.1.4:5000/api/v1/auth/reset-password/verify" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -2988,7 +2988,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/auth/reset-password/verify" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/auth/reset-password/request" \
+curl -X POST "http://192.168.1.4:5000/api/v1/auth/reset-password/request" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3008,7 +3008,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/auth/reset-password/request" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/auth/check-email" \
+curl -X GET "http://192.168.1.4:5000/api/v1/auth/check-email" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3025,7 +3025,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/auth/check-email" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/auth/check-username" \
+curl -X GET "http://192.168.1.4:5000/api/v1/auth/check-username" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3052,7 +3052,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/auth/check-username" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/auth/login" \
+curl -X POST "http://192.168.1.4:5000/api/v1/auth/login" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3085,7 +3085,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/auth/login" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/auth/signup" \
+curl -X POST "http://192.168.1.4:5000/api/v1/auth/signup" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3115,7 +3115,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/auth/signup" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/auth/register" \
+curl -X POST "http://192.168.1.4:5000/api/v1/auth/register" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3137,7 +3137,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/auth/register" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/comments/internal/post/:postId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/comments/internal/post/:postId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3154,7 +3154,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/comments/internal/post/:postId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/comments/internal/:commentId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/comments/internal/:commentId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3178,7 +3178,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/comments/internal/:commentId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/comments/internal/:commentId/remove" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/comments/internal/:commentId/remove" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3205,7 +3205,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/comments/internal/:commentId/remo
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/comments/internal/:commentId/approve" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/comments/internal/:commentId/approve" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3225,7 +3225,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/comments/internal/:commentId/appr
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/comments/internal/:commentId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/comments/internal/:commentId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3242,7 +3242,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/comments/internal/:commentId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/comments/internal/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/comments/internal/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3259,7 +3259,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/comments/internal/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/comments/internal/list" \
+curl -X GET "http://192.168.1.4:5000/api/v1/comments/internal/list" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3276,7 +3276,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/comments/internal/list" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/comments/activity/reviews" \
+curl -X GET "http://192.168.1.4:5000/api/v1/comments/activity/reviews" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3293,7 +3293,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/comments/activity/reviews" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/comments/activity/comments" \
+curl -X GET "http://192.168.1.4:5000/api/v1/comments/activity/comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3317,7 +3317,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/comments/activity/comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/comments/check-comments" \
+curl -X POST "http://192.168.1.4:5000/api/v1/comments/check-comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3337,7 +3337,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/comments/check-comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/comments/:id/like" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/comments/:id/like" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3361,7 +3361,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/comments/:id/like" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/comments/:id/like" \
+curl -X POST "http://192.168.1.4:5000/api/v1/comments/:id/like" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3381,7 +3381,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/comments/:id/like" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/comments/:id" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/comments/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3398,7 +3398,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/comments/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/comments" \
+curl -X GET "http://192.168.1.4:5000/api/v1/comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3422,7 +3422,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/comments" \
+curl -X POST "http://192.168.1.4:5000/api/v1/comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3444,7 +3444,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/feed" \
+curl -X GET "http://192.168.1.4:5000/api/v1/feed" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3470,7 +3470,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/feed" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/help/api/help/feedback" \
+curl -X POST "http://192.168.1.4:5000/api/v1/help/api/help/feedback" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3490,7 +3490,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/help/api/help/feedback" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/help/api/help/search" \
+curl -X GET "http://192.168.1.4:5000/api/v1/help/api/help/search" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3507,7 +3507,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/help/api/help/search" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/help/api/help/articles/:slug" \
+curl -X GET "http://192.168.1.4:5000/api/v1/help/api/help/articles/:slug" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3524,7 +3524,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/help/api/help/articles/:slug" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/help/api/help/articles/featured" \
+curl -X GET "http://192.168.1.4:5000/api/v1/help/api/help/articles/featured" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3541,7 +3541,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/help/api/help/articles/featured" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/help/api/help/categories" \
+curl -X GET "http://192.168.1.4:5000/api/v1/help/api/help/categories" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3560,7 +3560,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/help/api/help/categories" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/insights/heatmap" \
+curl -X GET "http://192.168.1.4:5000/api/v1/insights/heatmap" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3577,7 +3577,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/insights/heatmap" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/insights/content" \
+curl -X GET "http://192.168.1.4:5000/api/v1/insights/content" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3594,7 +3594,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/insights/content" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/insights/account" \
+curl -X GET "http://192.168.1.4:5000/api/v1/insights/account" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3620,7 +3620,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/insights/account" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/live/webhook/done" \
+curl -X POST "http://192.168.1.4:5000/api/v1/live/webhook/done" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3647,7 +3647,7 @@ Error
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/live/webhook/publish" \
+curl -X POST "http://192.168.1.4:5000/api/v1/live/webhook/publish" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3674,7 +3674,7 @@ Error
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/live/:id/chat" \
+curl -X POST "http://192.168.1.4:5000/api/v1/live/:id/chat" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3701,7 +3701,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/live/:id/chat" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/live/:id/end" \
+curl -X POST "http://192.168.1.4:5000/api/v1/live/:id/end" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3721,7 +3721,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/live/:id/end" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/live/:id" \
+curl -X GET "http://192.168.1.4:5000/api/v1/live/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3738,7 +3738,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/live/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/live/feed" \
+curl -X GET "http://192.168.1.4:5000/api/v1/live/feed" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3762,7 +3762,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/live/feed" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/live/schedule" \
+curl -X POST "http://192.168.1.4:5000/api/v1/live/schedule" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3789,7 +3789,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/live/schedule" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/live/go-live" \
+curl -X POST "http://192.168.1.4:5000/api/v1/live/go-live" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3811,7 +3811,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/live/go-live" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/media/files/*" \
+curl -X GET "http://192.168.1.4:5000/api/v1/media/files/*" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3835,7 +3835,7 @@ spawnSync C:\WINDOWS\system32\cmd.exe ETIMEDOUT
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/media/finalize" \
+curl -X POST "http://192.168.1.4:5000/api/v1/media/finalize" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3862,7 +3862,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/media/finalize" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/media/presigned-url" \
+curl -X POST "http://192.168.1.4:5000/api/v1/media/presigned-url" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3882,7 +3882,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/media/presigned-url" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/media/status/:id" \
+curl -X GET "http://192.168.1.4:5000/api/v1/media/status/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -3908,7 +3908,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/media/status/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/media/upload" \
+curl -X POST "http://192.168.1.4:5000/api/v1/media/upload" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3940,7 +3940,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/media/upload" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/messages/seen" \
+curl -X POST "http://192.168.1.4:5000/api/v1/messages/seen" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3969,7 +3969,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/messages/seen" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/messages/send" \
+curl -X POST "http://192.168.1.4:5000/api/v1/messages/send" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -3990,7 +3990,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/messages/send" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/messages/conversations/:conversationId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/messages/conversations/:conversationId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4015,7 +4015,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/messages/conversations/:conversa
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/messages/conversations/:conversationId/report" \
+curl -X POST "http://192.168.1.4:5000/api/v1/messages/conversations/:conversationId/report" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4044,7 +4044,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/messages/conversations/:conversati
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/messages/conversations/:conversationId/unblock" \
+curl -X POST "http://192.168.1.4:5000/api/v1/messages/conversations/:conversationId/unblock" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4073,7 +4073,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/messages/conversations/:conversati
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/messages/conversations/:conversationId/block" \
+curl -X POST "http://192.168.1.4:5000/api/v1/messages/conversations/:conversationId/block" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4102,7 +4102,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/messages/conversations/:conversati
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/messages/conversations/:conversationId/mute" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/messages/conversations/:conversationId/mute" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4123,7 +4123,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/messages/conversations/:conversat
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/messages/conversations/:conversationId/details" \
+curl -X GET "http://192.168.1.4:5000/api/v1/messages/conversations/:conversationId/details" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4140,7 +4140,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/messages/conversations/:conversatio
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/messages/conversations/:conversationId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/messages/conversations/:conversationId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4157,7 +4157,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/messages/conversations/:conversatio
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/messages/conversations" \
+curl -X GET "http://192.168.1.4:5000/api/v1/messages/conversations" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4174,7 +4174,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/messages/conversations" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/messages/activity/story-replies" \
+curl -X GET "http://192.168.1.4:5000/api/v1/messages/activity/story-replies" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4191,7 +4191,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/messages/activity/story-replies" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/messages/internal/conversations/:conversationId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/messages/internal/conversations/:conversationId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4216,7 +4216,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/messages/internal/conversations/:co
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/messages/internal/conversations/:conversationId/mark-safe" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/messages/internal/conversations/:conversationId/mark-safe" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4237,7 +4237,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/messages/internal/conversations/:
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/messages/internal/conversations/:conversationId/transcript" \
+curl -X GET "http://192.168.1.4:5000/api/v1/messages/internal/conversations/:conversationId/transcript" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4254,7 +4254,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/messages/internal/conversations/:co
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/messages/internal/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/messages/internal/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4271,7 +4271,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/messages/internal/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/messages/internal/conversations" \
+curl -X GET "http://192.168.1.4:5000/api/v1/messages/internal/conversations" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4290,7 +4290,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/messages/internal/conversations" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/notifications/admin/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/notifications/admin/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4307,7 +4307,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/notifications/admin/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/notifications/admin/history" \
+curl -X GET "http://192.168.1.4:5000/api/v1/notifications/admin/history" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4333,7 +4333,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/notifications/admin/history" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/notifications/admin/broadcast" \
+curl -X POST "http://192.168.1.4:5000/api/v1/notifications/admin/broadcast" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4364,7 +4364,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/notifications/admin/broadcast" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/notifications/read-all" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/notifications/read-all" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4395,7 +4395,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/notifications/read-all" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/notifications/:id/read" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/notifications/:id/read" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4417,7 +4417,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/notifications/:id/read" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/notifications/unread-count" \
+curl -X GET "http://192.168.1.4:5000/api/v1/notifications/unread-count" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4434,7 +4434,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/notifications/unread-count" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/notifications" \
+curl -X GET "http://192.168.1.4:5000/api/v1/notifications" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4458,7 +4458,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/notifications" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/notifications/settings" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/notifications/settings" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4478,7 +4478,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/notifications/settings" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/notifications/settings" \
+curl -X GET "http://192.168.1.4:5000/api/v1/notifications/settings" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4506,7 +4506,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/notifications/settings" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/posts/internal/reports/:id/status" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/posts/internal/reports/:id/status" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4528,7 +4528,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/posts/internal/reports/:id/status
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/reports/:id" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/reports/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4545,7 +4545,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/reports/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/reports" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/reports" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4562,7 +4562,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/reports" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/reports/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/reports/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4579,7 +4579,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/reports/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/posts/:id/bookmark" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/posts/:id/bookmark" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4605,7 +4605,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/posts/:id/bookmark" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/posts/:id/bookmark" \
+curl -X POST "http://192.168.1.4:5000/api/v1/posts/:id/bookmark" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4636,7 +4636,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/posts/:id/bookmark" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/posts/:id/report" \
+curl -X POST "http://192.168.1.4:5000/api/v1/posts/:id/report" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4665,7 +4665,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/posts/:id/report" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/posts/:id/toggle-comments" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/posts/:id/toggle-comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4694,7 +4694,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/posts/:id/toggle-comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/posts/:id/hide-likes" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/posts/:id/hide-likes" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4725,7 +4725,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/posts/:id/hide-likes" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/posts/:id" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/posts/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4747,7 +4747,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/posts/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/posts/:id" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/posts/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4764,7 +4764,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/posts/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/:id" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4781,7 +4781,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/:id/embed" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/:id/embed" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4798,7 +4798,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/:id/embed" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/activity/posts" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/activity/posts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4815,7 +4815,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/activity/posts" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/activity/likes" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/activity/likes" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4841,7 +4841,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/activity/likes" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/posts/check-likes" \
+curl -X POST "http://192.168.1.4:5000/api/v1/posts/check-likes" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4863,7 +4863,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/posts/check-likes" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/saved" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/saved" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4880,7 +4880,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/saved" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/posts/:id/like" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/posts/:id/like" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4906,7 +4906,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/posts/:id/like" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/posts/:id/like" \
+curl -X POST "http://192.168.1.4:5000/api/v1/posts/:id/like" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4928,7 +4928,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/posts/:id/like" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4945,7 +4945,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/explore" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/explore" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -4971,7 +4971,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/explore" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/posts" \
+curl -X POST "http://192.168.1.4:5000/api/v1/posts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -4993,7 +4993,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/posts" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/:postId/bookmarks" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/:postId/bookmarks" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5010,7 +5010,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/:postId/bookmarks" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/:postId/likes" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/:postId/likes" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5027,7 +5027,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/:postId/likes" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/:postId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/:postId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5044,7 +5044,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/:postId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/posts/internal/:postId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/posts/internal/:postId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5070,7 +5070,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/posts/internal/:postId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/posts/internal/:postId/unhide" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/posts/internal/:postId/unhide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5101,7 +5101,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/posts/internal/:postId/unhide" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/posts/internal/:postId/hide" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/posts/internal/:postId/hide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5123,7 +5123,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/posts/internal/:postId/hide" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/user/:userId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/user/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5140,7 +5140,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/user/:userId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/stats/user/:userId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/stats/user/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5157,7 +5157,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/stats/user/:userId" 
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/list" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/list" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5174,7 +5174,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/list" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/recent" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/recent" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5191,7 +5191,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/recent" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/top" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/top" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5208,7 +5208,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/top" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/engagement/trends" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/engagement/trends" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5225,7 +5225,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/engagement/trends" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/stats/engagement" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/stats/engagement" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5242,7 +5242,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/stats/engagement" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/stats/overall" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/stats/overall" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5259,7 +5259,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/stats/overall" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/posts/internal/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5278,7 +5278,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/posts/internal/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/reels/:id/like" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/reels/:id/like" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5302,7 +5302,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/reels/:id/like" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/reels/:id/like" \
+curl -X POST "http://192.168.1.4:5000/api/v1/reels/:id/like" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5322,7 +5322,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/reels/:id/like" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/activity/likes" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/activity/likes" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5339,7 +5339,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/activity/likes" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/activity/reels" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/activity/reels" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5356,7 +5356,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/activity/reels" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5380,7 +5380,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/reels" \
+curl -X POST "http://192.168.1.4:5000/api/v1/reels" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5400,7 +5400,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/reels" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/:reelId/likes" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/internal/:reelId/likes" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5417,7 +5417,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/:reelId/likes" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/:reelId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/internal/:reelId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5434,7 +5434,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/:reelId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/recent" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/internal/recent" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5451,7 +5451,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/recent" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/reels/internal/:reelId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/reels/internal/:reelId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5475,7 +5475,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/reels/internal/:reelId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/reels/internal/:reelId/unhide" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/reels/internal/:reelId/unhide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5502,7 +5502,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/reels/internal/:reelId/unhide" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/reels/internal/:reelId/hide" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/reels/internal/:reelId/hide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5522,7 +5522,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/reels/internal/:reelId/hide" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/list" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/internal/list" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5539,7 +5539,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/list" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/user/:userId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/internal/user/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5556,7 +5556,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/user/:userId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/stats/user/:userId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/internal/stats/user/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5573,7 +5573,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/stats/user/:userId" 
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/stats/overall" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/internal/stats/overall" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5590,7 +5590,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/stats/overall" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/reels/internal/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5609,7 +5609,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/reels/internal/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/search/users" \
+curl -X GET "http://192.168.1.4:5000/api/v1/search/users" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5626,7 +5626,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/search/users" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/search" \
+curl -X GET "http://192.168.1.4:5000/api/v1/search" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5645,7 +5645,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/search" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/stories/:id/react" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/stories/:id/react" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5669,7 +5669,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/stories/:id/react" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/stories/:id/react" \
+curl -X POST "http://192.168.1.4:5000/api/v1/stories/:id/react" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5696,7 +5696,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/stories/:id/react" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/stories/:id/view" \
+curl -X POST "http://192.168.1.4:5000/api/v1/stories/:id/view" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5724,7 +5724,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/stories/:id/view" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/stories/:id/report" \
+curl -X POST "http://192.168.1.4:5000/api/v1/stories/:id/report" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5745,7 +5745,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/stories/:id/report" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/stories/:id" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/stories/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5762,7 +5762,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/stories/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/activity/story-replies" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/activity/story-replies" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5779,7 +5779,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/activity/story-replies" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/archive" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/archive" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5796,7 +5796,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/archive" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5820,7 +5820,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/stories" \
+curl -X POST "http://192.168.1.4:5000/api/v1/stories" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5840,7 +5840,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/stories" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/stories/internal/:storyId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/stories/internal/:storyId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5857,7 +5857,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/stories/internal/:storyId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/internal/:storyId/likes" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/internal/:storyId/likes" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5874,7 +5874,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/internal/:storyId/likes" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/internal/:storyId/views" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/internal/:storyId/views" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5891,7 +5891,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/internal/:storyId/views" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/internal/list" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/internal/list" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5908,7 +5908,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/internal/list" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/internal/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/internal/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5925,7 +5925,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/internal/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/stories/highlights/:highlightId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/stories/highlights/:highlightId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5949,7 +5949,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/stories/highlights/:highlightId"
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/stories/highlights/:highlightId" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/stories/highlights/:highlightId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -5969,7 +5969,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/stories/highlights/:highlightId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/highlights/:highlightId/stories" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/highlights/:highlightId/stories" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -5986,7 +5986,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/highlights/:highlightId/sto
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/highlights/:userId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/highlights/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6010,7 +6010,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/highlights/:userId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/stories/highlights" \
+curl -X POST "http://192.168.1.4:5000/api/v1/stories/highlights" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6030,7 +6030,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/stories/highlights" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/activity/highlights" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/activity/highlights" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6047,7 +6047,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/activity/highlights" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/stories/stories/me" \
+curl -X GET "http://192.168.1.4:5000/api/v1/stories/stories/me" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6066,7 +6066,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/stories/stories/me" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/followers/:followerId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/profile/followers/:followerId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6083,7 +6083,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/followers/:followe
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/:userId/following" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/:userId/following" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6100,7 +6100,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/:userId/following" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/:userId/followers" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/:userId/followers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6117,7 +6117,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/:userId/followers" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/:userId/posts" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/:userId/posts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6134,7 +6134,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/:userId/posts" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/:username" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/:username" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6151,7 +6151,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/:username" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/activity/account-history" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/activity/account-history" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6175,7 +6175,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/activity/account-hist
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/batch" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/batch" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6195,7 +6195,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/batch" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/suggestions" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/suggestions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6212,7 +6212,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/suggestions" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/me/saved" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/me/saved" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6229,7 +6229,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/me/saved" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/profile-photo" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/profile/profile-photo" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6253,7 +6253,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/profile-photo" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/profile-photo" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/profile-photo" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6280,7 +6280,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/profile-photo" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/users/profile/me" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/users/profile/me" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6300,7 +6300,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/users/profile/me" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/me" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/me" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6324,7 +6324,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/me" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/help/feedback" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/help/feedback" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6344,7 +6344,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/help/feedback" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/help/support-requests" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/help/support-requests" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6361,7 +6361,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/help/support-requests
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/help/feature-limits" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/help/feature-limits" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6378,7 +6378,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/help/feature-limits" 
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/help/violations" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/help/violations" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6395,7 +6395,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/help/violations" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/help/account-status" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/help/account-status" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6419,7 +6419,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/help/account-status" 
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/apps/:id/revoke" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/settings/apps/:id/revoke" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6439,7 +6439,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/apps/:id/r
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/apps" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/apps" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6463,7 +6463,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/apps" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/general" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/settings/general" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6483,7 +6483,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/general" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/general" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/general" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6500,7 +6500,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/general" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/subscriptions" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/subscriptions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6524,7 +6524,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/subscription
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/like-share" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/settings/like-share" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6544,7 +6544,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/like-share
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/like-share" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/like-share" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6568,7 +6568,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/like-share" 
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/content-preferences" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/settings/content-preferences" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6588,7 +6588,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/content-pr
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/content-preferences" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/content-preferences" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6605,7 +6605,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/content-pref
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/settings/muted/:userId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/profile/settings/muted/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6629,7 +6629,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/settings/muted/:us
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/settings/muted/:userId" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/settings/muted/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6649,7 +6649,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/settings/muted/:user
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/muted" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/muted" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6666,7 +6666,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/muted" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/settings/hidden-words/words/:id" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/profile/settings/hidden-words/words/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6690,7 +6690,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/settings/hidden-wo
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/settings/hidden-words/words" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/settings/hidden-words/words" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6717,7 +6717,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/settings/hidden-word
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/users/profile/settings/hidden-words" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/users/profile/settings/hidden-words" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6737,7 +6737,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/users/profile/settings/hidden-words
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/hidden-words" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/hidden-words" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6754,7 +6754,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/hidden-words
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/settings/restricted/:userId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/profile/settings/restricted/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6778,7 +6778,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/settings/restricte
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/settings/restricted/:userId" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/settings/restricted/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6798,7 +6798,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/settings/restricted/
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/restricted" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/restricted" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6822,7 +6822,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/restricted" 
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/users/profile/settings/sharing" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/users/profile/settings/sharing" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6842,7 +6842,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/users/profile/settings/sharing" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/sharing" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/sharing" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6866,7 +6866,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/sharing" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PUT "http://192.168.1.15:5000/api/v1/users/profile/settings/comments" \
+curl -X PUT "http://192.168.1.4:5000/api/v1/users/profile/settings/comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6886,7 +6886,7 @@ curl -X PUT "http://192.168.1.15:5000/api/v1/users/profile/settings/comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/comments" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/comments" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6910,7 +6910,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/comments" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/tags/:id/remove" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/tags/:id/remove" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6937,7 +6937,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/tags/:id/remove" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/tags/:id/approve" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/tags/:id/approve" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -6957,7 +6957,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/tags/:id/approve" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/tags/pending" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/tags/pending" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -6981,7 +6981,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/tags/pending" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/tags-mentions" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/settings/tags-mentions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7001,7 +7001,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/tags-menti
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/tags-mentions" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/tags-mentions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7025,7 +7025,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/tags-mention
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/activity-status" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/settings/activity-status" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7045,7 +7045,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/activity-s
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/activity-status" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/activity-status" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7069,7 +7069,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/activity-sta
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/story-replies" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/settings/story-replies" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7089,7 +7089,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/story-repl
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/story-replies" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/story-replies" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7114,7 +7114,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/story-replie
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/messages" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/profile/settings/messages" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7135,7 +7135,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/profile/settings/messages" 
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/messages" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/settings/messages" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7152,7 +7152,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/settings/messages" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/story-privacy/unhide/:hiddenUserId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/profile/story-privacy/unhide/:hiddenUserId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7176,7 +7176,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/story-privacy/unhi
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/story-privacy/hide" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/story-privacy/hide" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7196,7 +7196,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/story-privacy/hide" 
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/story-privacy/hidden-users" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/story-privacy/hidden-users" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7213,7 +7213,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/story-privacy/hidden-
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/unblock/:userId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/profile/unblock/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7237,7 +7237,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/unblock/:userId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/block/:userId" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/block/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7257,7 +7257,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/block/:userId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/blocked-users" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/blocked-users" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7274,7 +7274,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/blocked-users" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/close-friends/:friendId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/profile/close-friends/:friendId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7298,7 +7298,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/profile/close-friends/:fri
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/close-friends/:friendId" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/close-friends/:friendId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7318,7 +7318,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/close-friends/:frien
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/close-friends" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/close-friends" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7335,7 +7335,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/close-friends" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/reports/me" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/profile/reports/me" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7360,7 +7360,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/profile/reports/me" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/report-problem" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/profile/report-problem" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7381,7 +7381,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/profile/report-problem" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/:userId/follow-counts" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/:userId/follow-counts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7398,7 +7398,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/:userId/follow-count
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/:userId" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7422,7 +7422,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/:userId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/internal/bulk" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/internal/bulk" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7442,7 +7442,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/internal/bulk" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/recent" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/recent" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7459,7 +7459,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/recent" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/internal/:userId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/internal/:userId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7483,7 +7483,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/internal/:userId" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/:userId/unban" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/internal/:userId/unban" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7510,7 +7510,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/:userId/unban" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/:userId/ban" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/internal/:userId/ban" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7530,7 +7530,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/:userId/ban" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/list" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/list" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7547,7 +7547,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/list" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/countries" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/countries" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7564,7 +7564,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/countries" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/login-methods" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/login-methods" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7581,7 +7581,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/login-methods" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/growth" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/growth" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7598,7 +7598,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/growth" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/internal/avatars/:avatarId" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/internal/avatars/:avatarId" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7622,7 +7622,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/internal/avatars/:avatarId
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/avatars/:avatarId/reject" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/internal/avatars/:avatarId/reject" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7649,7 +7649,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/avatars/:avatarId/
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/avatars/:avatarId/approve" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/internal/avatars/:avatarId/approve" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7669,7 +7669,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/avatars/:avatarId/
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/avatars/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/avatars/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7686,7 +7686,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/avatars/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/avatars" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/avatars" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7703,7 +7703,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/avatars" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7728,7 +7728,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/reports/:id/status" \
+curl -X PATCH "http://192.168.1.4:5000/api/v1/users/internal/reports/:id/status" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7749,7 +7749,7 @@ curl -X PATCH "http://192.168.1.15:5000/api/v1/users/internal/reports/:id/status
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/reports/:id" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/reports/:id" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7766,7 +7766,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/reports/:id" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/reports" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/reports" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7783,7 +7783,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/reports" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/reports/stats" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/internal/reports/stats" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7807,7 +7807,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/internal/reports/stats" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/requests/reject" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/requests/reject" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7834,7 +7834,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/requests/reject" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/requests/accept" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/requests/accept" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{
@@ -7854,7 +7854,7 @@ curl -X POST "http://192.168.1.15:5000/api/v1/users/requests/accept" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/requests" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/requests" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7871,7 +7871,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/requests" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/:userId/following" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/:userId/following" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7888,7 +7888,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/:userId/following" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/:userId/followers" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/:userId/followers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7905,7 +7905,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/:userId/followers" \
 
 **Sample Curl Request:**
 ```bash
-curl -X GET "http://192.168.1.15:5000/api/v1/users/:userId/follow/status" \
+curl -X GET "http://192.168.1.4:5000/api/v1/users/:userId/follow/status" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7922,7 +7922,7 @@ curl -X GET "http://192.168.1.15:5000/api/v1/users/:userId/follow/status" \
 
 **Sample Curl Request:**
 ```bash
-curl -X DELETE "http://192.168.1.15:5000/api/v1/users/:userId/follow" \
+curl -X DELETE "http://192.168.1.4:5000/api/v1/users/:userId/follow" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}"
 ```
@@ -7946,7 +7946,7 @@ curl -X DELETE "http://192.168.1.15:5000/api/v1/users/:userId/follow" \
 
 **Sample Curl Request:**
 ```bash
-curl -X POST "http://192.168.1.15:5000/api/v1/users/:userId/follow" \
+curl -X POST "http://192.168.1.4:5000/api/v1/users/:userId/follow" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{token}}" \
   -d '{

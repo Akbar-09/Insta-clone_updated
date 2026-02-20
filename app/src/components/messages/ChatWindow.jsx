@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Phone, Video, Info, Smile, Image as ImageIcon, Mic, X, Play, Pause, Square, Clapperboard } from 'lucide-react';
+import { Phone, Video, Info, Smile, Image as ImageIcon, Mic, X, Play, Pause, Square, Clapperboard, Sticker } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StickerPicker from './StickerPicker';
 import EmojiPicker from './EmojiPicker';
@@ -603,6 +603,11 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                                     size={24}
                                     className={`cursor-pointer shrink-0 transition-colors ${showEmojiPicker ? 'text-[#0095F6]' : 'text-text-primary'}`}
                                     onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowStickers(false); }}
+                                />
+                                <Sticker
+                                    size={24}
+                                    className={`cursor-pointer shrink-0 transition-colors ${showStickers ? 'text-[#0095F6]' : 'text-text-primary'}`}
+                                    onClick={() => { setShowStickers(!showStickers); setShowEmojiPicker(false); }}
                                 />
                                 <form onSubmit={handleSend} className="flex-1">
                                     <input

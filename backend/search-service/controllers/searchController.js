@@ -1,5 +1,6 @@
 const SearchIndex = require('../models/SearchIndex');
 const { Op } = require('sequelize');
+const sequelize = require('../config/database');
 
 exports.search = async (req, res) => {
     try {
@@ -84,6 +85,34 @@ exports.search = async (req, res) => {
         res.json({ status: 'success', data: plainResults });
     } catch (error) {
         console.error('Search Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
+exports.suggestHashtags = async (req, res) => {
+    try {
+        let { q } = req.query;
+        if (!q) return res.json({ status: 'success', data: [] });
+
+        // Remove leading # if present
+        if (q.startsWith('#')) q = q.substring(1);
+
+        const results = await SearchIndex.findAll({
+            where: {
+                type: 'HASHTAG',
+                content: {
+                    [Op.iLike]: `#${q}%`
+                }
+            },
+            order: [
+                [sequelize.literal("CAST(COALESCE(metadata->>'postCount', '0') AS INTEGER)"), 'DESC']
+            ],
+            limit: 10
+        });
+
+        res.json({ status: 'success', data: results });
+    } catch (error) {
+        console.error('Suggest Hashtags Error:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };

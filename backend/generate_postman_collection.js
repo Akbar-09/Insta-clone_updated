@@ -111,7 +111,7 @@ function main() {
             variable: [
                 {
                     key: "baseUrl",
-                    value: "http://192.168.1.5:5000",
+                    value: "http://192.168.1.4:5000",
                     type: "string"
                 },
                 {

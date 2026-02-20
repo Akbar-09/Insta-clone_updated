@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom';
 import { useRef, useState } from 'react';
 import { uploadProfilePhoto, removeProfilePhoto } from '../api/profileApi';
+import { uploadMedia } from '../api/userApi';
 
 const ChangeProfilePhotoModal = ({ onClose, onSuccess }) => {
     const fileInputRef = useRef(null);
@@ -22,15 +23,15 @@ const ChangeProfilePhotoModal = ({ onClose, onSuccess }) => {
 
         setLoading(true);
         try {
-            // SIMULATION: In a real app, we would upload the file to Cloudinary/S3 here.
-            // Since we don't have cloud credentials, we're using a placeholder to simulate the "new" photo.
-            // The file picker UX is preserved.
-            const fakeNewPhotoUrl = `https://i.pravatar.cc/300?u=${Date.now()}`;
+            // 1. Upload to Media Service (Real)
+            const mediaRes = await uploadMedia(file);
+            const photoUrl = mediaRes.data.url;
 
-            const response = await uploadProfilePhoto({ profilePicture: fakeNewPhotoUrl });
+            // 2. Update Profile with new URL
+            const response = await uploadProfilePhoto({ profilePicture: photoUrl });
 
             if (response.status === 'success') {
-                if (onSuccess) onSuccess(response.data.profilePicture);
+                if (onSuccess) onSuccess(photoUrl);
                 onClose();
             }
         } catch (error) {

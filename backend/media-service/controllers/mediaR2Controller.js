@@ -1,4 +1,4 @@
-const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const Media = require('../models/Media');
 const path = require('path');
@@ -141,6 +141,8 @@ const processInBackground = async (mediaId, key, context, metadata) => {
             cdnUrl = `${process.env.R2_PUBLIC_DOMAIN}/${finalKey}`;
         }
 
+        const originalUrl = media.url;
+
         // 3. Update Database
         await Media.update({
             uploadStatus: 'completed',
@@ -149,7 +151,17 @@ const processInBackground = async (mediaId, key, context, metadata) => {
             cdnUrl: cdnUrl
         }, { where: { id: mediaId } });
 
-        // 4. Cleanup temp R2 and local
+        // 4. Publish Event for consistency
+        const { publishEvent } = require('../config/rabbitmq');
+        await publishEvent('MEDIA.OPTIMIZED', {
+            mediaId: mediaId,
+            originalUrl: originalUrl,
+            optimizedUrl: cdnUrl,
+            thumbnailUrl: cdnUrl, // For images, thumbnail is same for now
+            type: media.type
+        });
+
+        // 5. Cleanup temp R2 and local
         try {
             // Delete original temp from R2
             const deleteCommand = require('@aws-sdk/client-s3').DeleteObjectCommand;
@@ -176,101 +188,139 @@ const serveFile = async (req, res) => {
         const key = req.params[0];
         if (!key) return res.status(400).send('File key required');
 
-        // 1. Try serving the requested key directly from R2
-        try {
-            const command = new GetObjectCommand({
-                Bucket: BUCKET_NAME,
-                Key: key
-            });
-            const { Body, ContentType } = await r2Client.send(command).catch(err => {
-                // Throw error to be caught by inner catch if R2 fails
-                throw err;
-            });
+        const range = req.headers.range;
+        console.log(`[MediaService] Serving ${key} (Range: ${range || 'none'})`);
 
-            res.set('Content-Type', ContentType);
-            res.set('Cache-Control', 'public, max-age=31536000');
-            res.set('Access-Control-Allow-Origin', '*');
-            res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-            return Body.pipe(res);
-        } catch (r2Error) {
-            // 2. If not found, check if it's a reference in the database
-            const mediaRecord = await Media.findOne({
-                where: {
-                    [Op.or]: [
-                        { r2Key: key },
-                        { tempKey: key },
-                        { url: { [Op.like]: `%${key}%` } }
-                    ]
-                }
-            });
+        // Closure to handle R2 streaming with Range support
+        const streamFromR2 = async (targetKey) => {
+            try {
+                // 1. Get Metadata (Total Size & Content Type)
+                const headCommand = new HeadObjectCommand({
+                    Bucket: BUCKET_NAME,
+                    Key: targetKey
+                });
+                const headData = await r2Client.send(headCommand);
+                const totalSize = headData.ContentLength;
+                const contentType = headData.ContentType || 'application/octet-stream';
 
-            if (mediaRecord && mediaRecord.r2Key && mediaRecord.r2Key !== key) {
-                console.log(`[R2] Found fallback key in DB for ${key} -> ${mediaRecord.r2Key}`);
-                try {
-                    const fallbackCommand = new GetObjectCommand({
-                        Bucket: BUCKET_NAME,
-                        Key: mediaRecord.r2Key
-                    });
-                    const { Body: fBody, ContentType: fContentType } = await r2Client.send(fallbackCommand);
-                    res.set('Content-Type', fContentType);
-                    res.set('Cache-Control', 'public, max-age=31536000');
-                    res.set('Access-Control-Allow-Origin', '*');
-                    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-                    return fBody.pipe(res);
-                } catch (e) {
-                    console.log(`[R2] DB Fallback fetch failed for ${mediaRecord.r2Key}`);
-                }
-            }
-
-            // 3. Last ditch effort: regex UUID fallback
-            const uuidMatch = key.match(/([0-9a-f-]{36})/);
-            if (uuidMatch) {
-                const uuid = uuidMatch[1];
-                const possiblePaths = [
-                    `${FOLDER_NAME}/stories/temp_${uuid}_opt.webp`,
-                    `${FOLDER_NAME}/posts/images/temp_${uuid}_opt.webp`,
-                    `${FOLDER_NAME}/profiles/temp_${uuid}_opt.webp`,
-                    `${FOLDER_NAME}/posts/videos/temp_${uuid}_opt.mp4`,
-                    `${FOLDER_NAME}/messages/attachments/temp_${uuid}_opt.webp`,
-                    `${FOLDER_NAME}/temp/${uuid}.mp4`,
-                    `${FOLDER_NAME}/temp/${uuid}.jpg`,
-                    `${FOLDER_NAME}/temp/${uuid}.png`,
-                    `${FOLDER_NAME}/temp/${uuid}.webp`,
-                    `${uuid}.webp`,
-                    `${uuid}.mp4`,
-                    `${FOLDER_NAME}/${uuid}_opt.webp`
-                ];
-
-                for (const fKey of possiblePaths) {
-                    try {
-                        const fCommand = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: fKey });
-                        const { Body: fBody, ContentType: fContentType } = await r2Client.send(fCommand);
-                        res.set('Content-Type', fContentType);
-                        res.set('Cache-Control', 'public, max-age=31536000');
-                        res.set('Access-Control-Allow-Origin', '*');
-                        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-                        console.log(`[R2 Fallback] SUCCESS -> Serving ${fKey}`);
-                        return fBody.pipe(res);
-                    } catch (e) {
-                        // Continue to next path
-                    }
-                }
-            }
-
-            // 4. Final Fallback: Check local filesystem
-            const localPath = path.join(__dirname, '../uploads', path.basename(key));
-            if (fs.existsSync(localPath)) {
-                console.log(`[R2 Fallback] Serving from local filesystem: ${localPath}`);
+                // Set Common Headers
+                res.set('Content-Type', contentType);
+                res.set('Accept-Ranges', 'bytes');
+                res.set('Cache-Control', 'public, max-age=31536000');
                 res.set('Access-Control-Allow-Origin', '*');
                 res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-                return res.sendFile(localPath);
-            }
 
-            return res.status(404).send('File not found');
+                if (range) {
+                    const parts = range.replace(/bytes=/, "").split("-");
+                    const start = parseInt(parts[0], 10);
+                    const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+
+                    if (isNaN(start) || start >= totalSize) {
+                        res.status(416).send('Requested range not satisfiable');
+                        return true;
+                    }
+
+                    const chunkSize = (end - start) + 1;
+                    const getCommand = new GetObjectCommand({
+                        Bucket: BUCKET_NAME,
+                        Key: targetKey,
+                        Range: `bytes=${start}-${end}`
+                    });
+
+                    const { Body } = await r2Client.send(getCommand);
+                    res.status(206);
+                    res.set('Content-Range', `bytes ${start}-${end}/${totalSize}`);
+                    res.set('Content-Length', chunkSize);
+                    Body.pipe(res);
+                } else {
+                    const getCommand = new GetObjectCommand({
+                        Bucket: BUCKET_NAME,
+                        Key: targetKey
+                    });
+                    const { Body } = await r2Client.send(getCommand);
+                    res.set('Content-Length', totalSize);
+                    Body.pipe(res);
+                }
+                return true;
+            } catch (err) {
+                if (err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
+                    return false; // Let it fall back
+                }
+                throw err;
+            }
+        };
+
+        // 1. Try Direct Key from R2
+        let handled = await streamFromR2(key);
+        if (handled) return;
+
+        // 2. Fallback: Search in Database
+        console.log(`[R2 Fallback] Key ${key} not found directly. Checking database...`);
+        const mediaRecord = await Media.findOne({
+            where: {
+                [Op.or]: [
+                    { r2Key: key },
+                    { tempKey: key },
+                    { url: { [Op.like]: `%${key}%` } }
+                ]
+            }
+        });
+
+        if (mediaRecord) {
+            if (mediaRecord.r2Key && mediaRecord.r2Key !== key) {
+                console.log(`[R2 Fallback] Found r2Key in DB: ${mediaRecord.r2Key}`);
+                handled = await streamFromR2(mediaRecord.r2Key);
+                if (handled) return;
+            }
+            if (mediaRecord.tempKey && mediaRecord.tempKey !== key && mediaRecord.tempKey !== mediaRecord.r2Key) {
+                console.log(`[R2 Fallback] Found tempKey in DB: ${mediaRecord.tempKey}`);
+                handled = await streamFromR2(mediaRecord.tempKey);
+                if (handled) return;
+            }
         }
+
+        // 3. Last Ditch: UUID Pattern Match in R2 folders
+        const uuidMatch = key.match(/([0-9a-f-]{36}|[0-9]{13}-[0-9]{9})/); // Also match timestamp-rand format
+        if (uuidMatch) {
+            const idPart = uuidMatch[1];
+            console.log(`[R2 Fallback] Attempting pattern match for ${idPart}`);
+            const possiblePaths = [
+                `${FOLDER_NAME}/profiles/temp_${idPart}_opt.webp`,
+                `${FOLDER_NAME}/posts/images/temp_${idPart}_opt.webp`,
+                `${FOLDER_NAME}/posts/videos/${idPart}.mp4`,
+                `${FOLDER_NAME}/temp/${idPart}.mp4`,
+                `${FOLDER_NAME}/temp/${idPart}.webp`,
+                `${idPart}.mp4`,
+                `${idPart}.webp`
+            ];
+
+            for (const fKey of possiblePaths) {
+                handled = await streamFromR2(fKey);
+                if (handled) {
+                    console.log(`[R2 Fallback] Pattern Match Success: ${fKey}`);
+                    return;
+                }
+            }
+        }
+
+        // 4. Final Fallback: Local Filesystem (Great for non-migrated videos)
+        const localPath = path.join(__dirname, '../uploads', path.basename(key));
+        if (fs.existsSync(localPath)) {
+            console.log(`[R2 Fallback] Serving from local filesystem: ${localPath}`);
+            res.set('Access-Control-Allow-Origin', '*');
+            res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+            // sendFile handles Range internally!
+            return res.sendFile(localPath);
+        }
+
+        console.error(`[MediaService] File not found: ${key}`);
+        res.status(404).send('File not found');
+
     } catch (error) {
-        console.error('Serve File Global Error:', error);
-        res.status(500).send('Error serving file');
+        console.error('Serve File Global Error:', error.message);
+        if (!res.headersSent) {
+            res.status(500).send('Error serving file');
+        }
     }
 };
 

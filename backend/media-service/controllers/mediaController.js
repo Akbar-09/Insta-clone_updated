@@ -42,6 +42,12 @@ const FOLDER_NAME = 'Jaadoe';
 // Async Processor Function
 const processMediaBackground = async (mediaId, filePath, type, context) => {
     try {
+        const media = await Media.findByPk(mediaId);
+        if (!media) {
+            console.error(`Media record ${mediaId} not found in background processor`);
+            return;
+        }
+
         console.log(`Starting processing for ${mediaId} (${type})...`);
         let result;
         if (type === 'image') {
@@ -138,7 +144,7 @@ const processMediaBackground = async (mediaId, filePath, type, context) => {
         // Publish Event for other services (Post Service) to update their records
         await publishEvent('MEDIA.OPTIMIZED', {
             mediaId,
-            originalUrl: `/uploads/${path.basename(filePath)}`,
+            originalUrl: media.url,
             optimizedUrl: finalUrl,
             thumbnailUrl: finalThumbnailUrl,
             type: type

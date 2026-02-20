@@ -1,0 +1,11 @@
+[
+  "postgres",
+  "m4_erp",
+  "template1",
+  "template0",
+  "instagram",
+  "ad_db",
+  "live_db",
+  "media_db",
+  "help_db"
+]
