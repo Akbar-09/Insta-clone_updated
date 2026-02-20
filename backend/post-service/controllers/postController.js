@@ -5,6 +5,49 @@ const { publishEvent } = require('../config/rabbitmq');
 const sequelize = require('../config/database');
 const { Op } = require('sequelize');
 
+const getPostsByHashtag = async (req, res) => {
+    try {
+        const { hashtag } = req.params;
+        const currentUserId = req.headers['x-user-id'] || req.query.userId;
+        const { limit = 20, offset = 0 } = req.query;
+
+        // Ensure hashtag starts with #
+        const tag = hashtag.startsWith('#') ? hashtag : `#${hashtag}`;
+
+        const posts = await Post.findAll({
+            where: {
+                caption: {
+                    [Op.iLike]: `%${tag}%`
+                }
+            },
+            order: [['createdAt', 'DESC']],
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            raw: true
+        });
+
+        // Add isLiked status
+        let likedPostIds = new Set();
+        if (currentUserId && posts.length > 0) {
+            const likes = await Like.findAll({
+                where: { userId: currentUserId, postId: posts.map(p => p.id) },
+                attributes: ['postId']
+            });
+            likedPostIds = new Set(likes.map(l => l.postId));
+        }
+
+        const data = posts.map(post => ({
+            ...post,
+            isLiked: likedPostIds.has(post.id)
+        }));
+
+        res.json({ status: 'success', data });
+    } catch (error) {
+        console.error('Get Posts By Hashtag Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 const getPostsByUsers = async (req, res) => {
     try {
         const { userIds, limit = 20, offset = 0 } = req.body;
@@ -949,5 +992,6 @@ module.exports = {
     getEmbedCode,
     getActivityLikes,
     getActivityPosts,
-    getPostsByUsers
+    getPostsByUsers,
+    getPostsByHashtag
 };

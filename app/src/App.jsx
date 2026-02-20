@@ -15,7 +15,7 @@ import PostPage from './pages/PostPage';
 import ArchivePage from './pages/profile/ArchivePage';
 import LiveViewerPage from './pages/LiveViewerPage';
 import NotificationsPage from './pages/NotificationsPage';
-
+import HashtagPage from './pages/HashtagPage';
 
 import SettingsLayout from './pages/SettingsLayout';
 import EditProfile from './components/settings/EditProfile';
@@ -113,6 +113,7 @@ function App() {
                       <Route element={<Layout />}>
                         <Route path="/feed" element={<Feed />} />
                         <Route path="/explore" element={<ExplorePage />} />
+                        <Route path="/explore/tags/:tag" element={<HashtagPage />} />
                         <Route path="/explore/people" element={<SuggestedPeoplePage />} />
                         <Route path="/reels" element={<Reels />} />
                         <Route path="/reels/:reelId" element={<Reels />} />

@@ -19,16 +19,27 @@ const SearchDrawer = forwardRef(({ isOpen, onClose }, ref) => {
                 try {
                     const data = await searchUsers(query);
 
-                    // Filter: Only show "USER" type results in this drawer (ignore posts/hashtags)
-                    const usersOnly = data.filter(item => item.type === 'USER');
+                    const mapped = data.map(item => {
+                        if (item.type === 'USER') {
+                            return {
+                                type: 'USER',
+                                id: item.referenceId,
+                                username: item.content,
+                                name: item.metadata?.fullName || item.content,
+                                avatar: item.metadata?.profilePicture || `https://ui-avatars.com/api/?name=${item.content}&background=random`,
+                                isFollowing: item.isFollowing
+                            };
+                        } else if (item.type === 'HASHTAG') {
+                            return {
+                                type: 'HASHTAG',
+                                id: item.id,
+                                name: item.content,
+                                postsCount: item.metadata?.postCount || 0
+                            };
+                        }
+                        return null;
+                    }).filter(Boolean);
 
-                    const mapped = usersOnly.map(item => ({
-                        id: item.referenceId,
-                        username: item.content,
-                        name: item.metadata?.fullName || item.content,
-                        avatar: item.metadata?.profilePicture || `https://ui-avatars.com/api/?name=${item.content}&background=random`,
-                        isFollowing: item.isFollowing
-                    }));
                     setResults(mapped);
                 } catch (err) {
                     console.error(err);
@@ -94,16 +105,39 @@ const SearchDrawer = forwardRef(({ isOpen, onClose }, ref) => {
                                 No results found.
                             </div>
                         ) : (
-                            results.map(user => (
-                                <UserCard
-                                    key={user.id}
-                                    user={user}
-                                    onUserClick={() => {
-                                        navigate(`/profile/${user.username}`);
-                                        onClose();
-                                    }}
-                                />
-                            ))
+                            results.map(item => {
+                                if (item.type === 'USER') {
+                                    return (
+                                        <UserCard
+                                            key={`user-${item.id}`}
+                                            user={item}
+                                            onUserClick={() => {
+                                                navigate(`/profile/${item.username}`);
+                                                onClose();
+                                            }}
+                                        />
+                                    );
+                                } else {
+                                    return (
+                                        <div
+                                            key={`tag-${item.id}`}
+                                            onClick={() => {
+                                                navigate(`/explore/tags/${item.name.replace('#', '')}`);
+                                                onClose();
+                                            }}
+                                            className="flex items-center px-6 py-2 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                                        >
+                                            <div className="w-11 h-11 rounded-full border border-border flex items-center justify-center mr-3 shrink-0">
+                                                <span className="text-xl font-light">#</span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-sm">{item.name}</span>
+                                                <span className="text-xs text-text-secondary">{item.postsCount.toLocaleString()} posts</span>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                            })
                         )}
                     </>
                 )}
