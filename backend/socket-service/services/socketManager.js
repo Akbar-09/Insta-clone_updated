@@ -1,4 +1,5 @@
 const socketIo = require('socket.io');
+const callSocketHandlers = require('../webrtc/call.socket');
 
 let io;
 
@@ -46,6 +47,9 @@ const initSocket = (server) => {
         socket.on('disconnect', () => {
             console.log('Client disconnected:', socket.id);
         });
+
+        // Register WebRTC handlers
+        callSocketHandlers(io, socket);
     });
 
     return io;
