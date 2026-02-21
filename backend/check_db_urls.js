@@ -1,37 +1,19 @@
-const SearchIndex = require('./search-service/models/SearchIndex');
-const UserProfile = require('./user-service/models/UserProfile');
-const sequelizeSearch = require('./search-service/config/database');
-const sequelizeUser = require('./user-service/config/database');
+const { Client } = require('pg');
 
-async function checkUrls() {
-    try {
-        await sequelizeSearch.authenticate();
-        await sequelizeUser.authenticate();
-        console.log('Connected to DBs');
+const config = {
+    user: 'postgres',
+    host: 'localhost',
+    database: 'instagram',
+    password: 'aspire123',
+    port: 5432,
+};
 
-        const searchResults = await SearchIndex.findAll({ where: { type: 'USER' } });
-        console.log('\n--- Search Index URLs ---');
-        searchResults.forEach(r => {
-            const meta = r.metadata || {};
-            if (meta.profilePicture) {
-                console.log(`User: ${r.content}, URL: ${meta.profilePicture}`);
-            }
-        });
-
-        const userResults = await UserProfile.findAll();
-        console.log('\n--- User Profile URLs ---');
-        userResults.forEach(u => {
-            if (u.profilePicture) {
-                console.log(`User: ${u.username}, URL: ${u.profilePicture}`);
-            }
-        });
-
-    } catch (error) {
-        console.error('Error:', error);
-    } finally {
-        await sequelizeSearch.close();
-        await sequelizeUser.close();
-    }
+async function check() {
+    const client = new Client(config);
+    await client.connect();
+    const res = await client.query('SELECT "mediaUrl" FROM "Posts" LIMIT 5');
+    console.log(JSON.stringify(res.rows, null, 2));
+    await client.end();
 }
 
-checkUrls();
+check().catch(console.error);

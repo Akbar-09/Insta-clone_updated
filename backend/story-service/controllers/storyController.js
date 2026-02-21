@@ -43,18 +43,47 @@ const getStories = async (req, res) => {
         const userIdRaw = req.headers['x-user-id'];
         const userId = (userIdRaw && !isNaN(userIdRaw)) ? parseInt(userIdRaw) : null;
 
-        // Get all valid stories
-        const stories = await Story.findAll({
-            where: {
-                expiresAt: {
-                    [Op.gt]: new Date()
-                }
-            },
-            order: [['createdAt', 'DESC']]
-        });
+        let stories = [];
 
-        // If user logged in, enrich with seen/liked status
         if (userId) {
+            try {
+                // A. Get Following List from User Service
+                const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+                const followingRes = await fetch(`${userServiceUrl}/${userId}/following`);
+
+                let followingIds = [];
+                if (followingRes.ok) {
+                    const followingData = await followingRes.json();
+                    if (followingData.status === 'success' || followingData.success === true) {
+                        if (Array.isArray(followingData.data)) {
+                            followingIds = followingData.data.map(u => u.userId || u.id).filter(id => id);
+                        }
+
+                    }
+                }
+
+                // B. Fetch Stories for User + Following
+                const userIds = [userId, ...followingIds.map(id => parseInt(id))];
+                stories = await Story.findAll({
+                    where: {
+                        userId: { [Op.in]: userIds },
+                        expiresAt: { [Op.gt]: new Date() }
+                    },
+                    order: [['createdAt', 'DESC']]
+                });
+            } catch (err) {
+                console.error("[StoryService] Failed to fetch personalized stories:", err);
+                stories = []; // Return empty if check fails, no global fallback
+            }
+        } else {
+            // Unauthenticated view: return empty or global depending on requirement. 
+            // The user wanted consistency, so we'll return empty for guests as well 
+            // unless they specifically want a global story feed.
+            stories = [];
+        }
+
+        // Enrich with seen/liked status
+        if (userId && stories.length > 0) {
             const storyIds = stories.map(s => s.id);
 
             // Get Views
@@ -90,6 +119,7 @@ const getStories = async (req, res) => {
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
+
 
 const reactToStory = async (req, res) => {
     try {
@@ -274,9 +304,45 @@ const getStoryReplies = async (req, res) => {
     }
 };
 
+const getUserStories = async (req, res) => {
+    try {
+        const { targetUserId } = req.params;
+        const userIdRaw = req.headers['x-user-id'];
+        const userId = (userIdRaw && !isNaN(userIdRaw)) ? parseInt(userIdRaw) : null;
+
+        const stories = await Story.findAll({
+            where: {
+                userId: targetUserId,
+                expiresAt: { [Op.gt]: new Date() }
+            },
+            order: [['createdAt', 'DESC']]
+        });
+
+        if (userId && stories.length > 0) {
+            const storyIds = stories.map(s => s.id);
+            const views = await StoryView.findAll({
+                where: { storyId: storyIds, viewerId: userId }
+            });
+            const viewedStoryIds = new Set(views.map(v => v.storyId));
+
+            const data = stories.map(s => ({
+                ...s.toJSON(),
+                seen: viewedStoryIds.has(s.id)
+            }));
+            return res.json({ status: 'success', data: data });
+        }
+
+        res.json({ status: 'success', data: stories });
+    } catch (error) {
+        console.error("Get User Stories Error", error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     createStory,
     getStories,
+    getUserStories,
     getArchivedStories,
     deleteStory,
     reportStory,

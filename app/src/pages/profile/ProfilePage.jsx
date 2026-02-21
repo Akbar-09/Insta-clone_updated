@@ -3,6 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { Clapperboard } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { getUserProfile, getMyProfile, getUserPosts, getUserReels, followUser, unfollowUser } from '../../api/profileApi';
+import { getUserStories } from '../../api/storyApi';
 import ProfileHeader from './ProfileHeader';
 import HighlightsRow from './HighlightsRow';
 import ProfileTabs from './ProfileTabs';
@@ -40,6 +41,8 @@ const ProfilePage = ({ section }) => {
     // Prioritize 'section' prop if passed (from Routes), else use URL search param
     const [activeTab, setActiveTab] = useState(section || initialTab);
     const [isFollowing, setIsFollowing] = useState(false);
+    const [userStories, setUserStories] = useState([]);
+    const [allSeen, setAllSeen] = useState(true);
 
     // Update activeTab when route prop changes (e.g. clicking /saved link)
     useEffect(() => {
@@ -91,9 +94,10 @@ const ProfilePage = ({ section }) => {
 
                 // Fetch posts and reels in parallel
                 try {
-                    const [postsResponse, reelsResponse] = await Promise.all([
+                    const [postsResponse, reelsResponse, storiesResponse] = await Promise.all([
                         getUserPosts(profileData.userId),
-                        getUserReels(profileData.userId)
+                        getUserReels(profileData.userId),
+                        getUserStories(profileData.userId)
                     ]);
 
                     if (postsResponse.status === 'success') {
@@ -101,6 +105,10 @@ const ProfilePage = ({ section }) => {
                     }
                     if (reelsResponse.status === 'success') {
                         setReels(reelsResponse.data);
+                    }
+                    if (storiesResponse.status === 'success') {
+                        setUserStories(storiesResponse.data);
+                        setAllSeen(storiesResponse.data.length > 0 && storiesResponse.data.every(s => s.seen));
                     }
                 } catch (fetchError) {
                     console.error("Failed to load user content", fetchError);
@@ -180,6 +188,8 @@ const ProfilePage = ({ section }) => {
                     isFollowing={isFollowing}
                     onFollowToggle={handleFollowToggle}
                     onProfileUpdate={handleProfileUpdate}
+                    hasStories={userStories.length > 0}
+                    allSeen={allSeen}
                 />
 
                 <HighlightsRow

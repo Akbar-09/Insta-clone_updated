@@ -172,6 +172,7 @@ exports.getUserProfile = async (req, res) => {
         // Check if current user is following this profile
         let isFollowing = false;
         let isBlocked = false;
+        let isRestricted = false;
         if (currentUserId && (currentUserId.toString() !== profile.userId.toString())) {
             const follow = await Follow.findOne({
                 where: {
@@ -338,9 +339,13 @@ exports.getUserPosts = async (req, res) => {
         // Privacy Check
         if (profile.isPrivate && (!currentUserId || parseInt(currentUserId) !== parseInt(userId))) {
             // Check if following
-            const isFollowing = await Follow.findOne({
-                where: { followerId: currentUserId, followingId: userId }
-            });
+            let isFollowing = false;
+            if (currentUserId) {
+                const follow = await Follow.findOne({
+                    where: { followerId: currentUserId, followingId: userId }
+                });
+                isFollowing = !!follow;
+            }
 
             if (!isFollowing) {
                 return res.json({ status: 'success', data: [], message: 'Account is private' });
@@ -385,9 +390,13 @@ exports.getUserReels = async (req, res) => {
 
         // Privacy Check
         if (profile.isPrivate && (!currentUserId || parseInt(currentUserId) !== parseInt(userId))) {
-            const isFollowing = await Follow.findOne({
-                where: { followerId: currentUserId, followingId: userId }
-            });
+            let isFollowing = false;
+            if (currentUserId) {
+                const follow = await Follow.findOne({
+                    where: { followerId: currentUserId, followingId: userId }
+                });
+                isFollowing = !!follow;
+            }
             if (!isFollowing) return res.json({ status: 'success', data: [], message: 'Account is private' });
         }
 
@@ -480,7 +489,7 @@ exports.getFollowersList = async (req, res) => {
 
         // Check if current user is following each follower
         let currentUserFollowing = [];
-        if (currentUserId) {
+        if (currentUserId && currentUserId !== 'undefined') {
             const following = await Follow.findAll({
                 where: {
                     followerId: currentUserId,
@@ -531,7 +540,7 @@ exports.getFollowingList = async (req, res) => {
 
         // Check if current user is following each person
         let currentUserFollowing = [];
-        if (currentUserId) {
+        if (currentUserId && currentUserId !== 'undefined') {
             const followingCheck = await Follow.findAll({
                 where: {
                     followerId: currentUserId,

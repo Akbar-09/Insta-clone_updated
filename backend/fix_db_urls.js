@@ -1,7 +1,7 @@
 const { Client } = require('pg');
 
-const OLD_IP = '192.168.1.15';
-const NEW_IP = '192.168.1.5';
+const OLD_IPS = ['192.168.1.5', '192.168.1.6'];
+const NEW_IP = '192.168.1.4';
 
 const DB_CONFIG_MEDIA = {
     user: 'postgres',
@@ -21,24 +21,26 @@ const DB_CONFIG_INSTAGRAM = {
 
 async function updateTable(client, tableName, columns) {
     for (const col of columns) {
-        try {
-            // Check if column exists
-            const checkQuery = `
-                SELECT column_name 
-                FROM information_schema.columns 
-                WHERE table_name = '${tableName}' AND column_name = '${col}'
-            `;
-            const checkRes = await client.query(checkQuery);
+        for (const oldIp of OLD_IPS) {
+            try {
+                // Check if column exists
+                const checkQuery = `
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = '${tableName}' AND column_name = '${col}'
+                `;
+                const checkRes = await client.query(checkQuery);
 
-            if (checkRes.rowCount > 0) {
-                const query = `UPDATE "${tableName}" SET "${col}" = REPLACE("${col}", '${OLD_IP}', '${NEW_IP}') WHERE "${col}" LIKE '%${OLD_IP}%'`;
-                const res = await client.query(query);
-                console.log(`Updated ${res.rowCount} rows in ${tableName}.${col}`);
-            } else {
-                // Try lowercase table name if quoted failed (or vice versa? No, checking logic is key)
+                if (checkRes.rowCount > 0) {
+                    const query = `UPDATE "${tableName}" SET "${col}" = REPLACE("${col}", '${oldIp}', '${NEW_IP}') WHERE "${col}" LIKE '%${oldIp}%'`;
+                    const res = await client.query(query);
+                    if (res.rowCount > 0) {
+                        console.log(`Updated ${res.rowCount} rows in ${tableName}.${col} (replaced ${oldIp} -> ${NEW_IP})`);
+                    }
+                }
+            } catch (e) {
+                console.log(`Skipping ${tableName}.${col}: ${e.message}`);
             }
-        } catch (e) {
-            console.log(`Skipping ${tableName}.${col}: ${e.message}`);
         }
     }
 }

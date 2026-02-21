@@ -14,6 +14,8 @@ router.get('/', authenticateUser, notificationController.getNotifications);
 router.get('/unread-count', authenticateUser, notificationController.getUnreadCount);
 router.patch('/:id/read', authenticateUser, notificationController.markAsRead);
 router.patch('/read-all', authenticateUser, notificationController.markAllAsRead);
+router.delete('/clear-all', authenticateUser, notificationController.clearAllNotifications);
 router.delete('/:id', authenticateUser, notificationController.deleteNotification);
 
 module.exports = router;
+

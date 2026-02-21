@@ -1,5 +1,6 @@
 const amqp = require('amqplib');
 const UserProfile = require('../models/UserProfile');
+const { Op } = require('sequelize');
 
 let channel;
 
@@ -49,10 +50,20 @@ const connectRabbitMQ = async () => {
                         const { originalUrl, optimizedUrl } = data;
                         console.log(`Optimizing profile pic update: ${originalUrl} -> ${optimizedUrl}`);
 
-                        // Update all users who were using the original temp URL
+                        // Match by filename to be robust against domain changes
+                        const originalFilename = originalUrl.split('/').pop();
+
+                        // Update all users who were using the original temp URL or a URL with this filename
                         const [updatedCount] = await UserProfile.update(
-                            { profilePic: optimizedUrl },
-                            { where: { profilePic: originalUrl } }
+                            { profilePicture: optimizedUrl },
+                            {
+                                where: {
+                                    [Op.or]: [
+                                        { profilePicture: originalUrl },
+                                        { profilePicture: { [Op.like]: `%${originalFilename}` } }
+                                    ]
+                                }
+                            }
                         );
                         if (updatedCount > 0) {
                             console.log(`Updated ${updatedCount} user profiles with optimized pic.`);

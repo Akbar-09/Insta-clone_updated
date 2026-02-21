@@ -2,7 +2,7 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 const path = require('path');
 
-const GATEWAY_URL = 'http://localhost:5000';
+const GATEWAY_URL = 'http://192.168.1.4:5000';
 const ENDPOINTS = require('./all_endpoints.json');
 
 // --- Configuration ---

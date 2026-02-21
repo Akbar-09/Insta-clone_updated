@@ -5,6 +5,49 @@ const { publishEvent } = require('../config/rabbitmq');
 const sequelize = require('../config/database');
 const { Op } = require('sequelize');
 
+const getPostsByHashtag = async (req, res) => {
+    try {
+        const { hashtag } = req.params;
+        const currentUserId = req.headers['x-user-id'] || req.query.userId;
+        const { limit = 20, offset = 0 } = req.query;
+
+        // Ensure hashtag starts with #
+        const tag = hashtag.startsWith('#') ? hashtag : `#${hashtag}`;
+
+        const posts = await Post.findAll({
+            where: {
+                caption: {
+                    [Op.iLike]: `%${tag}%`
+                }
+            },
+            order: [['createdAt', 'DESC']],
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            raw: true
+        });
+
+        // Add isLiked status
+        let likedPostIds = new Set();
+        if (currentUserId && posts.length > 0) {
+            const likes = await Like.findAll({
+                where: { userId: currentUserId, postId: posts.map(p => p.id) },
+                attributes: ['postId']
+            });
+            likedPostIds = new Set(likes.map(l => l.postId));
+        }
+
+        const data = posts.map(post => ({
+            ...post,
+            isLiked: likedPostIds.has(post.id)
+        }));
+
+        res.json({ status: 'success', data });
+    } catch (error) {
+        console.error('Get Posts By Hashtag Error:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+};
+
 const getPostsByUsers = async (req, res) => {
     try {
         const { userIds, limit = 20, offset = 0 } = req.body;
@@ -111,7 +154,7 @@ const getExplorePosts = async (req, res) => {
             posts = [];
         }
 
-        // Fetch randomized reels (exclude problematic external URLs)
+        // Fetch randomized reels (only if Reels table exists in this DB)
         let reels = [];
         try {
             const [results] = await sequelize.query(`
@@ -137,7 +180,7 @@ const getExplorePosts = async (req, res) => {
             `);
             reels = results;
         } catch (dbError) {
-            console.error('DB FindAll Reels Error:', dbError);
+            console.log('[PostService] Reels table not available in Post DB. Skipping Reels in Explore.');
             reels = [];
         }
 
@@ -258,7 +301,7 @@ const getPostById = async (req, res) => {
         let post = await Post.findByPk(postId, { raw: true });
         let isReel = false;
 
-        // Fallback to Reels if not found in regular posts
+        // Fallback to Reels (only if Reels table exists in this DB)
         if (!post) {
             try {
                 const [reelResults] = await sequelize.query(`
@@ -279,7 +322,7 @@ const getPostById = async (req, res) => {
                     isReel = true;
                 }
             } catch (reelErr) {
-                console.error('Reel Fallback Error:', reelErr);
+                // Silently fail if table doesn't exist
             }
         }
 
@@ -469,14 +512,16 @@ const toggleHideLikes = async (req, res) => {
         let isReel = false;
 
         if (!post) {
-            // Check Reels
-            const [reelResults] = await sequelize.query(`SELECT * FROM "Reels" WHERE id = ? LIMIT 1`, {
-                replacements: [postId]
-            });
-            if (reelResults && reelResults.length > 0) {
-                post = reelResults[0];
-                isReel = true;
-            }
+            // Check Reels (if table exists)
+            try {
+                const [reelResults] = await sequelize.query(`SELECT * FROM "Reels" WHERE id = ? LIMIT 1`, {
+                    replacements: [postId]
+                });
+                if (reelResults && reelResults.length > 0) {
+                    post = reelResults[0];
+                    isReel = true;
+                }
+            } catch (e) { /* Table probably doesn't exist */ }
         }
 
         if (!post) return res.status(404).json({ message: 'Post/Reel not found' });
@@ -510,14 +555,16 @@ const toggleComments = async (req, res) => {
         let isReel = false;
 
         if (!post) {
-            // Check Reels
-            const [reelResults] = await sequelize.query(`SELECT * FROM "Reels" WHERE id = ? LIMIT 1`, {
-                replacements: [postId]
-            });
-            if (reelResults && reelResults.length > 0) {
-                post = reelResults[0];
-                isReel = true;
-            }
+            // Check Reels (if table exists)
+            try {
+                const [reelResults] = await sequelize.query(`SELECT * FROM "Reels" WHERE id = ? LIMIT 1`, {
+                    replacements: [postId]
+                });
+                if (reelResults && reelResults.length > 0) {
+                    post = reelResults[0];
+                    isReel = true;
+                }
+            } catch (e) { /* Table probably doesn't exist */ }
         }
 
         if (!post) return res.status(404).json({ message: 'Post/Reel not found' });
@@ -711,7 +758,7 @@ const reportPost = async (req, res) => {
         let isReel = false;
 
         if (!post) {
-            // Check if it's a Reel
+            // Check if it's a Reel (if table exists)
             try {
                 const [reelResults] = await sequelize.query(`
                     SELECT *, 'VIDEO' as "mediaType", 'REEL' as type 
@@ -729,7 +776,7 @@ const reportPost = async (req, res) => {
                     isReel = true;
                 }
             } catch (reelErr) {
-                console.error('Reel Fallback Error in Report:', reelErr);
+                // Table probably doesn't exist
             }
         }
 
@@ -945,5 +992,6 @@ module.exports = {
     getEmbedCode,
     getActivityLikes,
     getActivityPosts,
-    getPostsByUsers
+    getPostsByUsers,
+    getPostsByHashtag
 };

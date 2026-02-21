@@ -5,11 +5,11 @@ This document provides a comprehensive reference for all microservice APIs avail
 ## 📊 Backend Overview
 - **Total API Endpoints**: **388**
 - **Microservices**: 15 (Auth, User, Post, Story, Reel, Comment, Feed, Notification, Search, Message, Socket, Media, Ad, Live, Admin)
-- **Centralized Documentation**: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+- **Centralized Documentation**: [http://192.168.1.4:5000/api-docs](http://192.168.1.4:5000/api-docs)
 
 ## 🌐 Gateway Configuration
-- **Base URL**: `http://localhost:5000/api/v1`
-- **Socket.io**: `ws://localhost:5000` (Proxied to Port 5011)
+- **Base URL**: `http://192.168.1.4:5000/api/v1`
+- **Socket.io**: `ws://192.168.1.4:5000` (Proxied to Port 5011)
 
 ---
 

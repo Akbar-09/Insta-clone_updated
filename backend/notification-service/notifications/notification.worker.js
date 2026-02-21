@@ -1,5 +1,6 @@
 const amqp = require('amqplib');
 const webpush = require('web-push');
+const axios = require('axios');
 const Notification = require('../models/Notification');
 const PushSubscription = require('../models/PushSubscription');
 require('dotenv').config();
@@ -12,6 +13,20 @@ webpush.setVapidDetails(
 );
 
 let channel;
+
+async function fetchUserDetails(userId) {
+    try {
+        const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+        const response = await axios.get(`${userServiceUrl}/users/${userId}`);
+        if (response.data.status === 'success') {
+            return response.data.data;
+        }
+        return {};
+    } catch (error) {
+        console.error(`[PushWorker] Failed to fetch actor details for ${userId}:`, error.message);
+        return {};
+    }
+}
 
 const startWorker = async () => {
     try {
@@ -47,6 +62,14 @@ const startWorker = async () => {
                 // Fallback for missing fromUsername if message has a colon (like "username: hello")
                 if (!fromUsername && message && message.includes(':')) {
                     fromUsername = message.split(':')[0];
+                }
+
+                // If still missing avatar or username, attempt to fetch from user service
+                if (fromUserId && (!fromUserAvatar || !fromUsername)) {
+                    console.log(`[PushWorker] Fetching missing details for sender ${fromUserId}`);
+                    const details = await fetchUserDetails(fromUserId);
+                    if (details.username) fromUsername = details.username;
+                    if (details.profilePicture) fromUserAvatar = details.profilePicture;
                 }
 
                 try {

@@ -156,7 +156,7 @@ const sendMessage = async (req, res) => {
         const senderId = req.user.id;
         const { conversationId, receiverId, content, type, mediaUrl, replyToStoryId } = req.body;
 
-        let convId = conversationId;
+        let convId = conversationId || req.params.conversationId;
         let conversation;
 
         // 1. Handle conversation find/create

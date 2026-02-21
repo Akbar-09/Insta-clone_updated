@@ -1,379 +1,397 @@
 # API Test Report
-Generated: 2026-02-11T05:03:18.890Z
+Generated: 2026-02-19T04:35:08.393Z
 
-**Total Endpoints:** 370
-**Working:** 267
-**Failing:** 103
+**Total Endpoints:** 388
+**Working:** 0
+**Failing:** 388
 
 | Service | Method | Endpoint | Status | Output Snippet |
 |---|---|---|---|---|
-| ad-service | POST | /api/v1/ads/ | PASS | `{"status":"success","data":{"id":"3ebd5878-d291-4b9c-9329-da9a2d587257","hideLikes":false,"commentsDisabled":false,"userId":76,"adType":"NEW_MEDIA","status":"DRAFT","updatedAt":"2026-02-11T05:02:29.03` |
-| ad-service | DELETE | /api/v1/ads/:id/comments/:commentId | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_comment_id\""}` |
-| ad-service | POST | /api/v1/ads/:id/comments | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | GET | /api/v1/ads/:id/comments | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | POST | /api/v1/ads/:id/bookmark | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | POST | /api/v1/ads/:id/like | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | GET | /api/v1/ads/:id/embed | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | PUT | /api/v1/ads/:id/toggle-comments | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | PUT | /api/v1/ads/:id/hide-likes | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | PUT | /api/v1/ads/:id | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | DELETE | /api/v1/ads/:id | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | POST | /api/v1/ads/click | FAIL | `{"status":"error","message":"notNull Violation: AdClick.adId cannot be null"}` |
-| ad-service | POST | /api/v1/ads/impression | FAIL | `{"status":"error","message":"notNull Violation: AdImpression.adId cannot be null"}` |
-| ad-service | GET | /api/v1/ads/active | PASS | `{"status":"success","data":[{"id":"7abd623f-c3cf-4b03-9e22-3c4cdef367bc","userId":51,"title":"","caption":"","ctaText":"Learn More","destinationUrl":"","adType":"BOOST_CONTENT","status":"ACTIVE","hide` |
-| ad-service | GET | /api/v1/ads/eligible-content | PASS | `{"status":"success","data":{"posts":[],"reels":[],"stories":[]}}` |
-| ad-service | POST | /api/v1/ads/:id/publish | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | PUT | /api/v1/ads/:id/budget | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | PUT | /api/v1/ads/:id/targeting | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | PUT | /api/v1/ads/:id/details | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | POST | /api/v1/ads/:id/boost-content | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | POST | /api/v1/ads/:id/media | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"temp_ad_id\""}` |
-| ad-service | POST | /api/v1/ads/draft | PASS | `{"status":"success","data":{"id":"fa4354ab-230a-48b5-abcc-3f4735b068e2","hideLikes":false,"commentsDisabled":false,"userId":76,"adType":"NEW_MEDIA","status":"DRAFT","updatedAt":"2026-02-11T05:02:31.89` |
-| admin-service | GET | /api/v1/admin/users/:userId/reels | PASS | `{"success":true,"data":[]}` |
-| admin-service | GET | /api/v1/admin/users/:userId/posts | PASS | `{"success":true,"data":[]}` |
-| admin-service | GET | /api/v1/admin/users/:userId/following | PASS | `{"success":true,"data":[]}` |
-| admin-service | GET | /api/v1/admin/users/:userId/followers | PASS | `{"success":true,"data":[]}` |
-| admin-service | GET | /api/v1/admin/users/:userId/details | PASS | `{"success":true,"data":{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"profilePicture":"","website":null,"gender":null,"isPrivate":false,"showAccountS` |
-| admin-service | DELETE | /api/v1/admin/users/:userId | PASS | `{"success":true,"message":"User soft deleted"}` |
-| admin-service | PATCH | /api/v1/admin/users/:userId/unban | PASS | `{"success":true,"message":"User unbanned"}` |
-| admin-service | PATCH | /api/v1/admin/users/:userId/ban | PASS | `{"success":true,"message":"User banned"}` |
-| admin-service | GET | /api/v1/admin/users/ | PASS | `{"success":true,"data":[{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"profilePicture":"","website":null,"gender":null,"isPrivate":false,"showAccount` |
-| admin-service | PUT | /api/v1/admin/settings/ | PASS | `{"success":true,"message":"Settings updated","data":{"id":1,"maintenanceMode":true,"allowRegistrations":true,"emailAlerts":true,"adminTheme":"light","updated_at":"2026-02-04T12:59:50.624Z"}}` |
-| admin-service | GET | /api/v1/admin/settings/ | PASS | `{"success":true,"data":{"id":1,"maintenanceMode":true,"allowRegistrations":true,"emailAlerts":true,"adminTheme":"light","updated_at":"2026-02-04T12:59:50.624Z"}}` |
-| admin-service | PUT | /api/v1/admin/settings/profile | PASS | `{"success":true,"message":"Profile updated","data":{"id":1,"username":"admin","name":"Super Admin","email":"admin@jaadoe.com","password":"$2b$10$FL9tBjgpJn4pGPeN7wt91.zVnS3ZvOIaO4nfjdZ2HZrvEn8GiSWiO",` |
-| admin-service | GET | /api/v1/admin/settings/profile | PASS | `{"success":true,"data":{"id":1,"username":"admin","name":"Super Admin","email":"admin@jaadoe.com","roleId":1}}` |
-| admin-service | POST | /api/v1/admin/reports/:id/ban-user | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | POST | /api/v1/admin/reports/:id/ignore | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/reports/:id | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/reports/ | PASS | `{"success":true,"data":[{"id":5,"postId":1863,"reportedBy":51,"reason":"spam","description":"Fake engagement","status":"pending","created_at":"2026-02-10T06:20:10.930Z","updated_at":"2026-02-10T06:20:` |
-| admin-service | GET | /api/v1/admin/reports/stats | PASS | `{"success":true,"data":{"pending":4,"underReview":0,"resolvedToday":0}}` |
-| admin-service | GET | /api/v1/admin/reels | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot GET /reels</pre> </body> </html> ` |
-| admin-service | GET | /api/v1/admin/posts | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot GET /posts</pre> </body> </html> ` |
-| admin-service | DELETE | /api/v1/admin/comments/:commentId | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | DELETE | /api/v1/admin/stories/:storyId | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot DELETE /stories/temp_story_id</pre> </body> </html> ` |
-| admin-service | DELETE | /api/v1/admin/reels/:reelId | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot DELETE /reels/temp_reel_id</pre> </body> </html> ` |
-| admin-service | PATCH | /api/v1/admin/posts/:postId/hide | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot PATCH /posts/temp_post_id/hide</pre> </body> </html> ` |
-| admin-service | DELETE | /api/v1/admin/posts/:postId | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot DELETE /posts/temp_post_id</pre> </body> </html> ` |
-| admin-service | POST | /api/v1/admin/default-avatars/ | PASS | `{"success":false,"message":"notNull Violation: AuditLog.actionType cannot be null,\nnotNull Violation: AuditLog.targetType cannot be null"}` |
-| admin-service | GET | /api/v1/admin/default-avatars/ | PASS | `{"success":true,"data":[{"id":1,"url":"/uploads/default-avatar-1.png"},{"id":2,"url":"/uploads/default-avatar-2.png"}]}` |
-| admin-service | PATCH | /api/v1/admin/languages/:id/set-default | PASS | `{"success":false,"message":"Language not found"}` |
-| admin-service | PATCH | /api/v1/admin/languages/:id/disable | PASS | `{"success":false,"message":"Language not found"}` |
-| admin-service | PATCH | /api/v1/admin/languages/:id/enable | PASS | `{"success":false,"message":"Language not found"}` |
-| admin-service | GET | /api/v1/admin/languages/ | PASS | `{"success":true,"data":{"stats":{"total":5,"active":4,"defaultLanguage":"EN"},"languages":[{"id":1,"name":"English","code":"EN","flagCode":"US","isActive":true,"isDefault":true,"created_at":"2026-02-0` |
-| admin-service | POST | /api/v1/admin/feature | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot POST /feature</pre> </body> </html> ` |
-| admin-service | PATCH | /api/v1/admin/:id/block | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot PATCH /76/block</pre> </body> </html> ` |
-| admin-service | GET | /api/v1/admin/trending | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot GET /trending</pre> </body> </html> ` |
-| admin-service | GET | /api/v1/admin/ | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot GET /</pre> </body> </html> ` |
-| admin-service | DELETE | /api/v1/admin/hashtags/:id | PASS | `{"success":false,"message":"Hashtag not found"}` |
-| admin-service | PATCH | /api/v1/admin/hashtags/:id/toggle-visibility | PASS | `{"success":false,"message":"Hashtag not found"}` |
-| admin-service | GET | /api/v1/admin/hashtags/trending | PASS | `{"success":true,"data":[{"id":9,"name":"#fashion","status":"active","isTrending":true,"deleted":false,"postsCount":8900,"reelsCount":2100,"created_at":"2026-02-04T10:20:48.143Z","updated_at":"2026-02-` |
-| admin-service | GET | /api/v1/admin/hashtags/ | PASS | `{"success":true,"data":{"hashtags":[{"id":9,"name":"#fashion","status":"active","isTrending":true,"deleted":false,"postsCount":8900,"reelsCount":2100,"created_at":"2026-02-04T10:20:48.143Z","updated_a` |
-| admin-service | GET | /api/v1/admin/analytics/geo-users | PASS | `{"success":true,"data":{"countries":[{"code":"UN","name":"Unknown","users":276}],"summary":{"totalCountries":1,"totalUsers":276,"topCountry":{"code":"UN","name":"Unknown","users":276}}}}` |
-| admin-service | GET | /api/v1/admin/explore/performance-metrics | PASS | `{"success":true,"data":{"impressions":17843069,"impressionsChange":5,"ctr":11.8,"ctrChange":0.5,"avgWatchTime":0,"watchTimeChange":0,"engagementRate":11.8,"engagementChange":1.2}}` |
-| admin-service | GET | /api/v1/admin/explore/category-distribution | PASS | `{"success":true,"data":[{"category":"fashion","percentage":41},{"category":"art","percentage":25},{"category":"photography","percentage":16},{"category":"travel","percentage":10},{"category":"fitness"` |
-| admin-service | DELETE | /api/v1/admin/explore/trending-topics/:topicId | PASS | `{"success":false,"message":"invalid input syntax for type integer: \":topicId\""}` |
-| admin-service | POST | /api/v1/admin/explore/trending-topics | PASS | `{"success":false,"message":"Topic is required"}` |
-| admin-service | GET | /api/v1/admin/explore/trending-topics | PASS | `{"success":true,"data":[{"id":6,"topic":"#fitness","created_at":"2026-02-04T11:18:24.988Z"}]}` |
-| admin-service | PATCH | /api/v1/admin/explore/algorithm | PASS | `{"success":true,"message":"Algorithm updated successfully","data":{"id":1,"updated_at":"2026-02-11T05:02:39.596Z"}}` |
-| admin-service | GET | /api/v1/admin/explore/algorithm | PASS | `{"success":true,"data":{"id":1,"freshnessWeight":70,"engagementWeight":60,"relevanceWeight":80,"locationWeight":40,"updated_at":"2026-02-11T05:02:39.596Z"}}` |
-| admin-service | PATCH | /api/v1/admin/messages/:conversationId/flag | PASS | `{"success":false,"message":"notNull Violation: AuditLog.actionType cannot be null,\nnotNull Violation: AuditLog.targetType cannot be null"}` |
-| admin-service | GET | /api/v1/admin/messages/reported | PASS | `{"success":true,"data":[{"id":1,"senderId":101,"text":"Harmful message","reportedBy":102}]}` |
-| admin-service | POST | /api/v1/admin/dm-oversight/conversations/:conversationId/ban-users | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | PATCH | /api/v1/admin/dm-oversight/conversations/:conversationId/mark-safe | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/dm-oversight/conversations/:conversationId/transcript | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/dm-oversight/stats | PASS | `{"success":true,"data":{"highRisk":1,"underInvestigation":0,"safeCleared":7}}` |
-| admin-service | GET | /api/v1/admin/dm-oversight/conversations | PASS | `{"success":true,"data":[{"id":7,"user1Id":7,"user2Id":20,"lastMessageId":null,"lastMessageContent":"I will find where you live and make you regret this.","lastMessageSenderId":7,"lastMessageAt":"2026-` |
-| admin-service | GET | /api/v1/admin/dashboard/recent-posts | PASS | `{"success":true,"data":[{"id":1863,"userId":55,"username":"farhan","caption":"test 4","mediaUrl":"http://localhost:5000/api/v1/media/files/Jaadoe/posts/images/temp_cbf2dedb-ddb9-41f6-80e0-1aaa24448f5f` |
-| admin-service | GET | /api/v1/admin/dashboard/recent-users | PASS | `{"success":true,"data":[{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"profilePicture":"","website":null,"gender":null,"isPrivate":false,"showAccount` |
-| admin-service | GET | /api/v1/admin/dashboard/login-methods | PASS | `{"success":true,"data":[{"method":"email","count":"153"},{"method":"google","count":"81"},{"method":"facebook","count":"42"}],"message":"Login methods fetched successfully"}` |
-| admin-service | GET | /api/v1/admin/dashboard/media-distribution | PASS | `{"success":true,"data":{"posts":93,"reels":2,"stories":4},"message":"Media distribution data fetched successfully"}` |
-| admin-service | GET | /api/v1/admin/dashboard/user-growth | PASS | `{"success":true,"data":[{"month":"Jan","count":"171"},{"month":"Feb","count":"34"}],"message":"User growth data fetched successfully"}` |
-| admin-service | GET | /api/v1/admin/dashboard/activity-feed | PASS | `{"success":true,"data":[{"id":89,"adminId":1,"actionType":"UPDATE_ALGORITHM","targetType":"system","targetId":"1","metadata":{"title":"Test Ad","budget":100,"subType":"explore_config","duration":5},"c` |
-| admin-service | GET | /api/v1/admin/dashboard/kpis | PASS | `{"success":true,"data":{"totalUsers":276,"totalPosts":1857,"activeReels":49,"pendingReports":4,"growthRates":{"users":57,"posts":46,"reels":100}},"message":"Dashboard data fetched successfully"}` |
-| admin-service | DELETE | /api/v1/admin/moderation/stories/:storyId | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/moderation/stories/:storyId/interactions | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/moderation/stories | PASS | `{"success":true,"data":[{"id":85,"userId":51,"username":"akbar","mediaUrl":"http://localhost:5000/api/v1/media/files/Jaadoe/stories/temp_12921bca-d5a1-44aa-98d2-92994ebd7dbe_opt.webp","thumbnailUrl":n` |
-| admin-service | DELETE | /api/v1/admin/moderation/reels/:reelId | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | PATCH | /api/v1/admin/moderation/reels/:reelId/unhide | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | PATCH | /api/v1/admin/moderation/reels/:reelId/hide | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/moderation/reels/:reelId/interactions | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/moderation/reels | PASS | `{"success":true,"data":[{"id":49,"userId":50,"username":"user_test_50","caption":"Reel 1 #fun","videoUrl":"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4","likesCou` |
-| admin-service | DELETE | /api/v1/admin/moderation/posts/:postId | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | PATCH | /api/v1/admin/moderation/posts/:postId/unhide | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | PATCH | /api/v1/admin/moderation/posts/:postId/hide | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/moderation/posts/:postId/interactions | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/moderation/posts | PASS | `{"success":true,"data":[{"id":1863,"userId":55,"username":"farhan","caption":"test 4","mediaUrl":"http://localhost:5000/api/v1/media/files/Jaadoe/posts/images/temp_cbf2dedb-ddb9-41f6-80e0-1aaa24448f5f` |
-| admin-service | DELETE | /api/v1/admin/comments/:commentId | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | PATCH | /api/v1/admin/comments/:commentId/remove | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | PATCH | /api/v1/admin/comments/:commentId/approve | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/comments/stats | PASS | `{"success":true,"data":{"total":25,"pending":16,"flagged":2,"approvedToday":0,"removedToday":0}}` |
-| admin-service | GET | /api/v1/admin/comments/ | PASS | `{"success":true,"data":[{"id":31,"postId":1864,"userId":51,"username":"akbar","text":"hello","createdAt":"2026-02-10T06:13:08.558Z","likesCount":1,"status":"pending","reportedCount":0,"parentId":null,` |
-| admin-service | PATCH | /api/v1/admin/cms/pages/:id | PASS | `{"success":false,"message":"notNull Violation: AuditLog.actionType cannot be null,\nnotNull Violation: AuditLog.targetType cannot be null"}` |
-| admin-service | GET | /api/v1/admin/cms/pages | PASS | `{"success":true,"data":[{"id":1,"title":"Terms of Service","slug":"terms","lastUpdated":"2025-01-01"},{"id":2,"title":"Privacy Policy","slug":"privacy","lastUpdated":"2025-01-01"}]}` |
-| admin-service | DELETE | /api/v1/admin/avatars/:avatarId | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | PATCH | /api/v1/admin/avatars/:avatarId/reject | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | PATCH | /api/v1/admin/avatars/:avatarId/approve | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| admin-service | GET | /api/v1/admin/avatars/stats | PASS | `{"success":true,"data":{"total":0,"pending":0,"approved":0,"rejected":0}}` |
-| admin-service | GET | /api/v1/admin/avatars/ | PASS | `{"success":true,"data":[],"pagination":{"total":0,"page":1,"limit":12,"totalPages":0}}` |
-| admin-service | DELETE | /api/v1/admin/auth/roles/:id | PASS | `{"success":false,"message":"Role not found"}` |
-| admin-service | PUT | /api/v1/admin/auth/roles/:id | PASS | `{"success":false,"message":"Role not found"}` |
-| admin-service | POST | /api/v1/admin/auth/roles | PASS | `{"success":false,"message":"notNull Violation: Role.name cannot be null"}` |
-| admin-service | GET | /api/v1/admin/auth/roles | PASS | `{"success":true,"data":[{"id":1,"name":"SuperAdmin","permissions":["all"],"description":null,"createdAt":"2026-01-31T11:31:48.956Z","updatedAt":"2026-01-31T11:31:48.956Z"},{"id":2,"name":"moderator","` |
-| admin-service | DELETE | /api/v1/admin/auth/admins/:id | PASS | `{"success":false,"message":"Admin not found"}` |
-| admin-service | PATCH | /api/v1/admin/auth/admins/:id/role | PASS | `{"success":false,"message":"Admin not found"}` |
-| admin-service | GET | /api/v1/admin/auth/admins | PASS | `{"success":true,"data":[{"id":1,"username":"admin","name":"Super Admin","email":"admin@jaadoe.com","roleId":1,"isActive":true,"lastLogin":"2026-02-11T05:02:28.629Z","created_at":"2026-01-31T13:19:07.0` |
-| admin-service | GET | /api/v1/admin/auth/me | PASS | `{"success":true,"data":{"id":1,"username":"admin","name":"Super Admin","email":"admin@jaadoe.com","password":"$2b$10$FL9tBjgpJn4pGPeN7wt91.zVnS3ZvOIaO4nfjdZ2HZrvEn8GiSWiO","roleId":1,"isActive":true,"` |
-| admin-service | POST | /api/v1/admin/auth/login | PASS | `{"success":false,"message":"Invalid credentials"}` |
-| admin-service | GET | /api/v1/admin/audit/ | PASS | `{"success":true,"data":[{"id":89,"adminId":1,"actionType":"UPDATE_ALGORITHM","targetType":"system","targetId":"1","metadata":{"title":"Test Ad","budget":100,"subType":"explore_config","duration":5},"c` |
-| admin-service | GET | /api/v1/admin/active-hours | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot GET /active-hours</pre> </body> </html> ` |
-| admin-service | GET | /api/v1/admin/countries | FAIL | `<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Cannot GET /countries</pre> </body> </html> ` |
-| admin-service | GET | /api/v1/admin/analytics/active-hours | PASS | `{"success":true,"data":{"peakHour":"20:00","dailyAverageActiveUsers":1500}}` |
-| admin-service | GET | /api/v1/admin/analytics/countries | PASS | `{"success":true,"data":[{"name":"Unknown","count":"276"}],"message":"Country analytics fetched successfully"}` |
-| admin-service | GET | /api/v1/admin/analytics/top-content | PASS | `{"success":true,"data":[{"contentId":759,"creatorUsername":"user_demo_138_127","views":20316,"likes":1989,"engagementRate":"11.7"},{"contentId":907,"creatorUsername":"user_demo_53_25","views":20464,"l` |
-| admin-service | GET | /api/v1/admin/analytics/engagement-trends | PASS | `{"success":true,"data":[{"month":"Jan","engagementRate":"1256.9"},{"month":"Feb","engagementRate":"982.3"}]}` |
-| admin-service | GET | /api/v1/admin/analytics/user-acquisition | PASS | `{"success":true,"data":[{"month":"Jan","users":171},{"month":"Feb","users":34}]}` |
-| admin-service | GET | /api/v1/admin/analytics/summary | PASS | `{"success":true,"data":{"newUsers":276,"newUsersChange":57,"avgEngagementRate":11.7,"engagementChange":0.5,"adRevenue":45200,"revenueChange":-2,"serverLoad":20,"serverStatus":"stable"}}` |
-| admin-service | GET | /api/v1/admin/notifications/stats | PASS | `{"success":true,"data":{"totalRecipients":0,"sentToday":0,"sentMonth":0}}` |
-| admin-service | GET | /api/v1/admin/notifications/history | PASS | `{"success":true,"data":[]}` |
-| admin-service | POST | /api/v1/admin/notifications/global | PASS | `{"success":false,"message":"Request failed with status code 500"}` |
-| auth-service | GET | /api/v1/auth/history | PASS | `{"status":"success","data":[{"id":27,"userId":76,"action":"account_created","title":"Account Created","description":"You created your account.","oldValue":null,"newValue":null,"icon":"UserPlus","creat` |
-| auth-service | GET | /api/v1/auth/me | PASS | `{"status":"success","data":{"id":76,"username":"test_user_1770786147742","email":"test_user_1770786147742@example.com","createdAt":"2026-02-11T05:02:28.048Z"}}` |
-| auth-service | POST | /api/v1/auth/logout | PASS | `{"status":"success","message":"Logged out successfully"}` |
-| auth-service | POST | /api/v1/auth/reset-password/verify | PASS | `{"status":"success","message":"Password updated (mock)"}` |
-| auth-service | POST | /api/v1/auth/reset-password/request | PASS | `{"status":"success","message":"Reset link sent (mock)"}` |
-| auth-service | GET | /api/v1/auth/check-email | FAIL | `{"status":"error","message":"Server error"}` |
-| auth-service | GET | /api/v1/auth/check-username | FAIL | `{"status":"error","message":"Server error"}` |
-| auth-service | POST | /api/v1/auth/login | PASS | `{"status":"success","data":{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NzUsInVzZXJuYW1lIjoidXNlciIsImlhdCI6MTc3MDc4NjE2OSwiZXhwIjoxNzcxMzkwOTY5fQ.EXBV7SPCgzUSBGpffCQhJWrfsO-5X0_abqKv8YNoyAQ` |
-| auth-service | POST | /api/v1/auth/signup | FAIL | `{"status":"fail","message":"Email already exists"}` |
-| auth-service | POST | /api/v1/auth/register | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| comment-service | GET | /api/v1/comments/internal/post/:postId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_post_id\""}` |
-| comment-service | DELETE | /api/v1/comments/internal/:commentId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_comment_id\""}` |
-| comment-service | PATCH | /api/v1/comments/internal/:commentId/remove | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_comment_id\""}` |
-| comment-service | PATCH | /api/v1/comments/internal/:commentId/approve | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_comment_id\""}` |
-| comment-service | GET | /api/v1/comments/internal/:commentId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_comment_id\""}` |
-| comment-service | GET | /api/v1/comments/internal/stats | PASS | `{"success":true,"data":{"total":25,"pending":16,"flagged":2,"approvedToday":0,"removedToday":0}}` |
-| comment-service | GET | /api/v1/comments/internal/list | PASS | `{"success":true,"data":[{"id":31,"postId":1864,"userId":51,"username":"akbar","text":"hello","createdAt":"2026-02-10T06:13:08.558Z","likesCount":1,"status":"pending","reportedCount":0,"parentId":null,` |
-| comment-service | GET | /api/v1/comments/activity/reviews | PASS | `{"status":"success","data":[]}` |
-| comment-service | GET | /api/v1/comments/activity/comments | PASS | `{"status":"success","data":[]}` |
-| comment-service | POST | /api/v1/comments/check-comments | PASS | `{"message":"postIds array required"}` |
-| comment-service | DELETE | /api/v1/comments/:id/like | FAIL | `{"status":"error","message":"userId required"}` |
-| comment-service | POST | /api/v1/comments/:id/like | FAIL | `{"status":"error","message":"userId required"}` |
-| comment-service | DELETE | /api/v1/comments/:id | FAIL | `{"status":"error","message":"Server error"}` |
-| comment-service | GET | /api/v1/comments/ | PASS | `{"message":"postId query param required"}` |
-| comment-service | POST | /api/v1/comments/ | FAIL | `{"status":"error","message":"Missing required fields"}` |
-| feed-service | GET | /api/v1/feed/ | PASS | `{"status":"success","data":[{"createdAt":"2026-02-10T06:12:49.098Z","likesCount":0,"commentsCount":1,"viewsCount":0,"hideLikes":false,"commentsDisabled":false,"isHidden":false,"id":1864,"userId":51,"u` |
-| help-service | POST | /api/v1/help/api/help/feedback | FAIL | `{"status":"error","message":"notNull Violation: Feedback.articleId cannot be null,\nnotNull Violation: Feedback.isHelpful cannot be null"}` |
-| help-service | GET | /api/v1/help/api/help/search | PASS | `{"status":"success","data":[]}` |
-| help-service | GET | /api/v1/help/api/help/articles/:slug | FAIL | `{"status":"fail","message":"Article not found"}` |
-| help-service | GET | /api/v1/help/api/help/articles/featured | PASS | `{"status":"success","data":[{"id":"97ea79eb-4614-4ad4-accc-4f49571e99ec","title":"How to Reset Your password","slug":"reset-password","content":"To reset your password, go to the login page and click ` |
-| help-service | GET | /api/v1/help/api/help/categories | PASS | `{"status":"success","data":[{"id":"a10bbe73-07b8-4cad-ab53-2da40c1e8ad7","name":"Jaadoe Features","slug":"features","icon":"LayoutGrid","description":null,"parentId":null,"order":1,"createdAt":"2026-0` |
-| insight-service | GET | /api/v1/insights/heatmap | PASS | `{"status":"success","data":[]}` |
-| insight-service | GET | /api/v1/insights/content | PASS | `{"status":"success","data":[]}` |
-| insight-service | GET | /api/v1/insights/account | PASS | `{"status":"success","data":{"totalViews":0,"accountsReached":0,"accountsEngaged":0,"profileVisits":0,"followerGrowth":{"gained":0,"lost":0,"net":0},"timeSeries":[]}}` |
-| live-service | POST | /api/v1/live/webhook/done | FAIL | `Error` |
-| live-service | POST | /api/v1/live/webhook/publish | FAIL | `Error` |
-| live-service | POST | /api/v1/live/:id/chat | FAIL | `{"status":"error","message":"notNull Violation: LiveChatMessage.message cannot be null"}` |
-| live-service | POST | /api/v1/live/:id/end | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"dummy_id\""}` |
-| live-service | GET | /api/v1/live/:id | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"dummy_id\""}` |
-| live-service | GET | /api/v1/live/feed | PASS | `{"status":"success","data":[{"id":"9ddfdc57-d3d7-4c7c-8030-5af35172cb47","userId":"51","streamKey":"f744e24ebe4c42da85ecc9fcad50ca4emlgb7aow","ingestUrl":"rtmp://localhost:1935/live","title":"asdfasdf` |
-| live-service | POST | /api/v1/live/schedule | FAIL | `{"status":"error","message":"Title and scheduled time are required"}` |
-| live-service | POST | /api/v1/live/go-live | FAIL | `{"status":"error","message":"Title is required"}` |
-| media-service | GET | /api/v1/media/files/* | FAIL | `spawnSync C:\WINDOWS\system32\cmd.exe ETIMEDOUT` |
-| media-service | POST | /api/v1/media/finalize | PASS | `{"error":"Key is required"}` |
-| media-service | POST | /api/v1/media/presigned-url | FAIL | `{"status":"error","message":"Missing filename or fileType"}` |
-| media-service | GET | /api/v1/media/status/:id | PASS | `{"error":"invalid input syntax for type uuid: \"dummy_id\""}` |
-| media-service | POST | /api/v1/media/upload | PASS | `{"error":"No file uploaded"}` |
-| message-service | POST | /api/v1/messages/seen | FAIL | `{"status":"error","message":"WHERE parameter \"conversation_id\" has invalid \"undefined\" value"}` |
-| message-service | POST | /api/v1/messages/send | PASS | `{"status":"success","data":{"flagged":false,"id":72,"conversationId":18,"senderId":76,"content":"Hello message","type":"text","mediaUrl":null,"replyToStoryId":null,"isSeen":false,"updatedAt":"2026-02-` |
-| message-service | DELETE | /api/v1/messages/conversations/:conversationId | FAIL | `{"status":"error","message":"invalid input syntax for type integer: \"temp_conv_id\""}` |
-| message-service | POST | /api/v1/messages/conversations/:conversationId/report | PASS | `{"status":"success","message":"Report submitted"}` |
-| message-service | POST | /api/v1/messages/conversations/:conversationId/unblock | FAIL | `{"status":"error","message":"invalid input syntax for type integer: \"temp_conv_id\""}` |
-| message-service | POST | /api/v1/messages/conversations/:conversationId/block | FAIL | `{"status":"error","message":"invalid input syntax for type integer: \"temp_conv_id\""}` |
-| message-service | PATCH | /api/v1/messages/conversations/:conversationId/mute | FAIL | `{"status":"error","message":"invalid input syntax for type integer: \"temp_conv_id\""}` |
-| message-service | GET | /api/v1/messages/conversations/:conversationId/details | FAIL | `{"status":"error","message":"invalid input syntax for type integer: \"temp_conv_id\""}` |
-| message-service | GET | /api/v1/messages/conversations/:conversationId | FAIL | `{"status":"error","message":"Failed to fetch messages"}` |
-| message-service | GET | /api/v1/messages/conversations | PASS | `{"status":"success","data":[{"id":18,"user1Id":76,"user2Id":76,"lastMessageId":null,"lastMessageContent":"Hello message","lastMessageSenderId":76,"lastMessageAt":"2026-02-11T05:02:59.948Z","riskScore"` |
-| message-service | GET | /api/v1/messages/activity/story-replies | PASS | `{"status":"success","data":[]}` |
-| message-service | GET | /api/v1/messages/internal/conversations/:conversationId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_conv_id\""}` |
-| message-service | PATCH | /api/v1/messages/internal/conversations/:conversationId/mark-safe | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_conv_id\""}` |
-| message-service | GET | /api/v1/messages/internal/conversations/:conversationId/transcript | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_conv_id\""}` |
-| message-service | GET | /api/v1/messages/internal/stats | PASS | `{"success":true,"data":{"highRisk":1,"underInvestigation":0,"safeCleared":8}}` |
-| message-service | GET | /api/v1/messages/internal/conversations | PASS | `{"success":true,"data":[{"id":7,"user1Id":7,"user2Id":20,"lastMessageId":null,"lastMessageContent":"I will find where you live and make you regret this.","lastMessageSenderId":7,"lastMessageAt":"2026-` |
-| notification-service | GET | /api/v1/notifications/admin/stats | FAIL | `{"status":"error","message":"Invalid token"}` |
-| notification-service | GET | /api/v1/notifications/admin/history | FAIL | `{"status":"error","message":"Invalid token"}` |
-| notification-service | POST | /api/v1/notifications/admin/broadcast | FAIL | `{"status":"error","message":"Invalid token"}` |
-| notification-service | PATCH | /api/v1/notifications/read-all | PASS | `{"status":"success","message":"All notifications marked as read"}` |
-| notification-service | PATCH | /api/v1/notifications/:id/read | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| notification-service | GET | /api/v1/notifications/unread-count | PASS | `{"status":"success","data":{"count":0}}` |
-| notification-service | GET | /api/v1/notifications/ | PASS | `{"status":"success","data":[]}` |
-| notification-service | PATCH | /api/v1/notifications/settings | PASS | `{"status":"success","data":{"id":"229ad457-b46c-4db5-8259-1b99d9f08f4e","pauseAllPush":false,"likes":"EVERYONE","comments":"EVERYONE","mentions":"EVERYONE","follows":true,"messages":true,"storyReplies` |
-| notification-service | GET | /api/v1/notifications/settings | PASS | `{"status":"success","data":{"id":"229ad457-b46c-4db5-8259-1b99d9f08f4e","userId":76,"pauseAllPush":false,"likes":"EVERYONE","comments":"EVERYONE","mentions":"EVERYONE","follows":true,"messages":true,"` |
-| post-service | PATCH | /api/v1/posts/internal/reports/:id/status | PASS | `{"success":false,"message":"invalid input syntax for type integer: \"temp_post_id\""}` |
-| post-service | GET | /api/v1/posts/internal/reports/:id | PASS | `{"success":false,"message":"invalid input syntax for type integer: \"temp_post_id\""}` |
-| post-service | GET | /api/v1/posts/internal/reports | PASS | `{"success":true,"data":[{"id":5,"postId":1863,"reportedBy":51,"reason":"spam","description":"Fake engagement","status":"pending","created_at":"2026-02-10T06:20:10.930Z","updated_at":"2026-02-10T06:20:` |
-| post-service | GET | /api/v1/posts/internal/reports/stats | PASS | `{"success":true,"data":{"count":0}}` |
-| post-service | DELETE | /api/v1/posts/:id/bookmark | PASS | `{"message":"User ID required"}` |
-| post-service | POST | /api/v1/posts/:id/bookmark | PASS | `{"message":"User ID required"}` |
-| post-service | POST | /api/v1/posts/:id/report | FAIL | `{"status":"error","message":"Invalid Post ID"}` |
-| post-service | PUT | /api/v1/posts/:id/toggle-comments | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| post-service | PUT | /api/v1/posts/:id/hide-likes | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| post-service | PUT | /api/v1/posts/:id | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| post-service | DELETE | /api/v1/posts/:id | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| post-service | GET | /api/v1/posts/:id | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| post-service | GET | /api/v1/posts/:id/embed | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| post-service | GET | /api/v1/posts/activity/posts | PASS | `{"status":"success","data":[]}` |
-| post-service | GET | /api/v1/posts/activity/likes | PASS | `{"status":"success","data":[]}` |
-| post-service | POST | /api/v1/posts/check-likes | PASS | `{"message":"User ID and postIds array required"}` |
-| post-service | GET | /api/v1/posts/saved | PASS | `{"status":"success","data":[]}` |
-| post-service | DELETE | /api/v1/posts/:id/like | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| post-service | POST | /api/v1/posts/:id/like | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| post-service | GET | /api/v1/posts/ | PASS | `{"status":"success","data":[{"id":1863,"userId":55,"username":"farhan","caption":"test 4","mediaUrl":"http://localhost:5000/api/v1/media/files/Jaadoe/posts/images/temp_cbf2dedb-ddb9-41f6-80e0-1aaa2444` |
-| post-service | GET | /api/v1/posts/explore | PASS | `{"status":"success","data":[{"id":533,"userId":2038,"username":"user_demo_38_877","caption":"Analytics demo post #190. #metrics #2026","mediaUrl":"https://picsum.photos/seed/1190/600/600","thumbnailUr` |
-| post-service | POST | /api/v1/posts/ | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| post-service | GET | /api/v1/posts/internal/:postId/bookmarks | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_post_id\""}` |
-| post-service | GET | /api/v1/posts/internal/:postId/likes | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_post_id\""}` |
-| post-service | GET | /api/v1/posts/internal/:postId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_post_id\""}` |
-| post-service | DELETE | /api/v1/posts/internal/:postId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_post_id\""}` |
-| post-service | PATCH | /api/v1/posts/internal/:postId/unhide | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_post_id\""}` |
-| post-service | PATCH | /api/v1/posts/internal/:postId/hide | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_post_id\""}` |
-| post-service | GET | /api/v1/posts/internal/user/:userId | PASS | `{"success":true,"data":[]}` |
-| post-service | GET | /api/v1/posts/internal/stats/user/:userId | PASS | `{"success":true,"data":{"count":0}}` |
-| post-service | GET | /api/v1/posts/internal/list | PASS | `{"success":true,"data":[{"id":1863,"userId":55,"username":"farhan","caption":"test 4","mediaUrl":"http://localhost:5000/api/v1/media/files/Jaadoe/posts/images/temp_cbf2dedb-ddb9-41f6-80e0-1aaa24448f5f` |
-| post-service | GET | /api/v1/posts/internal/recent | PASS | `{"success":true,"data":[{"id":1863,"userId":55,"username":"farhan","caption":"test 4","mediaUrl":"http://localhost:5000/api/v1/media/files/Jaadoe/posts/images/temp_cbf2dedb-ddb9-41f6-80e0-1aaa24448f5f` |
-| post-service | GET | /api/v1/posts/internal/top | PASS | `{"success":true,"data":[{"contentId":759,"creatorUsername":"user_demo_138_127","views":20316,"likes":1989,"engagementRate":"11.7"},{"contentId":907,"creatorUsername":"user_demo_53_25","views":20464,"l` |
-| post-service | GET | /api/v1/posts/internal/engagement/trends | PASS | `{"success":true,"data":[{"month":"Jan","engagementRate":"1256.9"},{"month":"Feb","engagementRate":"982.3"}]}` |
-| post-service | GET | /api/v1/posts/internal/stats/engagement | PASS | `{"success":true,"data":{"rate":"11.7"}}` |
-| post-service | GET | /api/v1/posts/internal/stats/overall | PASS | `{"success":true,"data":{"likes":1679427,"comments":405561,"views":17843069}}` |
-| post-service | GET | /api/v1/posts/internal/stats | PASS | `{"success":true,"data":{"total":1857,"growth":46}}` |
-| reel-service | DELETE | /api/v1/reels/:id/like | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| reel-service | POST | /api/v1/reels/:id/like | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| reel-service | GET | /api/v1/reels/activity/likes | PASS | `{"status":"success","data":[]}` |
-| reel-service | GET | /api/v1/reels/activity/reels | PASS | `{"status":"success","data":[]}` |
-| reel-service | GET | /api/v1/reels/ | PASS | `{"status":"success","data":[{"id":49,"userId":50,"username":"user_test_50","caption":"Reel 1 #fun","videoUrl":"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4","like` |
-| reel-service | POST | /api/v1/reels/ | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| reel-service | GET | /api/v1/reels/internal/:reelId/likes | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_reel_id\""}` |
-| reel-service | GET | /api/v1/reels/internal/:reelId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_reel_id\""}` |
-| reel-service | GET | /api/v1/reels/internal/recent | PASS | `{"success":true,"data":[{"id":49,"userId":50,"username":"user_test_50","caption":"Reel 1 #fun","videoUrl":"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4","likesCou` |
-| reel-service | DELETE | /api/v1/reels/internal/:reelId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_reel_id\""}` |
-| reel-service | PATCH | /api/v1/reels/internal/:reelId/unhide | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_reel_id\""}` |
-| reel-service | PATCH | /api/v1/reels/internal/:reelId/hide | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_reel_id\""}` |
-| reel-service | GET | /api/v1/reels/internal/list | PASS | `{"success":true,"data":[{"id":49,"userId":50,"username":"user_test_50","caption":"Reel 1 #fun","videoUrl":"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4","likesCou` |
-| reel-service | GET | /api/v1/reels/internal/user/:userId | PASS | `{"success":true,"data":[]}` |
-| reel-service | GET | /api/v1/reels/internal/stats/user/:userId | PASS | `{"success":true,"data":{"count":0}}` |
-| reel-service | GET | /api/v1/reels/internal/stats/overall | PASS | `{"success":true,"data":{"likes":11917,"comments":3,"views":0}}` |
-| reel-service | GET | /api/v1/reels/internal/stats | PASS | `{"success":true,"data":{"total":49,"growth":100}}` |
-| search-service | GET | /api/v1/search/users | PASS | `{"status":"success","data":[]}` |
-| search-service | GET | /api/v1/search/ | PASS | `{"status":"success","data":[]}` |
-| story-service | DELETE | /api/v1/stories/:id/react | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| story-service | POST | /api/v1/stories/:id/react | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| story-service | POST | /api/v1/stories/:id/view | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| story-service | POST | /api/v1/stories/:id/report | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| story-service | DELETE | /api/v1/stories/:id | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| story-service | GET | /api/v1/stories/activity/story-replies | PASS | `{"status":"success","data":[]}` |
-| story-service | GET | /api/v1/stories/archive | PASS | `{"status":"success","data":[]}` |
-| story-service | GET | /api/v1/stories/ | PASS | `{"status":"success","data":[{"id":85,"userId":51,"username":"akbar","mediaUrl":"http://localhost:5000/api/v1/media/files/Jaadoe/stories/temp_12921bca-d5a1-44aa-98d2-92994ebd7dbe_opt.webp","thumbnailUr` |
-| story-service | POST | /api/v1/stories/ | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| story-service | DELETE | /api/v1/stories/internal/:storyId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \"temp_story_id\""}` |
-| story-service | GET | /api/v1/stories/internal/:storyId/likes | PASS | `{"success":false,"message":"invalid input syntax for type integer: \"temp_story_id\""}` |
-| story-service | GET | /api/v1/stories/internal/:storyId/views | PASS | `{"success":false,"message":"invalid input syntax for type integer: \"temp_story_id\""}` |
-| story-service | GET | /api/v1/stories/internal/list | PASS | `{"success":true,"data":[{"id":85,"userId":51,"username":"akbar","mediaUrl":"http://localhost:5000/api/v1/media/files/Jaadoe/stories/temp_12921bca-d5a1-44aa-98d2-92994ebd7dbe_opt.webp","thumbnailUrl":n` |
-| story-service | GET | /api/v1/stories/internal/stats | PASS | `{"success":true,"data":{"total":83}}` |
-| story-service | DELETE | /api/v1/stories/highlights/:highlightId | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| story-service | PUT | /api/v1/stories/highlights/:highlightId | FAIL | `{"status":"error","message":"Title is required"}` |
-| story-service | GET | /api/v1/stories/highlights/:highlightId/stories | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| story-service | GET | /api/v1/stories/highlights/:userId | PASS | `{"status":"success","data":[]}` |
-| story-service | POST | /api/v1/stories/highlights | FAIL | `{"status":"error","message":"Title is required"}` |
-| story-service | GET | /api/v1/stories/activity/highlights | PASS | `{"status":"success","data":[]}` |
-| story-service | GET | /api/v1/stories/stories/me | PASS | `{"status":"success","data":[]}` |
-| user-service | DELETE | /api/v1/users/profile/followers/:followerId | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| user-service | GET | /api/v1/users/profile/:userId/following | PASS | `{"status":"success","data":[]}` |
-| user-service | GET | /api/v1/users/profile/:userId/followers | PASS | `{"status":"success","data":[]}` |
-| user-service | GET | /api/v1/users/profile/:userId/posts | PASS | `{"status":"success","data":[]}` |
-| user-service | GET | /api/v1/users/profile/:username | FAIL | `{"status":"error","message":"User not found"}` |
-| user-service | GET | /api/v1/users/profile/activity/account-history | PASS | `{"status":"success","data":[]}` |
-| user-service | POST | /api/v1/users/profile/batch | FAIL | `{"status":"error","message":"userIds array required"}` |
-| user-service | GET | /api/v1/users/profile/suggestions | PASS | `{"status":"success","data":[{"userId":2055,"username":"user_demo_55_251","fullName":"Demo User 55","profilePicture":"https://i.pravatar.cc/150?u=2055","isFollowing":false},{"userId":2077,"username":"u` |
-| user-service | GET | /api/v1/users/profile/me/saved | PASS | `{"status":"success","data":[]}` |
-| user-service | DELETE | /api/v1/users/profile/profile-photo | PASS | `{"status":"success","data":{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"profilePicture":"","website":null,"gender":null,"isPrivate":false,"showAcco` |
-| user-service | POST | /api/v1/users/profile/profile-photo | PASS | `{"status":"success","data":{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"website":null,"gender":null,"isPrivate":false,"showAccountSuggestions":true` |
-| user-service | PUT | /api/v1/users/profile/me | PASS | `{"status":"success","data":{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"profilePicture":"","website":null,"gender":null,"isPrivate":false,"showAcco` |
-| user-service | GET | /api/v1/users/profile/me | PASS | `{"status":"success","data":{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"profilePicture":"","website":null,"gender":null,"isPrivate":false,"showAcco` |
-| user-service | POST | /api/v1/users/profile/help/feedback | FAIL | `{"status":"error","message":"Rating is required"}` |
-| user-service | GET | /api/v1/users/profile/help/support-requests | PASS | `{"status":"success","data":[]}` |
-| user-service | GET | /api/v1/users/profile/help/feature-limits | PASS | `{"status":"success","data":[]}` |
-| user-service | GET | /api/v1/users/profile/help/violations | PASS | `{"status":"success","data":[]}` |
-| user-service | GET | /api/v1/users/profile/help/account-status | PASS | `{"status":"success","data":{"lastChecked":"2026-02-11T05:03:13.112Z","userId":76,"status":"OK"}}` |
-| user-service | PATCH | /api/v1/users/profile/settings/apps/:id/revoke | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"76\""}` |
-| user-service | GET | /api/v1/users/profile/settings/apps | PASS | `{"status":"success","data":[]}` |
-| user-service | PATCH | /api/v1/users/profile/settings/general | PASS | `{"status":"success","data":{"saveStoryToArchive":true,"reduceMotion":false,"languageCode":"en","userId":76,"updated_at":"2026-02-11T05:03:13.354Z"}}` |
-| user-service | GET | /api/v1/users/profile/settings/general | PASS | `{"status":"success","data":{"userId":76,"saveStoryToArchive":true,"reduceMotion":false,"languageCode":"en","updated_at":"2026-02-11T05:03:13.354Z"}}` |
-| user-service | GET | /api/v1/users/profile/settings/subscriptions | PASS | `{"status":"success","data":[]}` |
-| user-service | PATCH | /api/v1/users/profile/settings/like-share | PASS | `{"status":"success","data":{"hideLikeShareCounts":false,"userId":76,"created_at":"2026-02-11T05:03:13.562Z"}}` |
-| user-service | GET | /api/v1/users/profile/settings/like-share | PASS | `{"status":"success","data":{"userId":76,"hideLikeShareCounts":false,"created_at":"2026-02-11T05:03:13.562Z"}}` |
-| user-service | PATCH | /api/v1/users/profile/settings/content-preferences | PASS | `{"status":"success","data":{"sensitiveContentLevel":"limit_more","userId":76,"created_at":"2026-02-11T05:03:13.706Z"}}` |
-| user-service | GET | /api/v1/users/profile/settings/content-preferences | PASS | `{"status":"success","data":{"userId":76,"sensitiveContentLevel":"limit_more","created_at":"2026-02-11T05:03:13.706Z"}}` |
-| user-service | DELETE | /api/v1/users/profile/settings/muted/:userId | PASS | `{"status":"success","message":"Account unmuted"}` |
-| user-service | POST | /api/v1/users/profile/settings/muted/:userId | FAIL | `{"status":"error","message":"Cannot mute yourself"}` |
-| user-service | GET | /api/v1/users/profile/settings/muted | PASS | `{"status":"success","data":[]}` |
-| user-service | DELETE | /api/v1/users/profile/settings/hidden-words/words/:id | FAIL | `{"status":"error","message":"invalid input syntax for type uuid: \"76\""}` |
-| user-service | POST | /api/v1/users/profile/settings/hidden-words/words | FAIL | `{"status":"error","message":"Word is required"}` |
-| user-service | PUT | /api/v1/users/profile/settings/hidden-words | PASS | `{"status":"success","data":{"hideComments":false,"advancedFilter":false,"hideMessageRequests":false,"customHideComments":false,"customHideMessageRequests":false,"userId":76}}` |
-| user-service | GET | /api/v1/users/profile/settings/hidden-words | PASS | `{"status":"success","data":{"settings":{"userId":76,"hideComments":false,"advancedFilter":false,"hideMessageRequests":false,"customHideComments":false,"customHideMessageRequests":false},"customWords":` |
-| user-service | DELETE | /api/v1/users/profile/settings/restricted/:userId | PASS | `{"status":"success","message":"Account unrestricted"}` |
-| user-service | POST | /api/v1/users/profile/settings/restricted/:userId | FAIL | `{"status":"error","message":"Cannot restrict yourself"}` |
-| user-service | GET | /api/v1/users/profile/settings/restricted | PASS | `{"status":"success","data":[]}` |
-| user-service | PUT | /api/v1/users/profile/settings/sharing | PASS | `{"status":"success","data":{"storyShares":true,"postToStory":true,"reposts":true,"websiteEmbeds":true,"featuredRequests":true,"userId":76}}` |
-| user-service | GET | /api/v1/users/profile/settings/sharing | PASS | `{"status":"success","data":{"userId":76,"storyShares":true,"postToStory":true,"reposts":true,"websiteEmbeds":true,"featuredRequests":true}}` |
-| user-service | PUT | /api/v1/users/profile/settings/comments | PASS | `{"status":"success","data":{"allowFrom":"everyone","allowGif":true,"userId":76,"updated_at":"2026-02-11T05:03:14.646Z"}}` |
-| user-service | GET | /api/v1/users/profile/settings/comments | PASS | `{"status":"success","data":{"userId":76,"allowFrom":"everyone","allowGif":true,"updated_at":"2026-02-11T05:03:14.646Z","counts":{"following":0,"followers":0,"mutual":0}}}` |
-| user-service | PATCH | /api/v1/users/profile/tags/:id/remove | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| user-service | PATCH | /api/v1/users/profile/tags/:id/approve | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| user-service | GET | /api/v1/users/profile/tags/pending | PASS | `{"status":"success","data":[]}` |
-| user-service | PATCH | /api/v1/users/profile/settings/tags-mentions | PASS | `{"status":"success","data":{"allowTagsFrom":"everyone","manualTagApproval":false,"allowMentionsFrom":"everyone","userId":76,"updated_at":"2026-02-11T05:03:15.032Z","created_at":"2026-02-11T05:03:15.03` |
-| user-service | GET | /api/v1/users/profile/settings/tags-mentions | PASS | `{"status":"success","data":{"userId":76,"allowTagsFrom":"everyone","manualTagApproval":false,"allowMentionsFrom":"everyone","created_at":"2026-02-11T05:03:15.032Z","updated_at":"2026-02-11T05:03:15.03` |
-| user-service | PATCH | /api/v1/users/profile/settings/activity-status | PASS | `{"status":"success","data":{"showActivityStatus":true,"userId":76,"updated_at":"2026-02-11T05:03:15.181Z","created_at":"2026-02-11T05:03:15.181Z","lastActiveAt":null}}` |
-| user-service | GET | /api/v1/users/profile/settings/activity-status | PASS | `{"status":"success","data":{"userId":76,"showActivityStatus":true,"lastActiveAt":null,"created_at":"2026-02-11T05:03:15.181Z","updated_at":"2026-02-11T05:03:15.181Z"}}` |
-| user-service | PATCH | /api/v1/users/profile/settings/story-replies | PASS | `{"status":"success","data":{"storyReplies":"everyone","userId":76,"updated_at":"2026-02-11T05:03:15.313Z","created_at":"2026-02-11T05:03:15.313Z"}}` |
-| user-service | GET | /api/v1/users/profile/settings/story-replies | PASS | `{"status":"success","data":{"userId":76,"storyReplies":"everyone","created_at":"2026-02-11T05:03:15.313Z","updated_at":"2026-02-11T05:03:15.313Z"}}` |
-| user-service | PATCH | /api/v1/users/profile/settings/messages | PASS | `{"status":"success","data":{"messageRequestsFrom":"everyone","groupAddPermission":"everyone","userId":76,"updated_at":"2026-02-11T05:03:15.460Z","created_at":"2026-02-11T05:03:15.460Z"}}` |
-| user-service | GET | /api/v1/users/profile/settings/messages | PASS | `{"status":"success","data":{"userId":76,"messageRequestsFrom":"everyone","groupAddPermission":"everyone","created_at":"2026-02-11T05:03:15.460Z","updated_at":"2026-02-11T05:03:15.460Z"}}` |
-| user-service | DELETE | /api/v1/users/profile/story-privacy/unhide/:hiddenUserId | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| user-service | POST | /api/v1/users/profile/story-privacy/hide | FAIL | `{"status":"error","message":"Hidden User ID required"}` |
-| user-service | GET | /api/v1/users/profile/story-privacy/hidden-users | PASS | `{"status":"success","data":[]}` |
-| user-service | DELETE | /api/v1/users/profile/unblock/:userId | PASS | `{"status":"success","message":"User unblocked"}` |
-| user-service | POST | /api/v1/users/profile/block/:userId | FAIL | `{"status":"error","message":"Cannot block yourself"}` |
-| user-service | GET | /api/v1/users/profile/blocked-users | PASS | `{"status":"success","data":[]}` |
-| user-service | DELETE | /api/v1/users/profile/close-friends/:friendId | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| user-service | POST | /api/v1/users/profile/close-friends/:friendId | FAIL | `{"status":"error","message":"Internal Server Error"}` |
-| user-service | GET | /api/v1/users/profile/close-friends | PASS | `{"status":"success","data":[]}` |
-| user-service | GET | /api/v1/users/profile/reports/me | PASS | `{"status":"success","data":[]}` |
-| user-service | POST | /api/v1/users/profile/report-problem | FAIL | `{"status":"error","message":"Please provide some details or attach a file."}` |
-| user-service | GET | /api/v1/users/internal/:userId/follow-counts | PASS | `{"success":true,"data":{"followersCount":0,"followingCount":0}}` |
-| user-service | GET | /api/v1/users/internal/:userId | PASS | `{"success":true,"data":{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"profilePicture":"","website":null,"gender":null,"isPrivate":false,"showAccountS` |
-| user-service | POST | /api/v1/users/internal/bulk | PASS | `{"success":false,"message":"userIds must be an array"}` |
-| user-service | GET | /api/v1/users/internal/recent | PASS | `{"success":true,"data":[{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"profilePicture":"","website":null,"gender":null,"isPrivate":false,"showAccount` |
-| user-service | DELETE | /api/v1/users/internal/:userId | PASS | `{"success":true,"message":"User soft deleted"}` |
-| user-service | PATCH | /api/v1/users/internal/:userId/unban | PASS | `{"success":true,"message":"User unbanned"}` |
-| user-service | PATCH | /api/v1/users/internal/:userId/ban | PASS | `{"success":true,"message":"User banned"}` |
-| user-service | GET | /api/v1/users/internal/list | PASS | `{"success":true,"data":[{"id":876,"userId":76,"username":"test_user_1770786147742","fullName":"Test API User","bio":null,"profilePicture":"","website":null,"gender":null,"isPrivate":false,"showAccount` |
-| user-service | GET | /api/v1/users/internal/countries | PASS | `{"success":true,"data":[{"name":"Unknown","count":"276"}]}` |
-| user-service | GET | /api/v1/users/internal/login-methods | PASS | `{"success":true,"data":[{"method":"email","count":"153"},{"method":"google","count":"81"},{"method":"facebook","count":"42"}]}` |
-| user-service | GET | /api/v1/users/internal/growth | PASS | `{"success":true,"data":[{"month":"Jan","count":"171"},{"month":"Feb","count":"34"}]}` |
-| user-service | DELETE | /api/v1/users/internal/avatars/:avatarId | PASS | `{"success":false,"error":"invalid input syntax for type integer: \":avatarId\""}` |
-| user-service | PATCH | /api/v1/users/internal/avatars/:avatarId/reject | PASS | `{"success":false,"error":"invalid input syntax for type integer: \":avatarId\""}` |
-| user-service | PATCH | /api/v1/users/internal/avatars/:avatarId/approve | PASS | `{"success":false,"error":"invalid input syntax for type integer: \":avatarId\""}` |
-| user-service | GET | /api/v1/users/internal/avatars/stats | PASS | `{"success":true,"data":{"total":0,"pending":0,"approved":0,"rejected":0}}` |
-| user-service | GET | /api/v1/users/internal/avatars | PASS | `{"success":true,"data":[],"pagination":{"total":0,"page":1,"limit":12,"totalPages":0}}` |
-| user-service | GET | /api/v1/users/internal/stats | PASS | `{"success":true,"data":{"total":276,"growth":57}}` |
-| user-service | PATCH | /api/v1/users/internal/reports/:id/status | PASS | `{"success":false,"message":"invalid input syntax for type uuid: \"76\""}` |
-| user-service | GET | /api/v1/users/internal/reports/:id | PASS | `{"success":false,"message":"invalid input syntax for type uuid: \"76\""}` |
-| user-service | GET | /api/v1/users/internal/reports | PASS | `{"success":true,"data":[{"id":"e3611a21-555d-47ad-b70c-47003bab87f2","userId":51,"reportedUsername":"akbar","reason":"App Feedback / Problem","description":"this is test report a problem in help page ` |
-| user-service | GET | /api/v1/users/internal/reports/stats | PASS | `{"success":true,"data":{"count":0}}` |
-| user-service | POST | /api/v1/users/requests/reject | FAIL | `{"status":"error","message":"WHERE parameter \"requesterId\" has invalid \"undefined\" value"}` |
-| user-service | POST | /api/v1/users/requests/accept | FAIL | `{"status":"error","message":"WHERE parameter \"requesterId\" has invalid \"undefined\" value"}` |
-| user-service | GET | /api/v1/users/requests | PASS | `{"status":"success","data":[]}` |
-| user-service | GET | /api/v1/users/:userId/following | PASS | `{"success":true,"data":[]}` |
-| user-service | GET | /api/v1/users/:userId/followers | PASS | `{"success":true,"data":[]}` |
-| user-service | GET | /api/v1/users/:userId/follow/status | PASS | `{"status":"success","data":{"isFollowing":{"padding":false,"following":false,"requested":false}}}` |
-| user-service | DELETE | /api/v1/users/:userId/follow | PASS | `{"status":"none","isFollowing":false,"isRequested":false,"followersCount":0}` |
-| user-service | POST | /api/v1/users/:userId/follow | FAIL | `{"status":"error","message":"You cannot follow yourself"}` |
+| ad-service | POST | /api/v1/ads/ | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | DELETE | /api/v1/ads/:id/comments/:commentId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/ads/temp_comment_id/comments/temp_comment_id" -H "Content-Type: application/json"` |
+| ad-service | POST | /api/v1/ads/:id/comments | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/temp_ad_id/comments" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| ad-service | GET | /api/v1/ads/:id/comments | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/ads/temp_ad_id/comments" -H "Content-Type: application/json"` |
+| ad-service | POST | /api/v1/ads/:id/bookmark | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/temp_ad_id/bookmark" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | POST | /api/v1/ads/:id/like | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/temp_ad_id/like" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | GET | /api/v1/ads/:id/embed | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/ads/temp_ad_id/embed" -H "Content-Type: application/json"` |
+| ad-service | PUT | /api/v1/ads/:id/toggle-comments | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/ads/temp_ad_id/toggle-comments" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| ad-service | PUT | /api/v1/ads/:id/hide-likes | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/ads/temp_ad_id/hide-likes" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | PUT | /api/v1/ads/:id | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/ads/temp_ad_id" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | DELETE | /api/v1/ads/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/ads/temp_ad_id" -H "Content-Type: application/json"` |
+| ad-service | POST | /api/v1/ads/click | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/click" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | POST | /api/v1/ads/impression | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/impression" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | GET | /api/v1/ads/active | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/ads/active" -H "Content-Type: application/json"` |
+| ad-service | GET | /api/v1/ads/eligible-content | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/ads/eligible-content" -H "Content-Type: application/json"` |
+| ad-service | POST | /api/v1/ads/:id/publish | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/temp_ad_id/publish" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | PUT | /api/v1/ads/:id/budget | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/ads/temp_ad_id/budget" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | PUT | /api/v1/ads/:id/targeting | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/ads/temp_ad_id/targeting" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | PUT | /api/v1/ads/:id/details | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/ads/temp_ad_id/details" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | POST | /api/v1/ads/:id/boost-content | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/temp_ad_id/boost-content" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | POST | /api/v1/ads/:id/media | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/temp_ad_id/media" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| ad-service | POST | /api/v1/ads/draft | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/ads/draft" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/users/:userId/reels | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/users/temp_user_id/reels" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/users/:userId/posts | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/users/temp_user_id/posts" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/users/:userId/following | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/users/temp_user_id/following" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/users/:userId/followers | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/users/temp_user_id/followers" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/users/:userId/details | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/users/temp_user_id/details" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/users/:userId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/users/temp_user_id" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/users/:userId/unban | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/users/temp_user_id/unban" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | PATCH | /api/v1/admin/users/:userId/ban | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/users/temp_user_id/ban" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/users/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/users/" -H "Content-Type: application/json"` |
+| admin-service | PUT | /api/v1/admin/settings/ | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/admin/settings/" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/settings/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/settings/" -H "Content-Type: application/json"` |
+| admin-service | PUT | /api/v1/admin/settings/profile | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/admin/settings/profile" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/settings/profile | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/settings/profile" -H "Content-Type: application/json"` |
+| admin-service | POST | /api/v1/admin/reports/:id/ban-user | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/admin/reports/temp_user_id/ban-user" -H "Content-Type: application/json" -d "{\"reason\":\"SPAM\",\"description\":\"Test report\"}"` |
+| admin-service | POST | /api/v1/admin/reports/:id/ignore | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/admin/reports/temp_user_id/ignore" -H "Content-Type: application/json" -d "{\"reason\":\"SPAM\",\"description\":\"Test report\"}"` |
+| admin-service | GET | /api/v1/admin/reports/:id | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/reports/temp_user_id" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/reports/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/reports/" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/reports/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/reports/stats" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/monitoring/logs/:serviceName/:type | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/monitoring/logs/:serviceName/:type" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/monitoring/statuses | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/monitoring/statuses" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/reels | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/reels" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/posts | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/posts" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/comments/:commentId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/comments/temp_comment_id" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/stories/:storyId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/stories/temp_story_id" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/reels/:reelId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/reels/temp_reel_id" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/posts/:postId/hide | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/posts/temp_post_id/hide" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/img.` |
+| admin-service | DELETE | /api/v1/admin/posts/:postId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/posts/temp_post_id" -H "Content-Type: application/json"` |
+| admin-service | POST | /api/v1/admin/default-avatars/ | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/admin/default-avatars/" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/default-avatars/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/default-avatars/" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/languages/:id/set-default | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/languages/temp_user_id/set-default" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | PATCH | /api/v1/admin/languages/:id/disable | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/languages/temp_user_id/disable" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | PATCH | /api/v1/admin/languages/:id/enable | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/languages/temp_user_id/enable" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/languages/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/languages/" -H "Content-Type: application/json"` |
+| admin-service | POST | /api/v1/admin/feature | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/admin/feature" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | PATCH | /api/v1/admin/:id/block | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/temp_user_id/block" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/trending | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/trending" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/hashtags/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/hashtags/temp_user_id" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/hashtags/:id/toggle-visibility | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/hashtags/temp_user_id/toggle-visibility" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\"` |
+| admin-service | GET | /api/v1/admin/hashtags/trending | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/hashtags/trending" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/hashtags/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/hashtags/" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/analytics/geo-users | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/analytics/geo-users" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/explore/performance-metrics | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/explore/performance-metrics" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/explore/category-distribution | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/explore/category-distribution" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/explore/trending-topics/:topicId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/explore/trending-topics/:topicId" -H "Content-Type: application/json"` |
+| admin-service | POST | /api/v1/admin/explore/trending-topics | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/admin/explore/trending-topics" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/explore/trending-topics | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/explore/trending-topics" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/explore/algorithm | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/explore/algorithm" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/explore/algorithm | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/explore/algorithm" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/messages/:conversationId/flag | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/messages/temp_conv_id/flag" -H "Content-Type: application/json" -d "{\"content\":\"Hello message\",\"receiverId\":\"temp_user_id\"}` |
+| admin-service | GET | /api/v1/admin/messages/reported | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/messages/reported" -H "Content-Type: application/json"` |
+| admin-service | POST | /api/v1/admin/dm-oversight/conversations/:conversationId/ban-users | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/admin/dm-oversight/conversations/temp_conv_id/ban-users" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"d` |
+| admin-service | PATCH | /api/v1/admin/dm-oversight/conversations/:conversationId/mark-safe | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/dm-oversight/conversations/temp_conv_id/mark-safe" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"` |
+| admin-service | GET | /api/v1/admin/dm-oversight/conversations/:conversationId/transcript | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dm-oversight/conversations/temp_conv_id/transcript" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/dm-oversight/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dm-oversight/stats" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/dm-oversight/conversations | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dm-oversight/conversations" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/dashboard/recent-posts | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dashboard/recent-posts" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/dashboard/recent-users | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dashboard/recent-users" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/dashboard/login-methods | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dashboard/login-methods" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/dashboard/media-distribution | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dashboard/media-distribution" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/dashboard/user-growth | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dashboard/user-growth" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/dashboard/activity-feed | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dashboard/activity-feed" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/dashboard/kpis | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/dashboard/kpis" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/moderation/stories/:storyId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/moderation/stories/temp_story_id" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/moderation/stories/:storyId/interactions | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/moderation/stories/temp_story_id/interactions" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/moderation/stories | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/moderation/stories" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/moderation/reels/:reelId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/moderation/reels/temp_reel_id" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/moderation/reels/:reelId/unhide | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/moderation/reels/temp_reel_id/unhide" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}` |
+| admin-service | PATCH | /api/v1/admin/moderation/reels/:reelId/hide | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/moderation/reels/temp_reel_id/hide" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/moderation/reels/:reelId/interactions | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/moderation/reels/temp_reel_id/interactions" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/moderation/reels | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/moderation/reels" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/moderation/posts/:postId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/moderation/posts/temp_post_id" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/moderation/posts/:postId/unhide | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/moderation/posts/temp_post_id/unhide" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://exa` |
+| admin-service | PATCH | /api/v1/admin/moderation/posts/:postId/hide | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/moderation/posts/temp_post_id/hide" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://examp` |
+| admin-service | GET | /api/v1/admin/moderation/posts/:postId/interactions | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/moderation/posts/temp_post_id/interactions" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/moderation/posts | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/moderation/posts" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/comments/:commentId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/comments/temp_comment_id" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/comments/:commentId/remove | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/comments/temp_comment_id/remove" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| admin-service | PATCH | /api/v1/admin/comments/:commentId/approve | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/comments/temp_comment_id/approve" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| admin-service | GET | /api/v1/admin/comments/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/comments/stats" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/comments/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/comments/" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/cms/pages/:id | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/cms/pages/temp_user_id" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/cms/pages | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/cms/pages" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/avatars/:avatarId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/avatars/:avatarId" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/avatars/:avatarId/reject | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/avatars/:avatarId/reject" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | PATCH | /api/v1/admin/avatars/:avatarId/approve | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/avatars/:avatarId/approve" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/avatars/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/avatars/stats" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/avatars/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/avatars/" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/auth/roles/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/auth/roles/temp_user_id" -H "Content-Type: application/json"` |
+| admin-service | PUT | /api/v1/admin/auth/roles/:id | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/admin/auth/roles/temp_user_id" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | POST | /api/v1/admin/auth/roles | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/admin/auth/roles" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/auth/roles | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/auth/roles" -H "Content-Type: application/json"` |
+| admin-service | DELETE | /api/v1/admin/auth/admins/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/admin/auth/admins/temp_user_id" -H "Content-Type: application/json"` |
+| admin-service | PATCH | /api/v1/admin/auth/admins/:id/role | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/admin/auth/admins/temp_user_id/role" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| admin-service | GET | /api/v1/admin/auth/admins | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/auth/admins" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/auth/me | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/auth/me" -H "Content-Type: application/json"` |
+| admin-service | POST | /api/v1/admin/auth/login | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/admin/auth/login" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"pass\",\"username\":\"user\",\"fu` |
+| admin-service | GET | /api/v1/admin/audit/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/audit/" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/active-hours | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/active-hours" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/countries | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/countries" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/analytics/active-hours | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/analytics/active-hours" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/analytics/countries | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/analytics/countries" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/analytics/top-content | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/analytics/top-content" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/analytics/engagement-trends | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/analytics/engagement-trends" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/analytics/user-acquisition | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/analytics/user-acquisition" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/analytics/summary | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/analytics/summary" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/notifications/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/notifications/stats" -H "Content-Type: application/json"` |
+| admin-service | GET | /api/v1/admin/notifications/history | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/admin/notifications/history" -H "Content-Type: application/json"` |
+| admin-service | POST | /api/v1/admin/notifications/global | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/admin/notifications/global" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| auth-service | GET | /api/v1/auth/history | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/auth/history" -H "Content-Type: application/json"` |
+| auth-service | GET | /api/v1/auth/me | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/auth/me" -H "Content-Type: application/json"` |
+| auth-service | POST | /api/v1/auth/logout | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/auth/logout" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| auth-service | POST | /api/v1/auth/reset-password/verify | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/auth/reset-password/verify" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| auth-service | POST | /api/v1/auth/reset-password/request | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/auth/reset-password/request" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| auth-service | GET | /api/v1/auth/check-email | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/auth/check-email" -H "Content-Type: application/json"` |
+| auth-service | GET | /api/v1/auth/check-username | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/auth/check-username" -H "Content-Type: application/json"` |
+| auth-service | POST | /api/v1/auth/login | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/auth/login" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"pass\",\"username\":\"user\",\"fullName` |
+| auth-service | POST | /api/v1/auth/signup | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/auth/signup" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"pass\",\"username\":\"user\",\"fullNam` |
+| auth-service | POST | /api/v1/auth/register | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/auth/register" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| comment-service | GET | /api/v1/comments/internal/post/:postId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/comments/internal/post/temp_post_id" -H "Content-Type: application/json"` |
+| comment-service | DELETE | /api/v1/comments/internal/:commentId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/comments/internal/temp_comment_id" -H "Content-Type: application/json"` |
+| comment-service | PATCH | /api/v1/comments/internal/:commentId/remove | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/comments/internal/temp_comment_id/remove" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| comment-service | PATCH | /api/v1/comments/internal/:commentId/approve | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/comments/internal/temp_comment_id/approve" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| comment-service | GET | /api/v1/comments/internal/:commentId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/comments/internal/temp_comment_id" -H "Content-Type: application/json"` |
+| comment-service | GET | /api/v1/comments/internal/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/comments/internal/stats" -H "Content-Type: application/json"` |
+| comment-service | GET | /api/v1/comments/internal/list | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/comments/internal/list" -H "Content-Type: application/json"` |
+| comment-service | GET | /api/v1/comments/activity/reviews | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/comments/activity/reviews" -H "Content-Type: application/json"` |
+| comment-service | GET | /api/v1/comments/activity/comments | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/comments/activity/comments" -H "Content-Type: application/json"` |
+| comment-service | POST | /api/v1/comments/check-comments | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/comments/check-comments" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| comment-service | DELETE | /api/v1/comments/:id/like | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/comments/temp_comment_id/like" -H "Content-Type: application/json"` |
+| comment-service | POST | /api/v1/comments/:id/like | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/comments/temp_comment_id/like" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| comment-service | DELETE | /api/v1/comments/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/comments/temp_comment_id" -H "Content-Type: application/json"` |
+| comment-service | GET | /api/v1/comments/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/comments/" -H "Content-Type: application/json"` |
+| comment-service | POST | /api/v1/comments/ | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/comments/" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| feed-service | GET | /api/v1/feed/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/feed/" -H "Content-Type: application/json"` |
+| help-service | POST | /api/v1/help/feedback | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/help/feedback" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| help-service | GET | /api/v1/help/search | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/help/search" -H "Content-Type: application/json"` |
+| help-service | GET | /api/v1/help/article/:slug | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/help/article/:slug" -H "Content-Type: application/json"` |
+| help-service | GET | /api/v1/help/articles | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/help/articles" -H "Content-Type: application/json"` |
+| help-service | GET | /api/v1/help/articles/featured | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/help/articles/featured" -H "Content-Type: application/json"` |
+| help-service | GET | /api/v1/help/category/:slug | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/help/category/:slug" -H "Content-Type: application/json"` |
+| help-service | GET | /api/v1/help/categories | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/help/categories" -H "Content-Type: application/json"` |
+| help-service | DELETE | /api/v1/help/admin/article/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/help/admin/article/temp_user_id" -H "Content-Type: application/json"` |
+| help-service | PUT | /api/v1/help/admin/article/:id | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/help/admin/article/temp_user_id" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| help-service | GET | /api/v1/help/admin/articles | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/help/admin/articles" -H "Content-Type: application/json"` |
+| help-service | POST | /api/v1/help/admin/article | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/help/admin/article" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| help-service | DELETE | /api/v1/help/admin/category/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/help/admin/category/temp_user_id" -H "Content-Type: application/json"` |
+| help-service | PUT | /api/v1/help/admin/category/:id | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/help/admin/category/temp_user_id" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| help-service | POST | /api/v1/help/admin/category | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/help/admin/category" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| insight-service | GET | /api/v1/insights/heatmap | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/insights/heatmap" -H "Content-Type: application/json"` |
+| insight-service | GET | /api/v1/insights/content | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/insights/content" -H "Content-Type: application/json"` |
+| insight-service | GET | /api/v1/insights/account | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/insights/account" -H "Content-Type: application/json"` |
+| live-service | POST | /api/v1/live/webhook/done | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/live/webhook/done" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| live-service | POST | /api/v1/live/webhook/publish | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/live/webhook/publish" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| live-service | POST | /api/v1/live/:id/chat | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/live/dummy_id/chat" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| live-service | POST | /api/v1/live/:id/end | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/live/dummy_id/end" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| live-service | GET | /api/v1/live/:id | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/live/dummy_id" -H "Content-Type: application/json"` |
+| live-service | GET | /api/v1/live/feed | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/live/feed" -H "Content-Type: application/json"` |
+| live-service | POST | /api/v1/live/schedule | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/live/schedule" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| live-service | POST | /api/v1/live/go-live | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/live/go-live" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| media-service | GET | /api/v1/media/files/* | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/media/files/*" -H "Content-Type: application/json"` |
+| media-service | POST | /api/v1/media/finalize | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/media/finalize" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| media-service | POST | /api/v1/media/presigned-url | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/media/presigned-url" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| media-service | GET | /api/v1/media/status/:id | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/media/status/dummy_id" -H "Content-Type: application/json"` |
+| media-service | POST | /api/v1/media/upload | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/media/upload" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| message-service | POST | /api/v1/messages/seen | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/messages/seen" -H "Content-Type: application/json" -d "{\"content\":\"Hello message\",\"receiverId\":\"temp_user_id\"}"` |
+| message-service | POST | /api/v1/messages/send | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/messages/send" -H "Content-Type: application/json" -d "{\"content\":\"Hello message\",\"receiverId\":\"temp_user_id\"}"` |
+| message-service | DELETE | /api/v1/messages/conversations/:conversationId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/messages/conversations/temp_conv_id" -H "Content-Type: application/json"` |
+| message-service | POST | /api/v1/messages/conversations/:conversationId/report | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/messages/conversations/temp_conv_id/report" -H "Content-Type: application/json" -d "{\"reason\":\"SPAM\",\"description\":\"Test report\"}"` |
+| message-service | POST | /api/v1/messages/conversations/:conversationId/unblock | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/messages/conversations/temp_conv_id/unblock" -H "Content-Type: application/json" -d "{\"content\":\"Hello message\",\"receiverId\":\"temp_` |
+| message-service | POST | /api/v1/messages/conversations/:conversationId/block | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/messages/conversations/temp_conv_id/block" -H "Content-Type: application/json" -d "{\"content\":\"Hello message\",\"receiverId\":\"temp_us` |
+| message-service | PATCH | /api/v1/messages/conversations/:conversationId/mute | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/messages/conversations/temp_conv_id/mute" -H "Content-Type: application/json" -d "{\"content\":\"Hello message\",\"receiverId\":\"temp_us` |
+| message-service | GET | /api/v1/messages/conversations/:conversationId/details | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/messages/conversations/temp_conv_id/details" -H "Content-Type: application/json"` |
+| message-service | GET | /api/v1/messages/conversations/:conversationId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/messages/conversations/temp_conv_id" -H "Content-Type: application/json"` |
+| message-service | GET | /api/v1/messages/conversations | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/messages/conversations" -H "Content-Type: application/json"` |
+| message-service | GET | /api/v1/messages/activity/story-replies | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/messages/activity/story-replies" -H "Content-Type: application/json"` |
+| message-service | GET | /api/v1/messages/internal/conversations/:conversationId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/messages/internal/conversations/temp_conv_id" -H "Content-Type: application/json"` |
+| message-service | PATCH | /api/v1/messages/internal/conversations/:conversationId/mark-safe | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/messages/internal/conversations/temp_conv_id/mark-safe" -H "Content-Type: application/json" -d "{\"content\":\"Hello message\",\"receiver` |
+| message-service | GET | /api/v1/messages/internal/conversations/:conversationId/transcript | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/messages/internal/conversations/temp_conv_id/transcript" -H "Content-Type: application/json"` |
+| message-service | GET | /api/v1/messages/internal/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/messages/internal/stats" -H "Content-Type: application/json"` |
+| message-service | GET | /api/v1/messages/internal/conversations | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/messages/internal/conversations" -H "Content-Type: application/json"` |
+| notification-service | GET | /api/v1/notifications/admin/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/notifications/admin/stats" -H "Content-Type: application/json"` |
+| notification-service | GET | /api/v1/notifications/admin/history | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/notifications/admin/history" -H "Content-Type: application/json"` |
+| notification-service | POST | /api/v1/notifications/admin/broadcast | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/notifications/admin/broadcast" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| notification-service | PATCH | /api/v1/notifications/read-all | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/notifications/read-all" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| notification-service | PATCH | /api/v1/notifications/:id/read | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/notifications/dummy_id/read" -H "Content-Type: application/json" -d "{\"title\":\"Test Ad\",\"budget\":100,\"duration\":5}"` |
+| notification-service | GET | /api/v1/notifications/unread-count | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/notifications/unread-count" -H "Content-Type: application/json"` |
+| notification-service | GET | /api/v1/notifications/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/notifications/" -H "Content-Type: application/json"` |
+| notification-service | PATCH | /api/v1/notifications/settings | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/notifications/settings" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| notification-service | GET | /api/v1/notifications/settings | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/notifications/settings" -H "Content-Type: application/json"` |
+| post-service | PATCH | /api/v1/posts/internal/reports/:id/status | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/posts/internal/reports/temp_post_id/status" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://exa` |
+| post-service | GET | /api/v1/posts/internal/reports/:id | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/reports/temp_post_id" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/reports | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/reports" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/reports/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/reports/stats" -H "Content-Type: application/json"` |
+| post-service | DELETE | /api/v1/posts/:id/bookmark | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/posts/temp_post_id/bookmark" -H "Content-Type: application/json"` |
+| post-service | POST | /api/v1/posts/:id/bookmark | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/posts/temp_post_id/bookmark" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/img.jpg` |
+| post-service | POST | /api/v1/posts/:id/report | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/posts/temp_post_id/report" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/img.jpg\"` |
+| post-service | PUT | /api/v1/posts/:id/toggle-comments | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/posts/temp_post_id/toggle-comments" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| post-service | PUT | /api/v1/posts/:id/hide-likes | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/posts/temp_post_id/hide-likes" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/img.jp` |
+| post-service | PUT | /api/v1/posts/:id | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/posts/temp_post_id" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/img.jpg\",\"media` |
+| post-service | DELETE | /api/v1/posts/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/posts/temp_post_id" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/:id | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/temp_post_id" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/:id/embed | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/temp_post_id/embed" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/activity/posts | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/activity/posts" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/activity/likes | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/activity/likes" -H "Content-Type: application/json"` |
+| post-service | POST | /api/v1/posts/check-likes | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/posts/check-likes" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/img.jpg\",\"media` |
+| post-service | GET | /api/v1/posts/saved | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/saved" -H "Content-Type: application/json"` |
+| post-service | DELETE | /api/v1/posts/:id/like | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/posts/temp_post_id/like" -H "Content-Type: application/json"` |
+| post-service | POST | /api/v1/posts/:id/like | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/posts/temp_post_id/like" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/img.jpg\",\` |
+| post-service | GET | /api/v1/posts/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/explore | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/explore" -H "Content-Type: application/json"` |
+| post-service | POST | /api/v1/posts/feed | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/posts/feed" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/img.jpg\",\"mediaType\":` |
+| post-service | POST | /api/v1/posts/ | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/posts/" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/img.jpg\",\"mediaType\":\"IM` |
+| post-service | GET | /api/v1/posts/internal/:postId/bookmarks | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/temp_post_id/bookmarks" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/:postId/likes | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/temp_post_id/likes" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/:postId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/temp_post_id" -H "Content-Type: application/json"` |
+| post-service | DELETE | /api/v1/posts/internal/:postId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/posts/internal/temp_post_id" -H "Content-Type: application/json"` |
+| post-service | PATCH | /api/v1/posts/internal/:postId/unhide | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/posts/internal/temp_post_id/unhide" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com` |
+| post-service | PATCH | /api/v1/posts/internal/:postId/hide | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/posts/internal/temp_post_id/hide" -H "Content-Type: application/json" -d "{\"caption\":\"Test Post\",\"mediaUrl\":\"https://example.com/i` |
+| post-service | GET | /api/v1/posts/internal/user/:userId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/user/temp_user_id" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/stats/user/:userId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/stats/user/temp_user_id" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/list | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/list" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/recent | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/recent" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/top | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/top" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/engagement/trends | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/engagement/trends" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/stats/engagement | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/stats/engagement" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/stats/overall | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/stats/overall" -H "Content-Type: application/json"` |
+| post-service | GET | /api/v1/posts/internal/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/posts/internal/stats" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/:id | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/temp_reel_id" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/user | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/user" -H "Content-Type: application/json"` |
+| reel-service | DELETE | /api/v1/reels/:id/bookmark | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/reels/temp_reel_id/bookmark" -H "Content-Type: application/json"` |
+| reel-service | POST | /api/v1/reels/:id/bookmark | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/reels/temp_reel_id/bookmark" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| reel-service | DELETE | /api/v1/reels/:id/like | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/reels/temp_reel_id/like" -H "Content-Type: application/json"` |
+| reel-service | POST | /api/v1/reels/:id/like | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/reels/temp_reel_id/like" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| reel-service | GET | /api/v1/reels/activity/likes | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/activity/likes" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/activity/reels | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/activity/reels" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/saved | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/saved" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/" -H "Content-Type: application/json"` |
+| reel-service | POST | /api/v1/reels/ | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/reels/" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| reel-service | GET | /api/v1/reels/internal/:reelId/likes | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/internal/temp_reel_id/likes" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/internal/:reelId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/internal/temp_reel_id" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/internal/recent | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/internal/recent" -H "Content-Type: application/json"` |
+| reel-service | DELETE | /api/v1/reels/internal/:reelId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/reels/internal/temp_reel_id" -H "Content-Type: application/json"` |
+| reel-service | PATCH | /api/v1/reels/internal/:reelId/unhide | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/reels/internal/temp_reel_id/unhide" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| reel-service | PATCH | /api/v1/reels/internal/:reelId/hide | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/reels/internal/temp_reel_id/hide" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| reel-service | GET | /api/v1/reels/internal/list | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/internal/list" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/internal/user/:userId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/internal/user/temp_user_id" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/internal/stats/user/:userId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/internal/stats/user/temp_user_id" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/internal/stats/overall | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/internal/stats/overall" -H "Content-Type: application/json"` |
+| reel-service | GET | /api/v1/reels/internal/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/reels/internal/stats" -H "Content-Type: application/json"` |
+| search-service | GET | /api/v1/search/users | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/search/users" -H "Content-Type: application/json"` |
+| search-service | GET | /api/v1/search/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/search/" -H "Content-Type: application/json"` |
+| story-service | DELETE | /api/v1/stories/:id/react | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/stories/temp_story_id/react" -H "Content-Type: application/json"` |
+| story-service | POST | /api/v1/stories/:id/react | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/stories/temp_story_id/react" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| story-service | POST | /api/v1/stories/:id/view | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/stories/temp_story_id/view" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| story-service | POST | /api/v1/stories/:id/report | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/stories/temp_story_id/report" -H "Content-Type: application/json" -d "{\"reason\":\"SPAM\",\"description\":\"Test report\"}"` |
+| story-service | DELETE | /api/v1/stories/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/stories/temp_story_id" -H "Content-Type: application/json"` |
+| story-service | GET | /api/v1/stories/activity/story-replies | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/activity/story-replies" -H "Content-Type: application/json"` |
+| story-service | GET | /api/v1/stories/archive | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/archive" -H "Content-Type: application/json"` |
+| story-service | GET | /api/v1/stories/ | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/" -H "Content-Type: application/json"` |
+| story-service | POST | /api/v1/stories/ | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/stories/" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| story-service | DELETE | /api/v1/stories/internal/:storyId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/stories/internal/temp_story_id" -H "Content-Type: application/json"` |
+| story-service | GET | /api/v1/stories/internal/:storyId/likes | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/internal/temp_story_id/likes" -H "Content-Type: application/json"` |
+| story-service | GET | /api/v1/stories/internal/:storyId/views | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/internal/temp_story_id/views" -H "Content-Type: application/json"` |
+| story-service | GET | /api/v1/stories/internal/list | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/internal/list" -H "Content-Type: application/json"` |
+| story-service | GET | /api/v1/stories/internal/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/internal/stats" -H "Content-Type: application/json"` |
+| story-service | DELETE | /api/v1/stories/highlights/:highlightId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/stories/highlights/:highlightId" -H "Content-Type: application/json"` |
+| story-service | PUT | /api/v1/stories/highlights/:highlightId | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/stories/highlights/:highlightId" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| story-service | GET | /api/v1/stories/highlights/:highlightId/stories | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/highlights/:highlightId/stories" -H "Content-Type: application/json"` |
+| story-service | GET | /api/v1/stories/highlights/:userId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/highlights/temp_user_id" -H "Content-Type: application/json"` |
+| story-service | POST | /api/v1/stories/highlights | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/stories/highlights" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| story-service | GET | /api/v1/stories/activity/highlights | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/activity/highlights" -H "Content-Type: application/json"` |
+| story-service | GET | /api/v1/stories/stories/me | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/stories/stories/me" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/profile/followers/:followerId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/profile/followers/:followerId" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/:userId/following | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/temp_user_id/following" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/:userId/followers | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/temp_user_id/followers" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/:userId/reels | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/temp_user_id/reels" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/:userId/posts | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/temp_user_id/posts" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/:username | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/:username" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/activity/account-history | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/activity/account-history" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/batch | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/batch" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/suggestions | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/suggestions" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/me/saved | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/me/saved" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/profile/profile-photo | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/profile/profile-photo" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/profile-photo | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/profile-photo" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | PUT | /api/v1/users/profile/me | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/users/profile/me" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/me | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/me" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/help/feedback | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/help/feedback" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/help/support-requests | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/help/support-requests" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/help/feature-limits | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/help/feature-limits" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/help/violations | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/help/violations" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/help/account-status | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/help/account-status" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/profile/settings/apps/:id/revoke | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/settings/apps/temp_user_id/revoke" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/apps | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/apps" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/profile/settings/general | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/settings/general" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/general | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/general" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/settings/subscriptions | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/subscriptions" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/profile/settings/like-share | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/settings/like-share" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/like-share | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/like-share" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/profile/settings/content-preferences | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/settings/content-preferences" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/content-preferences | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/content-preferences" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/profile/settings/muted/:userId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/profile/settings/muted/temp_user_id" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/settings/muted/:userId | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/settings/muted/temp_user_id" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/muted | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/muted" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/profile/settings/hidden-words/words/:id | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/profile/settings/hidden-words/words/temp_user_id" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/settings/hidden-words/words | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/settings/hidden-words/words" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | PUT | /api/v1/users/profile/settings/hidden-words | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/users/profile/settings/hidden-words" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/hidden-words | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/hidden-words" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/profile/settings/restricted/:userId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/profile/settings/restricted/temp_user_id" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/settings/restricted/:userId | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/settings/restricted/temp_user_id" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/restricted | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/restricted" -H "Content-Type: application/json"` |
+| user-service | PUT | /api/v1/users/profile/settings/sharing | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/users/profile/settings/sharing" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/sharing | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/sharing" -H "Content-Type: application/json"` |
+| user-service | PUT | /api/v1/users/profile/settings/comments | FAIL | `Command failed: curl -s -X PUT "http://localhost:5000/api/v1/users/profile/settings/comments" -H "Content-Type: application/json" -d "{\"content\":\"This is a test comment\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/comments | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/comments" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/profile/tags/:id/remove | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/tags/temp_user_id/remove" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | PATCH | /api/v1/users/profile/tags/:id/approve | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/tags/temp_user_id/approve" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/tags/pending | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/tags/pending" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/profile/settings/tags-mentions | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/settings/tags-mentions" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/tags-mentions | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/tags-mentions" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/profile/settings/activity-status | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/settings/activity-status" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/activity-status | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/activity-status" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/profile/settings/story-replies | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/settings/story-replies" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/story-replies | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/story-replies" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/profile/settings/messages | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/profile/settings/messages" -H "Content-Type: application/json" -d "{\"content\":\"Hello message\",\"receiverId\":\"temp_user_id\"}"` |
+| user-service | GET | /api/v1/users/profile/settings/messages | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/settings/messages" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/profile/story-privacy/unhide/:hiddenUserId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/profile/story-privacy/unhide/:hiddenUserId" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/story-privacy/hide | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/story-privacy/hide" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/story-privacy/hidden-users | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/story-privacy/hidden-users" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/profile/unblock/:userId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/profile/unblock/temp_user_id" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/block/:userId | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/block/temp_user_id" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/blocked-users | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/blocked-users" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/profile/close-friends/:friendId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/profile/close-friends/:friendId" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/close-friends/:friendId | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/close-friends/:friendId" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/profile/close-friends | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/close-friends" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/profile/reports/me | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/profile/reports/me" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/profile/report-problem | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/profile/report-problem" -H "Content-Type: application/json" -d "{\"reason\":\"SPAM\",\"description\":\"Test report\"}"` |
+| user-service | GET | /api/v1/users/internal/:userId/follow-counts | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/temp_user_id/follow-counts" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/internal/:userId | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/temp_user_id" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/internal/bulk | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/internal/bulk" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/internal/recent | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/recent" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/internal/:userId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/internal/temp_user_id" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/internal/:userId/unban | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/internal/temp_user_id/unban" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | PATCH | /api/v1/users/internal/:userId/ban | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/internal/temp_user_id/ban" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/internal/list | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/list" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/internal/countries | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/countries" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/internal/login-methods | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/login-methods" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/internal/growth | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/growth" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/internal/avatars/:avatarId | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/internal/avatars/:avatarId" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/internal/avatars/:avatarId/reject | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/internal/avatars/:avatarId/reject" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | PATCH | /api/v1/users/internal/avatars/:avatarId/approve | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/internal/avatars/:avatarId/approve" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/internal/avatars/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/avatars/stats" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/internal/avatars | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/avatars" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/internal/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/stats" -H "Content-Type: application/json"` |
+| user-service | PATCH | /api/v1/users/internal/reports/:id/status | FAIL | `Command failed: curl -s -X PATCH "http://localhost:5000/api/v1/users/internal/reports/temp_user_id/status" -H "Content-Type: application/json" -d "{\"reason\":\"SPAM\",\"description\":\"Test report\"}` |
+| user-service | GET | /api/v1/users/internal/reports/:id | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/reports/temp_user_id" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/internal/reports | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/reports" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/internal/reports/stats | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/internal/reports/stats" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/requests/reject | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/requests/reject" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | POST | /api/v1/users/requests/accept | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/requests/accept" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |
+| user-service | GET | /api/v1/users/requests | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/requests" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/:userId/following | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/temp_user_id/following" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/:userId/followers | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/temp_user_id/followers" -H "Content-Type: application/json"` |
+| user-service | GET | /api/v1/users/:userId/follow/status | FAIL | `Command failed: curl -s -X GET "http://localhost:5000/api/v1/users/temp_user_id/follow/status" -H "Content-Type: application/json"` |
+| user-service | DELETE | /api/v1/users/:userId/follow | FAIL | `Command failed: curl -s -X DELETE "http://localhost:5000/api/v1/users/temp_user_id/follow" -H "Content-Type: application/json"` |
+| user-service | POST | /api/v1/users/:userId/follow | FAIL | `Command failed: curl -s -X POST "http://localhost:5000/api/v1/users/temp_user_id/follow" -H "Content-Type: application/json" -d "{\"dummy_field\":\"test\"}"` |

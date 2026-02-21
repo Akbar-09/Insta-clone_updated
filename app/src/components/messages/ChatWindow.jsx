@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Phone, Video, Info, Smile, Image as ImageIcon, Mic, X, Play, Pause, Square, Clapperboard } from 'lucide-react';
+import { Phone, Video, Info, Smile, Image as ImageIcon, Mic, X, Play, Pause, Square, Clapperboard, Sticker } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StickerPicker from './StickerPicker';
 import EmojiPicker from './EmojiPicker';
 import { uploadMedia } from '../../api/mediaApi';
 import { deleteConversation, unblockUser } from '../../api/messageApi';
+import useWebRTC from '../../hooks/useWebRTC';
+import VideoCall from '../call/VideoCall';
+import AudioCall from '../call/AudioCall';
+import CallModal from '../call/CallModal';
 
 const VoicePlayer = ({ src }) => {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -64,7 +68,23 @@ const VoicePlayer = ({ src }) => {
     );
 };
 
-const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, updateOptimisticMessage, commitMessage, onToggleInfo, isTyping, handleTyping, onUpdate }) => {
+const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, updateOptimisticMessage, commitMessage, onToggleInfo, isTyping, handleTyping, onUpdate, socket }) => {
+    const {
+        localVideoRef,
+        remoteVideoRef,
+        callStatus,
+        setCallStatus,
+        startCall,
+        acceptCall,
+        endCall,
+        toggleAudio,
+        toggleVideo,
+        isAudioMuted,
+        isVideoOff,
+        cleanup
+    } = useWebRTC(socket, currentUser?.userId || currentUser?.id);
+
+    const [incomingCall, setIncomingCall] = useState(null);
     const [newMessage, setNewMessage] = useState('');
     const [showStickers, setShowStickers] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -125,6 +145,19 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('incoming_call', (data) => {
+            console.log('[ChatWindow] Incoming call:', data);
+            setIncomingCall(data);
+        });
+
+        return () => {
+            socket.off('incoming_call');
+        };
+    }, [socket]);
 
     const handleSend = (e) => {
         e?.preventDefault();
@@ -312,8 +345,16 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                     </div>
                 </div >
                 <div className="flex items-center gap-4 text-text-primary">
-                    <Phone size={24} className="cursor-pointer hover:opacity-50" />
-                    <Video size={24} className="cursor-pointer hover:opacity-50" />
+                    <Phone
+                        size={24}
+                        className="cursor-pointer hover:opacity-50"
+                        onClick={() => startCall(otherUser.id || otherUser.userId, 'audio')}
+                    />
+                    <Video
+                        size={24}
+                        className="cursor-pointer hover:opacity-50"
+                        onClick={() => startCall(otherUser.id || otherUser.userId, 'video')}
+                    />
                     <Info size={24} className="cursor-pointer hover:opacity-50" onClick={onToggleInfo} />
                 </div>
             </div >
@@ -604,6 +645,11 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                                     className={`cursor-pointer shrink-0 transition-colors ${showEmojiPicker ? 'text-[#0095F6]' : 'text-text-primary'}`}
                                     onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowStickers(false); }}
                                 />
+                                <Sticker
+                                    size={24}
+                                    className={`cursor-pointer shrink-0 transition-colors ${showStickers ? 'text-[#0095F6]' : 'text-text-primary'}`}
+                                    onClick={() => { setShowStickers(!showStickers); setShowEmojiPicker(false); }}
+                                />
                                 <form onSubmit={handleSend} className="flex-1">
                                     <input
                                         type="text"
@@ -640,6 +686,56 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                     </div>
                 )}
             </div>
+            {/* Outgoing/Active Video Call */}
+            {callStatus === 'connected' && callStatus !== 'idle' && (
+                localVideoRef.current && (
+                    <VideoCall
+                        localVideoRef={localVideoRef}
+                        remoteVideoRef={remoteVideoRef}
+                        onEndCall={() => endCall(otherUser.id || otherUser.userId)}
+                        onToggleMic={toggleAudio}
+                        onToggleCam={toggleVideo}
+                        isMuted={isAudioMuted}
+                        isCamOff={isVideoOff}
+                        remoteUser={otherUser}
+                    />
+                )
+            )}
+
+            {/* Outgoing Audio Call */}
+            {callStatus === 'calling' && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center space-y-8">
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20">
+                        <img src={displayImage} alt={displayName} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="text-center">
+                        <h2 className="text-white text-2xl font-bold">{displayName}</h2>
+                        <p className="text-gray-400 mt-2">Calling...</p>
+                    </div>
+                    <button
+                        onClick={() => endCall(otherUser.id || otherUser.userId)}
+                        className="p-5 bg-red-600 rounded-full hover:bg-red-700 transition-all"
+                    >
+                        <X size={32} color="white" />
+                    </button>
+                </div>
+            )}
+
+            {/* Incoming Call Modal */}
+            {incomingCall && (
+                <CallModal
+                    caller={{ username: incomingCall.name || 'User', avatar: null }} // Should get more info if possible
+                    callType={incomingCall.callType}
+                    onAccept={() => {
+                        acceptCall(incomingCall.from, incomingCall.signal, incomingCall.callType, incomingCall.callLogId);
+                        setIncomingCall(null);
+                    }}
+                    onReject={() => {
+                        socket.emit('reject_call', { to: incomingCall.from });
+                        setIncomingCall(null);
+                    }}
+                />
+            )}
         </div>
     );
 };
