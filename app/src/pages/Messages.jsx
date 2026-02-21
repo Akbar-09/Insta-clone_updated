@@ -95,6 +95,7 @@ const Messages = () => {
                             isTyping={isTyping}
                             handleTyping={handleTyping}
                             onUpdate={refreshConversations}
+                            socket={socket}
                         />
                     ) : (
                         <EmptyChatState />

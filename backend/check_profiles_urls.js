@@ -11,7 +11,7 @@ const config = {
 async function check() {
     const client = new Client(config);
     await client.connect();
-    const res = await client.query('SELECT "mediaUrl" FROM "Posts" LIMIT 5');
+    const res = await client.query('SELECT "profilePicture" FROM "UserProfiles" WHERE "profilePicture" IS NOT NULL LIMIT 5');
     console.log(JSON.stringify(res.rows, null, 2));
     await client.end();
 }

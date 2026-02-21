@@ -35,7 +35,7 @@ const startServer = async () => {
         Report.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
         Post.hasMany(Report, { foreignKey: 'postId', as: 'reports' });
 
-        await sequelize.sync({ alter: true });
+        await sequelize.sync();
         await connectRabbitPublisher();
         await connectRabbitConsumer();
         app.listen(PORT, () => {

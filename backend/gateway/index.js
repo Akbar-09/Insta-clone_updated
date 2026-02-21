@@ -127,6 +127,7 @@ const services = [
     // Ensure 5016 is correct for admin
     { route: '/admin', target: process.env.ADMIN_SERVICE_URL || 'http://localhost:5016' },
     { route: '/help', target: process.env.HELP_SERVICE_URL || 'http://localhost:5060' },
+    { route: '/calls', target: process.env.CALL_SERVICE_URL || 'http://localhost:5018' },
     { route: '/socket.io', target: process.env.SOCKET_SERVICE_URL || 'http://localhost:5011', ws: true },
 ];
 

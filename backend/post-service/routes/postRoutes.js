@@ -1,5 +1,5 @@
 const express = require('express');
-const { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost, getEmbedCode, getActivityLikes, getActivityPosts, getPostsByUsers } = require('../controllers/postController');
+const { createPost, getPosts, getExplorePosts, getPostById, likePost, unlikePost, bookmarkPost, unbookmarkPost, getSavedPosts, checkLikes, deletePost, updatePost, toggleHideLikes, toggleComments, reportPost, getEmbedCode, getActivityLikes, getActivityPosts, getPostsByUsers, getPostsByHashtag } = require('../controllers/postController');
 
 const router = express.Router();
 

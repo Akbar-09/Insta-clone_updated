@@ -11,7 +11,7 @@ const getFeed = async (req, res) => {
         if (userId) {
             try {
                 // A. Get Following List
-                const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+                const userServiceUrl = process.env.USER_SERVICE_URL || 'http://127.0.0.1:5002';
                 console.log(`[FeedService] Fetching following for user ${userId} from ${userServiceUrl}`);
 
                 const followingRes = await fetch(`${userServiceUrl}/${userId}/following`);
@@ -33,7 +33,7 @@ const getFeed = async (req, res) => {
                 console.log(`[FeedService] User ${userId} is following ${followingIds.length} users. Total userIds to fetch: ${userIds.join(',')}`);
 
                 // B. Fetch Posts from Post Service
-                const postServiceUrl = process.env.POST_SERVICE_URL || 'http://localhost:5003';
+                const postServiceUrl = process.env.POST_SERVICE_URL || 'http://127.0.0.1:5003';
                 const postsRes = await fetch(`${postServiceUrl}/feed`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
@@ -70,7 +70,7 @@ const getFeed = async (req, res) => {
             try {
                 const postIds = feed.map(p => p.id);
                 // ... rest of hydration logic
-                const postServiceUrl = process.env.POST_SERVICE_URL || 'http://localhost:5003';
+                const postServiceUrl = process.env.POST_SERVICE_URL || 'http://127.0.0.1:5003';
 
                 const response = await fetch(`${postServiceUrl}/check-likes`, {
                     method: 'POST',
