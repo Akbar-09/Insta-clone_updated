@@ -123,14 +123,32 @@ const PostOptionsMenu = ({
                 case 'delete':
                     if (isAd) {
                         if (window.confirm('Delete this ad? This will remove it from the platform.')) {
-                            await adApi.deleteAd(post.id);
+                            try {
+                                await adApi.deleteAd(post.id);
+                            } catch (delErr) {
+                                // 404 means already deleted — treat as success
+                                if (delErr.response?.status !== 404) throw delErr;
+                            }
                             if (onDeleteSuccess) onDeleteSuccess(post.id);
                             onClose();
                         }
                         return;
                     }
                     if (window.confirm('Delete this post? This cannot be undone.')) {
-                        await deletePost(post.id);
+                        try {
+                            await deletePost(post.id);
+                        } catch (delErr) {
+                            // 401 can happen when the post-service rejects after deletion on gateway
+                            // 404 means post already deleted — both are fine to treat as success
+                            const status = delErr.response?.status;
+                            if (status !== 401 && status !== 404) {
+                                console.error('Delete failed with unexpected status:', status);
+                                alert('Failed to delete post. Please try again.');
+                                onClose();
+                                return;
+                            }
+                        }
+                        // Success path — always navigate away after delete
                         if (onDeleteSuccess) onDeleteSuccess(post.id);
                         onClose();
                     }

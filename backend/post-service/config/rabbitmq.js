@@ -15,27 +15,39 @@ const connectRabbitMQ = async () => {
 
 const publishEvent = async (routingKey, data) => {
     if (!channel) {
-        console.error('RabbitMQ channel not active');
+        console.error(`[RabbitMQ] No active channel — cannot publish event: ${routingKey}`);
         return;
     }
-    channel.publish(
-        'instagram-events',
-        routingKey,
-        Buffer.from(JSON.stringify(data))
-    );
-    console.log(`Event Published: ${routingKey}`);
+    try {
+        channel.publish(
+            'instagram-events',
+            routingKey,
+            Buffer.from(JSON.stringify(data))
+        );
+        console.log(`Event Published: ${routingKey}`);
+    } catch (err) {
+        console.error(`[RabbitMQ] Failed to publish event ${routingKey}:`, err.message);
+        // Clear the stale channel so next call tries reconnecting
+        channel = null;
+    }
 };
+
 
 const publishNotification = async (notification) => {
     if (!channel) {
-        console.error('RabbitMQ channel not active');
+        console.error('[RabbitMQ] No active channel — cannot publish notification');
         return;
     }
-    await channel.assertQueue('notification_queue', { durable: true });
-    channel.sendToQueue('notification_queue', Buffer.from(JSON.stringify(notification)), {
-        persistent: true,
-    });
-    console.log(`Notification Published: ${notification.type}`);
+    try {
+        await channel.assertQueue('notification_queue', { durable: true });
+        channel.sendToQueue('notification_queue', Buffer.from(JSON.stringify(notification)), {
+            persistent: true,
+        });
+        console.log(`Notification Published: ${notification.type}`);
+    } catch (err) {
+        console.error('[RabbitMQ] Failed to publish notification:', err.message);
+        channel = null;
+    }
 };
 
 module.exports = { connectRabbitMQ, publishEvent, publishNotification };

@@ -552,7 +552,7 @@ const PostPage = () => {
                         post={post}
                         isOwnPost={isOwnPost}
                         onClose={() => setShowOptionsMenu(false)}
-                        onDeleteSuccess={() => navigate('/')}
+                        onDeleteSuccess={() => navigate(user?.username ? `/profile/${user.username}` : '/')}
                         onEdit={() => setShowEditModal(true)}
                         onShare={() => setShowShareModal(true)}
                         onUpdatePost={(updated) => setPost(prev => ({ ...prev, ...updated }))}

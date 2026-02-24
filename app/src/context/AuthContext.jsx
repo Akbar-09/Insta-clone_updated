@@ -57,7 +57,11 @@ export const AuthProvider = ({ children }) => {
                 }
             } catch (err) {
                 console.error("Failed to fetch user", err);
-                logout();
+                // Only clear session on explicit 401 (invalid/expired token).
+                // Network errors (503, 500) should NOT log the user out.
+                if (err.response?.status === 401) {
+                    logout();
+                }
             } finally {
                 setLoading(false);
             }

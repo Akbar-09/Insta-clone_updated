@@ -467,14 +467,25 @@ const deletePost = async (req, res) => {
         }
 
         const mediaUrl = post.mediaUrl;
+
+        // Delete child records first to avoid FK constraint violations
+        // (PostReports has ON DELETE NO ACTION — must be cleaned up manually)
+        const SavedPost = require('../models/SavedPost');
+        await Report.destroy({ where: { postId } });
+        await Like.destroy({ where: { postId } });
+        await SavedPost.destroy({ where: { postId } });
+        console.log(`[PostService] Cleared child records for post ${postId}.`);
+
         await post.destroy();
         console.log(`[PostService] Post ${postId} destroyed.`);
 
-        // Publish Event for media cleanup
-        await publishEvent('POST_DELETED', {
-            postId,
-            mediaUrl
-        });
+        // Publish event for media cleanup — non-blocking, never throw
+        try {
+            await publishEvent('POST_DELETED', { postId, mediaUrl });
+        } catch (mqErr) {
+            console.error(`[PostService] RabbitMQ publish failed for POST_DELETED (post ${postId}):`, mqErr.message);
+            // Don't fail the request — the post is already deleted
+        }
 
         res.json({ status: 'success', message: 'Post deleted' });
     } catch (error) {
@@ -482,6 +493,7 @@ const deletePost = async (req, res) => {
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
+
 
 const updatePost = async (req, res) => {
     try {
