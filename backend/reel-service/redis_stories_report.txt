@@ -1,0 +1,66 @@
+﻿node : node:internal/modules/cj
+s/loader:1228
+At line:1 char:1
++ node 
+check_redis_and_stories.js 
+2>&1 | Out-File -FilePath 
+redis_stori ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo          :  
+   NotSpecified: (node:intern  
+  al/modules/cjs/loader:1228   
+ :String) [], RemoteExcepti    
+on
+    + FullyQualifiedErrorId :  
+   NativeCommandError
+ 
+  throw err;
+  ^
+
+Error: Cannot find module 
+'redis'
+Require stack:
+- C:\Users\ASPIRE 10\Desktop\ja
+adoe\Insta-clone_updated\backen
+d\reel-service\check_redis_and_
+stories.js
+    at Module._resolveFilename 
+(node:internal/modules/cjs/load
+er:1225:15)
+    at Module._load (node:inter
+nal/modules/cjs/loader:1051:27)
+    at Module.require (node:int
+ernal/modules/cjs/loader:1311:1
+9)
+    at require (node:internal/m
+odules/helpers:179:18)
+    at Object.<anonymous> 
+(C:\Users\ASPIRE 10\Desktop\jaa
+doe\Insta-clone_updated\backend
+\reel-service\check_redis_and_s
+tories.js:1:26)
+    at Module._compile (node:in
+ternal/modules/cjs/loader:1469:
+14)
+    at Module._extensions..js (
+node:internal/modules/cjs/loade
+r:1548:10)
+    at Module.load (node:intern
+al/modules/cjs/loader:1288:32)
+    at Module._load (node:inter
+nal/modules/cjs/loader:1104:12)
+    at 
+Function.executeUserEntryPoint 
+[as runMain] (node:internal/mod
+ules/run_main:174:12) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\ASPIRE 10\\Desk
+top\\jaadoe\\Insta-clone_update
+d\\backend\\reel-service\\check
+_redis_and_stories.js'
+  ]
+}
+
+Node.js v20.18.0

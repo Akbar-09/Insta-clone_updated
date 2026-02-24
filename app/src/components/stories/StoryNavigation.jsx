@@ -1,12 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { getProxiedUrl } from '../../utils/mediaUtils';
 
 const StoryNavigation = ({ hasPrev, hasNext, onPrev, onNext, prevPreview, nextPreview }) => {
-    const getMediaUrl = (url) => {
-        if (!url) return undefined;
-        if (url.startsWith('http') || url.startsWith('data:')) return url;
-        return url;
-    };
-
     return (
         <>
             {/* Left Zone (Navigation Logic usually handled by container, but previews here) */}
@@ -18,13 +13,13 @@ const StoryNavigation = ({ hasPrev, hasNext, onPrev, onNext, prevPreview, nextPr
                     onClick={(e) => { e.stopPropagation(); onPrev(); }}
                 >
                     <img
-                        src={getMediaUrl(prevPreview.mediaUrl)}
+                        src={getProxiedUrl(prevPreview.mediaUrl)}
                         className="w-full h-full object-cover"
                         alt="prev"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-10 h-10 rounded-full border-2 border-primary p-[2px]">
-                            <img src={getMediaUrl(prevPreview.userAvatar)} className="w-full h-full rounded-full" alt="avatar" />
+                            <img src={getProxiedUrl(prevPreview.userAvatar)} className="w-full h-full rounded-full" alt="avatar" />
                         </div>
                         <span className="absolute mt-14 text-white text-sm font-semibold">{prevPreview.username}</span>
                     </div>
@@ -48,13 +43,13 @@ const StoryNavigation = ({ hasPrev, hasNext, onPrev, onNext, prevPreview, nextPr
                     onClick={(e) => { e.stopPropagation(); onNext(); }}
                 >
                     <img
-                        src={getMediaUrl(nextPreview.mediaUrl)}
+                        src={getProxiedUrl(nextPreview.mediaUrl)}
                         className="w-full h-full object-cover"
                         alt="next"
                     />
                     <div className="absolute inset-0 flex items-center justify-center flex-col">
                         <div className="w-14 h-14 rounded-full border-2 border-primary p-[2px] bg-black/20 backdrop-blur-sm mb-2">
-                            <img src={getMediaUrl(nextPreview.userAvatar)} className="w-full h-full rounded-full object-cover" alt="avatar" />
+                            <img src={getProxiedUrl(nextPreview.userAvatar)} className="w-full h-full rounded-full object-cover" alt="avatar" />
                         </div>
                         <span className="text-white text-sm font-semibold drop-shadow-md">{nextPreview.username}</span>
                     </div>

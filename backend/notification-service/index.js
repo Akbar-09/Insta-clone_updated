@@ -1,9 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
 const notificationRoutes = require('./notifications/notification.routes');
 const { startWorker } = require('./notifications/notification.worker');
-require('dotenv').config();
 
 // Global error handlers
 process.on('unhandledRejection', (reason, promise) => {

@@ -2,6 +2,7 @@ import { X, Check, Plus } from 'lucide-react';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { getProxiedUrl } from '../utils/mediaUtils';
 
 const SwitchAccountModal = ({ onClose }) => {
     const { user, sessions, switchAccount } = useContext(AuthContext);
@@ -37,7 +38,7 @@ const SwitchAccountModal = ({ onClose }) => {
                             >
                                 <div className="flex items-center">
                                     <img
-                                        src={session.profilePicture || `https://ui-avatars.com/api/?name=${session.username}&background=random`}
+                                        src={getProxiedUrl(session.profilePicture) || `https://ui-avatars.com/api/?name=${session.username}&background=random`}
                                         alt={session.username}
                                         className="w-10 h-10 rounded-full object-cover mr-3 border border-border"
                                     />
@@ -53,7 +54,7 @@ const SwitchAccountModal = ({ onClose }) => {
                     ) : (
                         <div className="px-4 py-3 flex items-center">
                             <img
-                                src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.username}&background=random`}
+                                src={getProxiedUrl(user?.profilePicture) || `https://ui-avatars.com/api/?name=${user?.username}&background=random`}
                                 alt={user?.username}
                                 className="w-10 h-10 rounded-full object-cover mr-3 border border-border"
                             />

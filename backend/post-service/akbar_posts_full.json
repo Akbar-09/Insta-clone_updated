@@ -1,0 +1,152 @@
+{
+  "count": 21,
+  "posts": [
+    {
+      "id": 2073,
+      "userId": 51,
+      "mediaUrl": "/api/v1/media/files/Jaadoe/posts/images/1771314095068-107043085_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 5\n"
+    },
+    {
+      "id": 2068,
+      "userId": 51,
+      "mediaUrl": "/api/v1/media/files/Jaadoe/posts/images/1771072861057-610049809_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "image 4"
+    },
+    {
+      "id": 2059,
+      "userId": 51,
+      "mediaUrl": "/uploads/1771050929884-434600612_opt.mp4",
+      "mediaType": "VIDEO",
+      "caption": "test video 1"
+    },
+    {
+      "id": 139,
+      "userId": 51,
+      "mediaUrl": "/uploads/1769586236092-856063816.jpg",
+      "mediaType": "IMAGE",
+      "caption": "nature beauty 2"
+    },
+    {
+      "id": 137,
+      "userId": 51,
+      "mediaUrl": "/uploads/1769586165781-740649094.jpg",
+      "mediaType": "IMAGE",
+      "caption": "dummy 2\n"
+    },
+    {
+      "id": 136,
+      "userId": 51,
+      "mediaUrl": "/uploads/1769586073828-4574796.jpg",
+      "mediaType": "IMAGE",
+      "caption": "dummy 2"
+    },
+    {
+      "id": 135,
+      "userId": 51,
+      "mediaUrl": "/uploads/1769586008217-332657727.jpg",
+      "mediaType": "IMAGE",
+      "caption": "dummy 1"
+    },
+    {
+      "id": 1844,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770272549250-437207679.jpg",
+      "mediaType": "IMAGE",
+      "caption": "dummy 5"
+    },
+    {
+      "id": 1847,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770294206085-117045873_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 1\n"
+    },
+    {
+      "id": 1848,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770294236761-75129711_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 2"
+    },
+    {
+      "id": 1850,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770294283922-861043805_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 4"
+    },
+    {
+      "id": 1849,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770294262265-235600614_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 3"
+    },
+    {
+      "id": 1851,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770355401202-171697166_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 8"
+    },
+    {
+      "id": 1852,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770355722866-200583715_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 9"
+    },
+    {
+      "id": 1853,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770356616847-50456018_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 10"
+    },
+    {
+      "id": 1854,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770357936538-489591139_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 10"
+    },
+    {
+      "id": 1855,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770360106996-944519205_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 10"
+    },
+    {
+      "id": 1856,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770360174825-454549326_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 11"
+    },
+    {
+      "id": 1859,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770383088961-297062159_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 12"
+    },
+    {
+      "id": 1857,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770360383981-753125223_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy 12"
+    },
+    {
+      "id": 2053,
+      "userId": 51,
+      "mediaUrl": "/uploads/1770988032210-76741009_opt.webp",
+      "mediaType": "IMAGE",
+      "caption": "dummy "
+    }
+  ]
+}

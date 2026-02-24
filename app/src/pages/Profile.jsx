@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import { getSavedPosts, getSavedReels } from '../api/bookmarkApi';
+import { getProxiedUrl } from '../utils/mediaUtils';
 
 const VerifiedBadge = () => (
     <svg aria-label="Verified" className="ml-2 w-[18px] h-[18px] text-[#0095f6]" fill="rgb(0, 149, 246)" height="18" role="img" viewBox="0 0 40 40" width="18">
@@ -108,11 +109,6 @@ const Profile = ({ section }) => {
 
     const isOwnProfile = currentUser?.id === profile.userId || id === 'me';
 
-    const getMediaUrl = (url) => {
-        if (!url) return undefined;
-        if (url.startsWith('http') || url.startsWith('data:')) return url;
-        return url;
-    };
 
     return (
         <div className="max-w-[935px] w-full mx-auto pt-[30px] pb-12 px-5 max-md:px-0 max-md:pt-0">
@@ -152,7 +148,7 @@ const Profile = ({ section }) => {
                     <div key={`${post.isReel ? 'reel' : 'post'}-${post.id}`} className="relative aspect-square group cursor-pointer bg-secondary">
                         {post.isReel || post.mediaType === 'VIDEO' ? (
                             <div className="relative w-full h-full">
-                                <video src={post.videoUrl || post.mediaUrl} className="w-full h-full object-cover" />
+                                <video src={getProxiedUrl(post.videoUrl || post.mediaUrl)} className="w-full h-full object-cover" />
                                 {post.isReel && (
                                     <div className="absolute top-2 right-2 text-white drop-shadow-md">
                                         <Clapperboard size={18} />
@@ -160,7 +156,7 @@ const Profile = ({ section }) => {
                                 )}
                             </div>
                         ) : (
-                            <img src={post.mediaUrl || post.imageUrl} alt="Post" className="w-full h-full object-cover" />
+                            <img src={getProxiedUrl(post.mediaUrl || post.imageUrl)} alt="Post" className="w-full h-full object-cover" />
                         )}
 
                         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6 text-white max-md:hidden">

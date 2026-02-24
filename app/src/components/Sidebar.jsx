@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { getProxiedUrl } from '../utils/mediaUtils';
 import { useLanguage } from '../context/LanguageContext';
 import { getUnreadNotificationCount } from '../api/notificationApi';
 import { getUnreadMessageCount } from '../api/messageApi';
@@ -356,7 +357,7 @@ const Sidebar = () => {
                              ${isNarrow ? 'justify-center p-3' : ''} 
                              max-[1264px]:justify-center max-[1264px]:p-3`}>
                             <img
-                                src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.username || 'User'}&background=random`}
+                                src={getProxiedUrl(user?.avatar) || `https://ui-avatars.com/api/?name=${user?.username || 'User'}&background=random`}
                                 alt="Profile"
                                 className={`w-6 h-6 rounded-full object-cover 
                                     ${(isActive('/profile/me') || (user?.username && isActive(`/profile/${user.username}`))) ? 'border-[2px] border-text-primary p-[1px]' : ''}

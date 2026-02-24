@@ -1,0 +1,20 @@
+Tables:
+
+
+SearchIndices Sample:
+[
+  {
+    "id": 21,
+    "type": "USER",
+    "referenceId": 20,
+    "content": "user_test_20",
+    "metadata": {
+      "fullName": "Test User 20",
+      "username": "user_test_20",
+      "avatarUrl": "https://picsum.photos/seed/user_test_20/200/200",
+      "profilePicture": "https://picsum.photos/seed/user_test_20/200/200"
+    },
+    "createdAt": "2026-01-28T07:37:25.659Z",
+    "updatedAt": "2026-01-28T07:37:25.659Z"
+  }
+]

@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import { isThisWeek, isThisMonth, parseISO, formatDistanceToNowStrict } from 'date-fns';
 import FollowButton from './FollowButton';
 import { useNavigate } from 'react-router-dom';
+import { getProxiedUrl } from '../utils/mediaUtils';
 
 const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
     const { user } = useContext(AuthContext);
@@ -144,9 +145,13 @@ const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
                                         <div className="mr-3.5 shrink-0 relative">
                                             <div className="w-[46px] h-[46px] rounded-full p-[1.5px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600">
                                                 <img
-                                                    src={item.fromUserAvatar || `https://ui-avatars.com/api/?name=${item.fromUsername || (item.message.includes(':') ? item.message.split(':')[0] : 'User')}&background=random`}
+                                                    src={getProxiedUrl(item.fromUserAvatar) || `https://ui-avatars.com/api/?name=${item.fromUsername || (item.message.includes(':') ? item.message.split(':')[0] : 'User')}&background=random`}
                                                     className="w-full h-full rounded-full object-cover border-2 border-primary dark:border-black"
                                                     alt={item.fromUsername || 'User'}
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = `https://ui-avatars.com/api/?name=${item.fromUsername || 'User'}&background=random`;
+                                                    }}
                                                 />
                                             </div>
                                         </div>
@@ -197,7 +202,15 @@ const NotificationsDrawer = forwardRef(({ isOpen }, ref) => {
                                                 </div>
                                             ) : item.resourceImage ? (
                                                 <div className="w-11 h-11 relative rounded-md overflow-hidden border border-border group-hover:border-text-secondary transition-colors">
-                                                    <img src={item.resourceImage} className="w-full h-full object-cover" alt="Post" />
+                                                    <img
+                                                        src={getProxiedUrl(item.resourceImage)}
+                                                        className="w-full h-full object-cover"
+                                                        alt="Post"
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = 'https://ui-avatars.com/api/?name=Post&background=f3f4f6&color=9ca3af&size=128&semibold=true&format=svg';
+                                                        }}
+                                                    />
                                                 </div>
                                             ) : null}
                                         </div>

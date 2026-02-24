@@ -18,7 +18,8 @@ const getPostsByHashtag = async (req, res) => {
             where: {
                 caption: {
                     [Op.iLike]: `%${tag}%`
-                }
+                },
+                isHidden: false  // Exclude posts with broken/lost media
             },
             order: [['createdAt', 'DESC']],
             limit: parseInt(limit),
@@ -61,7 +62,8 @@ const getPostsByUsers = async (req, res) => {
             where: {
                 userId: {
                     [Op.in]: userIds
-                }
+                },
+                isHidden: false  // Exclude posts with broken/lost media
             },
             order: [['createdAt', 'DESC']],
             limit: parseInt(limit),
@@ -134,6 +136,7 @@ const getExplorePosts = async (req, res) => {
         try {
             posts = await Post.findAll({
                 where: {
+                    isHidden: false,  // Exclude posts with broken/lost media
                     [Op.and]: [
                         { mediaUrl: { [Op.notILike]: '%w3schools%' } },
                         { mediaUrl: { [Op.notILike]: '%googleapis.com%' } },

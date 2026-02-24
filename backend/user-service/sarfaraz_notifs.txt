@@ -1,0 +1,80 @@
+[
+  {
+    "id": "e2eb24e7-0a9f-4a01-bb59-544c75d778f0",
+    "user_id": 108,
+    "type": "follow",
+    "title": "New Follower",
+    "message": "sarfaraz started following you",
+    "link": "/profile/105",
+    "is_read": false,
+    "created_at": "2026-02-20T07:26:13.980Z",
+    "from_user_id": 105,
+    "from_username": "sarfaraz",
+    "from_user_avatar": "/api/v1/media/files/Jaadoe/posts/images/1771651527809-120079912_opt.webp"
+  },
+  {
+    "id": "bdc15774-19bb-4018-be66-dbdc78ee89b2",
+    "user_id": 55,
+    "type": "follow",
+    "title": "New Follower",
+    "message": "sarfaraz started following you",
+    "link": "/profile/105",
+    "is_read": false,
+    "created_at": "2026-02-20T07:26:47.818Z",
+    "from_user_id": 105,
+    "from_username": "sarfaraz",
+    "from_user_avatar": "/api/v1/media/files/Jaadoe/posts/images/1771651527809-120079912_opt.webp"
+  },
+  {
+    "id": "bbb6270e-408a-49d7-862e-f81a2c26eb69",
+    "user_id": 105,
+    "type": "like",
+    "title": "New Like",
+    "message": "sarfaraz liked your post",
+    "link": "/p/2066",
+    "is_read": true,
+    "created_at": "2026-02-20T07:29:59.276Z",
+    "from_user_id": 105,
+    "from_username": "sarfaraz",
+    "from_user_avatar": "/api/v1/media/files/Jaadoe/posts/images/1771651527809-120079912_opt.webp"
+  },
+  {
+    "id": "6b7f7e4d-89ac-4f41-8829-2b25cc45fa76",
+    "user_id": 51,
+    "type": "message",
+    "title": "New Message",
+    "message": "sarfaraz: hii akbar",
+    "link": "/messages/26",
+    "is_read": true,
+    "created_at": "2026-02-20T07:25:36.636Z",
+    "from_user_id": 105,
+    "from_username": "sarfaraz",
+    "from_user_avatar": "/api/v1/media/files/Jaadoe/posts/images/1771651527809-120079912_opt.webp"
+  },
+  {
+    "id": "ae98774e-8c02-49b2-9134-8a58e6780a4c",
+    "user_id": 51,
+    "type": "follow",
+    "title": "New Follower",
+    "message": "sarfaraz started following you",
+    "link": "/profile/105",
+    "is_read": true,
+    "created_at": "2026-02-20T07:26:05.334Z",
+    "from_user_id": 105,
+    "from_username": "sarfaraz",
+    "from_user_avatar": "/api/v1/media/files/Jaadoe/posts/images/1771651527809-120079912_opt.webp"
+  },
+  {
+    "id": "3bb4977b-af09-4aba-a3a6-4a18688813f6",
+    "user_id": 51,
+    "type": "message",
+    "title": "New Message",
+    "message": "sarfaraz: hii akbar",
+    "link": "/messages/26",
+    "is_read": true,
+    "created_at": "2026-02-21T06:31:08.992Z",
+    "from_user_id": 105,
+    "from_username": "sarfaraz",
+    "from_user_avatar": "/api/v1/media/files/Jaadoe/posts/images/1771651527809-120079912_opt.webp"
+  }
+]

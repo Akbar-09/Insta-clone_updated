@@ -1,11 +1,12 @@
 // Admin Service initialized (Secret updated)
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { sequelize, Admin, Role } = require('./models');
 const { connectRabbitMQ } = require('./config/rabbitmq');
 
-dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 5016;

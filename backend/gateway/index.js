@@ -62,6 +62,7 @@ const authenticateToken = (req, res, next) => {
         '/api/v1/auth/reset-password',
         '/api/v1/auth/check-username',
         '/api/v1/auth/check-email',
+        '/api/v1/users', // Allow public profile viewing
         '/api/v1/admin/auth/login',
         '/api/v1/admin/',
         '/health',

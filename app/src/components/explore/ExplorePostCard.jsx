@@ -1,40 +1,10 @@
 import { Heart, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getProxiedUrl } from '../../utils/mediaUtils';
 
 const ExplorePostCard = ({ post, isLarge, allPostIds, index }) => {
     const navigate = useNavigate();
 
-    const getProxiedUrl = (url) => {
-        if (!url) return '';
-        if (typeof url !== 'string') return url;
-
-        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
-            return `/api/v1/media/files/${url}`;
-        }
-
-        try {
-            // Remove full origin if it matches any local IP/Port variations to make it relative
-            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
-
-            if (cleanedUrl !== url) {
-                return cleanedUrl;
-            }
-
-            if (url.includes('r2.dev')) {
-                const parts = url.split('.dev/');
-                if (parts.length > 1) {
-                    return `/api/v1/media/files/${parts[1]}`;
-                }
-            }
-
-            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
-                return url.replace('/media/files', '/api/v1/media/files');
-            }
-        } catch (e) {
-            console.warn('URL proxying failed:', e);
-        }
-        return url;
-    };
 
     const getMediaUrl = (url) => getProxiedUrl(url);
 

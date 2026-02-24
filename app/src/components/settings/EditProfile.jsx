@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { updateUserProfile, getUserById, uploadMedia, updateProfilePhoto, removeProfilePhoto } from '../../api/userApi';
 import { X, Loader2 } from 'lucide-react';
+import { getProxiedUrl } from '../../utils/mediaUtils';
 
 const EditProfile = () => {
     const { user, setUser } = useContext(AuthContext); // Assuming setUser updates context if needed
@@ -156,7 +157,7 @@ const EditProfile = () => {
             <div className="flex items-center bg-[#EFEFEF] dark:bg-[#262626] rounded-[20px] p-4 mb-8 justify-between">
                 <div className="flex items-center">
                     <img
-                        src={formData.profilePicture || "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"}
+                        src={getProxiedUrl(formData.profilePicture) || "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"}
                         alt="Profile"
                         className="w-[56px] h-[56px] rounded-full object-cover mr-4"
                     />

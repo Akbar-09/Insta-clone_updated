@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { connectRabbitMQ: connectRabbitManager } = require('./config/rabbitmq');
@@ -13,7 +14,7 @@ const StoryReport = require('./models/StoryReport');
 const Highlight = require('./models/Highlight');
 const HighlightStory = require('./models/HighlightStory');
 
-require('dotenv').config();
+
 
 // Global error handlers to prevent crashes from unhandled library errors
 process.on('unhandledRejection', (reason, promise) => {

@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FollowButton from './FollowButton';
 import { AuthContext } from '../context/AuthContext';
+import { getProxiedUrl } from '../utils/mediaUtils';
 
 const UserCard = ({ user, showFollowButton = true, subtitle, onUserClick, followButtonVariant = 'standard' }) => {
     const navigate = useNavigate();
@@ -21,7 +22,7 @@ const UserCard = ({ user, showFollowButton = true, subtitle, onUserClick, follow
         <div className="flex items-center justify-between py-2 px-4 hover:bg-white/5 transition-colors cursor-pointer group" onClick={handleProfileClick}>
             <div className="flex items-center">
                 <img
-                    src={user.avatar || user.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
+                    src={getProxiedUrl(user.avatar || user.profilePicture) || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
                     alt={user.username}
                     className="w-11 h-11 rounded-full mr-3 object-cover"
                     onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${user.username}&background=random` }}

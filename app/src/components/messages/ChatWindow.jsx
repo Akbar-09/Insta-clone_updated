@@ -9,6 +9,7 @@ import useWebRTC from '../../hooks/useWebRTC';
 import VideoCall from '../call/VideoCall';
 import AudioCall from '../call/AudioCall';
 import CallModal from '../call/CallModal';
+import { getProxiedUrl } from '../../utils/mediaUtils';
 
 const VoicePlayer = ({ src }) => {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -99,40 +100,6 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
     const fileInputRef = useRef(null);
     const navigate = useNavigate();
 
-    const getProxiedUrl = (url) => {
-        if (!url) return '';
-        if (typeof url !== 'string') return url;
-
-        // Don't proxy blob URLs
-        if (url.startsWith('blob:')) return url;
-
-        // Convert absolute local gateway URLs to relative to use Vite proxy
-        try {
-            // Remove full origin if it matches any local IP/Port variations to make it relative
-            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
-
-            if (cleanedUrl !== url) {
-                return cleanedUrl;
-            }
-
-            // If it's an R2 URL directly, try to convert it to our proxied endpoint
-            if (url.includes('r2.dev')) {
-                const parts = url.split('.dev/');
-                if (parts.length > 1) {
-                    return `/api/v1/media/files/${parts[1]}`;
-                }
-            }
-
-            // Ensure media files are always routed through the api/v1 prefix if they are local paths
-            if (url.includes('/media/files') && !url.includes('/api/v1/') && !url.startsWith('http')) {
-                return url.replace('/media/files', '/api/v1/media/files');
-            }
-        } catch (e) {
-            console.warn('URL proxying failed:', e);
-        }
-
-        return url;
-    };
 
     const scrollToBottom = (behavior = 'smooth') => {
         messagesEndRef.current?.scrollIntoView({ behavior });
@@ -303,7 +270,7 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
 
     const otherUser = conversation.otherUser || {};
     const displayName = otherUser.username || "Instagram User";
-    const displayImage = otherUser.profilePicture || otherUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`;
+    const displayImage = getProxiedUrl(otherUser.profilePicture || otherUser.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`;
     const isBlocked = otherUser.isBlocked;
 
     const formatMessageDate = (dateString) => {

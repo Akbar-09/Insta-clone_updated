@@ -11,6 +11,7 @@ import EditPostModal from '../components/EditPostModal';
 import ReportModal from '../components/ReportModal';
 import HeartOverlay from '../components/HeartOverlay';
 import FollowButton from '../components/FollowButton';
+import { getProxiedUrl } from '../utils/mediaUtils';
 
 const PostPage = () => {
     const { id } = useParams();
@@ -163,43 +164,7 @@ const PostPage = () => {
         }
     };
 
-    const getProxiedUrl = (url) => {
-        if (!url) return '';
-        if (typeof url !== 'string') return url;
-
-        // Handle bare filenames (likely R2/Media Service uploads)
-        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
-            return `/api/v1/media/files/${url}`;
-        }
-
-        try {
-            // Remove full origin if it matches any local IP/Port variations to make it relative
-            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
-
-            if (cleanedUrl !== url) {
-                return cleanedUrl;
-            }
-
-            if (url.includes('r2.dev')) {
-                const parts = url.split('.dev/');
-                if (parts.length > 1) {
-                    return `/api/v1/media/files/${parts[1]}`;
-                }
-            }
-
-            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
-                return url.replace('/media/files', '/api/v1/media/files');
-            }
-        } catch (e) {
-            console.warn('URL proxying failed:', e);
-        }
-
-        return url;
-    };
-
-    const getMediaUrl = (url) => {
-        return getProxiedUrl(url);
-    };
+    const getMediaUrl = (url) => getProxiedUrl(url);
 
     const handleAddComment = async () => {
         if (!commentText.trim() || submittingComment) return;
@@ -407,9 +372,13 @@ const PostPage = () => {
                                 onClick={() => navigate(`/profile/${post.username}`)}
                             >
                                 <img
-                                    src={post.userAvatar ? getMediaUrl(post.userAvatar) : `https://ui-avatars.com/api/?name=${post.username}&background=random`}
+                                    src={getProxiedUrl(post.userAvatar) || `https://ui-avatars.com/api/?name=${post.username}&background=random`}
                                     alt={post.username}
                                     className="w-full h-full rounded-full object-cover"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = `https://ui-avatars.com/api/?name=${post.username}&background=random`;
+                                    }}
                                 />
                             </div>
                             <div className="flex flex-col">
@@ -479,9 +448,13 @@ const PostPage = () => {
                                         onClick={() => navigate(`/profile/${comment.username || comment.User?.username}`)}
                                     >
                                         <img
-                                            src={comment.userAvatar ? getMediaUrl(comment.userAvatar) : comment.User?.profilePicture ? getMediaUrl(comment.User.profilePicture) : `https://ui-avatars.com/api/?name=${comment.username || 'User'}&background=random`}
+                                            src={getProxiedUrl(comment.userAvatar || comment.User?.profilePicture) || `https://ui-avatars.com/api/?name=${comment.username || comment.User?.username || 'User'}&background=random`}
                                             className="w-full h-full object-cover"
                                             alt=""
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = `https://ui-avatars.com/api/?name=${comment.username || 'User'}&background=random`;
+                                            }}
                                         />
                                     </div>
                                     <div className="flex-1">

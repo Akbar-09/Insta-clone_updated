@@ -1,0 +1,74 @@
+[
+  {
+    "column_name": "id",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "filename",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "originalName",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "url",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "r2Key",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "cdnUrl",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "tempKey",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "thumbnailUrl",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "type",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "mimeType",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "size",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "width",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "height",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "duration",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "uploadStatus",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "processingError",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "createdAt",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "updatedAt",
+    "is_nullable": "NO"
+  }
+]

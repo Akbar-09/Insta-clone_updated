@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Edit } from 'lucide-react';
 import SwitchAccountModal from '../SwitchAccountModal';
+import { getProxiedUrl } from '../../utils/mediaUtils';
 
 const ConversationList = ({ conversations, selectedId, onSelect, currentUser }) => {
     const [showSwitchAccount, setShowSwitchAccount] = useState(false);
@@ -73,7 +74,7 @@ const ConversationList = ({ conversations, selectedId, onSelect, currentUser }) 
                             >
                                 <div className="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden shrink-0 border border-border">
                                     <img
-                                        src={otherUser.profilePicture || `https://ui-avatars.com/api/?name=${otherUser.username}&background=random`}
+                                        src={getProxiedUrl(otherUser.profilePicture) || `https://ui-avatars.com/api/?name=${otherUser.username}&background=random`}
                                         alt={otherUser.username}
                                         className="w-full h-full object-cover"
                                     />

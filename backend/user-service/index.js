@@ -1,3 +1,4 @@
+require('dotenv').config();
 // User Service Entry Point - Force Restart 2
 const express = require('express');
 const cors = require('cors');
@@ -7,13 +8,18 @@ const UserProfile = require('./models/UserProfile');
 const Avatar = require('./models/Avatar');
 const Report = require('./models/Report'); // Ensure Report is synced
 
-require('dotenv').config();
+
 
 const app = express();
 const PORT = process.env.PORT || 5002;
 
 app.use(cors());
 app.use(express.json());
+
+app.use((req, res, next) => {
+    console.log(`[UserService] ${req.method} ${req.url}`);
+    next();
+});
 
 const { publishEvent } = require('./config/rabbitmq');
 const followRoutes = require('./routes/followRoutes');
@@ -84,8 +90,27 @@ app.put('/:id', async (req, res) => {
 // Basic Route to get profile by username (LAST - catch-all)
 app.get('/:username', async (req, res) => {
     try {
-        const user = await UserProfile.findOne({ where: { username: req.params.username } });
-        if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
+        let user = await UserProfile.findOne({ where: { username: req.params.username } });
+
+        if (!user) {
+            // Fallback: Check if user exists in Auth system and create profile if missing (race condition fix)
+            const [authUser] = await sequelize.query('SELECT id, username FROM "Users" WHERE username = :username', {
+                replacements: { username: req.params.username },
+                type: sequelize.QueryTypes.SELECT
+            });
+
+            if (authUser) {
+                console.log(`[UserService] Self-healing: Creating missing profile for ${authUser.username}`);
+                user = await UserProfile.create({
+                    userId: authUser.id,
+                    username: authUser.username,
+                    fullName: authUser.username
+                });
+            } else {
+                return res.status(404).json({ status: 'error', message: 'User not found' });
+            }
+        }
+
         res.json({ status: 'success', data: user });
     } catch (err) {
         res.status(500).json({ status: 'error', message: err.message });

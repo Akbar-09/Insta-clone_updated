@@ -29,7 +29,7 @@ const createReel = async (req, res) => {
 const getReels = async (req, res) => {
     try {
         const currentUserId = req.headers['x-user-id'];
-        const reels = await Reel.findAll({ order: [['createdAt', 'DESC']] });
+        const reels = await Reel.findAll({ where: { isHidden: false }, order: [['createdAt', 'DESC']] });
 
         let likedReelIds = new Set();
         let savedReelIds = new Set();
@@ -86,6 +86,7 @@ const getUserReels = async (req, res) => {
             };
         }
 
+        whereClause.isHidden = false;  // Exclude reels with broken/lost media
         const reels = await Reel.findAll({
             where: whereClause,
             order: [['createdAt', sort === 'oldest' ? 'ASC' : 'DESC']]

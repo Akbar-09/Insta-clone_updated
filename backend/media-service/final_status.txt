@@ -1,0 +1,8 @@
+ALL ACTIVE POSTS HAVE VALID MEDIA URLS
+
+Total posts:       40
+Hidden posts:      25
+Active posts:      15
+Active R2 posts:   15
+Hidden reels:      1
+Profile pic issues: 0

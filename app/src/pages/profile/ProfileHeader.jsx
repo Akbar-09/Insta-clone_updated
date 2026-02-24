@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import FollowersFollowingModal from '../../components/FollowersFollowingModal';
 import ProfileOptionsModal from '../../components/ProfileOptionsModal';
 import ChangeProfilePhotoModal from '../../components/ChangeProfilePhotoModal';
+import { getProxiedUrl } from '../../utils/mediaUtils';
 
 const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollowToggle, onProfileUpdate, hasStories, allSeen }) => {
     const navigate = useNavigate();
@@ -19,11 +20,6 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollo
         </svg>
     );
 
-    const getMediaUrl = (url) => {
-        if (!url) return undefined;
-        if (url.startsWith('http') || url.startsWith('data:')) return url;
-        return url;
-    };
 
     const handleEditProfile = () => {
         navigate('/settings/edit-profile');
@@ -63,7 +59,7 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollo
             <div className={`w-full h-full rounded-full p-[2px] bg-black ${!hasStories ? '!p-0' : ''}`}>
                 {profile.profilePicture ? (
                     <img
-                        src={getMediaUrl(profile.profilePicture)}
+                        src={getProxiedUrl(profile.profilePicture)}
                         alt={profile.username}
                         className="w-full h-full rounded-full object-cover group-hover:opacity-90 transition-opacity"
                     />

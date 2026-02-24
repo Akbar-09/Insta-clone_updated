@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const NodeMediaServer = require('node-media-server');
@@ -7,7 +8,6 @@ const sequelize = require('./src/config/db');
 const models = require('./src/models');
 const liveRoutes = require('./src/routes/liveRoutes');
 const { connectRabbitMQ } = require('./src/config/rabbitmq');
-require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5015;

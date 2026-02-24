@@ -1,0 +1,53 @@
+
+===== RECENT POSTS mediaUrl =====
+Post 2079 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771582005736-405184252.jpg
+Post 2078 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771568433623-679148882.png
+Post 2077 [VIDEO]: /api/v1/media/files/Jaadoe/temp/1771568209132-773255378.mp4
+Post 2076 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771568012612-815406907.jpg
+Post 2075 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771567711814-335152869.jpg
+Post 2074 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771562239481-211424583.jpg
+Post 2073 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771314095068-107043085.jpg
+Post 2072 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771226380496-993557258.avif
+Post 2071 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771225518919-438291244.jpg
+Post 2069 [VIDEO]: /api/v1/media/files/Jaadoe/temp/1771225376505-801902237.mp4
+Post 2068 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771072861057-610049809.jpg
+Post 2066 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771055998520-423256148.jpg
+Post 2065 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771055331008-745017019.avif
+Post 2064 [IMAGE]: /api/v1/media/files/Jaadoe/temp/1771053937764-231248378.avif
+Post 2063 [VIDEO]: /api/v1/media/files/Jaadoe/temp/1771052741909-249183001.mp4
+Post 2062 [IMAGE]: /uploads/1771052299797-234362486_opt.webp
+Post 2061 [IMAGE]: /uploads/1771052025087-575112275_opt.webp
+Post 2060 [IMAGE]: /uploads/1771051184435-231777391_opt.webp
+Post 2059 [VIDEO]: /uploads/1771050929884-434600612_opt.mp4
+Post 2053 [IMAGE]: /uploads/1770988032210-76741009_opt.webp
+Post 1859 [IMAGE]: /uploads/1770383088961-297062159_opt.webp
+Post 1858 [IMAGE]: /uploads/1770363625553-171547508_opt.webp
+Post 1857 [IMAGE]: /uploads/1770360383981-753125223_opt.webp
+Post 1856 [IMAGE]: /uploads/1770360174825-454549326_opt.webp
+Post 1855 [IMAGE]: /uploads/1770360106996-944519205_opt.webp
+Post 1854 [IMAGE]: /uploads/1770357936538-489591139_opt.webp
+Post 1853 [IMAGE]: /uploads/1770356616847-50456018_opt.webp
+Post 1852 [IMAGE]: /uploads/1770355722866-200583715_opt.webp
+Post 1851 [IMAGE]: /uploads/1770355401202-171697166_opt.webp
+Post 1850 [IMAGE]: /uploads/1770294283922-861043805_opt.webp
+
+===== URL TYPE SUMMARY =====
+{
+  "total": "40",
+  "api_count": "0",
+  "slash_api_count": "15",
+  "http_count": "0",
+  "other_count": "25"
+}
+
+===== BARE/RELATIVE URLs =====
+Post 2059: /uploads/1771050929884-434600612_opt.mp4
+Post 2060: /uploads/1771051184435-231777391_opt.webp
+Post 2061: /uploads/1771052025087-575112275_opt.webp
+Post 140: /uploads/1770029385415-866841386.jpg
+Post 2062: /uploads/1771052299797-234362486_opt.webp
+Post 139: /uploads/1769586236092-856063816.jpg
+Post 137: /uploads/1769586165781-740649094.jpg
+Post 136: /uploads/1769586073828-4574796.jpg
+Post 135: /uploads/1769586008217-332657727.jpg
+Post 1843: /uploads/1770268906633-566465622.jpg

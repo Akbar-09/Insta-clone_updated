@@ -1,9 +1,8 @@
-// Ad Service initialized
 const express = require('express');
+require('dotenv').config();
 const cors = require('cors');
 const sequelize = require('./config/database');
 const adRoutes = require('./routes/adRoutes');
-require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5014;

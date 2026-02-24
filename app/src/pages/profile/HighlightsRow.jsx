@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { getUserHighlights } from '../../api/highlightApi';
 import NewHighlightModal from '../../components/NewHighlightModal';
 import HighlightViewer from '../../components/HighlightViewer';
+import { getProxiedUrl } from '../../utils/mediaUtils';
 
 const HighlightsRow = ({ userId, isOwnProfile }) => {
     const [highlights, setHighlights] = useState([]);
@@ -90,7 +91,7 @@ const HighlightsRow = ({ userId, isOwnProfile }) => {
                                 <div className="w-full h-full rounded-full p-[2px] bg-black">
                                     {highlight.coverStory?.mediaUrl ? (
                                         <img
-                                            src={highlight.coverStory.mediaUrl}
+                                            src={getProxiedUrl(highlight.coverStory.mediaUrl)}
                                             alt={highlight.title}
                                             className="w-full h-full rounded-full object-cover"
                                         />

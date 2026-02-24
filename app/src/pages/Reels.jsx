@@ -11,8 +11,11 @@ import FollowButton from '../components/FollowButton';
 import SharePostModal from '../components/SharePostModal';
 import PostOptionsMenu from '../components/PostOptionsMenu';
 import api from '../api/axios';
+import CreateAdModal from '../components/CreateAdModal';
+import { getProxiedUrl } from '../utils/mediaUtils';
 import ReportModal from '../components/ReportModal';
 import { usePrivacy } from '../context/PrivacyContext';
+import { getComments } from '../api/commentApi';
 
 const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDeleteReel, onUpdateReel }) => {
     const { user } = useContext(AuthContext);
@@ -35,41 +38,116 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDelet
     const [showShareModal, setShowShareModal] = useState(false);
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(isActive);
+    const [isPlaying, setIsPlaying] = useState(false);
     const { isUserBlocked } = usePrivacy();
     const videoRef = useRef(null);
+    const pendingPlayRef = useRef(null);
+    const pauseAfterPlayRef = useRef(false);
+    // Track whether this reel has ever been played (for UI hint)
+    const hasPlayedRef = useRef(false);
 
     // Sync save state from props
     useEffect(() => {
         setIsSaved(reel.isSaved || false);
     }, [reel.isSaved]);
 
-    // Handle play/pause on scroll
+    // Fetch real comment count from API on mount to override stale DB value
     useEffect(() => {
-        if (isActive && videoRef.current) {
-            const playPromise = videoRef.current.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(e => console.log('Autoplay prevented:', e));
+        if (!reel.id) return;
+        getComments(reel.id)
+            .then(res => {
+                const data = res.data || (Array.isArray(res) ? res : []);
+                setLocalCommentsCount(data.length);
+            })
+            .catch(() => { /* keep DB value if fetch fails */ });
+    }, [reel.id]);
+
+    // IMPORTANT: React's `muted` prop has a known bug — it won't update after mount.
+    // We must set it directly on the DOM element every time isMuted changes.
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.muted = isMuted;
+        }
+    }, [isMuted]);
+
+    // Reliable safe play helper
+    const safePlay = async () => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        // MUST be muted for autoplay to work in Chrome/Safari
+        video.muted = isMuted;
+
+        try {
+            pendingPlayRef.current = video.play();
+            await pendingPlayRef.current;
+            pendingPlayRef.current = null;
+            if (pauseAfterPlayRef.current) {
+                pauseAfterPlayRef.current = false;
+                video.pause();
+                setIsPlaying(false);
+            } else {
+                hasPlayedRef.current = true;
+                setIsPlaying(true);
             }
-            setIsPlaying(true);
-        } else if (videoRef.current) {
-            videoRef.current.pause();
+        } catch (e) {
+            pendingPlayRef.current = null;
+            pauseAfterPlayRef.current = false;
+            // AbortError is expected when scroll interrupts play — not a real error
+            if (e.name !== 'AbortError') {
+                console.warn('Video play error:', e.name, e.message);
+            }
             setIsPlaying(false);
         }
+    };
+
+    const safePause = async () => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (pendingPlayRef.current) {
+            pauseAfterPlayRef.current = true;
+            try { await pendingPlayRef.current; } catch (_) { }
+        } else {
+            if (!video.paused) video.pause();
+            setIsPlaying(false);
+        }
+    };
+
+    // When this reel becomes active/inactive, play or pause
+    useEffect(() => {
+        if (isActive) {
+            pauseAfterPlayRef.current = false;
+            // If video already has enough data, play immediately
+            if (videoRef.current && videoRef.current.readyState >= 2) {
+                safePlay();
+            }
+            // Otherwise onCanPlay (below) will fire and start it
+        } else {
+            safePause();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive]);
+
+    // onCanPlay fires when the video has enough data to start playing
+    const handleCanPlay = () => {
+        if (isActive && videoRef.current && videoRef.current.paused && !pendingPlayRef.current) {
+            pauseAfterPlayRef.current = false;
+            safePlay();
+        }
+    };
 
     const togglePlay = (e) => {
         e.stopPropagation();
-        if (videoRef.current) {
-            if (isPlaying) {
-                videoRef.current.pause();
-                setIsPlaying(false);
-            } else {
-                videoRef.current.play();
-                setIsPlaying(true);
-            }
+        const video = videoRef.current;
+        if (!video) return;
+        if (video.paused && !pendingPlayRef.current) {
+            pauseAfterPlayRef.current = false;
+            safePlay();
+        } else {
+            safePause();
         }
     };
+
 
     const handleSave = async () => {
         const prev = isSaved;
@@ -86,48 +164,6 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDelet
         }
     };
 
-    const getProxiedUrl = (url) => {
-        if (!url) return '';
-        if (typeof url !== 'string') return url;
-
-        // Handle bare filenames (likely R2/Media Service uploads)
-        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
-            return `/api/v1/media/files/${url}`;
-        }
-
-        try {
-            // Remove full origin if it matches any local IP/Port variations to make it relative
-            // This handles localhost, 127.0.0.1, and any 192.168.1.x IP with common dev ports
-            const cleanedUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.1\.\d+):(5000|5175|8000|5173|5174)/, '');
-
-            if (cleanedUrl !== url) {
-                return cleanedUrl;
-            }
-
-            // If it's an R2 URL directly, try to convert it to our proxied endpoint
-            if (url.includes('r2.dev')) {
-                const parts = url.split('.dev/');
-                if (parts.length > 1) {
-                    return `/api/v1/media/files/${parts[1]}`;
-                }
-            }
-
-            // Ensure media files are always routed through the api/v1 prefix
-            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
-                return url.replace('/media/files', '/api/v1/media/files');
-            }
-
-            // Route local /uploads/ through the robust files endpoint
-            if (url.startsWith('/uploads/')) {
-                return url.replace('/uploads/', '/api/v1/media/files/');
-            }
-        } catch (e) {
-            console.warn('URL proxying failed:', e);
-        }
-
-        return url;
-
-    };
 
     return (
         <div className="flex flex-col items-center h-screen">
@@ -143,11 +179,28 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDelet
                             src={getProxiedUrl(reel.videoUrl)}
                             className="w-full h-full object-cover cursor-pointer"
                             loop
-                            muted={isMuted}
+                            muted
                             playsInline
+                            preload="auto"
+                            onCanPlay={handleCanPlay}
+                            onLoadedData={handleCanPlay}
+                            onError={(e) => console.error('[Video Error]', reel.videoUrl, e.target.error)}
                             onClick={togglePlay}
                             onDoubleClick={handleDoubleTap}
                         />
+                        {/* Tap to Play overlay — shown when video hasn't started yet */}
+                        {!isPlaying && isActive && (
+                            <div
+                                className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
+                                onClick={togglePlay}
+                            >
+                                <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                                    <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-white ml-1" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Top Overlays */}
                         <div className="absolute top-4 right-4 flex flex-col gap-3 z-20">
@@ -167,7 +220,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDelet
                             {/* User Info */}
                             <div className="flex items-center gap-3 pointer-events-auto">
                                 <img
-                                    src={reel.userAvatar}
+                                    src={getProxiedUrl(reel.userAvatar)}
                                     alt={reel.username}
                                     className="w-[32px] h-[32px] rounded-full object-cover border border-white/20 cursor-pointer"
                                     onClick={() => navigate(`/profile/${reel.username}`)}
@@ -241,7 +294,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDelet
                         <ActionButton icon={MoreHorizontal} onClick={() => setShowOptionsMenu(true)} />
 
                         <div className="mt-1 w-[26px] h-[26px] rounded-md border-[2.5px] border-white overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
-                            <img src={reel.userAvatar} className="w-full h-full object-cover" alt="Original Audio" />
+                            <img src={getProxiedUrl(reel.userAvatar)} className="w-full h-full object-cover" alt="Original Audio" />
                         </div>
                     </div>
                 </div>
@@ -254,6 +307,7 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDelet
                             onClose={() => setShowComments(false)}
                             currentUser={user}
                             onCommentAdded={() => setLocalCommentsCount(prev => prev + 1)}
+                            onCommentCountLoaded={(count) => setLocalCommentsCount(count)}
                             variant="inline"
                         />
                     </div>
@@ -427,24 +481,40 @@ const Reels = () => {
     };
 
     useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
         const observer = new IntersectionObserver((entries) => {
+            let bestEntry = null;
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    const index = parseInt(entry.target.getAttribute('data-index'));
-                    if (!isNaN(index)) {
-                        setActiveIndex(index);
+                    if (!bestEntry || entry.intersectionRatio > bestEntry.intersectionRatio) {
+                        bestEntry = entry;
                     }
                 }
             });
+            if (bestEntry) {
+                const index = parseInt(bestEntry.target.getAttribute('data-index'));
+                if (!isNaN(index)) {
+                    setActiveIndex(index);
+                }
+            }
         }, {
-            threshold: 0.5,
+            root: container,       // <-- KEY FIX: observe within the scroll container
+            threshold: 0.6,
             rootMargin: '0px'
         });
 
-        const items = document.querySelectorAll('.group-snap-item');
-        items.forEach(item => observer.observe(item));
+        // Small timeout to allow DOM to render snap items
+        const timer = setTimeout(() => {
+            const items = container.querySelectorAll('.group-snap-item');
+            items.forEach(item => observer.observe(item));
+        }, 100);
 
-        return () => observer.disconnect();
+        return () => {
+            clearTimeout(timer);
+            observer.disconnect();
+        };
     }, [reels, loading]);
 
     if (loading) {
@@ -459,7 +529,7 @@ const Reels = () => {
     }
 
     return (
-        <div className="flex flex-col items-center w-full gap-0 bg-transparent min-h-screen">
+        <div className="flex justify-center w-full h-screen overflow-hidden">
             {/* Close Button - Fixed Top Right */}
             <div
                 className="fixed top-6 right-6 z-[60] cursor-pointer hover:opacity-70 transition-opacity"
@@ -473,11 +543,14 @@ const Reels = () => {
                     <p>No reels found.</p>
                 </div>
             ) : (
-                <div ref={containerRef} className="w-full flex flex-col items-center bg-transparent">
+                <div
+                    ref={containerRef}
+                    className="w-full h-screen overflow-y-scroll snap-y snap-mandatory no-scrollbar"
+                >
                     {visibleReels.map((reel, index) => {
                         const profile = userProfiles[reel.userId] || {};
                         return (
-                            <div key={reel.id} className="group-snap-item w-full flex justify-center snap-start" data-index={index}>
+                            <div key={reel.id} className="group-snap-item w-full h-screen flex justify-center snap-start" data-index={index}>
                                 <ReelItem
                                     reel={{
                                         ...reel,

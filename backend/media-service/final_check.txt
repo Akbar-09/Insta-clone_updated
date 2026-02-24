@@ -1,0 +1,33 @@
+
+[BROKEN] Posts."mediaUrl" — 20 rows:
+  id=2059: "/uploads/1771050929884-434600612_opt.mp4"
+  id=2060: "/uploads/1771051184435-231777391_opt.webp"
+  id=2061: "/uploads/1771052025087-575112275_opt.webp"
+  id=140: "/uploads/1770029385415-866841386.jpg"
+  id=2062: "/uploads/1771052299797-234362486_opt.webp"
+  id=139: "/uploads/1769586236092-856063816.jpg"
+  id=137: "/uploads/1769586165781-740649094.jpg"
+  id=136: "/uploads/1769586073828-4574796.jpg"
+  id=135: "/uploads/1769586008217-332657727.jpg"
+  id=1843: "/uploads/1770268906633-566465622.jpg"
+  id=1844: "/uploads/1770272549250-437207679.jpg"
+  id=1847: "/uploads/1770294206085-117045873_opt.webp"
+  id=1848: "/uploads/1770294236761-75129711_opt.webp"
+  id=1850: "/uploads/1770294283922-861043805_opt.webp"
+  id=1849: "/uploads/1770294262265-235600614_opt.webp"
+  id=1851: "/uploads/1770355401202-171697166_opt.webp"
+  id=1852: "/uploads/1770355722866-200583715_opt.webp"
+  id=1853: "/uploads/1770356616847-50456018_opt.webp"
+  id=1854: "/uploads/1770357936538-489591139_opt.webp"
+  id=1855: "/uploads/1770360106996-944519205_opt.webp"
+
+[BROKEN] Posts."thumbnailUrl" — 1 rows:
+  id=2059: "/uploads/1771050929884-434600612_thumb.jpg"
+[OK] UserProfiles."profilePicture"
+
+[BROKEN] Reels.videoUrl — 1 rows:
+  id=56: "/uploads/1771050929884-434600612_opt.mp4"
+
+[STATS] Hidden posts (no valid media): 25
+[STATS] Remaining broken active posts: 0
+[STATS] Posts with valid media URLs: 15

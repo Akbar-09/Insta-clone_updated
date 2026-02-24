@@ -1,4 +1,5 @@
 import React from 'react';
+import { getProxiedUrl } from '../../utils/mediaUtils';
 
 const StoryBubble = ({ user, count, onClick }) => {
     // Default avatar if missing
@@ -19,7 +20,7 @@ const StoryBubble = ({ user, count, onClick }) => {
             `}>
                 <div className="w-full h-full rounded-full border-[2px] border-white dark:border-black overflow-hidden bg-white dark:bg-black">
                     <img
-                        src={user.userAvatar || user.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
+                        src={getProxiedUrl(user.userAvatar || user.profilePicture) || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
                         alt={user.username}
                         className="w-full h-full object-cover"
                         onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${user.username}&background=random` }}

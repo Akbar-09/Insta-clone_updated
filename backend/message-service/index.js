@@ -1,10 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { connectRabbitMQ: connectRabbitManager } = require('./config/rabbitmq');
 const { connectRabbitMQ: startMessageConsumer } = require('./services/messageConsumer');
 const sequelize = require('./config/database');
 const messageRoutes = require('./routes/messageRoutes');
-require('dotenv').config();
+
 
 const app = express();
 const PORT = process.env.PORT || 5010;

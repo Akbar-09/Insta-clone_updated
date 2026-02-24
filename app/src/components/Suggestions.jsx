@@ -6,6 +6,7 @@ import { getNotifications } from '../api/notificationApi';
 import { AuthContext } from '../context/AuthContext';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { getProxiedUrl } from '../utils/mediaUtils';
 import SwitchAccountModal from './SwitchAccountModal';
 
 const TRENDING_HASHTAGS = [
@@ -86,7 +87,7 @@ const Suggestions = () => {
                 <div className="flex items-center cursor-pointer" onClick={() => navigate(`/profile/${currentUser.id}`)}>
                     {currentUser.profilePicture ? (
                         <img
-                            src={currentUser.profilePicture}
+                            src={getProxiedUrl(currentUser.profilePicture)}
                             alt="My Profile"
                             className="w-12 h-12 rounded-full mr-3 object-cover border border-white/20"
                         />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, MapPin, Clock } from 'lucide-react';
 import { getUserProfile } from '../api/profileApi';
+import { getProxiedUrl } from '../utils/mediaUtils';
 
 const AboutAccountModal = ({ userId, username, onClose }) => {
     const [profile, setProfile] = useState(null);
@@ -72,7 +73,7 @@ const AboutAccountModal = ({ userId, username, onClose }) => {
                     <div className="p-0">
                         <div className="flex flex-col items-center p-6 border-b border-gray-700">
                             <img
-                                src={profile.profilePicture || `https://ui-avatars.com/api/?name=${profile.username}&background=random`}
+                                src={getProxiedUrl(profile.profilePicture) || `https://ui-avatars.com/api/?name=${profile.username}&background=random`}
                                 alt={profile.username}
                                 className="w-20 h-20 rounded-full mb-4 object-cover"
                             />

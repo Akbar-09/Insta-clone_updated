@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { connectRabbitMQ: connectRabbitPublisher } = require('./config/rabbitmq');
@@ -5,7 +6,7 @@ const { connectRabbitMQ: connectRabbitConsumer } = require('./services/reelConsu
 const sequelize = require('./config/database');
 const reelRoutes = require('./routes/reelRoutes');
 require('./models/ReelReport'); // Ensure ReelReport is synced
-require('dotenv').config();
+
 
 const app = express();
 const PORT = process.env.PORT || 5005;

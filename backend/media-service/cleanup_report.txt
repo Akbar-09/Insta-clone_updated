@@ -1,0 +1,39 @@
+
+Processing 25 /uploads/ posts...
+  ⚠ Hid Post 2059: /uploads/1771050929884-434600612_opt.mp4 (file not found in R2)
+  ⚠ Hid Post 2060: /uploads/1771051184435-231777391_opt.webp (file not found in R2)
+  ⚠ Hid Post 2061: /uploads/1771052025087-575112275_opt.webp (file not found in R2)
+  ⚠ Hid Post 140: /uploads/1770029385415-866841386.jpg (file not found in R2)
+  ⚠ Hid Post 2062: /uploads/1771052299797-234362486_opt.webp (file not found in R2)
+  ⚠ Hid Post 139: /uploads/1769586236092-856063816.jpg (file not found in R2)
+  ⚠ Hid Post 137: /uploads/1769586165781-740649094.jpg (file not found in R2)
+  ⚠ Hid Post 136: /uploads/1769586073828-4574796.jpg (file not found in R2)
+  ⚠ Hid Post 135: /uploads/1769586008217-332657727.jpg (file not found in R2)
+  ⚠ Hid Post 1843: /uploads/1770268906633-566465622.jpg (file not found in R2)
+  ⚠ Hid Post 1844: /uploads/1770272549250-437207679.jpg (file not found in R2)
+  ⚠ Hid Post 1847: /uploads/1770294206085-117045873_opt.webp (file not found in R2)
+  ⚠ Hid Post 1848: /uploads/1770294236761-75129711_opt.webp (file not found in R2)
+  ⚠ Hid Post 1850: /uploads/1770294283922-861043805_opt.webp (file not found in R2)
+  ⚠ Hid Post 1849: /uploads/1770294262265-235600614_opt.webp (file not found in R2)
+  ⚠ Hid Post 1851: /uploads/1770355401202-171697166_opt.webp (file not found in R2)
+  ⚠ Hid Post 1852: /uploads/1770355722866-200583715_opt.webp (file not found in R2)
+  ⚠ Hid Post 1853: /uploads/1770356616847-50456018_opt.webp (file not found in R2)
+  ⚠ Hid Post 1854: /uploads/1770357936538-489591139_opt.webp (file not found in R2)
+  ⚠ Hid Post 1855: /uploads/1770360106996-944519205_opt.webp (file not found in R2)
+  ⚠ Hid Post 1856: /uploads/1770360174825-454549326_opt.webp (file not found in R2)
+  ⚠ Hid Post 1859: /uploads/1770383088961-297062159_opt.webp (file not found in R2)
+  ⚠ Hid Post 1857: /uploads/1770360383981-753125223_opt.webp (file not found in R2)
+  ⚠ Hid Post 1858: /uploads/1770363625553-171547508_opt.webp (file not found in R2)
+  ⚠ Hid Post 2053: /uploads/1770988032210-76741009_opt.webp (file not found in R2)
+
+===== SUMMARY =====
+Fixed by R2 match: 0
+Hidden (media gone): 25
+
+===== Checking UserProfiles for bad URLs =====
+All profile picture URLs look OK.
+
+Profile pictures with /uploads/ URL (3 found):
+  User 86 (mukesh444): "/uploads/1770967581888-402268061.png"
+  User 51 (akbar): "/uploads/1769773497246-594244380.jpg"
+  User 55 (farhan): "/uploads/1770029301797-89875618.jpg"

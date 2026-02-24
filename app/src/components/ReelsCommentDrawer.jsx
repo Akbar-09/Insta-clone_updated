@@ -3,17 +3,15 @@ import { X, Heart, Smile } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getComments, addComment, likeComment, unlikeComment } from '../api/commentApi';
 import EmojiPicker from './messages/EmojiPicker';
-import StickerPicker from './messages/StickerPicker';
-import { Sticker } from 'lucide-react';
+import { getProxiedUrl } from '../utils/mediaUtils';
 
-const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, variant = 'drawer' }) => {
+const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, onCommentCountLoaded, variant = 'drawer' }) => {
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [replyingTo, setReplyingTo] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const [showStickerPicker, setShowStickerPicker] = useState(false);
 
     const commentsEndRef = useRef(null);
     const inputRef = useRef(null);
@@ -28,6 +26,8 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                 // The API returns { status: 'success', data: [...] }
                 const commentsData = res.data || (Array.isArray(res) ? res : []);
                 setComments(commentsData);
+                // Report the real count to the parent so the icon shows correctly
+                if (onCommentCountLoaded) onCommentCountLoaded(commentsData.length);
             } catch (error) {
                 console.error('Failed to load comments', error);
             } finally {
@@ -168,7 +168,7 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                                     onClick={() => navigate(`/profile/${comment.username}`)}
                                 >
                                     <img
-                                        src={comment.userAvatar || comment.User?.profilePicture || `https://ui-avatars.com/api/?name=${comment.username || 'User'}&background=random`}
+                                        src={getProxiedUrl(comment.userAvatar || comment.User?.profilePicture) || `https://ui-avatars.com/api/?name=${comment.username || 'User'}&background=random`}
                                         alt={comment.username}
                                         className="w-full h-full object-cover"
                                     />
@@ -185,7 +185,7 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                                     </div>
                                     {comment.type === 'sticker' ? (
                                         <div className="w-20 h-20 my-1">
-                                            <img src={comment.mediaUrl} alt="sticker" className="w-full h-full object-contain" />
+                                            <img src={getProxiedUrl(comment.mediaUrl)} alt="sticker" className="w-full h-full object-contain" />
                                         </div>
                                     ) : (
                                         <p className="text-gray-800 dark:text-white text-[13px] mt-0.5 leading-snug">{comment.text}</p>
@@ -236,20 +236,12 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                     <EmojiPicker onSelect={handleEmojiSelect} onClose={() => setShowEmojiPicker(false)} />
                 )}
 
-                {showStickerPicker && (
-                    <StickerPicker
-                        onSelect={(sticker) => {
-                            handleAddComment(null, sticker);
-                            setShowStickerPicker(false);
-                        }}
-                        onClose={() => setShowStickerPicker(false)}
-                    />
-                )}
+
 
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden shrink-0">
                         <img
-                            src={currentUser?.profilePicture || `https://ui-avatars.com/api/?name=${currentUser?.username || 'You'}&background=random`}
+                            src={getProxiedUrl(currentUser?.profilePicture) || `https://ui-avatars.com/api/?name=${currentUser?.username || 'You'}&background=random`}
                             alt="You"
                             className="w-full h-full object-cover"
                         />
@@ -258,16 +250,9 @@ const ReelsCommentDrawer = ({ postId, onClose, currentUser, onCommentAdded, vari
                         <button
                             type="button"
                             className={`mr-2 hover:opacity-70 ${showEmojiPicker ? 'text-[#0095F6]' : 'text-gray-400'}`}
-                            onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowStickerPicker(false); }}
+                            onClick={() => { setShowEmojiPicker(!showEmojiPicker); }}
                         >
                             <Smile size={20} />
-                        </button>
-                        <button
-                            type="button"
-                            className={`mr-2 hover:opacity-70 ${showStickerPicker ? 'text-[#0095F6]' : 'text-gray-400'}`}
-                            onClick={() => { setShowStickerPicker(!showStickerPicker); setShowEmojiPicker(false); }}
-                        >
-                            <Sticker size={20} />
                         </button>
                         <input
                             ref={inputRef}

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "b2de8586-471f-425e-a4b8-0276234f60ba",
+    "user_id": 137,
+    "type": "follow",
+    "title": "New Follower",
+    "message": "u2_12397 started following you",
+    "link": "/profile/138",
+    "is_read": true,
+    "created_at": "2026-02-16T12:51:53.989Z",
+    "from_user_id": null,
+    "from_username": null,
+    "from_user_avatar": null
+  }
+]

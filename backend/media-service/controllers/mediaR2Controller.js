@@ -201,13 +201,23 @@ const serveFile = async (req, res) => {
                 });
                 const headData = await r2Client.send(headCommand);
                 const totalSize = headData.ContentLength;
-                const contentType = headData.ContentType || 'application/octet-stream';
+                // R2 sometimes stores mp4 as 'application/octet-stream' — fix to ensure browser video playback
+                let contentType = headData.ContentType || 'application/octet-stream';
+                if (targetKey.endsWith('.mp4') && contentType === 'application/octet-stream') {
+                    contentType = 'video/mp4';
+                } else if (targetKey.endsWith('.webm')) {
+                    contentType = 'video/webm';
+                } else if (targetKey.endsWith('.webp')) {
+                    contentType = 'image/webp';
+                }
 
                 // Set Common Headers
                 res.set('Content-Type', contentType);
                 res.set('Accept-Ranges', 'bytes');
                 res.set('Cache-Control', 'public, max-age=31536000');
                 res.set('Access-Control-Allow-Origin', '*');
+                res.set('Access-Control-Allow-Headers', 'Range');
+                res.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges');
                 res.set('Cross-Origin-Resource-Policy', 'cross-origin');
 
                 if (range) {
@@ -279,27 +289,38 @@ const serveFile = async (req, res) => {
             }
         }
 
-        // 3. Last Ditch: UUID Pattern Match in R2 folders
-        const uuidMatch = key.match(/([0-9a-f-]{36}|[0-9]{13}-[0-9]{9})/); // Also match timestamp-rand format
-        if (uuidMatch) {
-            const idPart = uuidMatch[1];
-            console.log(`[R2 Fallback] Attempting pattern match for ${idPart}`);
-            const possiblePaths = [
-                `${FOLDER_NAME}/profiles/temp_${idPart}_opt.webp`,
-                `${FOLDER_NAME}/posts/images/temp_${idPart}_opt.webp`,
-                `${FOLDER_NAME}/posts/videos/${idPart}.mp4`,
-                `${FOLDER_NAME}/temp/${idPart}.mp4`,
-                `${FOLDER_NAME}/temp/${idPart}.webp`,
-                `${idPart}.mp4`,
-                `${idPart}.webp`
-            ];
+        // 3. Last Ditch: Pattern Match in R2 folders
+        // Extract the filename portion and the extension:
+        const basename = path.basename(key); // e.g. "1771562239481-211424583.jpg"
+        const ext = path.extname(basename);   // e.g. ".jpg"
+        const nameNoExt = path.basename(basename, ext); // e.g. "1771562239481-211424583"
 
-            for (const fKey of possiblePaths) {
-                handled = await streamFromR2(fKey);
-                if (handled) {
-                    console.log(`[R2 Fallback] Pattern Match Success: ${fKey}`);
-                    return;
-                }
+        // Try to match UUID (36-char hex) or timestamp-random format (13digits-Ndigits)
+        const idMatch = key.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9]{10,}-[0-9]+)/);
+        const idPart = idMatch ? idMatch[1] : nameNoExt;
+        console.log(`[R2 Fallback] Attempting pattern match for ${idPart}, ext=${ext}`);
+
+        const possiblePaths = [
+            // Try exact basename in all known folders (covers temp timestamp uploads)
+            `${FOLDER_NAME}/temp/${basename}`,
+            `${FOLDER_NAME}/posts/images/${basename}`,
+            `${FOLDER_NAME}/posts/videos/${basename}`,
+            `${FOLDER_NAME}/profiles/${basename}`,
+            `${FOLDER_NAME}/stories/${basename}`,
+            // Try optimized/processed variants
+            `${FOLDER_NAME}/profiles/temp_${idPart}_opt.webp`,
+            `${FOLDER_NAME}/posts/images/temp_${idPart}_opt.webp`,
+            `${FOLDER_NAME}/posts/videos/${idPart}.mp4`,
+            `${FOLDER_NAME}/temp/${idPart}.mp4`,
+            `${FOLDER_NAME}/temp/${idPart}.webp`,
+            `${FOLDER_NAME}/temp/${idPart}${ext}`,
+        ];
+
+        for (const fKey of possiblePaths) {
+            handled = await streamFromR2(fKey);
+            if (handled) {
+                console.log(`[R2 Fallback] Pattern Match Success: ${fKey}`);
+                return;
             }
         }
 

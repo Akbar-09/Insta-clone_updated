@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { getFollowersList, getFollowingList, removeFollower, followUser, unfollowUser } from '../api/profileApi';
+import { getProxiedUrl } from '../utils/mediaUtils';
 
 const FollowersFollowingModal = ({ userId, type = 'followers', onClose }) => {
     const navigate = useNavigate();
@@ -151,7 +152,7 @@ const FollowersFollowingModal = ({ userId, type = 'followers', onClose }) => {
                                             >
                                                 {user.profilePicture ? (
                                                     <img
-                                                        src={user.profilePicture}
+                                                        src={getProxiedUrl(user.profilePicture)}
                                                         alt={user.username}
                                                         className="w-full h-full object-cover"
                                                     />

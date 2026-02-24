@@ -1,0 +1,96 @@
+
+===== R2 FILES (Jaadoe/) =====
+Total: 49
+  Jaadoe/ads/media/temp_73d8bb54-28d2-4382-848f-28abed8172a1_opt.webp
+  Jaadoe/ads/media/temp_e2f16ab4-9b67-4431-8dff-f95cae302d9e_opt.webp
+  Jaadoe/messages/attachments/temp_29001294-c296-400a-833e-e5843a50fc0f_opt.webp
+  Jaadoe/messages/attachments/temp_753be688-1edc-41b7-9f1f-bb06ab43dfc8_opt.webp
+  Jaadoe/messages/attachments/temp_8231400b-4497-4e1b-949d-c4e460f56974_opt.webp
+  Jaadoe/messages/attachments/temp_eb93604c-b3ff-491f-9aea-41e36c6ecd94_opt.webp
+  Jaadoe/posts/images/1771053937764-231248378_opt.webp
+  Jaadoe/posts/images/1771055331008-745017019_opt.webp
+  Jaadoe/posts/images/1771055998520-423256148_opt.webp
+  Jaadoe/posts/images/1771065681966-569119485_opt.webp
+  Jaadoe/posts/images/1771066396792-828752180_opt.webp
+  Jaadoe/posts/images/1771072861057-610049809_opt.webp
+  Jaadoe/posts/images/1771073884204-790613580_opt.webp
+  Jaadoe/posts/images/1771225518919-438291244_opt.webp
+  Jaadoe/posts/images/1771226380496-993557258_opt.webp
+  Jaadoe/posts/images/1771314095068-107043085_opt.webp
+  Jaadoe/posts/images/1771398623282-200441415_opt.webp
+  Jaadoe/posts/images/1771398726839-797745374_opt.webp
+  Jaadoe/posts/images/1771400126766-961922292_opt.webp
+  Jaadoe/posts/images/1771401204221-458589948_opt.webp
+  Jaadoe/posts/images/1771560181087-970138067_opt.webp
+  Jaadoe/posts/images/1771562239481-211424583_opt.webp
+  Jaadoe/posts/images/1771562264002-340524864_opt.webp
+  Jaadoe/posts/images/1771562351214-156836305_opt.webp
+  Jaadoe/posts/images/1771563110266-228843364_opt.webp
+  Jaadoe/posts/images/1771567552959-387684980_opt.webp
+  Jaadoe/posts/images/1771567711814-335152869_opt.webp
+  Jaadoe/posts/images/1771568012612-815406907_opt.webp
+  Jaadoe/posts/images/1771568433623-679148882_opt.webp
+  Jaadoe/posts/images/1771582005736-405184252_opt.webp
+  Jaadoe/posts/images/1771651527809-120079912_opt.webp
+  Jaadoe/posts/images/temp_7eb0761d-5106-4a1f-9779-63fcbc01f8c5_opt.webp
+  Jaadoe/posts/images/temp_84999aed-feaa-4031-a254-ee866ad2cd2c_opt.webp
+  Jaadoe/posts/images/temp_9fd53978-ff27-48c0-955c-292a21a7ed51_opt.webp
+  Jaadoe/posts/images/temp_cbf2dedb-ddb9-41f6-80e0-1aaa24448f5f_opt.webp
+  Jaadoe/posts/videos/1771052741909-249183001_opt.mp4
+  Jaadoe/posts/videos/1771225376505-801902237_opt.mp4
+  Jaadoe/posts/videos/1771225465952-820839473_opt.mp4
+  Jaadoe/posts/videos/1771568209132-773255378_opt.mp4
+  Jaadoe/posts/videos/temp_4512a32b-46f5-4677-ab27-ec28d02551dd_opt.mp4
+  Jaadoe/posts/videos/temp_85f130c8-d74d-4923-8739-fc264813a7ce_opt.mp4
+  Jaadoe/posts/videos/temp_dfe140e4-e3e4-478c-8d80-d85c26b0cc34_opt.mp4
+  Jaadoe/thumbnails/1771052741909-249183001_thumb.jpg
+  Jaadoe/thumbnails/1771225376505-801902237_thumb.jpg
+  Jaadoe/thumbnails/1771225465952-820839473_thumb.jpg
+  Jaadoe/thumbnails/1771568209132-773255378_thumb.jpg
+  Jaadoe/thumbnails/temp_4512a32b-46f5-4677-ab27-ec28d02551dd_thumb.jpg
+  Jaadoe/thumbnails/temp_85f130c8-d74d-4923-8739-fc264813a7ce_thumb.jpg
+  Jaadoe/thumbnails/temp_dfe140e4-e3e4-478c-8d80-d85c26b0cc34_thumb.jpg
+
+===== POSTS WITH /uploads/ URLs (25 total) =====
+  Post 2062: /uploads/1771052299797-234362486_opt.webp
+  Post 2061: /uploads/1771052025087-575112275_opt.webp
+  Post 2060: /uploads/1771051184435-231777391_opt.webp
+  Post 2059: /uploads/1771050929884-434600612_opt.mp4
+  Post 2053: /uploads/1770988032210-76741009_opt.webp
+  Post 1859: /uploads/1770383088961-297062159_opt.webp
+  Post 1858: /uploads/1770363625553-171547508_opt.webp
+  Post 1857: /uploads/1770360383981-753125223_opt.webp
+  Post 1856: /uploads/1770360174825-454549326_opt.webp
+  Post 1855: /uploads/1770360106996-944519205_opt.webp
+  Post 1854: /uploads/1770357936538-489591139_opt.webp
+  Post 1853: /uploads/1770356616847-50456018_opt.webp
+  Post 1852: /uploads/1770355722866-200583715_opt.webp
+  Post 1851: /uploads/1770355401202-171697166_opt.webp
+  Post 1850: /uploads/1770294283922-861043805_opt.webp
+  Post 1849: /uploads/1770294262265-235600614_opt.webp
+  Post 1848: /uploads/1770294236761-75129711_opt.webp
+  Post 1847: /uploads/1770294206085-117045873_opt.webp
+  Post 1844: /uploads/1770272549250-437207679.jpg
+  Post 1843: /uploads/1770268906633-566465622.jpg
+  Post 140: /uploads/1770029385415-866841386.jpg
+  Post 139: /uploads/1769586236092-856063816.jpg
+  Post 137: /uploads/1769586165781-740649094.jpg
+  Post 136: /uploads/1769586073828-4574796.jpg
+  Post 135: /uploads/1769586008217-332657727.jpg
+
+===== POSTS WITH /temp/ URLs (15 total) =====
+  Post 2079: Jaadoe/temp/1771582005736-405184252.jpg => R2:NO
+  Post 2078: Jaadoe/temp/1771568433623-679148882.png => R2:NO
+  Post 2077: Jaadoe/temp/1771568209132-773255378.mp4 => R2:NO
+  Post 2076: Jaadoe/temp/1771568012612-815406907.jpg => R2:NO
+  Post 2075: Jaadoe/temp/1771567711814-335152869.jpg => R2:NO
+  Post 2074: Jaadoe/temp/1771562239481-211424583.jpg => R2:NO
+  Post 2073: Jaadoe/temp/1771314095068-107043085.jpg => R2:NO
+  Post 2072: Jaadoe/temp/1771226380496-993557258.avif => R2:NO
+  Post 2071: Jaadoe/temp/1771225518919-438291244.jpg => R2:NO
+  Post 2069: Jaadoe/temp/1771225376505-801902237.mp4 => R2:NO
+  Post 2068: Jaadoe/temp/1771072861057-610049809.jpg => R2:NO
+  Post 2066: Jaadoe/temp/1771055998520-423256148.jpg => R2:NO
+  Post 2065: Jaadoe/temp/1771055331008-745017019.avif => R2:NO
+  Post 2064: Jaadoe/temp/1771053937764-231248378.avif => R2:NO
+  Post 2063: Jaadoe/temp/1771052741909-249183001.mp4 => R2:NO

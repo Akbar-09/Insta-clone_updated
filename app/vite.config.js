@@ -10,6 +10,14 @@ export default defineConfig({
         target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
+        // Pass Range headers through for video streaming
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            if (req.headers.range) {
+              proxyReq.setHeader('Range', req.headers.range);
+            }
+          });
+        }
       },
       '/uploads': {
         target: 'http://127.0.0.1:5000',

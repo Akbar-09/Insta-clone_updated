@@ -4,6 +4,7 @@ import { Heart, Trash2 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { likeComment, unlikeComment, deleteComment } from '../../api/commentApi';
 import * as adApi from '../../api/adApi';
+import { getProxiedUrl } from '../../utils/mediaUtils';
 
 const CommentItem = ({ comment, postId, isAd = false, onDelete, onReply }) => {
     const { user } = useContext(AuthContext);
@@ -75,10 +76,14 @@ const CommentItem = ({ comment, postId, isAd = false, onDelete, onReply }) => {
         >
             <div className="flex items-start gap-3 w-full max-w-[90%]">
                 <img
-                    src={comment.userAvatar || `https://ui-avatars.com/api/?name=${comment.username}&background=random`}
+                    src={getProxiedUrl(comment.userAvatar) || `https://ui-avatars.com/api/?name=${comment.username}&background=random`}
                     alt={comment.username}
                     className="w-8 h-8 rounded-full object-cover shrink-0 cursor-pointer"
                     onClick={() => navigate(`/profile/${comment.username}`)}
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = `https://ui-avatars.com/api/?name=${comment.username}&background=random`;
+                    }}
                 />
                 <div className="flex flex-col">
                     <div className="text-sm">
@@ -90,7 +95,15 @@ const CommentItem = ({ comment, postId, isAd = false, onDelete, onReply }) => {
                         </span>
                         {comment.type === 'sticker' ? (
                             <div className="w-20 h-20 my-1">
-                                <img src={comment.mediaUrl} alt="sticker" className="w-full h-full object-contain" />
+                                <img
+                                    src={getProxiedUrl(comment.mediaUrl)}
+                                    alt="sticker"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'https://cdn-icons-png.flaticon.com/512/3248/3248450.png'; // Fallback sticker
+                                    }}
+                                />
                             </div>
                         ) : (
                             <span className="text-text-primary whitespace-pre-wrap break-words">{commentContent}</span>

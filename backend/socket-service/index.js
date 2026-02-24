@@ -1,8 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { initSocket } = require('./services/socketManager');
 const { connectRabbitMQ } = require('./services/socketConsumer');
-require('dotenv').config();
+
 
 // Global error handlers to prevent crashes from unhandled library errors
 process.on('unhandledRejection', (reason, promise) => {
