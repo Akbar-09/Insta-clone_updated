@@ -5,7 +5,8 @@ import api from '../../api/axios';
 
 const CallContext = createContext();
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+// Leave empty to use relative path (inherits HTTPS from the current window)
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "";
 
 export const CallProvider = ({ children }) => {
     const { user } = useAuth();

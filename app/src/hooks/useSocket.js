@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 
-const SOCKET_URL = `http://${window.location.hostname}:5011`; // Should be dynamic
+// Use relative path so it goes through Vite proxy, inheriting HTTPS from the page
+// Use relative path or empty to let socket.io use the current window origin (HTTPS)
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "";
 
 export const useSocket = (userId) => {
     const [socket, setSocket] = useState(null);
