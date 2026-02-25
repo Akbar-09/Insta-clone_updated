@@ -5,10 +5,7 @@ import StickerPicker from './StickerPicker';
 import EmojiPicker from './EmojiPicker';
 import { uploadMedia } from '../../api/mediaApi';
 import { deleteConversation, unblockUser } from '../../api/messageApi';
-import useWebRTC from '../../hooks/useWebRTC';
-import VideoCall from '../call/VideoCall';
-import AudioCall from '../call/AudioCall';
-import CallModal from '../call/CallModal';
+import { useLiveKitCall } from '../call/CallProvider';
 
 const VoicePlayer = ({ src }) => {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -69,22 +66,8 @@ const VoicePlayer = ({ src }) => {
 };
 
 const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, updateOptimisticMessage, commitMessage, onToggleInfo, isTyping, handleTyping, onUpdate, socket }) => {
-    const {
-        localVideoRef,
-        remoteVideoRef,
-        callStatus,
-        setCallStatus,
-        startCall,
-        acceptCall,
-        endCall,
-        toggleAudio,
-        toggleVideo,
-        isAudioMuted,
-        isVideoOff,
-        cleanup
-    } = useWebRTC(socket, currentUser?.userId || currentUser?.id);
+    const { startCall } = useLiveKitCall();
 
-    const [incomingCall, setIncomingCall] = useState(null);
     const [newMessage, setNewMessage] = useState('');
     const [showStickers, setShowStickers] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -145,19 +128,6 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
-
-    useEffect(() => {
-        if (!socket) return;
-
-        socket.on('incoming_call', (data) => {
-            console.log('[ChatWindow] Incoming call:', data);
-            setIncomingCall(data);
-        });
-
-        return () => {
-            socket.off('incoming_call');
-        };
-    }, [socket]);
 
     const handleSend = (e) => {
         e?.preventDefault();
@@ -348,12 +318,12 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                     <Phone
                         size={24}
                         className="cursor-pointer hover:opacity-50"
-                        onClick={() => startCall(otherUser.id || otherUser.userId, 'audio')}
+                        onClick={() => startCall(otherUser.id || otherUser.userId, displayName, displayImage, 'audio')}
                     />
                     <Video
                         size={24}
                         className="cursor-pointer hover:opacity-50"
-                        onClick={() => startCall(otherUser.id || otherUser.userId, 'video')}
+                        onClick={() => startCall(otherUser.id || otherUser.userId, displayName, displayImage, 'video')}
                     />
                     <Info size={24} className="cursor-pointer hover:opacity-50" onClick={onToggleInfo} />
                 </div>
@@ -396,10 +366,6 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                             }
 
                             const msg = item.data;
-                            // Debug log to find out why images vanish
-                            if (msg.type === 'image') {
-                                console.log(`[ChatWindow] Rendering image ${msg.id}:`, msg);
-                            }
                             const isOwn = String(msg.senderId) === String(currentUser?.id);
                             const isLastInGroup = index === filteredArray.length - 1 || filteredArray[index + 1].type === 'date';
 
@@ -444,107 +410,11 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                                                         className="w-full h-auto block"
                                                         onError={(e) => {
                                                             e.target.onerror = null;
-                                                            // Fallback for broken message images
                                                             e.target.src = 'https://ui-avatars.com/api/?name=Image&background=f3f4f6&color=9ca3af&size=240&semibold=true';
                                                         }}
                                                     />
                                                 </div>
                                             )}
-
-                                            {/* Story Reply Preview */}
-                                            {msg.type === 'story_reply' && (
-                                                <div className="bg-gray-100 dark:bg-gray-900 rounded-2xl p-2 mb-1 border border-gray-200 dark:border-gray-800 overflow-hidden">
-                                                    <div className="flex items-center gap-2 mb-2 px-1">
-                                                        <div className="w-4 h-4 rounded-full bg-gray-300" />
-                                                        <span className="text-[10px] font-semibold text-text-primary">Replying to story</span>
-                                                    </div>
-                                                    <div className="w-32 h-48 bg-gray-200 dark:bg-gray-800 rounded-lg relative overflow-hidden cursor-pointer group">
-                                                        {msg.mediaUrl && (!msg.mediaUrl.startsWith('blob:') || msg.isOptimistic) ? (
-                                                            <img src={getProxiedUrl(msg.mediaUrl)} alt="Story" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">Story unavailable</div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Shared Post/Reel Content */}
-                                            {(msg.type === 'post_share' || msg.type === 'reel_share') && (() => {
-                                                let shareData = {};
-                                                let isLegacy = false;
-
-                                                try {
-                                                    const content = msg.content;
-                                                    if (typeof content === 'string' && content.trim().startsWith('{')) {
-                                                        shareData = JSON.parse(content);
-                                                    } else {
-                                                        isLegacy = true;
-                                                        shareData = typeof content === 'object' ? content : {};
-                                                    }
-                                                } catch (e) {
-                                                    isLegacy = true;
-                                                }
-
-                                                if (isLegacy && typeof msg.content === 'string') {
-                                                    const idMatch = msg.content.match(/\/(reels|posts)\/(\d+)/);
-                                                    shareData = {
-                                                        id: idMatch ? idMatch[2] : null,
-                                                        postId: idMatch ? idMatch[2] : null,
-                                                        username: 'User',
-                                                        text: msg.content
-                                                    };
-                                                }
-
-                                                if (!shareData.id && !shareData.postId) {
-                                                    return <div className="p-3 text-xs italic opacity-50 bg-gray-100 dark:bg-white/5 rounded-xl">Shared content unavailable</div>;
-                                                }
-
-                                                const isReel = msg.type === 'reel_share';
-                                                const displayId = shareData.postId || shareData.id;
-                                                const displayThumb = shareData.thumbnailUrl || shareData.mediaUrl;
-
-                                                return (
-                                                    <div
-                                                        className={`rounded-2xl overflow-hidden mb-1 border border-gray-200 dark:border-gray-800 cursor-pointer hover:opacity-90 transition-opacity bg-white dark:bg-zinc-800 shadow-sm max-w-[240px]`}
-                                                        onClick={() => {
-                                                            if (isReel) navigate(`/reels/${displayId}`);
-                                                            else navigate(`/post/${displayId}`);
-                                                        }}
-                                                    >
-                                                        <div className="p-2.5 flex flex-col gap-2">
-                                                            <div className="flex items-center gap-2 px-1">
-                                                                <div className="w-5 h-5 rounded-full bg-gray-200 overflow-hidden ring-1 ring-black/5">
-                                                                    <img src={`https://ui-avatars.com/api/?name=${shareData.username || 'User'}&background=random`} className="w-full h-full object-cover" />
-                                                                </div>
-                                                                <span className="text-[11px] font-bold text-text-primary">
-                                                                    {shareData.username || 'User'}
-                                                                </span>
-                                                            </div>
-                                                            <div className="aspect-[4/5] w-full bg-black rounded-lg overflow-hidden relative group">
-                                                                {displayThumb ? (
-                                                                    <img src={getProxiedUrl(displayThumb)} alt="" className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center bg-zinc-700">
-                                                                        <Clapperboard color="white" size={24} className="opacity-40" />
-                                                                    </div>
-                                                                )}
-                                                                {isReel && (
-                                                                    <div className="absolute bottom-2 left-2 bg-black/20 backdrop-blur-md rounded-full p-1 border border-white/20">
-                                                                        <Clapperboard size={12} color="white" />
-                                                                    </div>
-                                                                )}
-                                                                <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
-                                                            </div>
-                                                            {shareData.caption && (
-                                                                <p className="text-[12px] px-1 line-clamp-2 leading-tight text-text-primary opacity-90">
-                                                                    <span className="font-semibold mr-1.5">{shareData.username}</span>
-                                                                    {shareData.caption}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
 
                                             {msg.content && (msg.type === 'text' || msg.type === 'story_reply' || (msg.type === 'image' && msg.content !== 'Sent an image')) && (
                                                 <div
@@ -625,117 +495,36 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                             />
                         )}
 
-                        {isRecording ? (
-                            <div className="flex items-center gap-4 bg-[#efefef] dark:bg-[#262626] rounded-[25px] px-4 py-2">
-                                <div className="flex items-center gap-2 flex-1">
-                                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                    <span className="text-sm font-medium">{formatTime(recordingTime)}</span>
-                                    <div className="flex-1 h-3 flex items-center gap-[2px]">
-                                        {[...Array(20)].map((_, i) => (
-                                            <div key={i} className="flex-1 bg-gray-400 rounded-full" style={{ height: `${Math.random() * 100}%` }} />
-                                        ))}
-                                    </div>
-                                </div>
-                                <button onClick={stopRecording} className="text-[#0095F6] text-sm font-semibold">Done</button>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-3 border border-gray-300 dark:border-gray-700 rounded-[25px] px-4 py-2 bg-white dark:bg-black">
-                                <Smile
-                                    size={24}
-                                    className={`cursor-pointer shrink-0 transition-colors ${showEmojiPicker ? 'text-[#0095F6]' : 'text-text-primary'}`}
-                                    onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowStickers(false); }}
+                        <div className="flex items-center gap-3 border border-gray-300 dark:border-gray-700 rounded-[25px] px-4 py-2 bg-white dark:bg-black">
+                            <Smile
+                                size={24}
+                                className={`cursor-pointer shrink-0 transition-colors ${showEmojiPicker ? 'text-[#0095F6]' : 'text-text-primary'}`}
+                                onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowStickers(false); }}
+                            />
+                            <Sticker
+                                size={24}
+                                className={`cursor-pointer shrink-0 transition-colors ${showStickers ? 'text-[#0095F6]' : 'text-text-primary'}`}
+                                onClick={() => { setShowStickers(!showStickers); setShowEmojiPicker(false); }}
+                            />
+                            <form onSubmit={handleSend} className="flex-1">
+                                <input
+                                    type="text"
+                                    placeholder="Message..."
+                                    className="w-full outline-none border-none focus:ring-0 focus:border-none text-sm bg-transparent text-text-primary placeholder-text-secondary"
+                                    value={newMessage}
+                                    onChange={(e) => {
+                                        setNewMessage(e.target.value);
+                                        handleTyping(e.target.value.length > 0);
+                                    }}
                                 />
-                                <Sticker
-                                    size={24}
-                                    className={`cursor-pointer shrink-0 transition-colors ${showStickers ? 'text-[#0095F6]' : 'text-text-primary'}`}
-                                    onClick={() => { setShowStickers(!showStickers); setShowEmojiPicker(false); }}
-                                />
-                                <form onSubmit={handleSend} className="flex-1">
-                                    <input
-                                        type="text"
-                                        placeholder="Message..."
-                                        className="w-full outline-none border-none focus:ring-0 focus:border-none text-sm bg-transparent text-text-primary placeholder-text-secondary"
-                                        value={newMessage}
-                                        onChange={(e) => {
-                                            setNewMessage(e.target.value);
-                                            handleTyping(e.target.value.length > 0);
-                                        }}
-                                    />
-                                </form>
-                                {newMessage.trim() ? (
-                                    <button onClick={handleSend} className="text-[#0095F6] text-sm font-semibold px-2">Send</button>
-                                ) : (
-                                    <div className="flex items-center gap-3">
-                                        <Mic size={24} className="cursor-pointer text-text-primary hover:text-gray-600 transition-colors" onClick={startRecording} />
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            className="hidden"
-                                            accept="image/*"
-                                            onChange={handleFileSelect}
-                                        />
-                                        <ImageIcon
-                                            size={24}
-                                            className="cursor-pointer text-text-primary hover:text-gray-600 transition-colors"
-                                            onClick={() => fileInputRef.current?.click()}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                            </form>
+                            {newMessage.trim() && (
+                                <button onClick={handleSend} className="text-[#0095F6] text-sm font-semibold px-2">Send</button>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
-            {/* Outgoing/Active Video Call */}
-            {callStatus === 'connected' && callStatus !== 'idle' && (
-                localVideoRef.current && (
-                    <VideoCall
-                        localVideoRef={localVideoRef}
-                        remoteVideoRef={remoteVideoRef}
-                        onEndCall={() => endCall(otherUser.id || otherUser.userId)}
-                        onToggleMic={toggleAudio}
-                        onToggleCam={toggleVideo}
-                        isMuted={isAudioMuted}
-                        isCamOff={isVideoOff}
-                        remoteUser={otherUser}
-                    />
-                )
-            )}
-
-            {/* Outgoing Audio Call */}
-            {callStatus === 'calling' && (
-                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center space-y-8">
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20">
-                        <img src={displayImage} alt={displayName} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="text-center">
-                        <h2 className="text-white text-2xl font-bold">{displayName}</h2>
-                        <p className="text-gray-400 mt-2">Calling...</p>
-                    </div>
-                    <button
-                        onClick={() => endCall(otherUser.id || otherUser.userId)}
-                        className="p-5 bg-red-600 rounded-full hover:bg-red-700 transition-all"
-                    >
-                        <X size={32} color="white" />
-                    </button>
-                </div>
-            )}
-
-            {/* Incoming Call Modal */}
-            {incomingCall && (
-                <CallModal
-                    caller={{ username: incomingCall.name || 'User', avatar: null }} // Should get more info if possible
-                    callType={incomingCall.callType}
-                    onAccept={() => {
-                        acceptCall(incomingCall.from, incomingCall.signal, incomingCall.callType, incomingCall.callLogId);
-                        setIncomingCall(null);
-                    }}
-                    onReject={() => {
-                        socket.emit('reject_call', { to: incomingCall.from });
-                        setIncomingCall(null);
-                    }}
-                />
-            )}
         </div>
     );
 };

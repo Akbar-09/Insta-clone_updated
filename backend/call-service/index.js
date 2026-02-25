@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
-const callRoutes = require('./webrtc/call.routes');
+const callRoutes = require('./routes/call.routes');
+const CallSession = require('./models/CallSession'); // Ensure model is loaded
 require('dotenv').config();
 
 const app = express();
@@ -15,6 +16,8 @@ app.use('/', callRoutes);
 
 const startServer = async () => {
     try {
+        await sequelize.authenticate();
+        console.log('Database connected...');
         await sequelize.sync();
         app.listen(PORT, () => {
             console.log(`Call Service running on port ${PORT}`);
