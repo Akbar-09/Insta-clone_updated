@@ -152,6 +152,7 @@ export const useMessages = (socket, userId, initialConversationId) => {
             'conversation_id': 'conversationId',
             'sender_id': 'senderId',
             'reply_to_story_id': 'replyToStoryId',
+            'call_type': 'callType',
             'created_at': 'createdAt',
             'updated_at': 'updatedAt'
         };
@@ -186,6 +187,9 @@ export const useMessages = (socket, userId, initialConversationId) => {
                 else if (type === 'video') snippet = '🎥 Video';
                 else if (type === 'sticker') snippet = '🖼️ Sticker';
                 else if (type === 'voice') snippet = '🎤 Voice message';
+                else if (type === 'call_history') {
+                    snippet = message.callType === 'video' ? '📹 Video call' : '📞 Voice call';
+                }
 
                 if (existingIndex > -1) {
                     const isTargetConv = selectedConversation && (String(selectedConversation.id) === String(message.conversationId));
@@ -353,6 +357,9 @@ export const useMessages = (socket, userId, initialConversationId) => {
             else if (type === 'video') snippet = '🎥 Video';
             else if (type === 'sticker') snippet = '🖼️ Sticker';
             else if (type === 'voice') snippet = '🎤 Voice message';
+            else if (type === 'call_history') {
+                snippet = metadata.callType === 'video' ? '📹 Video call' : '📞 Voice call';
+            }
 
             const updated = {
                 ...newConvs[existingIndex],

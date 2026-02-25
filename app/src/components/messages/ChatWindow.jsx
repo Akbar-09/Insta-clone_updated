@@ -386,6 +386,27 @@ const ChatWindow = ({ conversation, messages, currentUser, onSendMessage, update
                                         )}
 
                                         <div className="flex flex-col gap-1">
+                                            {/* Call History Content */}
+                                            {msg.type === 'call_history' && (
+                                                <div className={`flex items-center gap-4 px-6 py-4 rounded-[22px] min-w-[240px] shadow-sm ${isOwn ? 'bg-[#3797f0] text-white' : 'bg-[#efefef] dark:bg-[#262626] text-text-primary dark:text-white border border-gray-100 dark:border-white/5'}`}>
+                                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isOwn ? 'bg-white/20' : 'bg-black/5 dark:bg-white/10'}`}>
+                                                        {msg.callType === 'video' ? (
+                                                            <Video size={24} className={isOwn ? 'text-white' : 'text-text-primary dark:text-white'} />
+                                                        ) : (
+                                                            <Phone size={24} className={`${isOwn ? 'text-white' : 'text-text-primary dark:text-white'} fill-current`} />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-[15px] leading-tight">
+                                                            {msg.callType === 'video' ? 'Video call' : 'Voice call'}
+                                                        </span>
+                                                        <span className={`text-[13px] font-medium ${isOwn ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                            {msg.content === '0:0:0' || msg.content === '0:00' ? (msg.senderId === currentUser.id ? 'No answer' : 'Missed call') : msg.content}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Sticker Content */}
                                             {msg.type === 'sticker' && msg.mediaUrl && (!msg.mediaUrl.startsWith('blob:') || msg.isOptimistic) && (
                                                 <div className="w-32 h-32 p-1">
