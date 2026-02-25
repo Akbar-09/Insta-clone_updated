@@ -1,30 +1,31 @@
-const { r2Client } = require('./config/r2');
-const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
-require('dotenv').config();
+const { S3Client, ListObjectsV2Command } = require("@aws-sdk/client-s3");
+require('dotenv').config({ path: './.env' });
 
-const BUCKET_NAME = process.env.R2_BUCKET_NAME || 'test-bucket';
+const r2Client = new S3Client({
+    region: "auto",
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    },
+});
+
+const BUCKET_NAME = process.env.R2_BUCKET_NAME || 'omretesting';
 
 async function list() {
     try {
         const command = new ListObjectsV2Command({
             Bucket: BUCKET_NAME,
-            Prefix: 'Jaadoe/temp/',
             MaxKeys: 10
         });
-        const response = await r2Client.send(command);
-        console.log('Objects in Jaadoe/temp/:');
-        if (response.Contents) {
-            response.Contents.forEach(obj => {
-                console.log(` - ${obj.Key}`);
-            });
+        const res = await r2Client.send(command);
+        if (res.Contents) {
+            res.Contents.forEach(c => console.log(c.Key));
         } else {
-            console.log('No objects found.');
+            console.log("No contents found");
         }
-    } catch (error) {
-        console.error('List Error:', error);
-    } finally {
-        process.exit();
+    } catch (err) {
+        console.error(err.message);
     }
 }
-
 list();

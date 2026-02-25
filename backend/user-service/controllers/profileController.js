@@ -401,7 +401,7 @@ exports.getUserReels = async (req, res) => {
         }
 
         try {
-            const url = `http://localhost:5004/user?userId=${userId}`;
+            const url = `http://localhost:5005/user?userId=${userId}`;
             console.log(`[UserService] Fetching reels from: ${url}`);
             const reelsRes = await axios.get(url);
             res.json({ status: 'success', data: reelsRes.data.data || [] });

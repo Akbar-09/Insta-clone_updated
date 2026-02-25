@@ -129,125 +129,40 @@ const getExplorePosts = async (req, res) => {
         const limitCnt = parseInt(limit);
         const offsetCnt = parseInt(offset);
 
-        // Fetch randomized posts (exclude problematic external URLs)
-        let posts = [];
-        try {
-            posts = await Post.findAll({
-                where: {
-                    [Op.and]: [
-                        { mediaUrl: { [Op.notILike]: '%w3schools%' } },
-                        { mediaUrl: { [Op.notILike]: '%googleapis.com%' } },
-                        { mediaUrl: { [Op.notILike]: '%storage.googleapis.com%' } },
-                        { mediaUrl: { [Op.notILike]: '%gtv-videos-bucket%' } }
-                    ]
-                },
-                order: [
-                    [sequelize.literal('RANDOM()')]
-                ],
-                limit: Math.ceil(limitCnt / 2),
-                raw: true
-            });
-            // Mark them as type POST
-            posts = posts.map(p => ({ ...p, type: 'POST' }));
-        } catch (dbError) {
-            console.error('DB FindAll Posts Error:', dbError);
-            posts = [];
-        }
-
-        // Fetch randomized reels (only if Reels table exists in this DB)
-        let reels = [];
-        try {
-            const [results] = await sequelize.query(`
-                SELECT 
-                    id, 
-                    "userId", 
-                    username, 
-                    caption, 
-                    "videoUrl" as "mediaUrl", 
-                    "likesCount", 
-                    "commentsCount", 
-                    "createdAt",
-                    'VIDEO' as "mediaType",
-                    'REEL' as type
-                FROM "Reels" 
-                WHERE "isHidden" = false 
-                AND "videoUrl" NOT ILIKE '%w3schools%'
-                AND "videoUrl" NOT ILIKE '%googleapis.com%'
-                AND "videoUrl" NOT ILIKE '%storage.googleapis.com%'
-                AND "videoUrl" NOT ILIKE '%gtv-videos-bucket%'
-                ORDER BY RANDOM() 
-                LIMIT ${Math.ceil(limitCnt / 2)}
-            `);
-            reels = results;
-        } catch (dbError) {
-            console.log('[PostService] Reels table not available in Post DB. Skipping Reels in Explore.');
-            reels = [];
-        }
-
-        // Combine and Deduplicate
-        const seenUrls = new Set();
-        const combined = [];
-
-        // Helper to normalize URL for matching
-        const normalizeUrl = (url) => {
-            if (!url) return '';
-            let n = url.replace(/^https?:\/\/[^\/]+/, '');
-            if (n.includes('/uploads/')) n = n.substring(n.indexOf('/uploads/'));
-            return n;
-        };
-
-        // Prioritize Reels for Explore if they exist
-        reels.forEach(r => {
-            const norm = normalizeUrl(r.mediaUrl);
-            if (!seenUrls.has(norm)) {
-                combined.push(r);
-                seenUrls.add(norm);
-            }
+        // Fetch randomized posts (Photos and Videos)
+        // We exclude external URLs and specific buckets as per existing logic
+        let posts = await Post.findAll({
+            where: {
+                [Op.and]: [
+                    { mediaUrl: { [Op.notILike]: '%w3schools%' } },
+                    { mediaUrl: { [Op.notILike]: '%googleapis.com%' } },
+                    { mediaUrl: { [Op.notILike]: '%storage.googleapis.com%' } },
+                    { mediaUrl: { [Op.notILike]: '%gtv-videos-bucket%' } }
+                ]
+            },
+            order: [
+                [sequelize.literal('RANDOM()')]
+            ],
+            limit: limitCnt,
+            offset: offsetCnt,
+            raw: true
         });
-
-        posts.forEach(p => {
-            const norm = normalizeUrl(p.mediaUrl);
-            if (!seenUrls.has(norm)) {
-                combined.push(p);
-                seenUrls.add(norm);
-            }
-        });
-
-        // Shuffle mixed content
-        combined.sort(() => Math.random() - 0.5);
 
         // Add isLiked status if user is logged in
         let likedPostIds = new Set();
-        let likedReelIds = new Set();
-
-        if (currentUserId && combined.length > 0) {
-            const postIds = combined.filter(c => c.type === 'POST').map(c => c.id);
-            if (postIds.length > 0) {
-                const likes = await Like.findAll({
-                    where: { userId: currentUserId, postId: postIds },
-                    attributes: ['postId']
-                });
-                likedPostIds = new Set(likes.map(l => l.postId));
-            }
-
-            const reelIds = combined.filter(c => c.type === 'REEL').map(c => c.id);
-            if (reelIds.length > 0) {
-                try {
-                    const [reelLikes] = await sequelize.query(`
-                        SELECT "reelId" FROM "ReelLikes" 
-                        WHERE "userId" = ${parseInt(currentUserId)} 
-                        AND "reelId" IN (${reelIds.join(',')})
-                    `);
-                    likedReelIds = new Set(reelLikes.map(l => l.reelId));
-                } catch (e) {
-                    console.error('ReelLikes Fetch Error:', e);
-                }
-            }
+        if (currentUserId && posts.length > 0) {
+            const postIds = posts.map(p => p.id);
+            const likes = await Like.findAll({
+                where: { userId: currentUserId, postId: postIds },
+                attributes: ['postId']
+            });
+            likedPostIds = new Set(likes.map(l => l.postId));
         }
 
-        const data = combined.map(item => ({
-            ...item,
-            isLiked: item.type === 'POST' ? likedPostIds.has(item.id) : likedReelIds.has(item.id)
+        const data = posts.map(post => ({
+            ...post,
+            type: 'POST', // Explicitly mark as POST for consistency
+            isLiked: likedPostIds.has(post.id)
         }));
 
         res.json({ status: 'success', data });
@@ -256,6 +171,7 @@ const getExplorePosts = async (req, res) => {
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 };
+
 
 const getPosts = async (req, res) => {
     try {

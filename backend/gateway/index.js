@@ -189,9 +189,9 @@ app.use(
 );
 
 // Proxy for Static Uploads (Media Service)
+// Proxy for Static Uploads (Media Service)
 app.use(
-    '/uploads',
-    createProxyMiddleware({
+    createProxyMiddleware('/uploads', {
         target: process.env.MEDIA_SERVICE_URL || 'http://localhost:5013',
         changeOrigin: true,
         onProxyRes: (proxyRes, req, res) => {
