@@ -1,5 +1,6 @@
 import { Heart, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getProxiedUrl } from '../../utils/urlUtils';
 
 // Grid icon for the empty state
 const Grid = ({ size }) => (
@@ -8,31 +9,6 @@ const Grid = ({ size }) => (
 
 const ProfileGrid = ({ posts }) => {
     const navigate = useNavigate();
-
-    const getProxiedUrl = (url) => {
-        if (!url) return '';
-        if (typeof url !== 'string') return url;
-
-        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('blob:')) {
-            return `/api/v1/media/files/${url}`;
-        }
-
-        try {
-            if (url.startsWith('http://localhost:5000') || url.startsWith('http://127.0.0.1:5000')) {
-                return url.replace(/^http:\/\/(localhost|127\.0\.0\.1):5000/, '');
-            }
-            if (url.includes('r2.dev')) {
-                const parts = url.split('.dev/');
-                if (parts.length > 1) return `/api/v1/media/files/${parts[1]}`;
-            }
-            if (url.includes('/media/files') && !url.includes('/api/v1/')) {
-                return url.replace('/media/files', '/api/v1/media/files');
-            }
-        } catch (e) {
-            console.warn('URL proxying failed:', e);
-        }
-        return url;
-    };
 
     const getMediaUrl = (url) => getProxiedUrl(url);
 
@@ -68,7 +44,15 @@ const ProfileGrid = ({ posts }) => {
                             playsInline
                         />
                     ) : (
-                        <img src={getMediaUrl(post.mediaUrl || post.imageUrl)} alt="Post" className="w-full h-full object-cover" />
+                        <img
+                            src={getMediaUrl(post.mediaUrl || post.imageUrl)}
+                            alt="Post"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://ui-avatars.com/api/?name=Post&background=f3f4f6&color=9ca3af&size=256&semibold=true&format=svg';
+                            }}
+                        />
                     )}
 
                     {/* Video Icon Indicator */}

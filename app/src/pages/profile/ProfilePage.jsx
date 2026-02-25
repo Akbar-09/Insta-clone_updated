@@ -210,29 +210,9 @@ const ProfilePage = ({ section }) => {
 
                 {/* Tab Content */}
                 {/* Tab Content */}
-                {activeTab === 'posts' && (() => {
-                    // Merge posts and reels for the main grid
-                    const formattedReels = reels.map(r => ({
-                        ...r,
-                        mediaType: 'VIDEO',
-                        // Ensure compatibility with ProfileGrid
-                        mediaUrl: r.videoUrl,
-                        commentsCount: r.comments || r.commentsCount || 0,
-                        likesCount: r.likesCount || 0,
-                        // If id collision is a concern, we might prefix, but ProfileGrid uses combined key
-                    }));
-
-                    // Concatenate posts and reels directly (assuming separate IDs or distinct entities)
-                    // We removed ID filtering because post-service and reel-service might have overlapping IDs for different content
-                    const allContent = [...posts, ...formattedReels].sort((a, b) => {
-                        // Sort by createdAt descending
-                        const dateA = new Date(a.createdAt || 0);
-                        const dateB = new Date(b.createdAt || 0);
-                        return dateB - dateA;
-                    });
-
-                    return <ProfileGrid posts={allContent} />;
-                })()}
+                {activeTab === 'posts' && (
+                    <ProfileGrid posts={posts} />
+                )}
                 {activeTab === 'reels' && (
                     <>
                         {reels.length > 0 ? (

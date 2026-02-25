@@ -3,7 +3,7 @@ const ScheduledStream = require('../models/ScheduledStream');
 const LiveChatMessage = require('../models/LiveChatMessage');
 const LiveViewer = require('../models/LiveViewer');
 const LiveModerator = require('../models/LiveModerator');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('crypto');
 const { publishEvent } = require('../config/rabbitmq');
 const { uploadThumbnail } = require('../utils/storage');
 require('dotenv').config();

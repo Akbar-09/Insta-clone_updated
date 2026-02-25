@@ -189,11 +189,12 @@ const serveFile = async (req, res) => {
         if (!key) return res.status(400).send('File key required');
 
         const range = req.headers.range;
-        console.log(`[MediaService] Serving ${key} (Range: ${range || 'none'})`);
+        console.log(`[MediaService] Requested File: ${key} (Range: ${range || 'none'})`);
 
         // Closure to handle R2 streaming with Range support
         const streamFromR2 = async (targetKey) => {
             try {
+                console.log(`[MediaService] Checking R2: ${targetKey}`);
                 // 1. Get Metadata (Total Size & Content Type)
                 const headCommand = new HeadObjectCommand({
                     Bucket: BUCKET_NAME,
@@ -203,6 +204,7 @@ const serveFile = async (req, res) => {
                 const totalSize = headData.ContentLength;
                 const contentType = headData.ContentType || 'application/octet-stream';
 
+                console.log(`[MediaService] Found in R2! Size: ${totalSize}, Type: ${contentType}`);
                 // Set Common Headers
                 res.set('Content-Type', contentType);
                 res.set('Accept-Ranges', 'bytes');
@@ -244,6 +246,7 @@ const serveFile = async (req, res) => {
                 return true;
             } catch (err) {
                 if (err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
+                    console.log(`[MediaService] Not found in R2: ${targetKey}`);
                     return false; // Let it fall back
                 }
                 throw err;
@@ -255,7 +258,7 @@ const serveFile = async (req, res) => {
         if (handled) return;
 
         // 2. Fallback: Search in Database
-        console.log(`[R2 Fallback] Key ${key} not found directly. Checking database...`);
+        console.log(`[MediaService] Fallback: Checking DB for ${key}`);
         const mediaRecord = await Media.findOne({
             where: {
                 [Op.or]: [
@@ -267,57 +270,68 @@ const serveFile = async (req, res) => {
         });
 
         if (mediaRecord) {
+            console.log(`[MediaService] Found DB record! r2Key: ${mediaRecord.r2Key}`);
             if (mediaRecord.r2Key && mediaRecord.r2Key !== key) {
-                console.log(`[R2 Fallback] Found r2Key in DB: ${mediaRecord.r2Key}`);
                 handled = await streamFromR2(mediaRecord.r2Key);
                 if (handled) return;
             }
             if (mediaRecord.tempKey && mediaRecord.tempKey !== key && mediaRecord.tempKey !== mediaRecord.r2Key) {
-                console.log(`[R2 Fallback] Found tempKey in DB: ${mediaRecord.tempKey}`);
+                console.log(`[R2 Fallback] Found tempKey in DB: ${mediaRecord.tempKey}`); // This line was not in the instruction, keeping original
                 handled = await streamFromR2(mediaRecord.tempKey);
                 if (handled) return;
             }
         }
 
-        // 3. Last Ditch: UUID Pattern Match in R2 folders
-        const uuidMatch = key.match(/([0-9a-f-]{36}|[0-9]{13}-[0-9]{9})/); // Also match timestamp-rand format
+        // 3. Last Ditch: UUID or Timestamp-Rand Pattern Match in R2 folders
+        const uuidMatch = key.match(/([0-9a-f-]{36}|[0-9]{13}-[0-9]{9})/);
         if (uuidMatch) {
             const idPart = uuidMatch[1];
-            console.log(`[R2 Fallback] Attempting pattern match for ${idPart}`);
+            const extension = path.extname(key) || '.webp';
+            console.log(`[MediaService] Last Ditch Match for ID: ${idPart}`);
+
             const possiblePaths = [
-                `${FOLDER_NAME}/profiles/temp_${idPart}_opt.webp`,
-                `${FOLDER_NAME}/posts/images/temp_${idPart}_opt.webp`,
-                `${FOLDER_NAME}/posts/videos/${idPart}.mp4`,
-                `${FOLDER_NAME}/temp/${idPart}.mp4`,
-                `${FOLDER_NAME}/temp/${idPart}.webp`,
-                `${idPart}.mp4`,
-                `${idPart}.webp`
+                // Try as optimized webp in all folders
+                `${FOLDER_NAME}/posts/images/${idPart}_opt.webp`,
+                `${FOLDER_NAME}/profiles/${idPart}_opt.webp`,
+                `${FOLDER_NAME}/stories/${idPart}_opt.webp`,
+                // Try original extension in all folders
+                `${FOLDER_NAME}/posts/images/${idPart}${extension}`,
+                `${FOLDER_NAME}/posts/videos/${idPart}${extension}`,
+                `${FOLDER_NAME}/profiles/${idPart}${extension}`,
+                `${FOLDER_NAME}/stories/${idPart}${extension}`,
+                `${FOLDER_NAME}/temp/${idPart}${extension}`,
+                // Try direct root or temp hits
+                `${idPart}${extension}`,
+                `Jaadoe/temp/${idPart}${extension}`
             ];
 
             for (const fKey of possiblePaths) {
                 handled = await streamFromR2(fKey);
                 if (handled) {
-                    console.log(`[R2 Fallback] Pattern Match Success: ${fKey}`);
+                    // console.log(`[R2 Fallback] Pattern Match Success: ${fKey}`); // Removed as per instruction
                     return;
                 }
             }
         }
 
         // 4. Final Fallback: Local Filesystem (Great for non-migrated videos)
-        const localPath = path.join(__dirname, '../uploads', path.basename(key));
+        const localPath = path.join(__dirname, '../uploads', key); // Changed from path.basename(key)
+        console.log(`[MediaService] Final check local: ${localPath}`);
         if (fs.existsSync(localPath)) {
-            console.log(`[R2 Fallback] Serving from local filesystem: ${localPath}`);
+            console.log(`[MediaService] Found locally! Serving...`);
             res.set('Access-Control-Allow-Origin', '*');
             res.set('Cross-Origin-Resource-Policy', 'cross-origin');
             // sendFile handles Range internally!
             return res.sendFile(localPath);
         }
 
-        console.error(`[MediaService] File not found: ${key}`);
-        res.status(404).send('File not found');
+        console.warn(`[MediaService] File not found: ${key}. Redirecting to placeholder.`);
+        // Redirect to a clean placeholder image to prevent broken UI and 404 console noise
+        const placeholderName = key.includes('thumb') ? 'Thumbnail' : (key.includes('opt') ? 'Optimized' : 'Media');
+        return res.redirect(`https://ui-avatars.com/api/?name=${placeholderName}&background=f3f4f6&color=9ca3af&size=512&semibold=true&format=svg`);
 
     } catch (error) {
-        console.error('Serve File Global Error:', error.message);
+        console.error('[MediaService] Global Error:', error.message);
         if (!res.headersSent) {
             res.status(500).send('Error serving file');
         }
