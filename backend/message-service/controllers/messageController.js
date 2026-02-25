@@ -154,7 +154,7 @@ const getMessages = async (req, res) => {
 const sendMessage = async (req, res) => {
     try {
         const senderId = req.user.id;
-        const { conversationId, receiverId, content, type, mediaUrl, replyToStoryId } = req.body;
+        const { conversationId, receiverId, content, type, mediaUrl, replyToStoryId, callType } = req.body;
 
         let convId = conversationId || req.params.conversationId;
         let conversation;
@@ -192,6 +192,7 @@ const sendMessage = async (req, res) => {
             type: type || 'text',
             mediaUrl,
             replyToStoryId,
+            callType,
             isSeen: false
         });
 
@@ -204,6 +205,7 @@ const sendMessage = async (req, res) => {
         else if (type === 'voice') snippet = '🎤 Voice message';
         else if (type === 'post_share') snippet = '📤 Shared a post';
         else if (type === 'reel_share') snippet = '🎬 Shared a reel';
+        else if (type === 'call_history') snippet = callType === 'video' ? '📹 Video call' : '📞 Voice call';
 
         await conversation.update({
             lastMessageContent: snippet ? snippet.substring(0, 50) : '',
@@ -234,6 +236,16 @@ const sendMessage = async (req, res) => {
             };
             console.log(`[MessageService] Publishing MESSAGE_SENT event for receiver ${otherUserId}`);
             channel.sendToQueue('socket_events', Buffer.from(JSON.stringify(event)));
+
+            // If it's a call_history message, also notify the sender so their UI updates
+            if (type === 'call_history') {
+                const senderEvent = {
+                    ...event,
+                    payload: { ...event.payload, receiverId: senderId }
+                };
+                console.log(`[MessageService] Publishing MESSAGE_SENT event for sender ${senderId} (call_history)`);
+                channel.sendToQueue('socket_events', Buffer.from(JSON.stringify(senderEvent)));
+            }
 
             // Push to notification_queue
             const { publishNotification } = require('../config/rabbitmq');

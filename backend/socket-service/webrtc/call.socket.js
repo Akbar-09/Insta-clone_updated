@@ -26,9 +26,9 @@ const callSocketHandlers = (io, socket) => {
     });
 
     // 4. End Call
-    socket.on('end_call', ({ to, session_id }) => {
-        console.log(`[CallSocket] end_call to ${to}`);
-        io.to(`user:${to}`).emit('call_ended', { session_id });
+    socket.on('end_call', ({ to, session_id, duration }) => {
+        console.log(`[CallSocket] end_call to ${to} with duration ${duration}`);
+        io.to(`user:${to}`).emit('call_ended', { session_id, duration });
     });
 
     // 5. Toggle Audio/Video (Sync UI states if needed)

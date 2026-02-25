@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 import api from '../../api/axios';
@@ -13,6 +13,12 @@ export const CallProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [callState, setCallState] = useState('idle'); // idle, ringing_outgoing, ringing_incoming, active, ended
     const [activeCall, setActiveCall] = useState(null);
+    const activeCallRef = useRef(null);
+
+    useEffect(() => {
+        activeCallRef.current = activeCall;
+    }, [activeCall]);
+
     const [localToken, setLocalToken] = useState(null);
     const [livekitUrl, setLivekitUrl] = useState(null);
 
@@ -24,7 +30,7 @@ export const CallProvider = ({ children }) => {
 
             newSocket.on('incoming_call', (data) => {
                 console.log('Incoming call:', data);
-                setActiveCall(data);
+                setActiveCall({ ...data, incoming: true });
                 setCallState('ringing_incoming');
             });
 
@@ -35,6 +41,21 @@ export const CallProvider = ({ children }) => {
             });
 
             newSocket.on('call_rejected', () => {
+                console.log('Call rejected by the other user');
+
+                // Use ref to get the latest activeCall
+                const currentCall = activeCallRef.current;
+
+                // If we were the caller, record a missed call
+                if (currentCall && !currentCall.incoming) {
+                    api.post('messages/send', {
+                        receiverId: currentCall.to,
+                        content: '0:00', // Signifies missed/declined
+                        type: 'call_history',
+                        callType: currentCall.callType
+                    }).catch(e => console.error('Failed to save missed call history:', e));
+                }
+
                 setCallState('ended');
                 setTimeout(() => {
                     setCallState('idle');
@@ -42,7 +63,28 @@ export const CallProvider = ({ children }) => {
                 }, 2000);
             });
 
-            newSocket.on('call_ended', () => {
+            newSocket.on('call_ended', (data) => {
+                console.log('Call ended via socket:', data);
+
+                const currentCall = activeCallRef.current;
+                // If we were the caller, and it was the other side who ended it, 
+                // we should still record the history if we received a duration
+                if (currentCall && !currentCall.incoming && data?.duration !== undefined) {
+                    const formatDuration = (s) => {
+                        if (!s || s <= 0) return '0:00';
+                        const mins = Math.floor(s / 60);
+                        const secs = s % 60;
+                        return `${mins}:${secs.toString().padStart(2, '0')}`;
+                    };
+
+                    api.post('messages/send', {
+                        receiverId: currentCall.to,
+                        content: formatDuration(data.duration),
+                        type: 'call_history',
+                        callType: currentCall.callType
+                    }).catch(e => console.error('Failed to save call history on call_ended:', e));
+                }
+
                 setCallState('ended');
                 setTimeout(() => {
                     setCallState('idle');
@@ -81,7 +123,8 @@ export const CallProvider = ({ children }) => {
                 name: receiverName,
                 avatar: receiverAvatar,
                 callType,
-                session
+                session,
+                incoming: false
             });
 
             socket.emit('call_user', {
@@ -144,6 +187,10 @@ export const CallProvider = ({ children }) => {
                 session_id: activeCall.session.id
             });
 
+            // If we are rejecting, it's a missed call for us
+            // But usually the CALLER sends the "Missed call" message to the history
+            // So we don't send it here, we wait for the caller to receive 'call_rejected'
+
             setCallState('idle');
             setActiveCall(null);
         } catch (error) {
@@ -151,7 +198,7 @@ export const CallProvider = ({ children }) => {
         }
     };
 
-    const endCall = async () => {
+    const endCall = async (durationSeconds) => {
         try {
             if (activeCall?.session) {
                 await api.post('calls/end', {
@@ -161,8 +208,32 @@ export const CallProvider = ({ children }) => {
                 const to = activeCall.from || activeCall.to;
                 socket.emit('end_call', {
                     to,
-                    session_id: activeCall.session.id
+                    session_id: activeCall.session.id,
+                    duration: durationSeconds
                 });
+
+                // Only the caller sends the history message to avoid duplicates
+                const isCaller = !activeCall.incoming;
+
+                if (isCaller) {
+                    const formatDuration = (s) => {
+                        if (!s || s <= 0) return '0:00';
+                        const mins = Math.floor(s / 60);
+                        const secs = s % 60;
+                        return `${mins}:${secs.toString().padStart(2, '0')}`;
+                    };
+
+                    try {
+                        await api.post('messages/send', {
+                            receiverId: to,
+                            content: formatDuration(durationSeconds),
+                            type: 'call_history',
+                            callType: activeCall.callType
+                        });
+                    } catch (msgErr) {
+                        console.error('Failed to save call history message:', msgErr);
+                    }
+                }
             }
 
             setCallState('ended');

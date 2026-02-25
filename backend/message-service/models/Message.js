@@ -18,8 +18,13 @@ const Message = sequelize.define('Message', {
         field: 'sender_id'
     },
     type: {
-        type: DataTypes.ENUM('text', 'image', 'video', 'story_reply', 'sticker', 'voice', 'post_share', 'reel_share'),
+        type: DataTypes.ENUM('text', 'image', 'video', 'story_reply', 'sticker', 'voice', 'post_share', 'reel_share', 'call_history'),
         defaultValue: 'text'
+    },
+    callType: {
+        type: DataTypes.ENUM('audio', 'video'),
+        allowNull: true,
+        field: 'call_type'
     },
     content: {
         type: DataTypes.TEXT,

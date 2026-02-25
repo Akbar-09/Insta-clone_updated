@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     LiveKitRoom,
     RoomAudioRenderer,
@@ -10,7 +10,7 @@ import {
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import '@livekit/components-styles';
-import { Mic, MicOff, Video, VideoOff, PhoneOff, Settings, Maximize, Volume2 } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, PhoneOff, Settings, Maximize, Volume2, Clock } from 'lucide-react';
 import DeviceSettingsModal from './DeviceSettingsModal';
 
 const ActiveCallScreen = ({ token, serverUrl, callType, onEnd }) => {
@@ -58,6 +58,32 @@ function MyVideoConference({ onEnd, callType }) {
     const [isSpeakerOn, setIsSpeakerOn] = useState(true);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+    // Timer state
+    const [seconds, setSeconds] = useState(0);
+    const timerRef = useRef(null);
+
+    useEffect(() => {
+        timerRef.current = setInterval(() => {
+            setSeconds(prev => prev + 1);
+        }, 1000);
+
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, []);
+
+    const formatTime = (totalSeconds) => {
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    // Handle end call with duration
+    const handleEndCall = () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        onEnd(seconds);
+    };
+
     // Toggle Microphone
     const toggleMic = async () => {
         console.log('[ActiveCallScreen] toggleMic clicked. localParticipant:', !!localParticipant, 'isMicrophoneEnabled:', isMicrophoneEnabled);
@@ -69,7 +95,6 @@ function MyVideoConference({ onEnd, callType }) {
                 console.log('[ActiveCallScreen] Mic state update request finished');
             } catch (err) {
                 console.error('[ActiveCallScreen] CRITICAL: Failed to toggle mic:', err);
-                // alert('Browser Blocked Microphone: Please click the lock icon in the address bar and Allow Microphone access.');
             }
         } else {
             console.warn('[ActiveCallScreen] Cannot toggle mic: Room not fully connected yet.');
@@ -109,10 +134,20 @@ function MyVideoConference({ onEnd, callType }) {
                     </div>
                 )}
 
+                {/* Top Controls & Timer */}
                 <div className="absolute top-6 left-0 right-0 px-6 flex justify-between items-center z-10">
                     <button onClick={() => window.location.reload()} className="p-3 rounded-full bg-black/40 text-white backdrop-blur-md">
                         <Maximize className="w-6 h-6" />
                     </button>
+
+                    {/* Call Timer Overlay */}
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 text-white backdrop-blur-md border border-white/10">
+                        <Clock className="w-4 h-4 text-blue-400" />
+                        <span className="font-mono text-lg font-medium tracking-wider min-w-[50px] text-center">
+                            {formatTime(seconds)}
+                        </span>
+                    </div>
+
                     <div className="flex gap-4">
                         <button
                             onClick={() => setIsSettingsOpen(true)}
@@ -149,7 +184,7 @@ function MyVideoConference({ onEnd, callType }) {
                 </button>
 
                 <button
-                    onClick={onEnd}
+                    onClick={handleEndCall}
                     className="p-5 rounded-full bg-red-600 text-white hover:bg-red-700 transition-all scale-125 shadow-xl shadow-red-500/30"
                 >
                     <PhoneOff className="w-7 h-7" />
