@@ -1,32 +1,19 @@
 import React, { useState } from 'react';
 import {
     LiveKitRoom,
-    VideoConference,
     RoomAudioRenderer,
-    ControlBar,
     useTracks,
     GridLayout,
-    ParticipantTile
+    ParticipantTile,
+    useParticipants,
+    useLocalParticipant
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import '@livekit/components-styles';
-import { Mic, MicOff, Video, VideoOff, PhoneOff, Settings, Maximize, Volume2, Monitor } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, PhoneOff, Settings, Maximize, Volume2 } from 'lucide-react';
 import DeviceSettingsModal from './DeviceSettingsModal';
 
 const ActiveCallScreen = ({ token, serverUrl, callType, onEnd }) => {
-    React.useEffect(() => {
-        console.log('[ActiveCallScreen] Props received:', {
-            tokenType: typeof token,
-            tokenValue: token,
-            serverUrl,
-            callType
-        });
-
-        if (token && typeof token !== 'string') {
-            console.error('[ActiveCallScreen] CRITICAL: token is not a string!', token);
-        }
-    }, [token, serverUrl, callType]);
-
     if (!token || typeof token !== 'string') {
         return (
             <div className="fixed inset-0 z-[2000] bg-black flex flex-col items-center justify-center gap-4">
@@ -48,6 +35,7 @@ const ActiveCallScreen = ({ token, serverUrl, callType, onEnd }) => {
                 style={{ height: '100dvh' }}
             >
                 <MyVideoConference onEnd={onEnd} callType={callType} />
+                {/* RoomAudioRenderer handles playback of all remote audio tracks */}
                 <RoomAudioRenderer />
             </LiveKitRoom>
         </div>
@@ -55,24 +43,50 @@ const ActiveCallScreen = ({ token, serverUrl, callType, onEnd }) => {
 };
 
 function MyVideoConference({ onEnd, callType }) {
+    const { localParticipant, isMicrophoneEnabled, isCameraEnabled } = useLocalParticipant();
     const tracks = useTracks(
         [
             { source: Track.Source.Camera, prevLabel: 'camera' },
-            { source: Track.Source.Microphone, prevLabel: 'microphone' },
-            { source: Track.Source.ScreenShare, prevLabel: 'screen_share' },
+            { source: Track.Source.Microphone, prevLabel: 'microphone' }
         ],
         { onlyConsiderRelevantHosts: true },
     );
 
-    const [isMuted, setIsMuted] = useState(false);
-    const [isVideoOff, setIsVideoOff] = useState(callType !== 'video');
+    const participants = useParticipants();
+    const isAnyoneSpeaking = participants.some(p => p.isSpeaking);
+
     const [isSpeakerOn, setIsSpeakerOn] = useState(true);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+    // Toggle Microphone
+    const toggleMic = async () => {
+        console.log('[ActiveCallScreen] toggleMic clicked. localParticipant:', !!localParticipant, 'isMicrophoneEnabled:', isMicrophoneEnabled);
+        if (localParticipant) {
+            try {
+                const newState = !isMicrophoneEnabled;
+                console.log('[ActiveCallScreen] Publishing mic state:', newState);
+                await localParticipant.setMicrophoneEnabled(newState);
+                console.log('[ActiveCallScreen] Mic state update request finished');
+            } catch (err) {
+                console.error('[ActiveCallScreen] CRITICAL: Failed to toggle mic:', err);
+                // alert('Browser Blocked Microphone: Please click the lock icon in the address bar and Allow Microphone access.');
+            }
+        } else {
+            console.warn('[ActiveCallScreen] Cannot toggle mic: Room not fully connected yet.');
+        }
+    };
+
+    // Toggle Camera
+    const toggleCamera = async () => {
+        if (localParticipant) {
+            await localParticipant.setCameraEnabled(!isCameraEnabled);
+        }
+    };
 
     return (
         <div className="relative h-full w-full flex flex-col">
             <DeviceSettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-            {/* Call UI */}
+
             <div className="flex-1 relative overflow-hidden">
                 {callType === 'video' ? (
                     <GridLayout tracks={tracks}>
@@ -80,16 +94,23 @@ function MyVideoConference({ onEnd, callType }) {
                     </GridLayout>
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center bg-gray-900/50">
-                        <div className="w-32 h-32 rounded-full bg-blue-500/20 flex items-center justify-center animate-pulse">
-                            <Volume2 className="w-16 h-16 text-blue-500" />
+                        <div className={`w-36 h-36 rounded-full transition-all duration-500 flex items-center justify-center 
+                            ${isAnyoneSpeaking
+                                ? 'bg-blue-500/30 scale-110 shadow-[0_0_50px_rgba(59,130,246,0.4)]'
+                                : 'bg-blue-500/10'}`}
+                        >
+                            <div className={`p-8 rounded-full bg-blue-500/20 ${isAnyoneSpeaking ? 'animate-pulse' : ''}`}>
+                                <Volume2 className={`w-16 h-16 transition-all duration-300 ${isAnyoneSpeaking ? 'text-blue-400 scale-110' : 'text-blue-500/50'}`} />
+                            </div>
                         </div>
-                        <p className="mt-8 text-white text-xl font-medium">Audio Call Active</p>
+                        <p className={`mt-10 text-white text-xl font-light tracking-widest transition-all duration-500 ${isAnyoneSpeaking ? 'opacity-100 translate-y-0' : 'opacity-40 translate-y-2'}`}>
+                            {isAnyoneSpeaking ? 'SPEAKING...' : 'VOICE CALL ACTIVE'}
+                        </p>
                     </div>
                 )}
 
-                {/* Top Controls */}
                 <div className="absolute top-6 left-0 right-0 px-6 flex justify-between items-center z-10">
-                    <button className="p-3 rounded-full bg-black/40 text-white backdrop-blur-md">
+                    <button onClick={() => window.location.reload()} className="p-3 rounded-full bg-black/40 text-white backdrop-blur-md">
                         <Maximize className="w-6 h-6" />
                     </button>
                     <div className="flex gap-4">
@@ -103,36 +124,35 @@ function MyVideoConference({ onEnd, callType }) {
                 </div>
             </div>
 
-            {/* Bottom Control Bar */}
-            <div className="p-10 flex items-center justify-center gap-6 bg-gradient-to-t from-black to-transparent">
+            <div className="p-10 flex items-center justify-center gap-8 bg-gradient-to-t from-black to-transparent backdrop-blur-sm">
                 <button
-                    onClick={() => setIsMuted(!isMuted)}
-                    className={`p-4 rounded-full transition-all ${isMuted ? 'bg-red-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                    onClick={toggleMic}
+                    className={`p-5 rounded-full transition-all duration-300 ${!isMicrophoneEnabled ? 'bg-red-500 text-white scale-90 shadow-lg shadow-red-500/40' : 'bg-white/10 text-white hover:bg-white/20'}`}
                 >
-                    {isMuted ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
+                    {!isMicrophoneEnabled ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
                 </button>
 
                 {callType === 'video' && (
                     <button
-                        onClick={() => setIsVideoOff(!isVideoOff)}
-                        className={`p-4 rounded-full transition-all ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                        onClick={toggleCamera}
+                        className={`p-5 rounded-full transition-all duration-300 ${!isCameraEnabled ? 'bg-red-500 text-white scale-90 shadow-lg shadow-red-500/40' : 'bg-white/10 text-white hover:bg-white/20'}`}
                     >
-                        {isVideoOff ? <VideoOff className="w-8 h-8" /> : <Video className="w-8 h-8" />}
+                        {!isCameraEnabled ? <VideoOff className="w-7 h-7" /> : <Video className="w-7 h-7" />}
                     </button>
                 )}
 
                 <button
                     onClick={() => setIsSpeakerOn(!isSpeakerOn)}
-                    className={`p-4 rounded-full transition-all ${!isSpeakerOn ? 'bg-orange-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                    className={`p-5 rounded-full transition-all duration-300 ${!isSpeakerOn ? 'bg-orange-500 text-white scale-90' : 'bg-white/10 text-white hover:bg-white/20'}`}
                 >
-                    <Volume2 className={`w-8 h-8 ${!isSpeakerOn && 'opacity-50'}`} />
+                    <Volume2 className={`w-7 h-7 ${!isSpeakerOn && 'opacity-50'}`} />
                 </button>
 
                 <button
                     onClick={onEnd}
-                    className="p-4 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all scale-110 shadow-lg shadow-red-500/20"
+                    className="p-5 rounded-full bg-red-600 text-white hover:bg-red-700 transition-all scale-125 shadow-xl shadow-red-500/30"
                 >
-                    <PhoneOff className="w-8 h-8" />
+                    <PhoneOff className="w-7 h-7" />
                 </button>
             </div>
         </div>

@@ -22,7 +22,11 @@ export async function registerServiceWorker() {
             console.log('Service Worker registered:', registration);
             return registration;
         } catch (error) {
-            console.error('Service Worker registration failed:', error);
+            if (error.name === 'SecurityError' || error.message.includes('SSL')) {
+                console.warn('Service Worker skipped: SSL certificate is invalid for local IP HTTPS. Push notifications will be disabled.');
+            } else {
+                console.error('Service Worker registration failed:', error);
+            }
         }
     }
 }
