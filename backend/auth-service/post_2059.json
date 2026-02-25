@@ -1,0 +1,17 @@
+{
+  "id": 2059,
+  "userId": 51,
+  "username": "akbar",
+  "caption": "test video 1",
+  "mediaUrl": "/api/v1/media/files/Jaadoe/posts/images/1771568433623-679148882_opt.webp",
+  "mediaType": "IMAGE",
+  "likesCount": 0,
+  "commentsCount": 0,
+  "hideLikes": false,
+  "commentsDisabled": false,
+  "createdAt": "2026-02-14T06:35:30.351Z",
+  "updatedAt": "2026-02-14T06:36:23.489Z",
+  "isHidden": true,
+  "viewsCount": 0,
+  "thumbnailUrl": "/uploads/1771050929884-434600612_thumb.jpg"
+}

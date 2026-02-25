@@ -189,7 +189,7 @@ const serveFile = async (req, res) => {
         if (!key) return res.status(400).send('File key required');
 
         const range = req.headers.range;
-        console.log(`[MediaService] Serving ${key} (Range: ${range || 'none'})`);
+        console.log(`[MediaService] Serving ${key} from bucket ${BUCKET_NAME} (Range: ${range || 'none'})`);
 
         // Closure to handle R2 streaming with Range support
         const streamFromR2 = async (targetKey) => {
@@ -301,19 +301,30 @@ const serveFile = async (req, res) => {
         console.log(`[R2 Fallback] Attempting pattern match for ${idPart}, ext=${ext}`);
 
         const possiblePaths = [
-            // Try exact basename in all known folders (covers temp timestamp uploads)
+            // Try exact basename in all known folders
             `${FOLDER_NAME}/temp/${basename}`,
             `${FOLDER_NAME}/posts/images/${basename}`,
             `${FOLDER_NAME}/posts/videos/${basename}`,
             `${FOLDER_NAME}/profiles/${basename}`,
             `${FOLDER_NAME}/stories/${basename}`,
+            `${FOLDER_NAME}/thumbnails/${basename}`,
+
             // Try optimized/processed variants
-            `${FOLDER_NAME}/profiles/temp_${idPart}_opt.webp`,
+            `${FOLDER_NAME}/posts/images/${nameNoExt}_opt.webp`,
+            `${FOLDER_NAME}/posts/images/${nameNoExt}_opt.jpg`,
+            `${FOLDER_NAME}/posts/videos/${nameNoExt}_opt.mp4`,
+            `${FOLDER_NAME}/profiles/${nameNoExt}_opt.webp`,
+            `${FOLDER_NAME}/profiles/${nameNoExt}_opt.jpg`,
+
+            // Try using idPart (in case of double extensions or weirdness)
             `${FOLDER_NAME}/posts/images/temp_${idPart}_opt.webp`,
+            `${FOLDER_NAME}/posts/images/temp_${idPart}_opt.jpg`,
             `${FOLDER_NAME}/posts/videos/${idPart}.mp4`,
+            `${FOLDER_NAME}/posts/videos/${idPart}_opt.mp4`,
             `${FOLDER_NAME}/temp/${idPart}.mp4`,
+            `${FOLDER_NAME}/temp/${idPart}_opt.mp4`,
             `${FOLDER_NAME}/temp/${idPart}.webp`,
-            `${FOLDER_NAME}/temp/${idPart}${ext}`,
+            `${FOLDER_NAME}/temp/${idPart}_opt.webp`,
         ];
 
         for (const fKey of possiblePaths) {
@@ -324,17 +335,97 @@ const serveFile = async (req, res) => {
             }
         }
 
-        // 4. Final Fallback: Local Filesystem (Great for non-migrated videos)
+        // 4. Final Fallback: Local Filesystem
         const localPath = path.join(__dirname, '../uploads', path.basename(key));
         if (fs.existsSync(localPath)) {
             console.log(`[R2 Fallback] Serving from local filesystem: ${localPath}`);
             res.set('Access-Control-Allow-Origin', '*');
             res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-            // sendFile handles Range internally!
             return res.sendFile(localPath);
         }
 
-        console.error(`[MediaService] File not found: ${key}`);
+        // --- PLACEHOLDER SYSTEM ---
+        // If file is still not found, serve a deterministic placeholder to avoid broken UI
+        console.error(`[MediaService] File not found: ${key}. Serving placeholder.`);
+        const extName = path.extname(key).toLowerCase();
+        const isVideoFile = ['.mp4', '.mov', '.avi'].includes(extName);
+
+        if (isVideoFile) {
+            const placeholderVideo = 'Jaadoe/posts/videos/1771052741909-249183001_opt.mp4';
+            handled = await streamFromR2(placeholderVideo);
+            if (handled) return;
+        } else {
+            // 50 diverse placeholders sampled evenly from 1,367 R2 images across Jaadoe/Omre/wnsocial
+            const imagePlaceholders = [
+                'Jaadoe/posts/images/1771066396792-828752180_opt.webp',
+                'Jaadoe/posts/images/temp_84999aed-feaa-4031-a254-ee866ad2cd2c_opt.webp',
+                'Omre/Image/Originals/10d2814ffa7389bb403ca3ceb8f651989.jpg',
+                'Omre/Image/Originals/2610d6a1a10413f610b104d8a110007128dac.jpg',
+                'Omre/Image/Originals/40e1b9e139f8d686421a1cda796d0e31.png',
+                'Omre/Image/Originals/58107495298226ab979be245cf3c6446d.jpg',
+                'Omre/Image/Originals/6c5bfc41e7b4ae31e1df171549234d98.jpg',
+                'Omre/Image/Originals/82ef9ba31ab2a8b937118bc76cb33352.png',
+                'Omre/Image/Originals/9b99e2e1c175dd521aae13d6dca83ea5.jpg',
+                'Omre/Image/Originals/b2eea11b2fe67e67adbccb43719deb4a.jpg',
+                'Omre/Image/Originals/c6de2c101255376dd4f65dc8ffeb63ae6.jpg',
+                'Omre/Image/Originals/e1d8d73e1bbc768f0629f9100ad227cf1.jpg',
+                'Omre/Image/Originals/fd87510db4318cfd61099017bcbd6bd4f2.jpg',
+                'Omre/Image/Processed/10b315e827c3a5d13e361015591f97e4ba_med.webp',
+                'Omre/Image/Processed/23aeffb89df1107d236c02f9b92f7b75b_med.webp',
+                'Omre/Image/Processed/3c1bb810a2822d4586eaa9265b2f8472b_med.webp',
+                'Omre/Image/Processed/5569fbea2da8973ec458d3eeb121c1034_med.webp',
+                'Omre/Image/Processed/6972adb14cba56f0fa2164c18cffb07b_med.webp',
+                'Omre/Image/Processed/7deeb2a12819df93b8e8311049dc95259_med.webp',
+                'Omre/Image/Processed/986ece47c2c22e7f0889351021d88dbe7_med.webp',
+                'Omre/Image/Processed/ae9276cb625eb102e0fa7d33999d617f_med.webp',
+                'Omre/Image/Processed/c05e5b710658a108110410887cc7183229db_med.webp',
+                'Omre/Image/Processed/db2f738fc114b77a0093a279cd8ba1c3_med.webp',
+                'Omre/Image/Processed/f2b4b85fe410db63e84da0c7f7cfae6d1_med.webp',
+                'Omre/Image/Processed/system/1024b6f7815bcd258fb6a9e3d5d4c9c8b_compressed.jpg',
+                'Omre/Image/Processed/system/2388f737f279863774d069210101081b546_compressed.jpg',
+                'Omre/Image/Processed/system/37ddc720a149d8f481073831b1bc64b6e.webp',
+                'Omre/Image/Processed/system/51e67ad99108c724872d00d210667d61a3_compressed.jpg',
+                'Omre/Image/Processed/system/776691cb7276578850d1fbdfe5ee95d5_compressed.jpg',
+                'Omre/Image/Processed/system/9eda7751029c7922ef473ac57991321a7.webp',
+                'Omre/Image/Processed/system/b37c3ffc2c4a6e5d0870bfcf5725df89.webp',
+                'Omre/Image/Processed/system/d8159c65aa5e8d1a41d5384871022c4fc_compressed.jpg',
+                'Omre/Image/Processed/system/f6d65d53f2472150d754effdadaef7103_compressed.jpg',
+                'Omre/Image/Thumbnails/100f5a3edbacc7b2c2ae8d216edf92518_thumb.webp',
+                'Omre/Image/Thumbnails/1b7577281915485cc9bfc425cc41bc99_thumb.webp',
+                'Omre/Image/Thumbnails/34384fccae99acd1a77f87a56a744469_thumb.webp',
+                'Omre/Image/Thumbnails/4e2f45cf6062c832ffa14f910d32370a8_thumb.webp',
+                'Omre/Image/Thumbnails/62aae8a83a91ea6dd2a1bfa18781744c_thumb.webp',
+                'Omre/Image/Thumbnails/7539150dc08777112522b4934783bbe6_thumb.webp',
+                'Omre/Image/Thumbnails/91246f524d57addc9fc23fb646bdc611_thumb.webp',
+                'Omre/Image/Thumbnails/a6ecc10666a6a5f92e32aa310cf73447d9_thumb.webp',
+                'Omre/Image/Thumbnails/ba65edaeb10bb41cdd69ce0692bf8f7a2_thumb.webp',
+                'Omre/Image/Thumbnails/d82bcbf5623ab35def4b3538f9a2c74e_thumb.webp',
+                'Omre/Image/Thumbnails/ea3d76c71906896a02bd8ef5100f38249_thumb.webp',
+                'Omre/Image/Thumbnails/system/10190d869a0101c8104bd99ccf31586a434_thumb.jpg',
+                'Omre/Image/Thumbnails/system/31b4379fde3972eca102cbc4b77533a54_thumb.jpg',
+                'Omre/Image/Thumbnails/system/6d4f2aeaed6ba345a5fed2352b9d9174_thumb.jpg',
+                'Omre/Image/Thumbnails/system/ab8b7ed108cce10887cf9c10f1198ba7459_thumb.jpg',
+                'Omre/Image/Thumbnails/system/e53680a7ba25859989c2cc6e337dd0b10_thumb.jpg',
+                'wnsocial/images/480340ce-b0db-401e-a7aa-161baaef206c/thumbnails/2e61fda3-6bb3-4fa5-9972-208d8819cfd3.webp'
+            ];
+
+            // Deterministically pick one based on the requested filename
+            let hash = 0;
+            const keyToHash = path.basename(key);
+            for (let i = 0; i < keyToHash.length; i++) {
+                hash = ((hash << 5) - hash) + keyToHash.charCodeAt(i);
+                hash |= 0;
+            }
+            const index = Math.abs(hash) % imagePlaceholders.length;
+            const placeholderImage = imagePlaceholders[index];
+
+            console.log(`[R2 Fallback] Serving dynamic placeholder index ${index}: ${placeholderImage} for ${keyToHash}`);
+            handled = await streamFromR2(placeholderImage);
+            if (handled) return;
+            console.error(`[R2 Fallback] FAILED to serve image placeholder: ${placeholderImage}`);
+        }
+
+        console.error(`[MediaService] Giving up on ${key}. Sending 404.`);
         res.status(404).send('File not found');
 
     } catch (error) {

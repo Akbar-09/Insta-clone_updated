@@ -1,0 +1,4 @@
+User IDs: [55,104,105,51]
+Before delete: {"count":"28"}
+
+Error: column "postId" does not exist

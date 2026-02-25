@@ -1,0 +1,7 @@
+User IDs: [55,104,105,51]
+Post IDs to delete: [2074,2075,2076,2077,2079,2059,2060,2061,140,2062,2063,2064,2065,2066,2069,1848,1850,1849,1851,1852,1853,1854,1855,1856,1859,1857,2053,2080]
+Deleted from Likes
+Deleted from SavedPosts
+Deleted from PostReports
+Deleted posts: 28 rows
+Posts remaining: {"count":"0"}
