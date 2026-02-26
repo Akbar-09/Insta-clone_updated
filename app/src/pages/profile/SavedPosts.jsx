@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMySavedPosts } from '../../api/profileApi';
 import { MessageCircle, Heart } from 'lucide-react';
+import { getProxiedUrl } from '../../utils/urlUtils';
 
 const SavedPosts = () => {
     const navigate = useNavigate();
@@ -79,12 +80,12 @@ const SavedPosts = () => {
                     {/* Post Image/Video */}
                     {(post.type === 'REEL' || post.mediaType === 'VIDEO' || post.videoUrl) ? (
                         <video
-                            src={post.videoUrl || post.mediaUrl}
+                            src={getProxiedUrl(post.videoUrl || post.mediaUrl)}
                             className="w-full h-full object-cover"
                         />
                     ) : (
                         <img
-                            src={post.mediaUrl || post.imageUrl || post.videoUrl}
+                            src={getProxiedUrl(post.mediaUrl || post.imageUrl || post.videoUrl)}
                             alt="Saved content"
                             className="w-full h-full object-cover"
                         />

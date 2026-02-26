@@ -15,6 +15,9 @@ exports.followUser = async (req, res) => {
 
     } catch (err) {
         console.error(err);
+        if (err.message === 'User not found') {
+            return res.status(404).json({ status: 'error', message: 'User not found' });
+        }
         res.status(500).json({ status: 'error', message: err.message });
     }
 };

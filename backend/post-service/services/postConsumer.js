@@ -29,18 +29,7 @@ const connectRabbitMQ = async () => {
                     const postId = data.postId;
                     const targetType = data.targetType || 'post';
 
-                    if (targetType === 'post') {
-                        const post = await Post.findByPk(postId);
-                        if (post) {
-                            if (routingKey === 'COMMENT_ADDED') {
-                                await post.increment('commentsCount');
-                                console.log(`Incremented commentsCount for post ${postId}`);
-                            } else if (routingKey === 'COMMENT_DELETED') {
-                                await post.decrement('commentsCount');
-                                console.log(`Decremented commentsCount for post ${postId}`);
-                            }
-                        }
-                    } else if (routingKey === 'MEDIA.OPTIMIZED') {
+                    if (routingKey === 'MEDIA.OPTIMIZED') {
                         const { originalUrl, optimizedUrl, thumbnailUrl, type } = data;
                         console.log(`Updating post with optimized media... ${originalUrl} -> ${optimizedUrl}`);
 
@@ -67,6 +56,17 @@ const connectRabbitMQ = async () => {
                             }
                         } else {
                             console.log('No posts found with original URL or filename:', originalUrl);
+                        }
+                    } else if (targetType === 'post') {
+                        const post = await Post.findByPk(postId);
+                        if (post) {
+                            if (routingKey === 'COMMENT_ADDED') {
+                                await post.increment('commentsCount');
+                                console.log(`Incremented commentsCount for post ${postId}`);
+                            } else if (routingKey === 'COMMENT_DELETED') {
+                                await post.decrement('commentsCount');
+                                console.log(`Decremented commentsCount for post ${postId}`);
+                            }
                         }
                     }
                 } catch (err) {

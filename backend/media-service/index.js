@@ -7,6 +7,14 @@ const Media = require('./models/Media');
 const { connectRabbitMQ: startMediaConsumer } = require('./services/mediaConsumer');
 require('dotenv').config();
 
+process.on('uncaughtException', (err) => {
+    console.error('[MediaService CRITICAL] Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[MediaService CRITICAL] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 const app = express();
 const PORT = process.env.PORT || 5013;
 

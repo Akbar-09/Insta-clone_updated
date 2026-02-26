@@ -1,5 +1,6 @@
 const { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { NodeHttpHandler } = require("@smithy/node-http-handler");
 const Media = require('../models/Media');
 const path = require('path');
 const fs = require('fs');
@@ -15,6 +16,12 @@ const r2Client = new S3Client({
         accessKeyId: process.env.R2_ACCESS_KEY_ID,
         secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
     },
+    requestHandler: new NodeHttpHandler({
+        connectionTimeout: 2000,
+        socketTimeout: 30000,
+        maxSockets: 500
+    }),
+    forcePathStyle: true
 });
 
 const BUCKET_NAME = process.env.R2_BUCKET_NAME || 'omretesting';
@@ -189,7 +196,7 @@ const serveFile = async (req, res) => {
         if (!key) return res.status(400).send('File key required');
 
         const range = req.headers.range;
-        console.log(`[MediaService] Requested File: ${key} (Range: ${range || 'none'})`);
+        console.log(`[MediaService v2-DEBUG] Requested File: ${key} (Range: ${range || 'none'})`);
 
         // Closure to handle R2 streaming with Range support
         const streamFromR2 = async (targetKey) => {
@@ -230,6 +237,9 @@ const serveFile = async (req, res) => {
                     });
 
                     const { Body } = await r2Client.send(getCommand);
+
+                    req.on('close', () => { if (Body && typeof Body.destroy === 'function') Body.destroy(); });
+
                     res.status(206);
                     res.set('Content-Range', `bytes ${start}-${end}/${totalSize}`);
                     res.set('Content-Length', chunkSize);
@@ -240,6 +250,9 @@ const serveFile = async (req, res) => {
                         Key: targetKey
                     });
                     const { Body } = await r2Client.send(getCommand);
+
+                    req.on('close', () => { if (Body && typeof Body.destroy === 'function') Body.destroy(); });
+
                     res.set('Content-Length', totalSize);
                     Body.pipe(res);
                 }
@@ -249,7 +262,9 @@ const serveFile = async (req, res) => {
                     console.log(`[MediaService] Not found in R2: ${targetKey}`);
                     return false; // Let it fall back
                 }
-                throw err;
+                // Also fallback on connection timeouts or other R2 errors to prioritize availability
+                console.error(`[MediaService] R2 Error for ${targetKey}:`, err.message);
+                return false;
             }
         };
 
@@ -282,7 +297,20 @@ const serveFile = async (req, res) => {
             }
         }
 
-        // 3. Last Ditch: UUID or Timestamp-Rand Pattern Match in R2 folders
+        // 3. Fallback: Local Filesystem (Quick check before exhaustive R2 search)
+        let localPath = path.join(__dirname, '../uploads', key);
+        if (!fs.existsSync(localPath)) {
+            localPath = path.join(__dirname, '../uploads', path.basename(key));
+        }
+
+        if (fs.existsSync(localPath)) {
+            console.log(`[MediaService] Found locally! Serving...`);
+            res.set('Access-Control-Allow-Origin', '*');
+            res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+            return res.sendFile(localPath);
+        }
+
+        // 4. Last Ditch: UUID or Timestamp-Rand Pattern Match in R2 folders
         const uuidMatch = key.match(/([0-9a-f-]{36}|[0-9]{13}-[0-9]{9})/);
         if (uuidMatch) {
             const idPart = uuidMatch[1];
@@ -314,24 +342,12 @@ const serveFile = async (req, res) => {
             }
         }
 
-        // 4. Final Fallback: Local Filesystem (Great for non-migrated videos)
-        const localPath = path.join(__dirname, '../uploads', key); // Changed from path.basename(key)
-        console.log(`[MediaService] Final check local: ${localPath}`);
-        if (fs.existsSync(localPath)) {
-            console.log(`[MediaService] Found locally! Serving...`);
-            res.set('Access-Control-Allow-Origin', '*');
-            res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-            // sendFile handles Range internally!
-            return res.sendFile(localPath);
-        }
-
         console.warn(`[MediaService] File not found: ${key}. Redirecting to placeholder.`);
         // Redirect to a clean placeholder image to prevent broken UI and 404 console noise
         const placeholderName = key.includes('thumb') ? 'Thumbnail' : (key.includes('opt') ? 'Optimized' : 'Media');
         return res.redirect(`https://ui-avatars.com/api/?name=${placeholderName}&background=f3f4f6&color=9ca3af&size=512&semibold=true&format=svg`);
-
     } catch (error) {
-        console.error('[MediaService] Global Error:', error.message);
+        console.error('[MediaService] Global Error:', error);
         if (!res.headersSent) {
             res.status(500).send('Error serving file');
         }

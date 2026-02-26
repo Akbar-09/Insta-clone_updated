@@ -198,7 +198,7 @@ const AvatarManagement = () => {
                             <div key={avatar.id} className="glass-card rounded-2xl overflow-hidden group">
                                 <div className="aspect-square relative">
                                     <img
-                                        src={avatar.avatarUrl?.startsWith('http') ? avatar.avatarUrl : `http://localhost:5000/uploads/${avatar.avatarUrl}`}
+                                        src={avatar.avatarUrl?.startsWith('http') ? avatar.avatarUrl : `${window.location.origin}/uploads/${avatar.avatarUrl}`}
                                         alt={avatar.username}
                                         className="w-full h-full object-cover"
                                     />

@@ -47,16 +47,28 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDelet
 
     // Handle play/pause on scroll
     useEffect(() => {
+        let isMounted = true;
+
         if (isActive && videoRef.current) {
             const playPromise = videoRef.current.play();
             if (playPromise !== undefined) {
-                playPromise.catch(e => console.log('Autoplay prevented:', e));
+                playPromise
+                    .then(() => {
+                        if (isMounted) setIsPlaying(true);
+                    })
+                    .catch(e => {
+                        console.log('Autoplay prevented:', e);
+                        if (isMounted) setIsPlaying(false);
+                    });
             }
-            setIsPlaying(true);
         } else if (videoRef.current) {
             videoRef.current.pause();
             setIsPlaying(false);
         }
+
+        return () => {
+            isMounted = false;
+        };
     }, [isActive]);
 
     const togglePlay = (e) => {
@@ -66,8 +78,12 @@ const ReelItem = ({ reel, isActive, toggleMute, isMuted, onNext, onPrev, onDelet
                 videoRef.current.pause();
                 setIsPlaying(false);
             } else {
-                videoRef.current.play();
-                setIsPlaying(true);
+                const playPromise = videoRef.current.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => setIsPlaying(true))
+                        .catch(err => console.log("Play failed", err));
+                }
             }
         }
     };
