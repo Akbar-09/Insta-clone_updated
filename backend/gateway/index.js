@@ -48,7 +48,7 @@ app.get('/health', (req, res) => {
 // Rate Limiter
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 1000,
+    max: 100000, // Increased for dev, assets and sockets easily consume 1000 requests
     message: { status: 'error', message: 'Too many requests, please try again later.' }
 });
 app.use(limiter);

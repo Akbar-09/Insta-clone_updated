@@ -31,7 +31,7 @@ const getProxiedUrl = (url) => {
     if (url.includes('r2.dev')) {
         const parts = url.split('.dev/');
         if (parts.length > 1) {
-            return `http://localhost:5000/api/v1/media/files/${parts[1]}`;
+            return `${window.location.origin}/api/v1/media/files/${parts[1]}`;
         }
     }
     if (url.includes('localhost:5000/media/files') && !url.includes('/api/v1/')) {

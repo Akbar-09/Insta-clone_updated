@@ -6,6 +6,7 @@ import { getUnreadMessageCount } from '../api/messageApi';
 import { useSocket } from '../hooks/useSocket';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import { getProxiedUrl } from '../utils/urlUtils';
 
 import {
     Home, Search, Compass, Clapperboard, MessageCircle,
@@ -78,7 +79,7 @@ const Sidebar = () => {
                         title: message.sender?.username || 'New Message',
                         message: message.content,
                         type: 'message',
-                        icon: message.sender?.avatar || `https://ui-avatars.com/api/?name=${message.sender?.username || 'User'}&background=random`,
+                        icon: message.sender?.avatar ? getProxiedUrl(message.sender.avatar) : `https://ui-avatars.com/api/?name=${message.sender?.username || 'User'}&background=random`,
                         onClick: () => navigate(`/messages/${message.conversationId}`)
                     });
 
@@ -105,7 +106,7 @@ const Sidebar = () => {
                     title: notification.title || 'New Notification',
                     message: notification.message || 'You have a new update',
                     type: notification.type || 'notification',
-                    icon: notification.fromUserAvatar || `https://ui-avatars.com/api/?name=${notification.fromUsername || 'User'}&background=random`,
+                    icon: notification.fromUserAvatar ? getProxiedUrl(notification.fromUserAvatar) : `https://ui-avatars.com/api/?name=${notification.fromUsername || 'User'}&background=random`,
                     onClick: () => {
                         if (notification.link) navigate(notification.link);
                         else toggleDrawer('notifications');
@@ -356,7 +357,7 @@ const Sidebar = () => {
                              ${isNarrow ? 'justify-center p-3' : ''} 
                              max-[1264px]:justify-center max-[1264px]:p-3`}>
                             <img
-                                src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.username || 'User'}&background=random`}
+                                src={user?.avatar ? getProxiedUrl(user.avatar) : `https://ui-avatars.com/api/?name=${user?.username || 'User'}&background=random`}
                                 alt="Profile"
                                 className={`w-6 h-6 rounded-full object-cover 
                                     ${(isActive('/profile/me') || (user?.username && isActive(`/profile/${user.username}`))) ? 'border-[2px] border-text-primary p-[1px]' : ''}

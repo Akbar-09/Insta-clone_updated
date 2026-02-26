@@ -25,7 +25,7 @@ const ReportModal = ({ reportId, onClose, onAction }) => {
     const getMediaUrl = (url) => {
         if (!url) return null;
         if (url.startsWith('http')) return url;
-        const baseUrl = 'http://localhost:5000';
+        const baseUrl = window.location.origin;
         let cleanPath = url;
 
         if (url.includes('uploads/')) {

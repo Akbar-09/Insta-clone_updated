@@ -57,7 +57,9 @@ export const AuthProvider = ({ children }) => {
                 }
             } catch (err) {
                 console.error("Failed to fetch user", err);
-                logout();
+                if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+                    logout();
+                }
             } finally {
                 setLoading(false);
             }
