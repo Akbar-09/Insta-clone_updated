@@ -2,115 +2,206 @@ const LiveStream = require('../models/LiveStream');
 const ScheduledStream = require('../models/ScheduledStream');
 const LiveChatMessage = require('../models/LiveChatMessage');
 const LiveViewer = require('../models/LiveViewer');
-const LiveModerator = require('../models/LiveModerator');
 const { randomUUID: uuidv4 } = require('crypto');
 const { publishEvent } = require('../config/rabbitmq');
 const { uploadThumbnail } = require('../utils/storage');
+const { AccessToken } = require('livekit-server-sdk');
 require('dotenv').config();
 
-const generateStreamKey = () => {
-    return uuidv4().replace(/-/g, '') + Date.now().toString(36);
+const LIVEKIT_URL = process.env.LIVEKIT_URL || 'ws://localhost:7880';
+const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || 'devkey';
+const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || 'secret';
+
+const generateRoomName = () => {
+    return 'room_' + uuidv4().replace(/-/g, '') + Date.now().toString(36);
 };
 
-const getIngestUrls = (streamKey) => {
-    const host = process.env.STREAM_HOST || 'localhost';
-    const rtmpPort = process.env.RTMP_PORT || '1935';
-    const httpPort = process.env.PORT || '5015'; // Use the main express port for HLS
-
-    return {
-        rtmpUrl: `rtmp://${host}:${rtmpPort}/live`,
-        hlsUrl: `http://${host}:${httpPort}/live/${streamKey}/index.m3u8`
-    };
-};
-
-// FEATURE 1: GO LIVE NOW
-exports.goLiveNow = async (req, res) => {
+// 1. Create Stream - Creates DB record, generates room_name, Status = scheduled or live
+exports.createStream = async (req, res) => {
     try {
-        const { title, category, visibility } = req.body;
-        const userId = req.headers['x-user-id'];
+        const { title, category, visibility, scheduledAt } = req.body;
+        const host_id = req.headers['x-user-id']; // Host user ID
         const file = req.file;
 
-        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        if (!host_id) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
         if (!title) return res.status(400).json({ status: 'error', message: 'Title is required' });
 
-        let thumbnailUrl = null;
+        let thumbnail_url = null;
         if (file) {
-            thumbnailUrl = await uploadThumbnail(file.buffer, file.originalname);
+            thumbnail_url = await uploadThumbnail(file.buffer, file.originalname);
         }
 
-        const streamKey = generateStreamKey();
-        const { rtmpUrl } = getIngestUrls(streamKey);
+        const room_name = generateRoomName();
+        const status = scheduledAt ? 'scheduled' : 'live';
+
+        // Automatically clean up any zombie "live" streams from this host
+        // if they closed the browser without ending their last stream properly.
+        await LiveStream.update(
+            { status: 'ended', ended_at: new Date() },
+            { where: { host_id, status: ['live', 'scheduled'] } }
+        );
 
         const stream = await LiveStream.create({
             id: uuidv4(),
-            userId,
+            room_name,
+            host_id,
             title,
             category: category || 'Social',
-            visibility: visibility || 'Public',
-            thumbnailUrl,
-            streamKey,
-            ingestUrl: rtmpUrl,
-            status: 'LIVE',
-            startedAt: new Date()
+            visibility: visibility || 'public',
+            thumbnail_url,
+            status,
+            scheduled_at: scheduledAt || null,
+            started_at: status === 'live' ? new Date() : null
         });
 
         res.status(201).json({
             status: 'success',
-            data: {
-                stream,
-                streamKey,
-                rtmpUrl,
-                instructions: "Use this RTMP URL and Stream Key in OBS"
-            }
+            data: stream
         });
     } catch (error) {
-        console.error('Go Live Error:', error);
+        console.error('Create Stream Error:', error);
         res.status(500).json({ status: 'error', message: error.message });
     }
 };
 
-// FEATURE 2: SCHEDULE STREAM
-exports.scheduleStream = async (req, res) => {
+// 2. Start Stream - Validate host, status = live, generate LiveKit token (broadcaster)
+exports.startStream = async (req, res) => {
     try {
-        const { title, scheduledAt, category, visibility } = req.body;
-        const userId = req.headers['x-user-id'];
-        const file = req.file;
+        const { id } = req.params;
+        const host_id = req.headers['x-user-id'];
+        const username = req.headers['x-user-username'] || 'Host';
 
-        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
-        if (!title || !scheduledAt) {
-            return res.status(400).json({ status: 'error', message: 'Title and scheduled time are required' });
+        if (!host_id) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        const stream = await LiveStream.findByPk(id);
+        if (!stream) return res.status(404).json({ status: 'error', message: 'Stream not found' });
+        if (stream.host_id !== host_id) return res.status(403).json({ status: 'error', message: 'Not authorized to start this stream' });
+
+        if (stream.status !== 'live') {
+            stream.status = 'live';
+            if (!stream.started_at) stream.started_at = new Date();
+            await stream.save();
         }
 
-        let thumbnailUrl = null;
-        if (file) {
-            thumbnailUrl = await uploadThumbnail(file.buffer, file.originalname);
-        }
-
-        const scheduledStream = await ScheduledStream.create({
-            id: uuidv4(),
-            userId,
-            title,
-            scheduledAt,
-            category: category || 'Social',
-            visibility: visibility || 'Public',
-            thumbnailUrl,
-            status: 'SCHEDULED'
+        // Generate LiveKit token for presenter (can Publish)
+        const participantName = username;
+        const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
+            identity: host_id,
+            name: participantName,
         });
 
-        // Notify followers (simplified event)
-        await publishEvent('STREAM_SCHEDULED', {
-            userId,
-            streamId: scheduledStream.id,
-            title,
-            scheduledAt
+        at.addGrant({
+            roomJoin: true,
+            room: stream.room_name,
+            canPublish: true,
+            canSubscribe: true,
         });
 
-        res.status(201).json({
+        const token = await at.toJwt();
+
+        res.status(200).json({
             status: 'success',
-            data: scheduledStream
+            data: {
+                room_name: stream.room_name,
+                token,
+                livekit_url: LIVEKIT_URL
+            }
         });
     } catch (error) {
-        console.error('Schedule Stream Error:', error);
+        console.error('Start Stream Error:', error);
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+};
+
+// 3. Join Stream - Validate visibility, Generate LiveKit token (subscriber)
+exports.joinStream = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user_id = req.headers['x-user-id'];
+        const username = req.headers['x-user-username'] || 'Viewer';
+
+        if (!user_id) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        const stream = await LiveStream.findByPk(id);
+        if (!stream) return res.status(404).json({ status: 'error', message: 'Stream not found' });
+        if (stream.status !== 'live') return res.status(400).json({ status: 'error', message: 'Stream is not live currently' });
+
+        // Add Viewer to DB Tracking (optional initial log, but Socket.io could do it via RabbitMQ)
+        await LiveViewer.create({
+            id: uuidv4(),
+            stream_id: stream.id,
+            user_id
+        });
+
+        stream.total_viewers++;
+        if (stream.total_viewers > stream.peak_viewers) {
+            stream.peak_viewers = stream.total_viewers;
+        }
+        await stream.save();
+
+        // Generate LiveKit token for viewer (can NOT Publish by default)
+        const role = req.query.role || 'viewer';
+        const participantName = username;
+        const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
+            identity: user_id,
+            name: participantName,
+        });
+
+        at.addGrant({
+            roomJoin: true,
+            room: stream.room_name,
+            canPublish: role === 'guest',
+            canSubscribe: true,
+        });
+
+        const token = await at.toJwt();
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                room_name: stream.room_name,
+                token,
+                livekit_url: LIVEKIT_URL
+            }
+        });
+    } catch (error) {
+        console.error('Join Stream Error:', error);
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+};
+
+// 4. End Stream - Update status = ended, Save ended_at
+exports.endStream = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const host_id = req.headers['x-user-id'];
+
+        const stream = await LiveStream.findByPk(id);
+        if (!stream) return res.status(404).json({ status: 'error', message: 'Stream not found' });
+
+        if (stream.host_id !== host_id) {
+            return res.status(403).json({ status: 'error', message: 'Forbidden' });
+        }
+
+        stream.status = 'ended';
+        stream.ended_at = new Date();
+        await stream.save();
+
+        try {
+            await publishEvent('LIVE_STREAM_STATUS', { streamId: stream.id, status: 'ENDED' });
+        } catch (e) {
+            console.error('Failed to publish end event', e);
+        }
+
+        res.json({
+            status: 'success',
+            message: 'Stream ended',
+            data: {
+                peak_viewers: stream.peak_viewers,
+                duration_seconds: stream.started_at ? Math.floor((stream.ended_at.getTime() - stream.started_at.getTime()) / 1000) : 0
+            }
+        });
+    } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }
 };
@@ -119,17 +210,14 @@ exports.scheduleStream = async (req, res) => {
 exports.getLiveFeed = async (req, res) => {
     try {
         const streams = await LiveStream.findAll({
-            where: { status: 'LIVE', visibility: 'Public' },
-            order: [['startedAt', 'DESC']],
+            where: { status: 'live', visibility: 'public' },
+            order: [['started_at', 'DESC']],
             limit: 20
         });
 
         res.json({
             status: 'success',
-            data: streams.map(s => {
-                const { hlsUrl } = getIngestUrls(s.streamKey);
-                return { ...s.toJSON(), hlsUrl };
-            })
+            data: streams
         });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
@@ -141,43 +229,15 @@ exports.getStreamDetails = async (req, res) => {
     try {
         const { id } = req.params;
         const stream = await LiveStream.findByPk(id, {
-            include: [{ model: LiveChatMessage, limit: 50, order: [['createdAt', 'DESC']] }]
+            include: [{ model: LiveChatMessage, limit: 50, order: [['created_at', 'DESC']] }]
         });
 
         if (!stream) return res.status(404).json({ status: 'error', message: 'Stream not found' });
-
-        const { hlsUrl } = getIngestUrls(stream.streamKey);
 
         res.json({
             status: 'success',
-            data: {
-                ...stream.toJSON(),
-                hlsUrl: stream.status === 'LIVE' ? hlsUrl : null
-            }
+            data: stream
         });
-    } catch (error) {
-        res.status(500).json({ status: 'error', message: error.message });
-    }
-};
-
-// END STREAM
-exports.endStream = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.headers['x-user-id'];
-
-        const stream = await LiveStream.findByPk(id);
-        if (!stream) return res.status(404).json({ status: 'error', message: 'Stream not found' });
-
-        if (stream.userId !== userId) {
-            return res.status(403).json({ status: 'error', message: 'Forbidden' });
-        }
-
-        stream.status = 'ENDED';
-        stream.endedAt = new Date();
-        await stream.save();
-
-        res.json({ status: 'success', message: 'Stream ended' });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }
@@ -186,62 +246,21 @@ exports.endStream = async (req, res) => {
 // CHAT MESSAGES
 exports.addChatMessage = async (req, res) => {
     try {
-        const { id } = req.params; // streamId
+        const { id } = req.params; // stream_id
         const { message } = req.body;
-        const userId = req.headers['x-user-id'];
-        const username = req.headers['x-user-username'];
+        const user_id = req.headers['x-user-id'];
 
-        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        if (!user_id) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
 
         const chatMessage = await LiveChatMessage.create({
             id: uuidv4(),
-            streamId: id,
-            userId,
-            username,
+            stream_id: id,
+            user_id,
             message
-        });
-
-        // Publish to Socket Service
-        await publishEvent('LIVE_CHAT_MESSAGE', {
-            streamId: id,
-            message: chatMessage
         });
 
         res.status(201).json({ status: 'success', data: chatMessage });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
-    }
-};
-
-// Webhooks for Node-Media-Server (Internal)
-exports.onPublish = async (req, res) => {
-    try {
-        const { name } = req.body; // streamKey
-        const stream = await LiveStream.findOne({ where: { streamKey: name } });
-        if (stream) {
-            stream.status = 'LIVE';
-            stream.startedAt = new Date();
-            await stream.save();
-            console.log(`[Stream Started] ${stream.id}`);
-        }
-        res.send('OK');
-    } catch (error) {
-        res.status(500).send('Error');
-    }
-};
-
-exports.onDone = async (req, res) => {
-    try {
-        const { name } = req.body;
-        const stream = await LiveStream.findOne({ where: { streamKey: name } });
-        if (stream) {
-            stream.status = 'ENDED';
-            stream.endedAt = new Date();
-            await stream.save();
-            console.log(`[Stream Finished] ${stream.id}`);
-        }
-        res.send('OK');
-    } catch (error) {
-        res.status(500).send('Error');
     }
 };

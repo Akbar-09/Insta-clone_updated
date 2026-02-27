@@ -8,7 +8,7 @@ const LiveChatMessage = sequelize.define('LiveChatMessage', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
-    streamId: {
+    stream_id: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
@@ -16,40 +16,30 @@ const LiveChatMessage = sequelize.define('LiveChatMessage', {
             key: 'id'
         }
     },
-    userId: {
+    user_id: {
         type: DataTypes.STRING,
         allowNull: false
-    },
-    username: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    profilePic: {
-        type: DataTypes.STRING,
-        allowNull: true
     },
     message: {
         type: DataTypes.TEXT,
         allowNull: false
     },
-    isModerator: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    isSystem: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
+    created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     }
 }, {
-    tableName: 'live_chat_messages',
+    tableName: 'live_stream_messages',
     timestamps: true,
+    updatedAt: false, // We usually don't update chat messages in live streams
+    underscored: true,
     indexes: [
-        { fields: ['streamId'] },
-        { fields: ['createdAt'] }
+        { fields: ['stream_id'] },
+        { fields: ['created_at'] }
     ]
 });
 
-LiveStream.hasMany(LiveChatMessage, { foreignKey: 'streamId' });
-LiveChatMessage.belongsTo(LiveStream, { foreignKey: 'streamId' });
+LiveStream.hasMany(LiveChatMessage, { foreignKey: 'stream_id' });
+LiveChatMessage.belongsTo(LiveStream, { foreignKey: 'stream_id' });
 
 module.exports = LiveChatMessage;

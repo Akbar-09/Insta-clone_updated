@@ -8,7 +8,7 @@ const LiveViewer = sequelize.define('LiveViewer', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
-    streamId: {
+    stream_id: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
@@ -16,29 +16,35 @@ const LiveViewer = sequelize.define('LiveViewer', {
             key: 'id'
         }
     },
-    userId: {
+    user_id: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    joinedAt: {
+    joined_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
     },
-    leftAt: {
+    left_at: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    watch_duration_seconds: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0
     }
 }, {
-    tableName: 'live_viewers',
+    tableName: 'live_stream_viewers',
     timestamps: true,
+    underscored: true,
     indexes: [
-        { fields: ['streamId'] },
-        { fields: ['userId'] },
-        { fields: ['leftAt'] } // Helpful to find active viewers
+        { fields: ['stream_id'] },
+        { fields: ['user_id'] },
+        { fields: ['left_at'] }
     ]
 });
 
-LiveStream.hasMany(LiveViewer, { foreignKey: 'streamId' });
-LiveViewer.belongsTo(LiveStream, { foreignKey: 'streamId' });
+LiveStream.hasMany(LiveViewer, { foreignKey: 'stream_id' });
+LiveViewer.belongsTo(LiveStream, { foreignKey: 'stream_id' });
 
 module.exports = LiveViewer;
