@@ -19,7 +19,7 @@ import CreatePostModal from './CreatePostModal';
 import CreateAdModal from './CreateAdModal';
 import MoreMenu from './MoreMenu';
 import ReportProblemModal from './ReportProblemModal';
-import LiveVideoModal from './LiveVideoModal';
+import LiveCreateModal from './live/LiveCreateModal';
 import jaadoeLogo from '../assets/jaadoe_logo.svg';
 
 const Sidebar = () => {
@@ -440,7 +440,7 @@ const Sidebar = () => {
             {isCreateModalOpen && <CreatePostModal onClose={() => setIsCreateModalOpen(false)} />}
             {isAdModalOpen && <CreateAdModal onClose={() => setIsAdModalOpen(false)} />}
             {isReportModalOpen && <ReportProblemModal onClose={() => setIsReportModalOpen(false)} />}
-            {isLiveModalOpen && <LiveVideoModal onClose={() => setIsLiveModalOpen(false)} />}
+            {isLiveModalOpen && <LiveCreateModal onClose={() => setIsLiveModalOpen(false)} />}
         </>
     );
 };

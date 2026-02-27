@@ -7,64 +7,61 @@ const LiveStream = sequelize.define('LiveStream', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
-    userId: {
+    room_name: {
         type: DataTypes.STRING,
-        allowNull: false
+        unique: true
     },
-    streamKey: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false
-    },
-    ingestUrl: {
-        type: DataTypes.STRING,
-        allowNull: false
+    host_id: {
+        type: DataTypes.STRING, /* using STRING here for foreign key to users.id which seems to be UUID or STRING in this app */
+        allowNull: true
     },
     title: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     category: {
-        type: DataTypes.ENUM('Social', 'Gaming', 'Education', 'Music', 'Fitness', 'Tech'),
-        allowNull: false,
+        type: DataTypes.STRING,
+        allowNull: true,
         defaultValue: 'Social'
     },
-    thumbnailUrl: {
+    visibility: {
+        type: DataTypes.ENUM('public', 'followers', 'private'),
+        defaultValue: 'public'
+    },
+    thumbnail_url: {
         type: DataTypes.STRING,
         allowNull: true
     },
-    visibility: {
-        type: DataTypes.ENUM('Public', 'Followers', 'Private'),
-        defaultValue: 'Public'
-    },
     status: {
-        type: DataTypes.ENUM('LIVE', 'ENDED'),
-        defaultValue: 'LIVE'
+        type: DataTypes.ENUM('scheduled', 'live', 'ended'),
+        defaultValue: 'scheduled'
     },
-    startedAt: {
+    scheduled_at: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+        allowNull: true
     },
-    endedAt: {
-        type: DataTypes.DATE
+    started_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     },
-    peakViewers: {
+    ended_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    peak_viewers: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
-    isRecordingEnabled: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true
-    },
-    recordingUrl: {
-        type: DataTypes.STRING,
-        allowNull: true
+    total_viewers: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 }, {
     tableName: 'live_streams',
     timestamps: true,
+    underscored: true, /* ensures createdAt -> created_at */
     indexes: [
-        { fields: ['userId'] },
+        { fields: ['host_id'] },
         { fields: ['status'] }
     ]
 });

@@ -6,18 +6,20 @@ const StoryBubble = ({ user, count, onClick }) => {
 
     return (
         <li
-            className="flex flex-col items-center cursor-pointer min-w-[66px] group"
+            className="flex flex-col items-center cursor-pointer min-w-[66px] group relative"
             onClick={onClick}
         >
             <div className={`
                 w-[66px] h-[66px] rounded-full p-[2px] 
                 flex justify-center items-center mb-1.5 
-                ${user.allSeen
-                    ? 'bg-gray-200 dark:bg-gray-700'
-                    : 'bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]'}
+                ${user.isLive
+                    ? 'bg-gradient-to-tr from-fuchsia-600 via-pink-500 to-rose-500 shadow-[0_0_15px_rgba(236,72,153,0.6)] animate-pulse'
+                    : user.allSeen
+                        ? 'bg-gray-200 dark:bg-gray-700'
+                        : 'bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]'}
                 transform transition-transform duration-200 group-hover:scale-105
             `}>
-                <div className="w-full h-full rounded-full border-[2px] border-white dark:border-black overflow-hidden bg-white dark:bg-black">
+                <div className="w-full h-full rounded-full border-[2px] border-white dark:border-black overflow-hidden bg-white dark:bg-black relative">
                     <img
                         src={user.userAvatar || user.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
                         alt={user.username}
@@ -26,6 +28,11 @@ const StoryBubble = ({ user, count, onClick }) => {
                     />
                 </div>
             </div>
+            {user.isLive && (
+                <div className="absolute top-[52px] bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow z-10">
+                    LIVE
+                </div>
+            )}
             <span className="text-xs text-text-primary text-center max-w-[74px] truncate">
                 {user.username}
             </span>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import CreateStoryModal from './CreateStoryModal';
 import StoryViewer from './StoryViewer';
@@ -7,7 +8,9 @@ import StoryBubble from './stories/StoryBubble';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Stories = () => {
+    const navigate = useNavigate();
     const [stories, setStories] = useState([]);
+    const [liveStreams, setLiveStreams] = useState([]);
     const [userProfiles, setUserProfiles] = useState({});
     const scrollContainerRef = useRef(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -16,25 +19,36 @@ const Stories = () => {
     useEffect(() => {
         const fetchStoriesAndProfiles = async () => {
             try {
-                // 1. Fetch Stories
-                const response = await api.get('/stories');
-                let allStories = [];
+                // 1. Fetch Stories and Live Streams in parallel
+                const [storiesResponse, liveResponse] = await Promise.all([
+                    api.get('/stories').catch(err => { console.error('Failed stories', err); return null; }),
+                    api.get('/live/feed').catch(err => { console.error('Failed live feed', err); return null; })
+                ]);
 
-                if (response.data.status === 'success') {
-                    allStories = response.data.data;
+                let allStories = [];
+                let allLiveStreams = [];
+
+                if (storiesResponse?.data?.status === 'success') {
+                    allStories = storiesResponse.data.data;
+                }
+                if (liveResponse?.data?.status === 'success') {
+                    allLiveStreams = liveResponse.data.data;
                 }
 
                 setStories(allStories);
+                setLiveStreams(allLiveStreams);
 
                 // 2. Extract unique user IDs (exclude mocks if they don't exist in DB)
-                const realUserIds = [...new Set(
-                    allStories
-                        .filter(s => {
-                            const uid = String(s.userId);
-                            return !uid.startsWith('mock-user');
-                        })
-                        .map(s => s.userId)
-                )];
+                const uidSet = new Set();
+                allStories.forEach(s => {
+                    const uid = String(s.userId);
+                    if (!uid.startsWith('mock-user')) uidSet.add(s.userId);
+                });
+                allLiveStreams.forEach(ls => {
+                    if (ls.host_id) uidSet.add(ls.host_id);
+                });
+
+                const realUserIds = [...uidSet];
 
                 if (realUserIds.length > 0) {
                     try {
@@ -109,12 +123,46 @@ const Stories = () => {
         return enriched;
     }, [stories, userProfiles]);
 
+    const liveGroups = useMemo(() => {
+        const uniqueHosts = new Set();
+        const uniqueStreams = liveStreams.filter(ls => {
+            if (ls.status !== 'live') return false;
+            if (uniqueHosts.has(ls.host_id)) return false;
+            uniqueHosts.add(ls.host_id);
+            return true;
+        });
+
+        return uniqueStreams.map(ls => {
+            const profile = userProfiles[ls.host_id] || userProfiles[String(ls.host_id)];
+            return {
+                userId: ls.host_id,
+                username: profile ? profile.username : 'Host',
+                userAvatar: ls.thumbnail_url || (profile ? profile.profilePicture : ''),
+                profilePicture: profile ? profile.profilePicture : '',
+                isLive: true,
+                liveStreamId: ls.id,
+                stories: []
+            };
+        });
+    }, [liveStreams, userProfiles]);
+
+    const filteredGroupedStories = useMemo(() => {
+        const liveUserIds = new Set(liveGroups.map(lg => lg.userId));
+        return groupedStories.filter(group => !liveUserIds.has(group.userId));
+    }, [groupedStories, liveGroups]);
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [activeStory, setActiveStory] = useState(null);
 
     const handleStoryClick = (group) => {
-        const index = stories.findIndex(s => s.id === group.stories[0].id);
-        setActiveStory(index !== -1 ? index : 0);
+        if (group.isLive) {
+            navigate(`/live/${group.liveStreamId}`);
+            return;
+        }
+        if (group.stories && group.stories.length > 0) {
+            const index = stories.findIndex(s => s.id === group.stories[0].id);
+            setActiveStory(index !== -1 ? index : 0);
+        }
     };
 
     return (
@@ -148,8 +196,18 @@ const Stories = () => {
                         <span className="text-xs text-text-primary text-center max-w-[74px] truncate">Your Story</span>
                     </li>
 
+                    {/* Render Live Streams */}
+                    {liveGroups.map((group) => (
+                        <StoryBubble
+                            key={`live-${group.userId}`}
+                            user={group}
+                            count={1}
+                            onClick={() => handleStoryClick(group)}
+                        />
+                    ))}
+
                     {/* Render Grouped User Bubbles */}
-                    {groupedStories.map((group) => (
+                    {filteredGroupedStories.map((group) => (
                         <StoryBubble
                             key={group.userId}
                             user={group}

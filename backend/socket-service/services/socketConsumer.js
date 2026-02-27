@@ -79,6 +79,9 @@ const handleEvent = (event) => {
             io.to(`live:${streamId}`).emit('receive-comment', chatMsg);
             break;
         case 'LIVE_STREAM_STATUS':
+            if (payload.status === 'ENDED') {
+                io.to(`live_stream_${payload.streamId}`).emit('stream_ended');
+            }
             io.to(`live:${payload.streamId}`).emit('stream-status', payload.status);
             break;
         case 'new_notification':
