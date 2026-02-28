@@ -32,7 +32,7 @@ const LiveVideoLayout = () => {
 };
 
 const LiveBroadcastScreen = () => {
-    const { streamData, connectionDetails, endStream, isHost } = useLive();
+    const { streamData, connectionDetails, endStream, isHost, streamState } = useLive();
     const [viewers, setViewers] = React.useState(0);
     const [socket, setSocket] = React.useState(null);
     const [pendingRequests, setPendingRequests] = React.useState([]);
