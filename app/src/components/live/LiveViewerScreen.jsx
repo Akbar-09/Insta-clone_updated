@@ -85,10 +85,11 @@ const LiveViewerScreen = ({ streamId }) => {
             endStream(streamData.id, { duration: durationInSeconds, peakViewers: peakViewersRef.current });
         });
 
-        newSocket.on('cohost_request_accepted', () => {
+        newSocket.on('cohost_request_accepted', async () => {
             console.log("Your co-host request was accepted! Re-joining as guest...");
+            // Acquisition of the token with 'canPublish' permissions must happen BEFORE enabling publishing in the UI
+            await joinStream(streamId, 'guest');
             setRole('guest');
-            joinStream(streamId, 'guest');
         });
 
         setSocket(newSocket);
@@ -96,7 +97,7 @@ const LiveViewerScreen = ({ streamId }) => {
         return () => {
             newSocket.disconnect();
         };
-    }, [streamData?.id]);
+    }, [streamData?.id, authUser?.id, joinStream, streamId]);
 
     const handleLeave = () => {
         if (isHost) {
@@ -142,6 +143,7 @@ const LiveViewerScreen = ({ streamId }) => {
     return (
         <div className="fixed inset-0 z-[9999] bg-black flex h-screen w-full overflow-hidden">
             <LiveKitRoom
+                key={`${connectionDetails.token}-${role}`}
                 video={isHost || role === 'guest'} // Enable if host or guest
                 audio={isHost || role === 'guest'}
                 token={connectionDetails.token}
