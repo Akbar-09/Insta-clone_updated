@@ -1,12 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Heart } from 'lucide-react';
+import { Send, Heart, Smile } from 'lucide-react';
 import axios from 'axios';
+import EmojiPicker from 'emoji-picker-react';
 
 const LiveChatPanel = ({ socket, streamId }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const messagesEndRef = useRef(null);
+    const emojiPickerRef = useRef(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Click outside to close emoji picker
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+                setShowEmojiPicker(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     // Fetch initial chat history
     useEffect(() => {
@@ -55,6 +69,7 @@ const LiveChatPanel = ({ socket, streamId }) => {
         const ts = new Date().toISOString();
         const msgText = input;
         setInput('');
+        setShowEmojiPicker(false);
 
         // Optimistic update
         const optimisticMsg = {
@@ -79,15 +94,25 @@ const LiveChatPanel = ({ socket, streamId }) => {
             // Also emit via socket immediately to save database latency for other clients
             if (socket) {
                 socket.emit('send_live_message', { streamId, message: msgText });
+
+                // Check for emojis in message and set flying reactions
+                const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+                const matches = msgText.match(emojiRegex);
+                if (matches) {
+                    const uniqueEmojis = [...new Set(matches)].slice(0, 3);
+                    uniqueEmojis.forEach(em => {
+                        socket.emit('send_reaction', { streamId, emoji: em });
+                    });
+                }
             }
         } catch (error) {
             console.error('Failed to send message', error);
         }
     };
 
-    const emitReaction = () => {
+    const emitReaction = (emojiStr) => {
         if (socket) {
-            socket.emit('send_reaction', { streamId, emoji: 'heart' });
+            socket.emit('send_reaction', { streamId, emoji: emojiStr || '❤️' });
         }
     };
 
@@ -113,7 +138,15 @@ const LiveChatPanel = ({ socket, streamId }) => {
             </div>
 
             {/* Input Area */}
-            <div className="p-3 border-t border-gray-800 bg-gray-900">
+            <div className="p-3 border-t border-gray-800 bg-gray-900 relative">
+                {showEmojiPicker && (
+                    <div ref={emojiPickerRef} className="absolute bottom-[calc(100%+10px)] right-4 z-50 shadow-2xl">
+                        <EmojiPicker
+                            onEmojiClick={(emojiData) => setInput(prev => prev + emojiData.emoji)}
+                            theme="dark"
+                        />
+                    </div>
+                )}
                 <form onSubmit={handleSend} className="flex items-center gap-2">
                     <input
                         type="text"
@@ -127,7 +160,14 @@ const LiveChatPanel = ({ socket, streamId }) => {
                     </button>
                     <button
                         type="button"
-                        onClick={emitReaction}
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className="text-gray-400 p-2 hover:bg-gray-800 hover:text-white rounded-full transition"
+                    >
+                        <Smile size={20} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => emitReaction('❤️')}
                         className="text-pink-500 p-2 hover:bg-gray-800 rounded-full transition"
                     >
                         <Heart size={20} fill="#ec4899" />

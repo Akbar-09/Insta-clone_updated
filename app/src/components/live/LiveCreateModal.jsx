@@ -7,6 +7,7 @@ const LiveCreateModal = ({ onClose }) => {
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState('Social');
     const [visibility, setVisibility] = useState('public');
+    const [hashtags, setHashtags] = useState('');
     const [thumbnail, setThumbnail] = useState(null);
     const [previewUrl, setPreviewUrl] = useState('');
     const [tab, setTab] = useState('now'); // now, schedule
@@ -28,6 +29,7 @@ const LiveCreateModal = ({ onClose }) => {
             formData.append('title', title);
             formData.append('category', category);
             formData.append('visibility', visibility);
+            formData.append('hashtags', hashtags);
             if (thumbnail) formData.append('thumbnail', thumbnail);
             if (tab === 'schedule') {
                 formData.append('scheduledAt', new Date(scheduledAt).toISOString());
@@ -78,6 +80,17 @@ const LiveCreateModal = ({ onClose }) => {
                         />
                     </div>
 
+                    <div>
+                        <label className="block text-sm text-gray-400 mb-1">Hashtags (comma separated)</label>
+                        <input
+                            type="text"
+                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:ring-1 focus:ring-primary-500 outline-none"
+                            placeholder="e.g. #vlog, #chat, #gaming"
+                            value={hashtags}
+                            onChange={e => setHashtags(e.target.value)}
+                        />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm text-gray-400 mb-1">Category</label>
@@ -100,8 +113,9 @@ const LiveCreateModal = ({ onClose }) => {
                                 onChange={e => setVisibility(e.target.value)}
                             >
                                 <option value="public">Public</option>
+                                <option value="close_friends">Close Friends</option>
                                 <option value="followers">Followers Only</option>
-                                <option value="private">Private</option>
+                                <option value="practice">Practice Mode</option>
                             </select>
                         </div>
                     </div>

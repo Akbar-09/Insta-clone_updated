@@ -24,8 +24,12 @@ const LiveStream = sequelize.define('LiveStream', {
         allowNull: true,
         defaultValue: 'Social'
     },
+    hashtags: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     visibility: {
-        type: DataTypes.ENUM('public', 'followers', 'private'),
+        type: DataTypes.ENUM('public', 'followers', 'private', 'close_friends', 'practice'),
         defaultValue: 'public'
     },
     thumbnail_url: {

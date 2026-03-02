@@ -12,8 +12,8 @@ import {
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import '@livekit/components-styles';
-import { Users, X, Mic } from 'lucide-react';
-import LiveChatPanel from './LiveChatPanel';
+import { Users, X, Mic, Settings, UserPlus } from 'lucide-react';
+import LiveInteractionPanel from './LiveInteractionPanel';
 import LiveReactionsOverlay from './LiveReactionsOverlay';
 import LiveEndSummaryModal from './LiveEndSummaryModal';
 import { io } from 'socket.io-client';
@@ -26,8 +26,10 @@ const LiveVideoLayout = () => {
         ],
         { onlySubscribed: false },
     );
+    const visibleTracks = tracks.filter(t => t.participant.permissions?.canPublish);
+
     return (
-        <GridLayout tracks={tracks} className="w-full h-full [&_.lk-participant-tile]:h-full [&_.lk-participant-tile]:w-full [&_.lk-participant-tile]:border-0 [&_.lk-participant-tile]:rounded-none [&_video]:object-cover [&_.lk-participant-metadata]:hidden [&_.lk-focus-toggle-button]:hidden">
+        <GridLayout tracks={visibleTracks} className="w-full h-full [&_.lk-participant-tile]:h-full [&_.lk-participant-tile]:w-full [&_.lk-participant-tile]:border-0 [&_.lk-participant-tile]:rounded-none [&_video]:object-cover [&_.lk-participant-metadata]:hidden [&_.lk-focus-toggle-button]:hidden">
             <ParticipantTile />
         </GridLayout>
     );
@@ -45,10 +47,28 @@ const LiveViewerScreen = ({ streamId }) => {
     const { user: authUser } = useAuth();
     const startTimeRef = React.useRef(Date.now());
     const peakViewersRef = React.useRef(0);
+    const [duration, setDuration] = React.useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setDuration(Math.floor((Date.now() - startTimeRef.current) / 1000));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const formatDuration = (secs) => {
+        const h = Math.floor(secs / 3600);
+        const m = Math.floor((secs % 3600) / 60);
+        const s = secs % 60;
+        if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
 
     useEffect(() => {
         if (!connectionDetails && streamState === 'idle') {
-            joinStream(streamId);
+            joinStream(streamId).catch(err => {
+                console.error("Failed to join stream automatically:", err.message);
+            });
         }
     }, [connectionDetails, streamState, streamId, joinStream]);
 
@@ -90,6 +110,16 @@ const LiveViewerScreen = ({ streamId }) => {
             // Acquisition of the token with 'canPublish' permissions must happen BEFORE enabling publishing in the UI
             await joinStream(streamId, 'guest');
             setRole('guest');
+        });
+
+        newSocket.on('cohost_removed', async () => {
+            console.log("You have been removed as a co-host. Re-joining as viewer...");
+            setRole('viewer');
+            setRequestPending(false); // Reset button state just in case
+            await joinStream(streamId); // Reconnects without 'guest' permissions
+
+            // To ensure tracks properly get unpublished on the frontend, sometimes a window reload is the cleanest fallback
+            // but since we refresh the token in LiveKitRoom by updating the `connectionDetails`, it should gracefully drop them.
         });
 
         setSocket(newSocket);
@@ -155,45 +185,47 @@ const LiveViewerScreen = ({ streamId }) => {
                 <div className="flex-1 relative bg-black flex flex-col">
                     {/* Top Overlay */}
                     <div className="absolute top-0 left-0 right-0 p-4 z-20 flex justify-between items-start pointer-events-none">
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 bg-gray-900/60 backdrop-blur-sm rounded-full pl-1 pr-3 py-1">
-                                <img
-                                    src={streamData?.thumbnail_url || "https://ui-avatars.com/api/?name=Host"}
-                                    className="w-8 h-8 rounded-full pointer-events-auto cursor-pointer border border-pink-500"
-                                    alt="Host"
-                                />
-                                <div className="flex flex-col">
-                                    <span className="text-white text-xs font-bold leading-tight">{streamData?.title || 'Live Stream'}</span>
-                                    <span className="text-gray-300 text-[10px] pb-0.5">{streamData?.visibility || 'public'}</span>
-                                </div>
-                            </div>
-
-                            <div className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
+                        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                            <div className="bg-red-600/90 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)] flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                                 LIVE
                             </div>
-                            <div className="bg-gray-900/60 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded flex items-center gap-1">
-                                <Users size={12} />
+                            <div className="bg-gray-900/70 backdrop-blur-md border border-white/10 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                                <Users size={14} className="text-gray-300" />
                                 {viewers}
                             </div>
+                            <div className="bg-gray-900/70 backdrop-blur-md border border-white/10 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wider">
+                                {formatDuration(duration)}
+                            </div>
+                            {streamData?.title && (
+                                <div className="bg-gray-900/70 backdrop-blur-md border border-white/10 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2 max-w-[200px] truncate">
+                                    <span className="truncate">{streamData.title}</span>
+                                    {streamData.category && (
+                                        <span className="bg-gradient-to-r from-pink-500 to-violet-500 rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider shrink-0 text-white shadow-sm">
+                                            {streamData.category}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
-                        <div className="flex gap-2 pointer-events-auto">
+                        <div className="flex gap-2 pointer-events-auto items-center flex-wrap justify-end">
                             {role === 'viewer' && !isHost && (
                                 <button
                                     onClick={handleRequestJoin}
                                     disabled={requestPending}
-                                    className={`bg-pink-600 hover:bg-pink-700 disabled:bg-gray-700 text-white px-4 py-1.5 rounded-full font-bold text-sm transition shadow-lg border border-pink-500/30 flex items-center gap-1.5`}
+                                    className={`bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 disabled:from-gray-700 disabled:to-gray-800 text-white px-4 py-2 rounded-full font-bold text-[11px] uppercase tracking-wider transition-all shadow-lg border border-white/10 flex items-center gap-1.5`}
                                 >
                                     <Mic size={14} className={requestPending ? 'animate-pulse' : ''} />
-                                    {requestPending ? 'Requested...' : 'Join with Mic/Cam'}
+                                    {requestPending ? 'REQUESTED' : 'JOIN'}
                                 </button>
                             )}
                             <button
                                 onClick={handleLeave}
-                                className={`${isHost ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-900/60 hover:bg-gray-800'} backdrop-blur-sm text-white px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 font-bold text-sm transition shadow-[0_0_15px_rgba(0,0,0,0.2)] border ${isHost ? 'border-red-500/50' : 'border-gray-700/50'}`}
+                                className={`bg-gray-900/70 hover:bg-gray-800 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full flex items-center justify-center gap-1.5 font-bold text-[11px] uppercase tracking-wider transition-all shadow-lg`}
                             >
                                 <X size={16} />
-                                {isHost ? 'End Stream' : 'Leave Live'}
+                                LEAVE
                             </button>
                         </div>
                     </div>
@@ -207,8 +239,10 @@ const LiveViewerScreen = ({ streamId }) => {
 
                     {/* Bottom Controls for Guest/Host */}
                     {(isHost || role === 'guest') && (
-                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-auto shadow-2xl rounded-xl overflow-hidden [&_.lk-button]:bg-gray-900/80 [&_.lk-button]:hover:bg-gray-800 [&_.lk-button]:text-white [&_.lk-button]:backdrop-blur-md [&_.lk-control-bar]:border [&_.lk-control-bar]:border-gray-700/50">
-                            <ControlBar controls={{ camera: true, microphone: true, screenShare: false, chat: false, leave: false }} />
+                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+                            <div className="flex items-center pointer-events-auto gap-2 bg-gray-900/70 backdrop-blur-md p-2 rounded-full border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)] [&_.lk-button]:bg-transparent [&_.lk-button]:hover:bg-white/10 [&_.lk-button]:text-white [&_.lk-button]:rounded-full [&_.lk-button]:p-3 [&_.lk-button]:transition-all [&_.lk-control-bar]:border-0 [&_.lk-control-bar]:bg-transparent [&_.lk-control-bar]:shadow-none [&_.lk-control-bar]:p-0">
+                                <ControlBar controls={{ camera: true, microphone: true, screenShare: true, chat: false, leave: false }} />
+                            </div>
                         </div>
                     )}
 
@@ -218,10 +252,7 @@ const LiveViewerScreen = ({ streamId }) => {
                     <LiveReactionsOverlay socket={socket} />
                 </div>
 
-                {/* Chat Panel */}
-                <div className="w-full md:w-[350px] h-1/3 md:h-full bg-gray-900 border-t md:border-t-0 md:border-l border-gray-800 flex flex-col z-20 relative">
-                    <LiveChatPanel socket={socket} streamId={streamData.id} />
-                </div>
+                <LiveInteractionPanel socket={socket} streamId={streamData.id} />
             </LiveKitRoom>
         </div>
     );

@@ -67,14 +67,21 @@ export const LiveProvider = ({ children }) => {
     const joinStream = async (id, role = 'viewer') => {
         try {
             // Provide streamData for the UI viewer beforehand so thumbnail etc renders perfectly
-            const detailsRes = await api.get(`/live/${id}`);
-            setStreamData(detailsRes.data.data);
+            try {
+                const detailsRes = await api.get(`/live/${id}`);
+                setStreamData(detailsRes.data.data);
+            } catch (err) {
+                console.error("Failed to fetch stream details before joining:", err);
+            }
 
             const res = await api.post(`/live/join/${id}?role=${role}`);
             setConnectionDetails(res.data.data);
             setStreamState('live');
         } catch (error) {
             console.error('Join stream error:', error);
+            if (error.response?.status === 400 || error.response?.status === 404) {
+                setStreamState('ended');
+            }
             throw error;
         }
     };
