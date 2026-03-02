@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict O3NqHW6ZsmCf2iKPcWCgbLXwUGcAsIf0c3H8GvcLHp1nYQ7pMzVK0ooa1caKgxp
+\restrict 3sGX8ARGLAFuZfqNHYD38BrYhh6ytZgEDxmtB5yBueoiMInWEqI1NOJOOS6Au2P
 
 -- Dumped from database version 18.2
 -- Dumped by pg_dump version 18.2
@@ -587,6 +587,20 @@ CREATE TYPE public.enum_interactions_type AS ENUM (
 ALTER TYPE public.enum_interactions_type OWNER TO postgres;
 
 --
+-- Name: enum_live_guest_requests_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.enum_live_guest_requests_status AS ENUM (
+    'pending',
+    'approved',
+    'rejected',
+    'left'
+);
+
+
+ALTER TYPE public.enum_live_guest_requests_status OWNER TO postgres;
+
+--
 -- Name: enum_live_streams_category; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -608,7 +622,13 @@ ALTER TYPE public.enum_live_streams_category OWNER TO postgres;
 
 CREATE TYPE public.enum_live_streams_status AS ENUM (
     'LIVE',
-    'ENDED'
+    'ENDED',
+    'idle',
+    'scheduled',
+    'preview',
+    'live',
+    'paused',
+    'ended'
 );
 
 
@@ -621,7 +641,12 @@ ALTER TYPE public.enum_live_streams_status OWNER TO postgres;
 CREATE TYPE public.enum_live_streams_visibility AS ENUM (
     'Public',
     'Followers',
-    'Private'
+    'Private',
+    'public',
+    'followers',
+    'private',
+    'close_friends',
+    'practice'
 );
 
 
@@ -3142,6 +3167,37 @@ CREATE TABLE public.like_share_settings (
 ALTER TABLE public.like_share_settings OWNER TO postgres;
 
 --
+-- Name: live_blocked_keywords; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_blocked_keywords (
+    id uuid NOT NULL,
+    "streamId" uuid NOT NULL,
+    keyword character varying(255) NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_blocked_keywords OWNER TO postgres;
+
+--
+-- Name: live_blocked_users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_blocked_users (
+    id uuid NOT NULL,
+    "streamId" uuid NOT NULL,
+    "userId" character varying(255) NOT NULL,
+    username character varying(255),
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_blocked_users OWNER TO postgres;
+
+--
 -- Name: live_chat_messages; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -3162,6 +3218,41 @@ CREATE TABLE public.live_chat_messages (
 ALTER TABLE public.live_chat_messages OWNER TO postgres;
 
 --
+-- Name: live_donations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_donations (
+    id uuid NOT NULL,
+    stream_id uuid NOT NULL,
+    user_id character varying(255) NOT NULL,
+    username character varying(255),
+    amount numeric(10,2) NOT NULL,
+    message text,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_donations OWNER TO postgres;
+
+--
+-- Name: live_guest_requests; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_guest_requests (
+    id uuid NOT NULL,
+    stream_id uuid NOT NULL,
+    user_id character varying(255) NOT NULL,
+    username character varying(255),
+    status public.enum_live_guest_requests_status DEFAULT 'pending'::public.enum_live_guest_requests_status,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_guest_requests OWNER TO postgres;
+
+--
 -- Name: live_moderators; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -3177,30 +3268,187 @@ CREATE TABLE public.live_moderators (
 ALTER TABLE public.live_moderators OWNER TO postgres;
 
 --
--- Name: live_streams; Type: TABLE; Schema: public; Owner: postgres
+-- Name: live_muted_users; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.live_streams (
+CREATE TABLE public.live_muted_users (
     id uuid NOT NULL,
+    "streamId" uuid NOT NULL,
     "userId" character varying(255) NOT NULL,
-    "streamKey" character varying(255) NOT NULL,
-    "ingestUrl" character varying(255) NOT NULL,
-    title character varying(255) NOT NULL,
-    category public.enum_live_streams_category DEFAULT 'Social'::public.enum_live_streams_category NOT NULL,
-    "thumbnailUrl" character varying(255),
-    visibility public.enum_live_streams_visibility DEFAULT 'Public'::public.enum_live_streams_visibility,
-    status public.enum_live_streams_status DEFAULT 'LIVE'::public.enum_live_streams_status,
-    "startedAt" timestamp with time zone,
-    "endedAt" timestamp with time zone,
-    "peakViewers" integer DEFAULT 0,
-    "isRecordingEnabled" boolean DEFAULT true,
-    "recordingUrl" character varying(255),
+    username character varying(255),
+    muted_until timestamp with time zone,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL
 );
 
 
+ALTER TABLE public.live_muted_users OWNER TO postgres;
+
+--
+-- Name: live_poll_votes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_poll_votes (
+    id uuid NOT NULL,
+    poll_id uuid NOT NULL,
+    user_id character varying(255) NOT NULL,
+    option_index integer NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_poll_votes OWNER TO postgres;
+
+--
+-- Name: live_polls; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_polls (
+    id uuid NOT NULL,
+    stream_id uuid NOT NULL,
+    question character varying(255) NOT NULL,
+    options jsonb NOT NULL,
+    duration integer DEFAULT 60,
+    is_active boolean DEFAULT true,
+    ended_at timestamp with time zone,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_polls OWNER TO postgres;
+
+--
+-- Name: live_products; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_products (
+    id uuid NOT NULL,
+    stream_id uuid NOT NULL,
+    product_id character varying(255) NOT NULL,
+    featured boolean DEFAULT false,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_products OWNER TO postgres;
+
+--
+-- Name: live_questions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_questions (
+    id uuid NOT NULL,
+    stream_id uuid NOT NULL,
+    user_id character varying(255) NOT NULL,
+    username character varying(255),
+    content text NOT NULL,
+    is_approved boolean DEFAULT false,
+    is_highlighted boolean DEFAULT false,
+    is_answered boolean DEFAULT false,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_questions OWNER TO postgres;
+
+--
+-- Name: live_settings; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_settings (
+    id uuid NOT NULL,
+    "streamId" uuid NOT NULL,
+    comments_enabled boolean DEFAULT true,
+    filter_spam boolean DEFAULT false,
+    filter_abuse boolean DEFAULT false,
+    filter_flagged boolean DEFAULT false,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_settings OWNER TO postgres;
+
+--
+-- Name: live_stream_messages; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_stream_messages (
+    id uuid NOT NULL,
+    stream_id uuid NOT NULL,
+    user_id character varying(255) NOT NULL,
+    message text NOT NULL,
+    created_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_stream_messages OWNER TO postgres;
+
+--
+-- Name: live_stream_viewers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_stream_viewers (
+    id uuid NOT NULL,
+    stream_id uuid NOT NULL,
+    user_id character varying(255) NOT NULL,
+    joined_at timestamp with time zone,
+    left_at timestamp with time zone,
+    watch_duration_seconds integer DEFAULT 0,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_stream_viewers OWNER TO postgres;
+
+--
+-- Name: live_streams; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_streams (
+    id uuid NOT NULL,
+    room_name character varying(255),
+    host_id character varying(255),
+    title character varying(255),
+    category character varying(255) DEFAULT 'Social'::character varying,
+    visibility public.enum_live_streams_visibility DEFAULT 'public'::public.enum_live_streams_visibility,
+    thumbnail_url character varying(255),
+    status public.enum_live_streams_status DEFAULT 'scheduled'::public.enum_live_streams_status,
+    scheduled_at timestamp with time zone,
+    started_at timestamp with time zone,
+    ended_at timestamp with time zone,
+    peak_viewers integer DEFAULT 0,
+    total_viewers integer DEFAULT 0,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    hashtags character varying(255)
+);
+
+
 ALTER TABLE public.live_streams OWNER TO postgres;
+
+--
+-- Name: live_supporters; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.live_supporters (
+    id uuid NOT NULL,
+    stream_id uuid NOT NULL,
+    user_id character varying(255) NOT NULL,
+    username character varying(255),
+    badge_level integer DEFAULT 1,
+    amount_paid numeric(10,2) DEFAULT 0,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.live_supporters OWNER TO postgres;
 
 --
 -- Name: live_viewers; Type: TABLE; Schema: public; Owner: postgres
@@ -4033,6 +4281,9 @@ COPY public."AccountHistories" (id, "userId", action, title, description, "oldVa
 5	5	account_created	Account Created	You created your account.	\N	\N	UserPlus	2026-02-26 11:04:01.213+05:30	2026-02-26 11:04:01.213+05:30
 6	6	account_created	Account Created	You created your account.	\N	\N	UserPlus	2026-02-26 11:16:36.873+05:30	2026-02-26 11:16:36.873+05:30
 7	7	account_created	Account Created	You created your account.	\N	\N	UserPlus	2026-02-26 11:20:42.812+05:30	2026-02-26 11:20:42.812+05:30
+8	8	account_created	Account Created	You created your account.	\N	\N	UserPlus	2026-03-02 11:05:14.657+05:30	2026-03-02 11:05:14.658+05:30
+9	9	account_created	Account Created	You created your account.	\N	\N	UserPlus	2026-03-02 12:09:12.716+05:30	2026-03-02 12:09:12.716+05:30
+10	10	account_created	Account Created	You created your account.	\N	\N	UserPlus	2026-03-02 12:10:33.763+05:30	2026-03-02 12:10:33.763+05:30
 \.
 
 
@@ -4062,6 +4313,8 @@ COPY public."AppFeedback" (id, "userId", username, text, files, status, "browser
 ed495881-be95-4d39-81c5-8979f2a311c6	2	user_test_2	I found a bug in the stories	[]	resolved	{"agent": "TestBot"}	2026-02-04 12:21:34.846+05:30	2026-02-04 12:28:52.539+05:30
 a5b920cc-3067-46de-81f4-a6fd0d628160	2	user_test_2	I found a bug in the stories 1770189138897	[]	resolved	{"agent": "TestBot"}	2026-02-04 12:42:19.007+05:30	2026-02-04 12:53:14.204+05:30
 1421d8cb-2428-4c33-acc5-dd4d57eb9366	2	user_test_2	I found a bug in the stories	[]	resolved	{"agent": "TestBot"}	2026-02-04 12:41:24.241+05:30	2026-02-04 13:14:19.431+05:30
+d77c2375-040d-4ecc-acf6-84708c18bf8d	2	must	SDVSDV	[]	pending	{}	2026-03-02 10:14:30.221+05:30	2026-03-02 10:14:30.221+05:30
+787aa76b-2c7f-4d0e-85e9-b9626e4a0399	2	must	acac	[]	pending	{}	2026-03-02 10:18:25.118+05:30	2026-03-02 10:18:25.118+05:30
 \.
 
 
@@ -4090,6 +4343,7 @@ f93ff943-ea6f-40cc-a752-4f9b999963a8	a9cb5755-b4af-4486-8c99-c7d72e8d9e07	admin	
 --
 
 COPY public."CommentLikes" (id, "commentId", "userId", "createdAt", "updatedAt") FROM stdin;
+24	58	2	2026-02-27 12:39:01.336+05:30	2026-02-27 12:39:01.336+05:30
 \.
 
 
@@ -4098,6 +4352,7 @@ COPY public."CommentLikes" (id, "commentId", "userId", "createdAt", "updatedAt")
 --
 
 COPY public."Comments" (id, "postId", "userId", username, text, "createdAt", "likesCount", status, "reportedCount", parent_id, type, media_url, target_type, "updatedAt") FROM stdin;
+58	2092	2	must	wow	2026-02-27 11:30:49.38+05:30	1	pending	0	\N	text	\N	post	2026-02-27 12:39:01.34+05:30
 \.
 
 
@@ -4123,7 +4378,10 @@ COPY public."Conversations" (id, user1_id, user2_id, last_message_id, last_messa
 27	51	89	\N	🎬 Shared a reel	51	2026-02-16 17:33:02.141+05:30	0	\N	\N	cleared	[]	f	f	2026-02-16 17:33:02.138+05:30	2026-02-16 17:33:02.141+05:30
 25	51	104	\N	🎬 Shared a reel	51	2026-02-16 18:39:00.061+05:30	0	\N	\N	cleared	[]	f	f	2026-02-16 16:47:24.571+05:30	2026-02-16 18:39:00.062+05:30
 7	7	20	\N	I will find where you live and make you regret this.	7	2026-02-04 13:52:50.637+05:30	85	high	2026-02-04 13:52:50.636+05:30	cleared	["Harassment", "Physical Threat"]	f	f	2026-02-04 13:52:50.64+05:30	2026-02-17 12:08:38.769+05:30
-33	2	3	\N	hu	2	2026-02-26 14:44:28.431+05:30	0	\N	\N	cleared	[]	f	f	2026-02-26 14:44:28.425+05:30	2026-02-26 14:44:28.431+05:30
+36	2	7	\N	hi	2	2026-03-02 11:23:00.531+05:30	0	\N	\N	cleared	[]	f	f	2026-02-27 15:39:08.25+05:30	2026-03-02 11:23:00.532+05:30
+38	2	5	\N	hi	2	2026-03-02 11:23:05.934+05:30	0	\N	\N	cleared	[]	f	f	2026-02-28 11:50:36.619+05:30	2026-03-02 11:23:05.934+05:30
+39	2	8	\N	[STORY_REACTION] ❤️	2	2026-03-02 11:35:16.681+05:30	0	\N	\N	cleared	[]	f	f	2026-03-02 11:14:49.653+05:30	2026-03-02 11:35:16.681+05:30
+33	2	3	\N	lol	2	2026-03-02 14:07:06.734+05:30	0	\N	\N	cleared	[]	f	f	2026-02-26 14:44:28.425+05:30	2026-03-02 14:07:06.734+05:30
 \.
 
 
@@ -4150,6 +4408,10 @@ COPY public."FollowRequests" (id, "requesterId", "targetUserId", status, "create
 COPY public."Likes" (id, "userId", "postId", "createdAt", "updatedAt") FROM stdin;
 72	2	2084	2026-02-26 11:16:29.047+05:30	2026-02-26 11:16:29.047+05:30
 73	2	2080	2026-02-26 14:58:06.539+05:30	2026-02-26 14:58:06.539+05:30
+74	3	2109	2026-02-27 09:09:32.369+05:30	2026-02-27 09:09:32.369+05:30
+75	3	2108	2026-02-27 09:09:34.847+05:30	2026-02-27 09:09:34.847+05:30
+80	2	2092	2026-02-27 12:41:30.04+05:30	2026-02-27 12:41:30.04+05:30
+81	10	2092	2026-03-02 14:44:55.7+05:30	2026-03-02 14:44:55.7+05:30
 \.
 
 
@@ -4181,7 +4443,6 @@ bd2a742b-da2b-479d-b394-acadb70d0c03	1772084309680-421094899_opt.webp	1341218877
 7dfb3fad-c275-42ba-a587-91d1916de0eb	1772084711014-465892621_opt.mp4	ForBiggerFun.mp4	/api/v1/media/files/Jaadoe/posts/videos/1772084711014-465892621_opt.mp4	Jaadoe/posts/videos/1772084711014-465892621_opt.mp4	/api/v1/media/files/Jaadoe/posts/videos/1772084711014-465892621_opt.mp4	Jaadoe/temp/1772084711014-465892621.mp4	/api/v1/media/files/Jaadoe/thumbnails/1772084711014-465892621_thumb.jpg	video	video/mp4	9699124	1080	608	60.071	completed	\N	2026-02-26 11:15:11.067+05:30	2026-02-26 11:15:18.808+05:30
 5726363b-83a7-4f2b-9026-08c76a975a7d	1772084737294-165056922_opt.webp	134105993569015843.jpg.jpeg	/api/v1/media/files/Jaadoe/posts/images/1772084737294-165056922_opt.webp	Jaadoe/posts/images/1772084737294-165056922_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772084737294-165056922_opt.webp	Jaadoe/temp/1772084737294-165056922.jpeg	\N	image	image/webp	171262	1080	608	\N	completed	\N	2026-02-26 11:15:37.299+05:30	2026-02-26 11:15:37.791+05:30
 2b7db0e8-08ed-4d2b-a70c-96d4c73098a5	1772084739796-422193192_opt.webp	edited_1772084739071.png	/api/v1/media/files/Jaadoe/posts/images/1772084739796-422193192_opt.webp	Jaadoe/posts/images/1772084739796-422193192_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772084739796-422193192_opt.webp	Jaadoe/temp/1772084739796-422193192.png	\N	image	image/webp	124462	1080	2391	\N	completed	\N	2026-02-26 11:15:40.244+05:30	2026-02-26 11:15:40.966+05:30
-f363d914-b9a6-4a32-9ff6-3de519788a55	1772084768919-702333922_opt.webp	134114172277661611.jpg.jpeg	/api/v1/media/files/Jaadoe/posts/images/1772084768919-702333922_opt.webp	Jaadoe/posts/images/1772084768919-702333922_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772084768919-702333922_opt.webp	Jaadoe/temp/1772084768919-702333922.jpeg	\N	image	image/webp	103450	1080	608	\N	completed	\N	2026-02-26 11:16:08.93+05:30	2026-02-26 11:16:09.558+05:30
 160ad088-0b3d-415a-b3b2-e062e5724528	1772084806946-33478956_opt.webp	image 2.avif	/api/v1/media/files/Jaadoe/posts/images/1772084806946-33478956_opt.webp	Jaadoe/posts/images/1772084806946-33478956_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772084806946-33478956_opt.webp	Jaadoe/temp/1772084806946-33478956.avif	\N	image	image/webp	32484	500	750	\N	completed	\N	2026-02-26 11:16:46.948+05:30	2026-02-26 11:16:47.493+05:30
 a62aed47-259e-485d-9c48-9c3e65fccc2a	1772084840519-110697109_opt.webp	edited_1772084836774.png	/api/v1/media/files/Jaadoe/posts/images/1772084840519-110697109_opt.webp	Jaadoe/posts/images/1772084840519-110697109_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772084840519-110697109_opt.webp	Jaadoe/temp/1772084840519-110697109.png	\N	image	image/webp	124462	1080	2391	\N	completed	\N	2026-02-26 11:17:21.043+05:30	2026-02-26 11:17:21.764+05:30
 c01eef80-e337-4fae-8ddc-12d8926d5499	1772084842460-108894594_opt.webp	edited_1772084836774.png	/api/v1/media/files/Jaadoe/posts/images/1772084842460-108894594_opt.webp	Jaadoe/posts/images/1772084842460-108894594_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772084842460-108894594_opt.webp	Jaadoe/temp/1772084842460-108894594.png	\N	image	image/webp	124462	1080	2391	\N	completed	\N	2026-02-26 11:17:23.265+05:30	2026-02-26 11:17:24.185+05:30
@@ -4191,7 +4452,6 @@ a02941e8-7a29-4ddb-889a-4da8d789e632	1772084844423-656420074_opt.webp	image 4.jp
 af61b773-a24f-4da9-818f-73d1a1e43a65	1772084888572-807098151_opt.webp	134121887783155554.jpg.jpeg	/api/v1/media/files/Jaadoe/posts/images/1772084888572-807098151_opt.webp	Jaadoe/posts/images/1772084888572-807098151_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772084888572-807098151_opt.webp	Jaadoe/temp/1772084888572-807098151.jpeg	\N	image	image/webp	79690	1080	608	\N	completed	\N	2026-02-26 11:18:08.578+05:30	2026-02-26 11:18:09.358+05:30
 6b44b2ca-c8ed-4a41-af46-49afc019fe17	1772084908242-231424085_opt.mp4	2414068_Bible_Religion_3840x2160.mp4	/api/v1/media/files/Jaadoe/posts/videos/1772084908242-231424085_opt.mp4	Jaadoe/posts/videos/1772084908242-231424085_opt.mp4	/api/v1/media/files/Jaadoe/posts/videos/1772084908242-231424085_opt.mp4	Jaadoe/temp/1772084908242-231424085.mp4	/api/v1/media/files/Jaadoe/thumbnails/1772084908242-231424085_thumb.jpg	video	video/mp4	1475705	1080	608	15	completed	\N	2026-02-26 11:18:28.418+05:30	2026-02-26 11:18:32.663+05:30
 c5f7b654-0f2c-4d7e-a5ca-450bd47b2362	1772084935442-859308026_opt.webp	image 2.avif	/api/v1/media/files/Jaadoe/posts/images/1772084935442-859308026_opt.webp	Jaadoe/posts/images/1772084935442-859308026_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772084935442-859308026_opt.webp	Jaadoe/temp/1772084935442-859308026.avif	\N	image	image/webp	32484	500	750	\N	completed	\N	2026-02-26 11:18:55.444+05:30	2026-02-26 11:18:55.936+05:30
-11b87590-3e32-4a20-ba8f-5df3111a81d2	1772084948986-131149382_opt.webp	image 2.avif	/api/v1/media/files/Jaadoe/posts/images/1772084948986-131149382_opt.webp	Jaadoe/posts/images/1772084948986-131149382_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772084948986-131149382_opt.webp	Jaadoe/temp/1772084948986-131149382.avif	\N	image	image/webp	32484	500	750	\N	completed	\N	2026-02-26 11:19:08.99+05:30	2026-02-26 11:19:09.614+05:30
 606332f4-8865-465a-aae0-07dbcf763bf6	1772085006147-341610870_opt.webp	edited_1772085003394.png	/api/v1/media/files/Jaadoe/posts/images/1772085006147-341610870_opt.webp	Jaadoe/posts/images/1772085006147-341610870_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772085006147-341610870_opt.webp	Jaadoe/temp/1772085006147-341610870.png	\N	image	image/webp	124462	1080	2391	\N	completed	\N	2026-02-26 11:20:06.678+05:30	2026-02-26 11:20:07.454+05:30
 08f7c7d1-330f-4ac3-8480-aa7e024d053d	1772085050435-53870855_opt.webp	134121887783155554.jpg.jpeg	/api/v1/media/files/Jaadoe/posts/images/1772085050435-53870855_opt.webp	Jaadoe/posts/images/1772085050435-53870855_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772085050435-53870855_opt.webp	Jaadoe/temp/1772085050435-53870855.jpeg	\N	image	image/webp	79690	1080	608	\N	completed	\N	2026-02-26 11:20:50.441+05:30	2026-02-26 11:20:51.181+05:30
 8fce1600-03af-4362-a3de-db663d76b1d2	1772085094171-555382470_opt.webp	image 3.jpg.jpeg	/api/v1/media/files/Jaadoe/posts/images/1772085094171-555382470_opt.webp	Jaadoe/posts/images/1772085094171-555382470_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772085094171-555382470_opt.webp	Jaadoe/temp/1772085094171-555382470.jpeg	\N	image	image/webp	158390	1080	720	\N	completed	\N	2026-02-26 11:21:34.234+05:30	2026-02-26 11:21:34.973+05:30
@@ -4200,7 +4460,6 @@ d7300a9b-9b20-41cf-8178-90f75965b3c0	1772085132202-220817702_opt.webp	1341059935
 9e53a3cb-862c-444c-9429-8ad2710aaf17	1772085153529-636697416_opt.webp	image 1.avif	/api/v1/media/files/Jaadoe/posts/images/1772085153529-636697416_opt.webp	Jaadoe/posts/images/1772085153529-636697416_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772085153529-636697416_opt.webp	Jaadoe/temp/1772085153529-636697416.avif	\N	image	image/webp	31922	500	709	\N	completed	\N	2026-02-26 11:22:33.536+05:30	2026-02-26 11:22:34.002+05:30
 cfd276a5-e1d8-44a8-b370-84331e46b570	1772085179389-285577753_opt.mp4	2414068_Bible_Religion_3840x2160.mp4	/api/v1/media/files/Jaadoe/posts/videos/1772085179389-285577753_opt.mp4	Jaadoe/posts/videos/1772085179389-285577753_opt.mp4	/api/v1/media/files/Jaadoe/posts/videos/1772085179389-285577753_opt.mp4	Jaadoe/temp/1772085179389-285577753.mp4	/api/v1/media/files/Jaadoe/thumbnails/1772085179389-285577753_thumb.jpg	video	video/mp4	1475705	1080	608	15	completed	\N	2026-02-26 11:22:59.552+05:30	2026-02-26 11:23:03.83+05:30
 deb55633-06ea-4237-a3e0-dddd74ffef88	1772085203876-53702342_opt.webp	134121887783155554.jpg.jpeg	/api/v1/media/files/Jaadoe/posts/images/1772085203876-53702342_opt.webp	Jaadoe/posts/images/1772085203876-53702342_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772085203876-53702342_opt.webp	Jaadoe/temp/1772085203876-53702342.jpeg	\N	image	image/webp	79690	1080	608	\N	completed	\N	2026-02-26 11:23:23.882+05:30	2026-02-26 11:23:24.55+05:30
-80c41c4d-37f9-4202-a66d-4bbeb3cf8b6b	1772085219870-446592595_opt.webp	134121887783155554.jpg.jpeg	/api/v1/media/files/Jaadoe/posts/images/1772085219870-446592595_opt.webp	Jaadoe/posts/images/1772085219870-446592595_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772085219870-446592595_opt.webp	Jaadoe/temp/1772085219870-446592595.jpeg	\N	image	image/webp	79690	1080	608	\N	completed	\N	2026-02-26 11:23:39.878+05:30	2026-02-26 11:23:40.464+05:30
 51ce85dc-479d-4351-8fba-1574407b6328	1772085625148-538882489_opt.webp	edited_1772085621522.png	/api/v1/media/files/Jaadoe/posts/images/1772085625148-538882489_opt.webp	Jaadoe/posts/images/1772085625148-538882489_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772085625148-538882489_opt.webp	Jaadoe/temp/1772085625148-538882489.png	\N	image	image/webp	124952	1080	2391	\N	completed	\N	2026-02-26 11:30:25.633+05:30	2026-02-26 11:30:26.552+05:30
 c9266c09-dec7-4fd0-93d4-2585ed9c81b6	1772085682431-43632619_opt.webp	edited_1772085680589.png	/api/v1/media/files/Jaadoe/posts/images/1772085682431-43632619_opt.webp	Jaadoe/posts/images/1772085682431-43632619_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772085682431-43632619_opt.webp	Jaadoe/temp/1772085682431-43632619.png	\N	image	image/webp	124462	1080	2391	\N	completed	\N	2026-02-26 11:31:22.834+05:30	2026-02-26 11:31:23.581+05:30
 b71fcac1-2e38-41b8-ae67-0d2ca4389d9a	1772085827771-206653084_opt.webp	edited_1772085823574.png	/api/v1/media/files/Jaadoe/posts/images/1772085827771-206653084_opt.webp	Jaadoe/posts/images/1772085827771-206653084_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772085827771-206653084_opt.webp	Jaadoe/temp/1772085827771-206653084.png	\N	image	image/webp	125374	1080	2391	\N	completed	\N	2026-02-26 11:33:48.252+05:30	2026-02-26 11:33:48.919+05:30
@@ -4216,6 +4475,10 @@ eaec02f1-3e7d-4211-a6ae-9ebf73f2a20a	eaec02f1-3e7d-4211-a6ae-9ebf73f2a20a.png	ed
 16204d10-8d5f-4956-9c89-1f9e1c7c6fe7	16204d10-8d5f-4956-9c89-1f9e1c7c6fe7.mp4	processed_1772093015143.mp4	/api/v1/media/files/Jaadoe/temp/16204d10-8d5f-4956-9c89-1f9e1c7c6fe7.mp4	Jaadoe/temp/16204d10-8d5f-4956-9c89-1f9e1c7c6fe7.mp4	\N	Jaadoe/temp/16204d10-8d5f-4956-9c89-1f9e1c7c6fe7.mp4	\N	video	video/mp4	\N	\N	\N	\N	failed	@smithy/node-http-handler - the request socket did not establish a connection with the server within the configured timeout of 5000 ms.	2026-02-26 13:33:44.6+05:30	2026-02-26 13:34:02.059+05:30
 f9e54e2e-9a76-44ca-964d-72e7e8fde7a3	f9e54e2e-9a76-44ca-964d-72e7e8fde7a3.png	edited_1772093103766.png	/api/v1/media/files/Jaadoe/temp/f9e54e2e-9a76-44ca-964d-72e7e8fde7a3.png	Jaadoe/temp/f9e54e2e-9a76-44ca-964d-72e7e8fde7a3.png	\N	Jaadoe/temp/f9e54e2e-9a76-44ca-964d-72e7e8fde7a3.png	\N	image	image/png	\N	\N	\N	\N	failed	@smithy/node-http-handler - the request socket did not establish a connection with the server within the configured timeout of 5000 ms.	2026-02-26 13:35:05.279+05:30	2026-02-26 13:35:21.456+05:30
 6a2ce605-9d20-40ec-830e-abb6702e2744	6a2ce605-9d20-40ec-830e-abb6702e2744.png	edited_1772093364978.png	/api/v1/media/files/Jaadoe/temp/6a2ce605-9d20-40ec-830e-abb6702e2744.png	Jaadoe/temp/6a2ce605-9d20-40ec-830e-abb6702e2744.png	\N	Jaadoe/temp/6a2ce605-9d20-40ec-830e-abb6702e2744.png	\N	image	image/png	\N	\N	\N	\N	failed	@smithy/node-http-handler - the request socket did not establish a connection with the server within the configured timeout of 5000 ms.	2026-02-26 13:39:27.57+05:30	2026-02-26 13:39:48.472+05:30
+e7140b42-31f8-4781-825f-b6cb85844078	1772425504488-766410392_opt.webp	images.jpg	/api/v1/media/files/Jaadoe/posts/images/1772425504488-766410392_opt.webp	Jaadoe/posts/images/1772425504488-766410392_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772425504488-766410392_opt.webp	Jaadoe/temp/1772425504488-766410392.jpg	\N	image	image/webp	6164	201	251	\N	completed	\N	2026-03-02 09:55:04.493+05:30	2026-03-02 09:55:04.931+05:30
+7d96bb4f-5bd3-4d29-8cdc-6e8f693ed6d1	1772429202606-621059287_opt.webp	pexels-a2pro-3422964.jpg	/api/v1/media/files/Jaadoe/posts/images/1772429202606-621059287_opt.webp	Jaadoe/posts/images/1772429202606-621059287_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772429202606-621059287_opt.webp	Jaadoe/temp/1772429202606-621059287.jpg	\N	image	image/webp	25412	1080	608	\N	completed	\N	2026-03-02 10:56:42.898+05:30	2026-03-02 10:56:43.397+05:30
+82fb21a2-2581-427e-84ae-7becf6d732da	1772429781080-84620795_opt.webp	Home-2.png	/api/v1/media/files/Jaadoe/posts/images/1772429781080-84620795_opt.webp	Jaadoe/posts/images/1772429781080-84620795_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772429781080-84620795_opt.webp	Jaadoe/temp/1772429781080-84620795.png	\N	image	image/webp	42264	1000	1000	\N	completed	\N	2026-03-02 11:06:21.35+05:30	2026-03-02 11:06:21.863+05:30
+9487c6fb-74bf-4c25-9849-c8c3844fe7aa	1772434501630-533627449_opt.webp	5825612.jpg	/api/v1/media/files/Jaadoe/posts/images/1772434501630-533627449_opt.webp	Jaadoe/posts/images/1772434501630-533627449_opt.webp	/api/v1/media/files/Jaadoe/posts/images/1772434501630-533627449_opt.webp	Jaadoe/temp/1772434501630-533627449.jpg	\N	image	image/webp	88062	1080	720	\N	completed	\N	2026-03-02 12:25:04.108+05:30	2026-03-02 12:25:05.138+05:30
 \.
 
 
@@ -4225,8 +4488,35 @@ f9e54e2e-9a76-44ca-964d-72e7e8fde7a3	f9e54e2e-9a76-44ca-964d-72e7e8fde7a3.png	ed
 
 COPY public."Messages" (id, conversation_id, sender_id, type, content, media_url, reply_to_story_id, "isSeen", flagged, "createdAt", "updatedAt", call_type) FROM stdin;
 146	33	2	text	hu	\N	\N	t	f	2026-02-26 14:44:28.43+05:30	2026-02-26 14:53:54.452+05:30	\N
+148	33	2	text	reate stream error: AxiosError: Network Error     at XMLHttpRequest.handleError (axios.js?v=6b176535:1669:19)     at Axios.request (axios.js?v=6b176535:2255:41)     at async createStream (LiveProvider.jsx:29:25)     at async handleSubmit (LiveCreateModal.jsx:36:13) createStream @ LiveProvider.jsx:37 await in createStream handleSubmit @ LiveCreateModal.jsx:36 executeDispatch @ react-dom_client.js?v=6b176535:13622 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 processDispatchQueue @ react-dom_client.js?v=6b176535:13658 (anonymous) @ react-dom_client.js?v=6b176535:14071 batchedUpdates$1 @ react-dom_client.js?v=6b176535:2626 dispatchEventForPluginEventSystem @ react-dom_client.js?v=6b176535:13763 dispatchEvent @ react-dom_client.js?v=6b176535:16784 dispatchDiscreteEvent @ react-dom_client.js?v=6b176535:16765Understand this error LiveCreateModal.jsx:39 Failed to create stream AxiosError: Network Error     at XMLHttpRequest.handleError (axios.js?v=6b176535:1669:19)     at Axios.request (axios.js?v=6b176535:2255:41)     at async createStream (LiveProvider.jsx:29:25)     at async handleSubmit (LiveCreateModal.jsx:36:13) handleSubmit @ LiveCreateModal.jsx:39 await in handleSubmit executeDispatch @ react-dom_client.js?v=6b176535:13622 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 processDispatchQueue @ react-dom_client.js?v=6b176535:13658 (anonymous) @ react-dom_client.js?v=6b176535:14071 batchedUpdates$1 @ react-dom_client.js?v=6b176535:2626 dispatchEventForPluginEventSystem @ react-dom_client.js?v=6b176535:13763 dispatchEvent @ react-dom_client.js?v=6b176535:16784 dispatchDiscreteEvent @ react-dom_client.js?v=6b176535:16765Understand this error LiveProvider.jsx:29  POST http://localhost:5000/api/v1/live/create net::ERR_CONNECTION_REFUSED'	\N	\N	t	f	2026-02-27 11:13:05.62+05:30	2026-02-27 11:13:08.885+05:30	\N
 10	7	7	text	You think you can just block me and it is over?	\N	\N	f	f	2026-02-04 13:52:50.657+05:30	2026-02-04 13:52:50.657+05:30	\N
 11	7	7	text	I will find where you live and make you regret this.	\N	\N	f	t	2026-02-04 13:52:50.657+05:30	2026-02-04 13:52:50.657+05:30	\N
+150	33	2	text	useSocket.js:18 [useSocket] Connected to socket, ID: T6XYq44chMEs0DpVAADD, joining room user:2 LiveProvider.jsx:38 Create stream error: AxiosError: Network Error     at async createStream (LiveProvider.jsx:30:25)     at async handleSubmit (LiveCreateModal.jsx:36:13) LiveCreateModal.jsx:39 Failed to create stream AxiosError: Network Error     at async createStream (LiveProvider.jsx:30:25)     at async handleSubmit (LiveCreateModal.jsx:36:13) LiveProvider.jsx:30   POST https://192.168.1.100:5000/api/v1/live/create net::ERR_SSL_PROTOCOL_ERROR useMessages.js:58 [useMessages] Fetching messages for 33... useMessages.js:63 [useMessages] Fetched 3 messages for 33 useMessages.js:58 [useMessages] Fetching messages for 33... useMessages.js:63 [useMessages] Fetched 3 messages for 33 useMessages.js:290 [useMessages] Committing temp-1772171407414 to server... Content: LiveProvider.jsx:38 Create stream error: AxiosError: Network Error     at async createStream (LiveProvider.jsx:30:25)     at async handleSubmit (LiveCreateModal.jsx:36:13)  LiveCreateModal.jsx:39 Failed to create stream AxiosError: Network Error     at async createStream (LiveProvider.jsx:30:25)     at async handleSubmit (LiveCreateModal.jsx:36:13) LiveProvider.jsx:30   POST https://192.168.1.100:5000/api/v1/live/create net::ERR_SSL_PROTOCOL_ERROR ﻿ Media: undefined useMessages.js:302 [useMessages] temp-1772171407414 committed result:  {flagged: false, id: 149, conversationId: 33, senderId: 2, content: 'LiveProvider.jsx:38 Create stream error: AxiosErro…/api/v1/live/create net::ERR_SSL_PROTOCOL_ERROR ﻿', …} useMessages.js:313 [useMessages] Replacing temp temp-1772171407414 with server msg 149 useMessages.js:313 [useMessages] Replacing temp temp-1772171407414 with server msg 149 ﻿  Press ctrl i to turn on code suggestions. Press ctrl x to disable code suggestions. ctrl i  to turn on code suggestions. Don't show again NEW	\N	\N	t	f	2026-02-27 11:20:19.812+05:30	2026-02-27 11:20:19.826+05:30	\N
+152	33	2	text	LiveBroadcastScreen.jsx:40 Mixed Content: The page at 'https://192.168.1.100:5175/feed' was loaded over HTTPS, but attempted to connect to the insecure WebSocket endpoint 'ws://192.168.1.100:5011/socket.io/?streamId=6616e80a-16c6-480d-97c9-ac0b0cb57a75&EIO=4&transport=websocket&sid=ImVnsfroXnx2zis8AADo'. This request has been blocked; this endpoint must be available over WSS.	\N	\N	t	f	2026-02-27 11:30:15.055+05:30	2026-02-27 11:52:41.936+05:30	\N
+158	36	2	text	https://jaadoe.app/post/2092	\N	\N	f	f	2026-02-27 15:51:32.965+05:30	2026-02-27 15:51:32.965+05:30	\N
+160	36	2	text	https://jaadoe.app/post/2082	\N	\N	f	f	2026-02-28 10:16:34.844+05:30	2026-02-28 10:16:34.844+05:30	\N
+166	38	2	text	dhnbdz	\N	\N	f	f	2026-02-28 11:51:20.135+05:30	2026-02-28 11:51:20.135+05:30	\N
+168	38	2	sticker		https://cdn-icons-png.flaticon.com/512/833/833472.png	\N	f	f	2026-02-28 12:09:16.265+05:30	2026-02-28 12:09:16.265+05:30	\N
+170	33	2	text	https://jaadoe.app/reel/62	\N	\N	t	f	2026-02-28 15:39:32.352+05:30	2026-03-02 09:17:30.841+05:30	\N
+172	33	3	text	hello\\	\N	\N	t	f	2026-03-02 09:17:34.864+05:30	2026-03-02 09:24:55.074+05:30	\N
+175	39	2	text	[STORY_REACTION] ❤️	\N	\N	t	f	2026-03-02 11:22:37.717+05:30	2026-03-02 11:22:37.75+05:30	\N
+178	39	2	text	[STORY_REACTION] 😢	\N	\N	t	f	2026-03-02 11:34:59.181+05:30	2026-03-02 11:34:59.2+05:30	\N
+180	33	2	text	lol	\N	\N	f	f	2026-03-02 14:07:06.732+05:30	2026-03-02 14:07:06.732+05:30	\N
+147	33	2	call_history	0:14	\N	\N	t	f	2026-02-27 10:48:33.202+05:30	2026-02-27 10:49:18.733+05:30	video
+149	33	2	text	LiveProvider.jsx:38 Create stream error: AxiosError: Network Error     at async createStream (LiveProvider.jsx:30:25)     at async handleSubmit (LiveCreateModal.jsx:36:13)  LiveCreateModal.jsx:39 Failed to create stream AxiosError: Network Error     at async createStream (LiveProvider.jsx:30:25)     at async handleSubmit (LiveCreateModal.jsx:36:13) LiveProvider.jsx:30   POST https://192.168.1.100:5000/api/v1/live/create net::ERR_SSL_PROTOCOL_ERROR ﻿	\N	\N	t	f	2026-02-27 11:20:06.013+05:30	2026-02-27 11:20:06.028+05:30	\N
+151	33	2	text	Create stream error: AxiosError: Network Error     at XMLHttpRequest.handleError (axios.js?v=6b176535:1669:19)     at Axios.request (axios.js?v=6b176535:2255:41)     at async createStream (LiveProvider.jsx:30:25)     at async handleSubmit (LiveCreateModal.jsx:36:13) createStream @ LiveProvider.jsx:38 await in createStream handleSubmit @ LiveCreateModal.jsx:36 executeDispatch @ react-dom_client.js?v=6b176535:13622 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 processDispatchQueue @ react-dom_client.js?v=6b176535:13658 (anonymous) @ react-dom_client.js?v=6b176535:14071 batchedUpdates$1 @ react-dom_client.js?v=6b176535:2626 dispatchEventForPluginEventSystem @ react-dom_client.js?v=6b176535:13763 dispatchEvent @ react-dom_client.js?v=6b176535:16784 dispatchDiscreteEvent @ react-dom_client.js?v=6b176535:16765 <form> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 LiveCreateModal @ LiveCreateModal.jsx:68 react_stack_bottom_frame @ react-dom_client.js?v=6b176535:18509 renderWithHooksAgain @ react-dom_client.js?v=6b176535:5729 renderWithHooks @ react-dom_client.js?v=6b176535:5665 updateFunctionComponent @ react-dom_client.js?v=6b176535:7475 beginWork @ react-dom_client.js?v=6b176535:8525 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 performUnitOfWork @ react-dom_client.js?v=6b176535:12561 workLoopSync @ react-dom_client.js?v=6b176535:12424 renderRootSync @ react-dom_client.js?v=6b176535:12408 performWorkOnRoot @ react-dom_client.js?v=6b176535:11766 performSyncWorkOnRoot @ react-dom_client.js?v=6b176535:13517 flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=6b176535:13414 processRootScheduleInMicrotask @ react-dom_client.js?v=6b176535:13437 (anonymous) @ react-dom_client.js?v=6b176535:13531 <LiveCreateModal> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 Sidebar @ Sidebar.jsx:443 react_stack_bottom_frame @ react-dom_client.js?v=6b176535:18509 renderWithHooksAgain @ react-dom_client.js?v=6b176535:5729 renderWithHooks @ react-dom_client.js?v=6b176535:5665 updateFunctionComponent @ react-dom_client.js?v=6b176535:7475 beginWork @ react-dom_client.js?v=6b176535:8525 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 performUnitOfWork @ react-dom_client.js?v=6b176535:12561 workLoopSync @ react-dom_client.js?v=6b176535:12424 renderRootSync @ react-dom_client.js?v=6b176535:12408 performWorkOnRoot @ react-dom_client.js?v=6b176535:11766 performSyncWorkOnRoot @ react-dom_client.js?v=6b176535:13517 flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=6b176535:13414 processRootScheduleInMicrotask @ react-dom_client.js?v=6b176535:13437 (anonymous) @ react-dom_client.js?v=6b176535:13531 <Sidebar> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 Layout @ Layout.jsx:17 react_stack_bottom_frame @ react-dom_client.js?v=6b176535:18509 renderWithHooksAgain @ react-dom_client.js?v=6b176535:5729 renderWithHooks @ react-dom_client.js?v=6b176535:5665 updateFunctionComponent @ react-dom_client.js?v=6b176535:7475 beginWork @ react-dom_client.js?v=6b176535:8525 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 performUnitOfWork @ react-dom_client.js?v=6b176535:12561 workLoopSync @ react-dom_client.js?v=6b176535:12424 renderRootSync @ react-dom_client.js?v=6b176535:12408 performWorkOnRoot @ react-dom_client.js?v=6b176535:11766 performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=6b176535:13505 performWorkUntilDeadline @ react-dom_client.js?v=6b176535:36 <Layout> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 App @ App.jsx:121 react_stack_bottom_frame @ react-dom_client.js?v=6b176535:18509 renderWithHooksAgain @ react-dom_client.js?v=6b176535:5729 renderWithHooks @ react-dom_client.js?v=6b176535:5665 updateFunctionComponent @ react-dom_client.js?v=6b176535:7475 beginWork @ react-dom_client.js?v=6b176535:8525 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 performUnitOfWork @ react-dom_client.js?v=6b176535:12561 workLoopSync @ react-dom_client.js?v=6b176535:12424 renderRootSync @ react-dom_client.js?v=6b176535:12408 performWorkOnRoot @ react-dom_client.js?v=6b176535:11766 performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=6b176535:13505 performWorkUntilDeadline @ react-dom_client.js?v=6b176535:36 <App> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 (anonymous) @ main.jsx:18Understand this error LiveCreateModal.jsx:39 Failed to create stream AxiosError: Network Error     at XMLHttpRequest.handleError (axios.js?v=6b176535:1669:19)     at Axios.request (axios.js?v=6b176535:2255:41)     at async createStream (LiveProvider.jsx:30:25)     at async handleSubmit (LiveCreateModal.jsx:36:13) handleSubmit @ LiveCreateModal.jsx:39 await in handleSubmit executeDispatch @ react-dom_client.js?v=6b176535:13622 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 processDispatchQueue @ react-dom_client.js?v=6b176535:13658 (anonymous) @ react-dom_client.js?v=6b176535:14071 batchedUpdates$1 @ react-dom_client.js?v=6b176535:2626 dispatchEventForPluginEventSystem @ react-dom_client.js?v=6b176535:13763 dispatchEvent @ react-dom_client.js?v=6b176535:16784 dispatchDiscreteEvent @ react-dom_client.js?v=6b176535:16765 <form> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 LiveCreateModal @ LiveCreateModal.jsx:68 react_stack_bottom_frame @ react-dom_client.js?v=6b176535:18509 renderWithHooksAgain @ react-dom_client.js?v=6b176535:5729 renderWithHooks @ react-dom_client.js?v=6b176535:5665 updateFunctionComponent @ react-dom_client.js?v=6b176535:7475 beginWork @ react-dom_client.js?v=6b176535:8525 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 performUnitOfWork @ react-dom_client.js?v=6b176535:12561 workLoopSync @ react-dom_client.js?v=6b176535:12424 renderRootSync @ react-dom_client.js?v=6b176535:12408 performWorkOnRoot @ react-dom_client.js?v=6b176535:11766 performSyncWorkOnRoot @ react-dom_client.js?v=6b176535:13517 flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=6b176535:13414 processRootScheduleInMicrotask @ react-dom_client.js?v=6b176535:13437 (anonymous) @ react-dom_client.js?v=6b176535:13531 <LiveCreateModal> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 Sidebar @ Sidebar.jsx:443 react_stack_bottom_frame @ react-dom_client.js?v=6b176535:18509 renderWithHooksAgain @ react-dom_client.js?v=6b176535:5729 renderWithHooks @ react-dom_client.js?v=6b176535:5665 updateFunctionComponent @ react-dom_client.js?v=6b176535:7475 beginWork @ react-dom_client.js?v=6b176535:8525 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 performUnitOfWork @ react-dom_client.js?v=6b176535:12561 workLoopSync @ react-dom_client.js?v=6b176535:12424 renderRootSync @ react-dom_client.js?v=6b176535:12408 performWorkOnRoot @ react-dom_client.js?v=6b176535:11766 performSyncWorkOnRoot @ react-dom_client.js?v=6b176535:13517 flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=6b176535:13414 processRootScheduleInMicrotask @ react-dom_client.js?v=6b176535:13437 (anonymous) @ react-dom_client.js?v=6b176535:13531 <Sidebar> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 Layout @ Layout.jsx:17 react_stack_bottom_frame @ react-dom_client.js?v=6b176535:18509 renderWithHooksAgain @ react-dom_client.js?v=6b176535:5729 renderWithHooks @ react-dom_client.js?v=6b176535:5665 updateFunctionComponent @ react-dom_client.js?v=6b176535:7475 beginWork @ react-dom_client.js?v=6b176535:8525 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 performUnitOfWork @ react-dom_client.js?v=6b176535:12561 workLoopSync @ react-dom_client.js?v=6b176535:12424 renderRootSync @ react-dom_client.js?v=6b176535:12408 performWorkOnRoot @ react-dom_client.js?v=6b176535:11766 performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=6b176535:13505 performWorkUntilDeadline @ react-dom_client.js?v=6b176535:36 <Layout> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 App @ App.jsx:121 react_stack_bottom_frame @ react-dom_client.js?v=6b176535:18509 renderWithHooksAgain @ react-dom_client.js?v=6b176535:5729 renderWithHooks @ react-dom_client.js?v=6b176535:5665 updateFunctionComponent @ react-dom_client.js?v=6b176535:7475 beginWork @ react-dom_client.js?v=6b176535:8525 runWithFiberInDEV @ react-dom_client.js?v=6b176535:997 performUnitOfWork @ react-dom_client.js?v=6b176535:12561 workLoopSync @ react-dom_client.js?v=6b176535:12424 renderRootSync @ react-dom_client.js?v=6b176535:12408 performWorkOnRoot @ react-dom_client.js?v=6b176535:11766 performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=6b176535:13505 performWorkUntilDeadline @ react-dom_client.js?v=6b176535:36 <App> exports.jsxDEV @ react_jsx-dev-runtime.js?v=6b176535:247 (anonymous) @ main.jsx:18Understand this error LiveProvider.jsx:30  POST https://192.168.1.100:5000/api/v1/live/create net::ERR_SSL_PROTOCOL_ERROR	\N	\N	t	f	2026-02-27 11:20:43.053+05:30	2026-02-27 11:20:43.067+05:30	\N
+153	33	2	text	https://192.168.1.100:5175/feed	\N	\N	t	f	2026-02-27 12:47:11.778+05:30	2026-02-27 15:04:06.801+05:30	\N
+157	36	2	text	https://jaadoe.app/post/2092	\N	\N	f	f	2026-02-27 15:39:08.254+05:30	2026-02-27 15:39:08.254+05:30	\N
+159	33	2	text	https://jaadoe.app/post/2092	\N	\N	t	f	2026-02-27 15:54:11.058+05:30	2026-02-27 16:07:01.109+05:30	\N
+165	38	2	text	hu	\N	\N	f	f	2026-02-28 11:50:36.62+05:30	2026-02-28 11:50:36.62+05:30	\N
+167	38	2	sticker	Sent a sticker	https://cdn-icons-png.flaticon.com/512/2589/2589175.png	\N	f	f	2026-02-28 12:07:35.467+05:30	2026-02-28 12:07:35.467+05:30	\N
+169	38	2	text	❤️	\N	\N	f	f	2026-02-28 12:11:26.894+05:30	2026-02-28 12:11:26.894+05:30	\N
+171	38	2	text	https://jaadoe.app/reel/61	\N	\N	f	f	2026-02-28 15:40:03.638+05:30	2026-02-28 15:40:03.638+05:30	\N
+174	36	2	text	hi	\N	\N	f	f	2026-03-02 11:17:13.981+05:30	2026-03-02 11:17:13.981+05:30	\N
+173	39	2	text	[STORY_REACTION] 🔥	\N	\N	t	f	2026-03-02 11:16:54.297+05:30	2026-03-02 11:17:28.661+05:30	\N
+176	36	2	text	hi	\N	\N	f	f	2026-03-02 11:23:00.53+05:30	2026-03-02 11:23:00.53+05:30	\N
+177	38	2	text	hi	\N	\N	f	f	2026-03-02 11:23:05.93+05:30	2026-03-02 11:23:05.93+05:30	\N
+179	39	2	text	[STORY_REACTION] ❤️	\N	\N	t	f	2026-03-02 11:35:16.679+05:30	2026-03-02 11:35:16.694+05:30	\N
 \.
 
 
@@ -4330,9 +4620,12 @@ COPY public."PostReports" (id, "postId", "userId", reason, details, status, "cre
 
 COPY public."Posts" (id, "userId", username, caption, "mediaUrl", "thumbnailUrl", "mediaType", "likesCount", "commentsCount", "viewsCount", "hideLikes", "commentsDisabled", "isHidden", "createdAt", "updatedAt") FROM stdin;
 2080	2	must	Car\n#car	/api/v1/media/files/Jaadoe/temp/1772083086068-504330130.mp4	\N	VIDEO	1	0	0	f	f	f	2026-02-26 10:48:13.276+05:30	2026-02-26 14:58:06.545+05:30
+2109	7	sarfarz	sarfaraz post 6\n #fashion 	/api/v1/media/files/Jaadoe/posts/images/1772085203876-53702342_opt.webp	\N	IMAGE	1	0	0	f	f	f	2026-02-26 11:23:23.913+05:30	2026-02-27 09:09:32.374+05:30
+2108	7	sarfarz	sarfaraz video post 1 #fashion 	/api/v1/media/files/Jaadoe/posts/videos/1772085179389-285577753_opt.mp4	/api/v1/media/files/Jaadoe/thumbnails/1772085179389-285577753_thumb.jpg	VIDEO	1	0	0	f	f	f	2026-02-26 11:22:59.587+05:30	2026-02-27 09:09:34.848+05:30
+2083	2	must	Post#1	/api/v1/media/files/Jaadoe/temp/1772083311074-485773742.jpg	\N	IMAGE	0	0	0	f	f	f	2026-02-26 10:51:51.559+05:30	2026-02-27 10:40:53.008+05:30
+2092	3	akbar	akbar post 9 #nature 	/api/v1/media/files/Jaadoe/posts/images/1772084001350-613838150_opt.webp	\N	IMAGE	2	1	0	f	f	f	2026-02-26 11:03:21.406+05:30	2026-03-02 14:44:55.703+05:30
 2081	2	must	test video1	/api/v1/media/files/Jaadoe/temp/1772083129771-421848745.mp4	\N	VIDEO	0	0	0	f	f	f	2026-02-26 10:48:51.812+05:30	2026-02-26 10:48:51.812+05:30
 2082	3	akbar	akbar post 1 #nature 	/api/v1/media/files/Jaadoe/temp/1772083151740-81295609.jpeg	\N	IMAGE	0	0	0	f	f	f	2026-02-26 10:49:11.778+05:30	2026-02-26 10:49:11.778+05:30
-2083	2	must	Post#1	/api/v1/media/files/Jaadoe/temp/1772083311074-485773742.jpg	\N	IMAGE	0	0	0	f	f	f	2026-02-26 10:51:51.559+05:30	2026-02-26 10:51:51.56+05:30
 2085	3	akbar	akbar post 2 #nature 	/api/v1/media/files/Jaadoe/posts/images/1772083690063-543250713_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 10:58:10.114+05:30	2026-02-26 10:58:10.761+05:30
 2086	3	akbar	akbar post 3 #nature 	/api/v1/media/files/Jaadoe/posts/images/1772083716675-838098669_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 10:58:36.71+05:30	2026-02-26 10:58:37.28+05:30
 2087	3	akbar	akbar post 4 #nature 	/api/v1/media/files/Jaadoe/posts/images/1772083857891-839185541_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:00:57.933+05:30	2026-02-26 11:00:58.808+05:30
@@ -4340,7 +4633,6 @@ COPY public."Posts" (id, "userId", username, caption, "mediaUrl", "thumbnailUrl"
 2089	3	akbar	akbar post 6 #nature 	/api/v1/media/files/Jaadoe/posts/images/1772083903715-137274937_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:01:43.752+05:30	2026-02-26 11:01:44.511+05:30
 2090	3	akbar	akbar video post 1 #nature 	/api/v1/media/files/Jaadoe/posts/videos/1772083946261-787236779_opt.mp4	/api/v1/media/files/Jaadoe/thumbnails/1772083946261-787236779_thumb.jpg	VIDEO	0	0	0	f	f	f	2026-02-26 11:02:26.361+05:30	2026-02-26 11:02:33.441+05:30
 2091	3	akbar	akbar post 8 #nature 	/api/v1/media/files/Jaadoe/posts/images/1772083980441-787963645_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:03:00.478+05:30	2026-02-26 11:03:01.228+05:30
-2092	3	akbar	akbar post 9 #nature 	/api/v1/media/files/Jaadoe/posts/images/1772084001350-613838150_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:03:21.406+05:30	2026-02-26 11:03:22.096+05:30
 2093	5	farhan	farhan post 1 #fitness 	/api/v1/media/files/Jaadoe/posts/images/1772084140775-236506375_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:05:40.942+05:30	2026-02-26 11:05:41.49+05:30
 2094	5	farhan	farhan post 2 #fitness 	/api/v1/media/files/Jaadoe/posts/images/1772084224261-370391432_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:07:04.303+05:30	2026-02-26 11:07:04.795+05:30
 2095	5	farhan	farhan post 3 #fitness 	/api/v1/media/files/Jaadoe/posts/images/1772084309680-421094899_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:08:29.735+05:30	2026-02-26 11:08:30.214+05:30
@@ -4357,8 +4649,6 @@ COPY public."Posts" (id, "userId", username, caption, "mediaUrl", "thumbnailUrl"
 2105	7	sarfarz	sarfaraz post 2 #fashion 	/api/v1/media/files/Jaadoe/posts/images/1772085108823-577876933_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:21:48.869+05:30	2026-02-26 11:21:49.4+05:30
 2106	7	sarfarz	sarfaraz post 3 #fashion 	/api/v1/media/files/Jaadoe/posts/images/1772085132202-220817702_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:22:12.241+05:30	2026-02-26 11:22:12.762+05:30
 2107	7	sarfarz	sarfaraz post 4 #fashion 	/api/v1/media/files/Jaadoe/posts/images/1772085153529-636697416_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:22:33.58+05:30	2026-02-26 11:22:34.014+05:30
-2108	7	sarfarz	sarfaraz video post 1 #fashion 	/api/v1/media/files/Jaadoe/posts/videos/1772085179389-285577753_opt.mp4	/api/v1/media/files/Jaadoe/thumbnails/1772085179389-285577753_thumb.jpg	VIDEO	0	0	0	f	f	f	2026-02-26 11:22:59.587+05:30	2026-02-26 11:23:03.836+05:30
-2109	7	sarfarz	sarfaraz post 6\n #fashion 	/api/v1/media/files/Jaadoe/posts/images/1772085203876-53702342_opt.webp	\N	IMAGE	0	0	0	f	f	f	2026-02-26 11:23:23.913+05:30	2026-02-26 11:23:24.56+05:30
 \.
 
 
@@ -4367,6 +4657,7 @@ COPY public."Posts" (id, "userId", username, caption, "mediaUrl", "thumbnailUrl"
 --
 
 COPY public."ReelBookmarks" (id, "reelId", "userId", "createdAt", "updatedAt") FROM stdin;
+9	62	2	2026-02-28 15:37:44.55+05:30	2026-02-28 15:37:44.55+05:30
 \.
 
 
@@ -4446,8 +4737,8 @@ COPY public."Roles" (id, name, permissions, description, "createdAt", "updatedAt
 --
 
 COPY public."SavedPosts" (id, "userId", "postId", "createdAt", "updatedAt") FROM stdin;
-17	2	2084	2026-02-26 11:35:16.492+05:30	2026-02-26 11:35:16.492+05:30
 19	3	2109	2026-02-26 15:26:05.174+05:30	2026-02-26 15:26:05.174+05:30
+22	2	2099	2026-02-27 13:25:59.181+05:30	2026-02-27 13:25:59.181+05:30
 \.
 
 
@@ -4456,6 +4747,8 @@ COPY public."SavedPosts" (id, "userId", "postId", "createdAt", "updatedAt") FROM
 --
 
 COPY public."SearchIndices" (id, type, "referenceId", content, metadata, "createdAt", "updatedAt") FROM stdin;
+440	USER	8	Anu1	{"fullName": "Anu1"}	2026-03-02 11:05:14.667+05:30	2026-03-02 11:05:14.667+05:30
+441	USER	9	irfan1	{"fullName": "irfan1"}	2026-03-02 12:09:12.722+05:30	2026-03-02 12:09:12.722+05:30
 54	POST	135	dummy 1	{"mediaUrl": "/uploads/1769586008217-332657727.jpg"}	2026-01-28 13:10:08.478+05:30	2026-01-28 13:10:08.478+05:30
 55	POST	136	dummy 2	{"mediaUrl": "/uploads/1769586073828-4574796.jpg"}	2026-01-28 13:11:14.018+05:30	2026-01-28 13:11:14.018+05:30
 56	POST	137	dummy 2\n	{"mediaUrl": "/uploads/1769586165781-740649094.jpg"}	2026-01-28 13:12:45.975+05:30	2026-01-28 13:12:45.975+05:30
@@ -4656,6 +4949,7 @@ COPY public."SearchIndices" (id, type, "referenceId", content, metadata, "create
 285	POST	2036	Beautiful photo 16 #photo #explore	{"mediaUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80"}	2026-02-12 17:36:02.855+05:30	2026-02-12 17:36:02.855+05:30
 286	POST	2037	Beautiful photo 17 #photo #explore	{"mediaUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&q=80"}	2026-02-12 17:36:02.855+05:30	2026-02-12 17:36:02.855+05:30
 287	POST	2038	Beautiful photo 18 #photo #explore	{"mediaUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=80"}	2026-02-12 17:36:02.865+05:30	2026-02-12 17:36:02.865+05:30
+442	USER	10	shahbaazk	{"fullName": "shahbaazk"}	2026-03-02 12:10:33.765+05:30	2026-03-02 12:10:33.765+05:30
 288	POST	2039	Beautiful photo 19 #photo #explore	{"mediaUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&q=80"}	2026-02-12 17:36:02.867+05:30	2026-02-12 17:36:02.867+05:30
 289	POST	2040	Beautiful photo 20 #photo #explore	{"mediaUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80"}	2026-02-12 17:36:02.873+05:30	2026-02-12 17:36:02.873+05:30
 290	POST	2041	Awesome reel 1 #reel #viral	{"mediaUrl": "https://res.cloudinary.com/demo/video/upload/v1/dog.mp4"}	2026-02-12 17:36:02.879+05:30	2026-02-12 17:36:02.879+05:30
@@ -4758,12 +5052,15 @@ COPY public."SearchIndices" (id, type, "referenceId", content, metadata, "create
 --
 
 COPY public."Stories" (id, "userId", username, "mediaUrl", "thumbnailUrl", "mediaType", "expiresAt", "viewsCount", "likesCount", "createdAt", "updatedAt") FROM stdin;
+99	2	must	/api/v1/media/files/Jaadoe/posts/images/1772179452380-912718022_opt.webp	\N	IMAGE	2026-02-28 13:34:12.483+05:30	0	0	2026-02-27 13:34:12.483+05:30	2026-02-27 13:34:12.898+05:30
 4	2	user_test_2	https://picsum.photos/seed/user_test_2_story_0/400/800	\N	IMAGE	2026-01-29 12:00:33.208381+05:30	0	0	2026-01-28 12:00:33.208381+05:30	2026-01-28 12:00:33.208381+05:30
 5	2	user_test_2	https://picsum.photos/seed/user_test_2_story_1/400/800	\N	IMAGE	2026-01-29 12:00:33.208771+05:30	0	0	2026-01-28 12:00:33.208771+05:30	2026-01-28 12:00:33.208771+05:30
 6	2	user_test_2	https://picsum.photos/seed/user_test_2_story_2/400/800	\N	IMAGE	2026-01-29 12:00:33.209171+05:30	0	0	2026-01-28 12:00:33.209171+05:30	2026-01-28 12:00:33.209171+05:30
 7	6	user_test_6	https://picsum.photos/seed/user_test_6_story_0/400/800	\N	IMAGE	2026-01-29 12:00:33.223098+05:30	0	0	2026-01-28 12:00:33.223098+05:30	2026-01-28 12:00:33.223098+05:30
 8	7	user_test_7	https://picsum.photos/seed/user_test_7_story_0/400/800	\N	IMAGE	2026-01-29 12:00:33.226799+05:30	0	0	2026-01-28 12:00:33.226799+05:30	2026-01-28 12:00:33.226799+05:30
 9	7	user_test_7	https://picsum.photos/seed/user_test_7_story_1/400/800	\N	IMAGE	2026-01-29 12:00:33.227258+05:30	0	0	2026-01-28 12:00:33.227258+05:30	2026-01-28 12:00:33.227258+05:30
+101	8	Anu1	/api/v1/media/files/Jaadoe/posts/images/1772429781080-84620795_opt.webp	\N	IMAGE	2026-03-03 11:06:21.367+05:30	0	0	2026-03-02 11:06:21.367+05:30	2026-03-02 11:06:21.871+05:30
+100	2	must	/api/v1/media/files/Jaadoe/posts/images/1772429202606-621059287_opt.webp	\N	IMAGE	2026-03-03 10:56:43.171+05:30	0	0	2026-03-02 10:56:43.172+05:30	2026-03-02 10:56:43.404+05:30
 93	5	farhan	/api/v1/media/files/Jaadoe/posts/images/1772084768919-702333922_opt.webp	\N	IMAGE	2026-02-27 11:16:08.944+05:30	0	0	2026-02-26 11:16:08.945+05:30	2026-02-26 11:16:09.564+05:30
 94	6	ashish	/api/v1/media/files/Jaadoe/posts/images/1772084948986-131149382_opt.webp	\N	IMAGE	2026-02-27 11:19:09.026+05:30	0	0	2026-02-26 11:19:09.026+05:30	2026-02-26 11:19:09.62+05:30
 95	7	sarfarz	/api/v1/media/files/Jaadoe/posts/images/1772085219870-446592595_opt.webp	\N	IMAGE	2026-02-27 11:23:39.912+05:30	0	0	2026-02-26 11:23:39.912+05:30	2026-02-26 11:23:40.473+05:30
@@ -4792,9 +5089,19 @@ COPY public."StoryReports" (id, "storyId", "reporterId", reason, "createdAt", "u
 --
 
 COPY public."StoryViews" (id, "storyId", "viewerId", "viewedAt", "createdAt", "updatedAt") FROM stdin;
+57	100	2	2026-03-02 10:57:14.82+05:30	2026-03-02 10:57:14.82+05:30	2026-03-02 10:57:14.82+05:30
+58	101	2	2026-03-02 11:09:48.497+05:30	2026-03-02 11:09:48.497+05:30	2026-03-02 11:09:48.497+05:30
+59	101	8	2026-03-02 11:10:51.423+05:30	2026-03-02 11:10:51.423+05:30	2026-03-02 11:10:51.423+05:30
+60	100	8	2026-03-02 11:10:56.446+05:30	2026-03-02 11:10:56.446+05:30	2026-03-02 11:10:56.446+05:30
 47	96	2	2026-02-26 11:44:49.422+05:30	2026-02-26 11:44:49.422+05:30	2026-02-26 11:44:49.422+05:30
 48	97	2	2026-02-26 11:45:59.634+05:30	2026-02-26 11:45:59.634+05:30	2026-02-26 11:45:59.634+05:30
 50	98	3	2026-02-26 15:18:02.006+05:30	2026-02-26 15:18:02.006+05:30	2026-02-26 15:18:02.006+05:30
+51	98	2	2026-02-27 09:44:35.112+05:30	2026-02-27 09:44:35.113+05:30	2026-02-27 09:44:35.113+05:30
+52	99	2	2026-02-27 13:36:48.854+05:30	2026-02-27 13:36:48.854+05:30	2026-02-27 13:36:48.854+05:30
+53	99	3	2026-02-28 12:27:20.005+05:30	2026-02-28 12:27:20.005+05:30	2026-02-28 12:27:20.005+05:30
+54	6	2	2026-03-02 10:52:27.261+05:30	2026-03-02 10:52:27.261+05:30	2026-03-02 10:52:27.261+05:30
+55	5	2	2026-03-02 10:52:29.422+05:30	2026-03-02 10:52:29.422+05:30	2026-03-02 10:52:29.422+05:30
+56	4	2	2026-03-02 10:52:30.806+05:30	2026-03-02 10:52:30.806+05:30	2026-03-02 10:52:30.806+05:30
 \.
 
 
@@ -4811,11 +5118,14 @@ COPY public."SystemSettings" (key, value, description, "createdAt", "updatedAt")
 --
 
 COPY public."UserProfiles" (id, "userId", username, "fullName", bio, "profilePicture", website, gender, "isPrivate", "showAccountSuggestions", "allowSearchIndexing", "followersCount", "followingCount", "postCount", country, "loginProvider", "accountStatus", "createdAt", "updatedAt") FROM stdin;
-5	5	farhan	farhan	\N	/api/v1/media/files/Jaadoe/posts/images/1772084049865-897626602_opt.webp	\N	\N	f	t	t	3	1	6	Unknown	email	active	2026-02-26 11:04:01.247+05:30	2026-02-26 12:15:58.243+05:30
+9	9	irfan1	irfan1		/api/v1/media/files/Jaadoe/temp/1772434501630-533627449.jpg		Male	f	t	t	0	1	0	Unknown	email	active	2026-03-02 12:09:12.75+05:30	2026-03-02 12:25:06.305+05:30
+8	8	Anu1	Anu1	\N		\N	\N	f	t	t	1	4	0	Unknown	email	active	2026-03-02 11:05:14.701+05:30	2026-03-02 12:27:51.445+05:30
+10	10	shahbaazk	shahbaazk	\N		\N	\N	f	t	t	3	1	0	Unknown	email	active	2026-03-02 12:10:33.793+05:30	2026-03-02 14:30:01.761+05:30
+3	3	akbar	akbar	\N	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	\N	\N	f	t	t	6	4	9	Unknown	email	active	2026-02-26 10:44:52.273+05:30	2026-03-02 14:30:01.762+05:30
 6	6	ashish	ashish	\N	/api/v1/media/files/Jaadoe/posts/images/1772084806946-33478956_opt.webp	\N	\N	f	t	t	1	2	5	Unknown	email	active	2026-02-26 11:16:36.878+05:30	2026-02-26 12:16:07.045+05:30
-2	2	must	must	\N		\N	\N	f	t	t	0	1	4	Unknown	email	active	2026-02-25 10:09:22.308+05:30	2026-02-26 14:44:22.545+05:30
-3	3	akbar	akbar	\N	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	\N	\N	f	t	t	4	3	9	Unknown	email	active	2026-02-26 10:44:52.273+05:30	2026-02-26 14:44:22.546+05:30
-7	7	sarfarz	sarfarz	\N	/api/v1/media/files/Jaadoe/posts/images/1772085050435-53870855_opt.webp	\N	\N	f	t	t	1	2	6	Unknown	email	active	2026-02-26 11:20:42.857+05:30	2026-02-26 15:23:31.883+05:30
+7	7	sarfarz	sarfarz	\N	/api/v1/media/files/Jaadoe/posts/images/1772085050435-53870855_opt.webp	\N	\N	f	t	t	2	2	6	Unknown	email	active	2026-02-26 11:20:42.857+05:30	2026-02-28 15:37:27.25+05:30
+5	5	farhan	farhan	\N	/api/v1/media/files/Jaadoe/posts/images/1772084049865-897626602_opt.webp	\N	\N	f	t	t	4	2	6	Unknown	email	active	2026-02-26 11:04:01.247+05:30	2026-03-02 12:02:27.935+05:30
+2	2	must	must	test user1		\N	\N	f	t	t	2	3	4	Unknown	email	active	2026-02-25 10:09:22.308+05:30	2026-03-02 12:02:27.936+05:30
 \.
 
 
@@ -4824,11 +5134,14 @@ COPY public."UserProfiles" (id, "userId", username, "fullName", bio, "profilePic
 --
 
 COPY public."Users" (id, username, email, password, "createdAt", "resetToken", "resetTokenExpiry", "updatedAt") FROM stdin;
-2	must	must@example.com	$2b$10$hujbCz8b3EmfkFMTouLMFuosHzYI71itdDhQxMetf30ybEqz9xwsq	2026-02-25 10:09:22.129+05:30	\N	\N	2026-02-25 10:09:22.129+05:30
 3	akbar	akbar@example.com	$2b$10$rdd6tz8g2aKmqAY6tey6YeAFMI7iRKsybkDMwNfmlseZ4cEr6kuDe	2026-02-26 10:44:52.228+05:30	\N	\N	2026-02-26 10:44:52.228+05:30
 5	farhan	farhan@example.com	$2b$10$DidBRikKOZFAve2GqRcy4.lDu5rw1Pv/i5SbMX2z6EC4iFl3kMG3u	2026-02-26 11:04:01.211+05:30	\N	\N	2026-02-26 11:04:01.211+05:30
 6	ashish	ashish@example.com	$2b$10$gGuSWKIY2gtcSnNPNqgMpOi9uwr8e9Y95eNF8FQ4r32HAi7ql.RHK	2026-02-26 11:16:36.87+05:30	\N	\N	2026-02-26 11:16:36.87+05:30
 7	sarfarz	sarfaraz@example.com	$2b$10$stz.5fgwNsAfopxqDd3nO.4bvHEs.TUcw3oY5v1ocR922.x18o1P2	2026-02-26 11:20:42.81+05:30	\N	\N	2026-02-26 11:20:42.81+05:30
+2	must	must@example.com	$2b$10$GP1T5Up1Ni/BRD7oZfr30ONYewOjRDkZEBKAk941yBP4N1wSNqTnO	2026-02-25 10:09:22.129+05:30	\N	\N	2026-02-27 16:08:53.309+05:30
+8	Anu1	abu@example.com	$2b$10$2ML32BRlyXGY/kLOVy7fI...1BpTkXHJbzqOiEkineuq.8fcmZQau	2026-03-02 11:05:14.649+05:30	\N	\N	2026-03-02 11:05:14.65+05:30
+9	irfan1	irfan1@gmail.com	$2b$10$K9Z.z.unVao.FUgPlq5JcOfl9hR16ZFxOMOPtDH6u8ji3IvnhlD0S	2026-03-02 12:09:12.71+05:30	\N	\N	2026-03-02 12:09:12.71+05:30
+10	shahbaazk	shahbaaz@example.com	$2b$10$cIsCXH5RuLO7Yt5BsPTq5.3Sc6HKp0Ff4JbKo9x2QYwnm59wfUc0C	2026-03-02 12:10:33.757+05:30	\N	\N	2026-03-02 12:10:33.757+05:30
 \.
 
 
@@ -4961,6 +5274,15 @@ COPY public.account_history (id, user_id, action, old_value, new_value, "created
 122	5	PROFILE_PHOTO_CHANGE		/api/v1/media/files/Jaadoe/temp/1772084049865-897626602.jpeg	2026-02-26 11:04:09.908+05:30	2026-02-26 11:04:09.908+05:30
 123	6	PROFILE_PHOTO_CHANGE		/api/v1/media/files/Jaadoe/temp/1772084806946-33478956.avif	2026-02-26 11:16:47.006+05:30	2026-02-26 11:16:47.006+05:30
 124	7	PROFILE_PHOTO_CHANGE		/api/v1/media/files/Jaadoe/temp/1772085050435-53870855.jpeg	2026-02-26 11:20:50.48+05:30	2026-02-26 11:20:50.48+05:30
+125	2	BIO_CHANGE	\N	test user1	2026-02-27 10:19:26.107+05:30	2026-02-27 10:19:26.107+05:30
+126	2	PROFILE_PHOTO_CHANGE		/api/v1/media/files/Jaadoe/temp/1772425504488-766410392.jpg	2026-03-02 09:55:04.575+05:30	2026-03-02 09:55:04.575+05:30
+127	2	PROFILE_PHOTO_REMOVED	/api/v1/media/files/Jaadoe/posts/images/1772425504488-766410392_opt.webp		2026-03-02 09:55:08.449+05:30	2026-03-02 09:55:08.449+05:30
+128	9	PROFILE_PHOTO_CHANGE		/api/v1/media/files/Jaadoe/temp/1772434501630-533627449.jpg	2026-03-02 12:25:04.177+05:30	2026-03-02 12:25:04.177+05:30
+129	9	BIO_CHANGE	\N		2026-03-02 12:25:04.185+05:30	2026-03-02 12:25:04.185+05:30
+130	9	WEBSITE_CHANGE	\N		2026-03-02 12:25:04.185+05:30	2026-03-02 12:25:04.185+05:30
+131	9	GENDER_CHANGE	\N	Male	2026-03-02 12:25:04.185+05:30	2026-03-02 12:25:04.185+05:30
+132	9	PROFILE_PHOTO_CHANGE	/api/v1/media/files/Jaadoe/temp/1772434501630-533627449.jpg		2026-03-02 12:25:04.185+05:30	2026-03-02 12:25:04.185+05:30
+133	9	PROFILE_PHOTO_CHANGE		/api/v1/media/files/Jaadoe/temp/1772434501630-533627449.jpg	2026-03-02 12:25:06.306+05:30	2026-03-02 12:25:06.306+05:30
 \.
 
 
@@ -5036,10 +5358,19 @@ b495ca59-c4a8-4578-9dad-53a21e937ceb	104	2026-02-25	0	0	0	1	0	0	0	2026-02-25 11:
 cd4ca1d9-e4be-4076-9584-028e3d533646	105	2026-02-25	0	0	0	1	0	0	0	2026-02-25 11:22:05.153+05:30	2026-02-25 11:22:05.155+05:30
 64f9b864-5d18-4d30-924b-92d5eb92c8d6	2	2026-02-26	0	0	0	1	0	0	0	2026-02-26 10:32:33.256+05:30	2026-02-26 10:32:33.262+05:30
 d193fb7e-ae33-4b00-b7e8-b1b56259af81	1	2026-02-26	0	0	0	1	0	0	0	2026-02-26 10:35:24.419+05:30	2026-02-26 10:35:24.422+05:30
+c07618d0-adaf-45e7-835c-df0852bf41c8	3	2026-02-27	0	0	0	8	0	0	0	2026-02-27 11:26:54.318+05:30	2026-02-27 15:54:33.38+05:30
+e86d5487-fd29-46f9-9d5f-b9bd9862b98c	2	2026-02-27	0	0	0	1	0	0	0	2026-02-27 16:07:14.646+05:30	2026-02-27 16:07:14.65+05:30
+ac7680cb-5e90-4a41-8581-24a05f77c341	5	2026-02-28	0	0	0	1	0	0	0	2026-02-28 11:47:09.385+05:30	2026-02-28 11:47:09.39+05:30
 6297aa15-e0ed-421a-9ee5-0a7372ae6f1a	5	2026-02-26	0	0	0	3	0	0	0	2026-02-26 11:19:16.869+05:30	2026-02-26 12:15:58.278+05:30
 67851d0e-cccb-4738-86c8-adfe25faa723	7	2026-02-26	0	0	0	1	0	0	0	2026-02-26 12:15:59.417+05:30	2026-02-26 12:15:59.422+05:30
 5713d980-ca62-44f1-a9a5-f3b6bc3f8f8f	6	2026-02-26	0	0	0	1	0	0	0	2026-02-26 12:16:07.049+05:30	2026-02-26 12:16:07.051+05:30
 b0efb3f8-c778-4b1d-ad94-72c343878559	3	2026-02-26	0	0	0	4	0	0	0	2026-02-26 11:15:56.96+05:30	2026-02-26 14:44:22.576+05:30
+81037f42-295f-4b5b-858f-00708e52aca7	7	2026-02-28	0	0	0	1	0	0	0	2026-02-28 15:37:27.28+05:30	2026-02-28 15:37:27.283+05:30
+c2c9f849-3a58-4d68-8d11-9237f9c4b315	5	2026-03-02	0	0	0	1	0	0	0	2026-03-02 11:05:46.07+05:30	2026-03-02 11:05:46.072+05:30
+687147c8-d6bd-409b-abff-d2a682963b37	8	2026-03-02	0	0	0	1	0	0	0	2026-03-02 11:06:00.348+05:30	2026-03-02 11:06:00.351+05:30
+370e28cd-f041-42b2-bcce-8dd6a839430e	2	2026-03-02	0	0	0	2	0	0	0	2026-03-02 11:05:33.726+05:30	2026-03-02 12:02:27.974+05:30
+27fc464d-50b5-461a-a0e7-457dd1ceeb01	10	2026-03-02	0	0	0	3	0	0	0	2026-03-02 12:11:06.212+05:30	2026-03-02 12:28:40.95+05:30
+448eb1e6-9b1e-442c-ba83-d28275ed2bcb	3	2026-03-02	0	0	0	2	0	0	0	2026-03-02 11:05:39.034+05:30	2026-03-02 14:30:01.798+05:30
 \.
 
 
@@ -5064,6 +5395,7 @@ COPY public.account_status (user_id, status, last_checked) FROM stdin;
 126	OK	2026-02-16 13:28:56.212+05:30
 127	OK	2026-02-16 13:42:42.283+05:30
 128	OK	2026-02-16 13:45:25.645+05:30
+2	OK	2026-03-02 10:25:57.036+05:30
 \.
 
 
@@ -5145,6 +5477,7 @@ COPY public.ad_targets (id, "adId", "targetType", locations, "ageRange", interes
 
 COPY public.admin_audit_logs (id, "adminId", "actionType", "targetType", "targetId", metadata, created_at) FROM stdin;
 2	1	LOGIN	auth	1	{"ip": "::1"}	2026-02-26 13:44:33.223+05:30
+3	1	LOGIN	auth	1	{"ip": "::1"}	2026-02-28 12:22:07.094+05:30
 \.
 
 
@@ -5153,7 +5486,7 @@ COPY public.admin_audit_logs (id, "adminId", "actionType", "targetType", "target
 --
 
 COPY public.admins (id, username, name, email, password, "roleId", "isActive", "lastLogin", created_at, updated_at) FROM stdin;
-1	admin	Super Admin	admin@jaadoe.com	$2b$10$9Foqk9eDtLuSjvBRih2jj.6Vbc9yDC06w1jvovutPYiSGgkXDZiNm	1	t	2026-02-26 13:44:33.216+05:30	2026-02-23 10:16:24.923+05:30	2026-02-26 13:44:33.217+05:30
+1	admin	Super Admin	admin@jaadoe.com	$2b$10$9Foqk9eDtLuSjvBRih2jj.6Vbc9yDC06w1jvovutPYiSGgkXDZiNm	1	t	2026-02-28 12:22:07.087+05:30	2026-02-23 10:16:24.923+05:30	2026-02-28 12:22:07.088+05:30
 \.
 
 
@@ -5170,6 +5503,7 @@ COPY public.ads (id, "userId", title, caption, "ctaText", "destinationUrl", "adT
 --
 
 COPY public.blocked_users (id, blocker_id, blocked_id, "createdAt", "updatedAt") FROM stdin;
+512561e2-c8ed-49f1-addd-61e05704e452	2	435	2026-03-02 09:54:27.1+05:30	2026-03-02 09:54:27.1+05:30
 \.
 
 
@@ -5238,9 +5572,12 @@ adeb762d-c484-4b21-8c67-5d609c6601e2	call_d7798ba2-9327-47bb-bb9e-2cea9da42e32	5
 9c65e9cc-98ae-4cfd-80d8-a05ee78ef765	call_0bba5f73-bc4f-4082-8df5-9a9188174451	51	55	audio	ended	2026-02-25 14:32:07.877+05:30	2026-02-25 14:32:42.485+05:30	34	2026-02-25 14:32:07.878+05:30	2026-02-25 14:32:42.485+05:30
 48d7e9c1-49b0-498f-ad96-d2e231b991d8	call_e5a11178-41e2-4da9-9eb0-b9ef6b3146ae	51	163	audio	ended	2026-02-25 14:33:24.2+05:30	2026-02-25 14:33:56.688+05:30	32	2026-02-25 14:33:24.2+05:30	2026-02-25 14:33:56.688+05:30
 c87c7dd2-4819-4f5a-9089-eead6d442cd7	call_ff7930c0-b5a8-4295-a3ac-b93c194aa8c6	51	163	audio	ended	2026-02-25 15:41:07.732+05:30	2026-02-25 15:41:26.803+05:30	19	2026-02-25 15:41:07.732+05:30	2026-02-25 15:41:26.803+05:30
+6c1c33d3-eb26-44ff-89c9-db71198f8ed2	call_a73c173c-87c5-4fd4-b131-42a04261a4db	2	3	video	ended	2026-02-27 10:48:03.416+05:30	2026-02-27 10:48:13.751+05:30	10	2026-02-27 10:48:03.417+05:30	2026-02-27 10:48:13.751+05:30
 4c18ee7a-1e87-4746-a162-13a2f6a08cca	call_1673a0a9-ecbb-4281-a395-701b21fbce4a	1	2	audio	ended	2026-02-26 10:32:40.438+05:30	2026-02-26 10:33:31.05+05:30	50	2026-02-26 10:32:40.439+05:30	2026-02-26 10:33:31.05+05:30
 00a3b59f-7acf-4c4c-aaa3-45a1a2e27aab	call_8a32bb7e-92f8-43a7-b71a-6511dff876f7	1	2	audio	ended	2026-02-26 10:33:44.209+05:30	2026-02-26 10:33:47.783+05:30	3	2026-02-26 10:33:44.209+05:30	2026-02-26 10:33:47.783+05:30
 a13586a4-bc10-4f29-9799-f1689bf6632b	call_5dd02f0b-4641-4532-826b-594f433fcb74	1	2	audio	ended	2026-02-26 10:33:50.076+05:30	2026-02-26 10:34:02.256+05:30	12	2026-02-26 10:33:50.076+05:30	2026-02-26 10:34:02.257+05:30
+2661f639-0616-4f4c-9392-ab46181765cd	call_0afb0842-d89d-4aae-ba9a-76f1aaa55f0e	2	3	video	ended	2026-02-27 10:48:18.347+05:30	2026-02-27 10:48:33.146+05:30	14	2026-02-27 10:48:18.348+05:30	2026-02-27 10:48:33.146+05:30
+86ac0f96-d141-4f19-875a-ffb12a2219d2	call_b96ae214-94c0-4815-8561-904e35a9d1f2	2	5	video	ended	2026-02-28 11:48:25.994+05:30	2026-02-28 11:48:57.118+05:30	31	2026-02-28 11:48:25.996+05:30	2026-02-28 11:48:57.118+05:30
 \.
 
 
@@ -5252,6 +5589,9 @@ COPY public.close_friends (id, user_id, friend_id, "createdAt", "updatedAt") FRO
 66ea6c04-5d6f-4ae0-8d9f-cf0796bdfe11	51	1	2026-02-14 15:11:58.901+05:30	2026-02-14 15:11:58.901+05:30
 819aa3c9-e527-457e-b0be-1c530328e7d7	51	55	2026-02-14 15:19:11.868+05:30	2026-02-14 15:19:11.868+05:30
 bcff2828-6e8a-4f7c-958f-eadea0d19d65	51	104	2026-02-14 15:24:35.767+05:30	2026-02-14 15:24:35.767+05:30
+e6946b4f-9b7f-41d6-b3f2-b079773dca1d	2	435	2026-03-02 09:59:15.246+05:30	2026-03-02 09:59:15.246+05:30
+7337104e-2ffc-4b77-b34e-93260ebe8e39	2	438	2026-03-02 10:03:35.31+05:30	2026-03-02 10:03:35.31+05:30
+4622f94d-a723-4f33-ab33-7b4d53d5b5cc	2	440	2026-03-02 12:50:57.745+05:30	2026-03-02 12:50:57.745+05:30
 \.
 
 
@@ -5284,6 +5624,7 @@ COPY public.content_preferences (user_id, sensitive_content_level, created_at) F
 126	limit_more	2026-02-16 13:28:56.987+05:30
 127	limit_more	2026-02-16 13:42:42.804+05:30
 128	limit_more	2026-02-16 13:45:26.17+05:30
+2	limit_more	2026-02-28 15:17:04.419+05:30
 \.
 
 
@@ -5357,6 +5698,17 @@ COPY public.follower_activity_heatmap (id, "userId", "dayOfWeek", "hourOfDay", c
 --
 
 COPY public.follows (id, follower_id, following_id, "createdAt", "updatedAt") FROM stdin;
+cd2aad42-719d-48a7-8e22-606e0c9d06b5	2	3	2026-02-27 15:54:33.347+05:30	2026-02-27 15:54:33.347+05:30
+796a142e-4352-415a-bf2a-ed5f0e722d08	2	7	2026-02-28 15:37:27.247+05:30	2026-02-28 15:37:27.247+05:30
+b5fc7dda-2c44-4837-9f66-3aee7cfbb37a	8	2	2026-03-02 11:05:33.684+05:30	2026-03-02 11:05:33.684+05:30
+cf696340-792c-4901-89e7-c4a1e81c0020	8	3	2026-03-02 11:05:39.027+05:30	2026-03-02 11:05:39.027+05:30
+6ea3e0a0-110c-4a02-b29a-20b32d31763c	8	5	2026-03-02 11:05:46.063+05:30	2026-03-02 11:05:46.063+05:30
+1d2210c1-54c2-4170-bacd-3ef4467c0596	2	8	2026-03-02 11:06:00.314+05:30	2026-03-02 11:06:00.314+05:30
+6c7fefcd-a37a-4cbc-a9ad-f5213b6b4051	5	2	2026-03-02 12:02:27.934+05:30	2026-03-02 12:02:27.934+05:30
+c5ed2842-b471-4789-bc88-67989a1dfbc3	9	10	2026-03-02 12:11:06.179+05:30	2026-03-02 12:11:06.179+05:30
+0ecfb0f6-fd3c-4de6-9f9f-8cd0eded525a	8	10	2026-03-02 12:27:51.442+05:30	2026-03-02 12:27:51.442+05:30
+6b59b1ba-95c9-4d48-8d67-b6218dcb6ff8	3	10	2026-03-02 12:28:40.799+05:30	2026-03-02 12:28:40.799+05:30
+a6a9b267-4b62-4a37-bb23-1c6ef2f5c4c8	10	3	2026-03-02 14:30:01.758+05:30	2026-03-02 14:30:01.758+05:30
 58321926-245d-45b4-89a7-8c78a837e14a	5	3	2026-02-26 11:15:56.917+05:30	2026-02-26 11:15:56.917+05:30
 aaa6e35f-3a12-4ef7-9634-90e41d759511	6	5	2026-02-26 11:19:16.827+05:30	2026-02-26 11:19:16.827+05:30
 8d54dfac-74c3-4d10-a3bc-b9936c61f966	6	3	2026-02-26 11:19:41.736+05:30	2026-02-26 11:19:41.736+05:30
@@ -5365,7 +5717,6 @@ aaa6e35f-3a12-4ef7-9634-90e41d759511	6	5	2026-02-26 11:19:16.827+05:30	2026-02-2
 211635b0-d1c8-432a-a793-3290c78345e5	3	5	2026-02-26 12:15:58.236+05:30	2026-02-26 12:15:58.236+05:30
 5b392b85-b57d-435a-a450-c8d0d825f0b2	3	7	2026-02-26 12:15:59.409+05:30	2026-02-26 12:15:59.409+05:30
 2cd9da33-8d95-42dd-946d-97f65e3981c1	3	6	2026-02-26 12:16:07.041+05:30	2026-02-26 12:16:07.041+05:30
-7965b14d-b341-46ef-9af4-1dd3c54c5ef0	2	3	2026-02-26 14:44:22.543+05:30	2026-02-26 14:44:22.543+05:30
 \.
 
 
@@ -6017,6 +6368,78 @@ COPY public.impressions (id, "userId", "contentId", "contentType", "viewerId", "
 247	2	2084	POST	3	2026-02-26 15:23:52.589+05:30
 248	2	2084	POST	3	2026-02-26 15:23:58.377+05:30
 249	2	2084	POST	3	2026-02-26 15:23:58.384+05:30
+250	2	2084	POST	2	2026-02-26 15:55:15.792+05:30
+251	7	2108	POST	2	2026-02-26 15:55:18.922+05:30
+252	7	2108	POST	2	2026-02-26 15:55:21.847+05:30
+253	2	2081	POST	2	2026-02-26 15:55:44.349+05:30
+254	3	2082	POST	2	2026-02-26 15:56:50.877+05:30
+255	2	2080	POST	2	2026-02-26 15:56:52.867+05:30
+256	7	2109	POST	2	2026-02-26 15:56:56.805+05:30
+257	6	2101	POST	2	2026-02-26 15:56:58.617+05:30
+258	5	2093	POST	2	2026-02-26 15:58:24.206+05:30
+259	2	57	POST	2	2026-02-26 15:58:40.636+05:30
+260	2	58	POST	2	2026-02-26 15:58:43.787+05:30
+261	2	2081	POST	2	2026-02-27 09:35:10.28+05:30
+262	2	2083	POST	2	2026-02-27 09:35:14.645+05:30
+263	2	2080	POST	2	2026-02-27 09:36:22.109+05:30
+264	5	2093	POST	2	2026-02-27 09:36:45.089+05:30
+265	2	2081	POST	2	2026-02-27 09:36:48.119+05:30
+266	3	2086	POST	2	2026-02-27 10:02:05.015+05:30
+267	5	2095	POST	2	2026-02-27 10:07:41.037+05:30
+268	2	2081	POST	2	2026-02-27 10:07:43.615+05:30
+269	2	2084	POST	2	2026-02-27 10:07:56.928+05:30
+270	2	2083	POST	2	2026-02-27 10:08:01.196+05:30
+271	3	2082	POST	2	2026-02-27 10:18:37.765+05:30
+272	2	2084	POST	2	2026-02-27 10:40:45.256+05:30
+273	2	2084	POST	2	2026-02-27 10:40:45.32+05:30
+274	2	2083	POST	2	2026-02-27 10:40:49.033+05:30
+275	3	2092	POST	2	2026-02-27 11:22:44.107+05:30
+276	3	2092	POST	2	2026-02-27 11:22:44.12+05:30
+277	3	2090	POST	2	2026-02-27 12:40:44.608+05:30
+278	3	2092	POST	2	2026-02-27 12:41:22.585+05:30
+279	3	2092	POST	2	2026-02-27 12:41:34.001+05:30
+280	3	2092	POST	2	2026-02-27 12:41:34.014+05:30
+281	6	2101	POST	2	2026-02-27 13:20:43.964+05:30
+282	3	2092	POST	2	2026-02-27 13:24:51.091+05:30
+283	3	2092	POST	2	2026-02-27 13:24:51.118+05:30
+284	3	2092	POST	2	2026-02-27 13:24:57.051+05:30
+285	3	2092	POST	2	2026-02-27 13:24:57.074+05:30
+286	3	2092	POST	2	2026-02-27 13:25:22.653+05:30
+287	3	2092	POST	2	2026-02-27 13:25:22.665+05:30
+288	3	2092	POST	2	2026-02-27 13:25:49.905+05:30
+289	6	2099	POST	2	2026-02-27 13:25:55.828+05:30
+290	2	2084	POST	2	2026-02-27 13:27:50.119+05:30
+291	2	2084	POST	2	2026-02-27 13:27:50.13+05:30
+292	6	2099	POST	2	2026-02-27 13:28:32.712+05:30
+293	7	2105	POST	2	2026-02-27 13:29:37.904+05:30
+294	7	2108	POST	2	2026-02-27 13:29:47.934+05:30
+295	2	2083	POST	2	2026-02-27 15:48:46.355+05:30
+296	3	2089	POST	2	2026-02-27 15:49:24.284+05:30
+297	3	2092	POST	2	2026-02-27 15:51:43.573+05:30
+298	3	2092	POST	2	2026-02-27 15:54:20.358+05:30
+299	2	2084	POST	2	2026-02-28 10:06:12.728+05:30
+300	2	2081	POST	2	2026-02-28 10:06:23.116+05:30
+301	7	2108	POST	2	2026-02-28 10:07:19.435+05:30
+302	3	2091	POST	2	2026-02-28 10:08:24.243+05:30
+303	6	2102	POST	2	2026-02-28 10:08:29.896+05:30
+304	3	2082	POST	2	2026-02-28 10:15:43.441+05:30
+305	6	2102	POST	2	2026-02-28 10:27:45.919+05:30
+306	3	2082	POST	2	2026-02-28 10:28:17.978+05:30
+307	5	2094	POST	2	2026-02-28 10:28:31.769+05:30
+308	3	2090	POST	2	2026-02-28 10:33:27.694+05:30
+309	3	2087	POST	2	2026-02-28 11:32:11.762+05:30
+310	3	2087	POST	2	2026-02-28 11:33:56.617+05:30
+311	3	2082	POST	2	2026-02-28 11:38:12.356+05:30
+312	3	2082	POST	2	2026-02-28 15:12:51.53+05:30
+313	7	62	POST	2	2026-02-28 15:37:56.565+05:30
+314	7	62	POST	2	2026-02-28 15:37:57.65+05:30
+315	3	2092	POST	2	2026-02-28 15:39:45.102+05:30
+316	6	61	POST	2	2026-02-28 15:40:07.245+05:30
+317	7	2108	POST	2	2026-02-28 15:47:54.263+05:30
+318	2	57	POST	2	2026-02-28 15:49:54.158+05:30
+319	3	2092	POST	10	2026-03-02 14:30:25.342+05:30
+320	3	2092	POST	10	2026-03-02 14:30:26.893+05:30
+321	2	2080	POST	2	2026-03-02 15:41:01.611+05:30
 \.
 
 
@@ -6045,6 +6468,15 @@ COPY public.interactions (id, "userId", "contentId", "contentType", "actorId", t
 18	163	64	POST	163	COMMENT	2026-02-25 15:54:43.066+05:30
 19	2	2084	POST	2	LIKE	2026-02-26 11:16:29.054+05:30
 20	2	2080	POST	2	LIKE	2026-02-26 14:58:06.549+05:30
+21	7	2109	POST	3	LIKE	2026-02-27 09:09:32.379+05:30
+22	7	2108	POST	3	LIKE	2026-02-27 09:09:34.851+05:30
+23	3	2092	POST	2	LIKE	2026-02-27 10:40:37.3+05:30
+24	2	2083	POST	2	LIKE	2026-02-27 10:40:50.104+05:30
+25	2	2092	POST	2	COMMENT	2026-02-27 11:30:49.39+05:30
+26	3	2092	POST	2	LIKE	2026-02-27 11:59:56.319+05:30
+27	3	2092	POST	2	LIKE	2026-02-27 12:38:51.034+05:30
+28	3	2092	POST	2	LIKE	2026-02-27 12:41:30.045+05:30
+29	3	2092	POST	10	LIKE	2026-03-02 14:44:55.71+05:30
 \.
 
 
@@ -6071,10 +6503,42 @@ COPY public.like_share_settings (user_id, hide_like_share_counts, created_at) FR
 
 
 --
+-- Data for Name: live_blocked_keywords; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_blocked_keywords (id, "streamId", keyword, "createdAt", "updatedAt") FROM stdin;
+\.
+
+
+--
+-- Data for Name: live_blocked_users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_blocked_users (id, "streamId", "userId", username, "createdAt", "updatedAt") FROM stdin;
+\.
+
+
+--
 -- Data for Name: live_chat_messages; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.live_chat_messages (id, "streamId", "userId", username, "profilePic", message, "isModerator", "isSystem", "createdAt", "updatedAt") FROM stdin;
+\.
+
+
+--
+-- Data for Name: live_donations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_donations (id, stream_id, user_id, username, amount, message, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: live_guest_requests; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_guest_requests (id, stream_id, user_id, username, status, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -6087,10 +6551,489 @@ COPY public.live_moderators (id, "streamId", "userId", "createdAt", "updatedAt")
 
 
 --
+-- Data for Name: live_muted_users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_muted_users (id, "streamId", "userId", username, muted_until, "createdAt", "updatedAt") FROM stdin;
+\.
+
+
+--
+-- Data for Name: live_poll_votes; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_poll_votes (id, poll_id, user_id, option_index, created_at, updated_at) FROM stdin;
+45bb7eb5-5368-4169-8caa-68a61dbac5c6	61dd5e0e-fb58-460d-8b5c-2fd5a533e585	3	0	2026-02-28 15:23:29.922+05:30	2026-02-28 15:23:29.922+05:30
+8d213c94-3a3b-4ab9-9d47-6559396572d3	32e4a81d-00ee-4b3d-bef3-ba3784620a0b	3	0	2026-02-28 15:59:06.502+05:30	2026-02-28 15:59:06.502+05:30
+\.
+
+
+--
+-- Data for Name: live_polls; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_polls (id, stream_id, question, options, duration, is_active, ended_at, created_at, updated_at) FROM stdin;
+61dd5e0e-fb58-460d-8b5c-2fd5a533e585	4604563d-6bb7-49e8-88c4-0b2db46ef661	fee	[{"text": "y"}, {"text": "n"}]	60	t	\N	2026-02-28 15:23:28.407+05:30	2026-02-28 15:23:28.407+05:30
+f857422f-a2e3-4d40-b0dc-b55496152699	69b55866-9745-4c7e-b840-5ed9c0b370a3	tgt	[{"text": "t"}, {"text": "s"}]	60	t	\N	2026-02-28 15:49:35.992+05:30	2026-02-28 15:49:35.992+05:30
+32e4a81d-00ee-4b3d-bef3-ba3784620a0b	39d3e1c4-4d11-4c4f-b9a0-d9c10dcaa571	trt	[{"text": "4"}, {"text": "r"}]	60	t	\N	2026-02-28 15:59:03.662+05:30	2026-02-28 15:59:03.662+05:30
+\.
+
+
+--
+-- Data for Name: live_products; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_products (id, stream_id, product_id, featured, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: live_questions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_questions (id, stream_id, user_id, username, content, is_approved, is_highlighted, is_answered, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: live_settings; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_settings (id, "streamId", comments_enabled, filter_spam, filter_abuse, filter_flagged, "createdAt", "updatedAt") FROM stdin;
+a435a17f-d2b6-4a5b-8d0a-87b0bc7ab31b	2f3e99a0-d271-4e03-9698-242c7246d16b	t	f	f	f	2026-03-02 10:31:13.834+05:30	2026-03-02 10:31:13.834+05:30
+26af6c28-a5cc-4460-ab05-c42ca4e09739	e5dfdc46-ec1a-413f-80bf-3a3e84abf987	t	f	f	f	2026-03-02 10:48:28.471+05:30	2026-03-02 10:48:28.471+05:30
+0bf948f1-bf1a-42dd-872f-17d02d8a3587	a2647e1a-bb59-478c-b176-b2c770070629	t	f	f	f	2026-03-02 10:49:05.973+05:30	2026-03-02 10:49:05.973+05:30
+3c275ef1-8633-441d-82a9-2fb11fd4b685	d6554a01-65f9-49db-a0b7-f348c43b7f38	t	f	f	f	2026-03-02 11:00:32.626+05:30	2026-03-02 11:00:32.626+05:30
+a26b9f40-1f0c-4f61-b12c-c02e5254b8aa	46556f12-bc99-4fe2-b17d-3e66cc0b8969	t	f	f	f	2026-03-02 11:17:38.017+05:30	2026-03-02 11:17:38.017+05:30
+badcfbcd-c93b-41f6-8aaf-b4a4e53d0638	8cf8f4f6-26ef-4da4-aac5-ddb781642ee9	t	f	f	f	2026-03-02 12:03:21.098+05:30	2026-03-02 12:03:21.098+05:30
+419eb636-fe3e-4516-a832-f2d3bc9c9c6f	ad1b781c-76e0-4f95-a2cf-f17f35874781	t	f	f	f	2026-03-02 12:11:16.002+05:30	2026-03-02 12:11:16.002+05:30
+8c22c24a-d594-41f9-812f-7206dad77ea1	304af157-29e0-4bc0-a5f2-dcf51a51fe25	t	f	f	f	2026-03-02 12:14:28.009+05:30	2026-03-02 12:14:28.009+05:30
+8ae302e8-f740-427c-a3eb-2384a8f34e57	ec9b82a6-87c9-454c-8206-0a50a547c06c	t	f	f	f	2026-03-02 12:19:59.419+05:30	2026-03-02 12:19:59.419+05:30
+59fc92d6-5994-4403-b4af-a7dfd9a39e86	fd34f243-9d48-404c-a282-c961be3e55f5	t	f	f	f	2026-03-02 12:25:19.367+05:30	2026-03-02 12:25:19.367+05:30
+c9d81a4f-c6e2-49eb-9638-a1afba149999	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	t	f	f	f	2026-03-02 12:45:44.186+05:30	2026-03-02 12:45:44.186+05:30
+9fad1b1d-f6bb-4166-8a87-b89cc2f001a2	757a4b7c-81b6-4613-9dfb-de900dae6823	t	f	f	f	2026-03-02 13:52:06.592+05:30	2026-03-02 13:52:06.592+05:30
+1ab8b703-57ed-4c89-9b07-588ee440b1c5	1f265282-3cf6-4e10-a004-bc8080e227d3	t	f	f	f	2026-03-02 14:24:39.549+05:30	2026-03-02 14:24:39.549+05:30
+41bdddcc-f646-4058-871d-57266039040f	e3ddf773-9ac6-4a3d-92b9-b0beef4de80d	t	f	f	f	2026-03-02 15:34:03.562+05:30	2026-03-02 15:34:03.562+05:30
+\.
+
+
+--
+-- Data for Name: live_stream_messages; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_stream_messages (id, stream_id, user_id, message, created_at) FROM stdin;
+d0c83f09-5a2f-43d6-ad32-54dab26d6c57	bce33b1b-8630-41be-8e91-ca623f09cc86	3	hello	2026-02-27 10:25:55.564+05:30
+35e4ab2a-c3e2-4935-8e5a-5d0d6cb5fc98	70ca5ce1-0098-4147-bc50-faa7964109b2	3	hello	2026-02-27 10:29:00.895+05:30
+5b8215ed-97e3-49ce-a840-b7e88dca8b41	3c70b32b-030a-4d77-a9b3-8f1999a06cf2	3	hello	2026-02-27 10:42:41.038+05:30
+10dbc0dd-5378-4bd8-87ae-12774cf0420d	6aa224d3-0d98-40da-b28e-294aaecb6155	3	f	2026-02-27 10:55:11.301+05:30
+2d76e617-7568-4c4d-927a-70095f2c18c2	a318736a-dcf4-4494-8d31-2d7ceeec420d	2	db	2026-02-27 11:34:18.492+05:30
+66d14f12-2325-4f6b-8581-6e5db6dde322	a318736a-dcf4-4494-8d31-2d7ceeec420d	2	sethgersth	2026-02-27 11:34:26.181+05:30
+acca1b80-46fa-4457-ba8e-e50269e12c93	fac877e6-236c-46a4-8f41-0f3706219352	5	hello akbar	2026-02-27 15:20:20.899+05:30
+84895d60-0fe2-4ab4-b25d-f0af4db707cc	fac877e6-236c-46a4-8f41-0f3706219352	3	hii farhan	2026-02-27 15:22:08.119+05:30
+9fc56d19-a782-4d00-a7c0-70351f6c471b	fac877e6-236c-46a4-8f41-0f3706219352	2	hiii	2026-02-27 15:25:28.888+05:30
+c37e4b8d-4789-41ca-894f-16deb3d9c7b6	fac877e6-236c-46a4-8f41-0f3706219352	2	fsn	2026-02-27 16:06:39.086+05:30
+2b02c351-f75f-4dde-a310-3ed89f4163f5	64dae23e-fbe6-4937-8c99-378e7850b495	5	hii	2026-02-28 10:24:12.785+05:30
+fe34e303-efc0-4213-89e0-0b88276596d0	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	2	mai karu ab mera kam ???	2026-02-28 10:44:04.204+05:30
+a5fddffa-d063-4a62-b236-51ceff4b1ade	a5f756d4-ce57-420e-8505-24609cc60549	2	baju mai koi aaya hai ya nahi???	2026-02-28 11:19:10.382+05:30
+6591816b-d0ca-4524-a552-80949baccc05	a5f756d4-ce57-420e-8505-24609cc60549	2	ha aaye hai	2026-02-28 11:20:36.995+05:30
+3bbb4687-8b6d-40ea-a4a1-de8e5e37b10d	6743adab-fef4-4420-928d-6f996afb3cf2	3	hi	2026-02-28 12:23:28.864+05:30
+7a25b6f1-4b7f-426a-8f8d-19422e336e8c	7e8ad122-5027-4a31-bffe-f1e7099ec9cf	3	ff	2026-02-28 15:44:10.4+05:30
+1df167b3-dd16-4882-87d8-8d06fbe20167	39d3e1c4-4d11-4c4f-b9a0-d9c10dcaa571	3	gttt	2026-02-28 15:59:16.492+05:30
+c8b54e60-f36b-41b7-ac1d-bff89ed9c291	ad1b781c-76e0-4f95-a2cf-f17f35874781	10	ehfeieofqk	2026-03-02 12:12:12.794+05:30
+bb72a3f2-9039-47c7-80c9-04382dddca77	ad1b781c-76e0-4f95-a2cf-f17f35874781	9	ganja	2026-03-02 12:12:21.49+05:30
+9ce1e830-cee0-4e12-bf4a-7004c9cccb21	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	3	bhh	2026-03-02 13:29:34.526+05:30
+4f8bbd16-8d88-4980-9c95-d9a217b36a90	757a4b7c-81b6-4613-9dfb-de900dae6823	9	😉😉	2026-03-02 13:52:42.46+05:30
+a3ca553c-8af2-4a1a-a276-3415ce8f0917	757a4b7c-81b6-4613-9dfb-de900dae6823	3	😁😆	2026-03-02 13:52:53.808+05:30
+3986d7e4-db99-4298-99f0-eeca6d9477bf	757a4b7c-81b6-4613-9dfb-de900dae6823	9	😇	2026-03-02 13:52:55.067+05:30
+b7723b1e-3b6f-4f43-9086-5c272aece57f	757a4b7c-81b6-4613-9dfb-de900dae6823	3	🙃😆😆	2026-03-02 13:53:12.927+05:30
+b8fcea7e-85b1-4ef7-82af-574e05b9c784	757a4b7c-81b6-4613-9dfb-de900dae6823	3	🙃	2026-03-02 13:54:32.615+05:30
+352e7393-f5e6-428a-b1fe-77419df229ad	757a4b7c-81b6-4613-9dfb-de900dae6823	3	hello 😄😄	2026-03-02 13:59:31.884+05:30
+82e45ceb-b69b-4fac-be87-42e26ffab7f4	1f265282-3cf6-4e10-a004-bc8080e227d3	3	😄😄😄	2026-03-02 14:45:37.963+05:30
+87fdf0ef-b263-4b55-a64b-14c4da5ea2bf	1f265282-3cf6-4e10-a004-bc8080e227d3	3	😄😄😄😄😄	2026-03-02 14:45:56.948+05:30
+617c8436-7d8e-446a-a5f7-e9131be5778e	1f265282-3cf6-4e10-a004-bc8080e227d3	3	😄😁😁😆	2026-03-02 15:00:41.76+05:30
+60f9713c-38c5-41f6-994a-c472aad10e8d	1f265282-3cf6-4e10-a004-bc8080e227d3	3	😀😀😀	2026-03-02 15:01:14.822+05:30
+\.
+
+
+--
+-- Data for Name: live_stream_viewers; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_stream_viewers (id, stream_id, user_id, joined_at, left_at, watch_duration_seconds, created_at, updated_at) FROM stdin;
+57a50bb3-9441-44c2-9d40-a1636aa43eec	437b03b0-9855-471d-8dd2-356a4b100d86	2	2026-02-27 13:14:15.189+05:30	\N	0	2026-02-27 13:14:15.189+05:30	2026-02-27 13:14:15.189+05:30
+fa88055a-bf71-4d71-8acf-a6f72db78aa3	437b03b0-9855-471d-8dd2-356a4b100d86	2	2026-02-27 13:14:15.19+05:30	\N	0	2026-02-27 13:14:15.19+05:30	2026-02-27 13:14:15.19+05:30
+df667aa2-89d8-4e52-a981-27048a48bc86	437b03b0-9855-471d-8dd2-356a4b100d86	2	2026-02-27 13:19:11.73+05:30	\N	0	2026-02-27 13:19:11.73+05:30	2026-02-27 13:19:11.73+05:30
+db1303ef-74f3-4843-8bb4-b4f3e64dc7e9	437b03b0-9855-471d-8dd2-356a4b100d86	2	2026-02-27 13:19:11.73+05:30	\N	0	2026-02-27 13:19:11.73+05:30	2026-02-27 13:19:11.73+05:30
+9fcd265a-3b28-4063-bf6a-3aba58570819	da027ee4-730b-4e10-b726-d740bb55b6a8	2	2026-02-27 13:21:02.876+05:30	\N	0	2026-02-27 13:21:02.876+05:30	2026-02-27 13:21:02.876+05:30
+cd009e59-9301-4b65-8501-e11e0cfa6c97	da027ee4-730b-4e10-b726-d740bb55b6a8	2	2026-02-27 13:21:02.877+05:30	\N	0	2026-02-27 13:21:02.877+05:30	2026-02-27 13:21:02.877+05:30
+df850e01-e6ca-4a36-8982-1bb207a2c20a	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 13:28:49.798+05:30	\N	0	2026-02-27 13:28:49.798+05:30	2026-02-27 13:28:49.798+05:30
+09a25652-7624-4a47-a1e5-92f495a5e6bf	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 13:28:49.799+05:30	\N	0	2026-02-27 13:28:49.799+05:30	2026-02-27 13:28:49.799+05:30
+974f2d65-f3c8-47f0-8e0c-5273f36f9a3d	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 13:29:12.84+05:30	\N	0	2026-02-27 13:29:12.84+05:30	2026-02-27 13:29:12.84+05:30
+b8fcc396-7311-49b6-871a-08469943c622	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 13:29:12.841+05:30	\N	0	2026-02-27 13:29:12.841+05:30	2026-02-27 13:29:12.841+05:30
+cb6da0ab-4dd9-4fe4-9e9e-a3176506152f	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:02.302+05:30	\N	0	2026-02-27 15:05:02.302+05:30	2026-02-27 15:05:02.302+05:30
+33895583-1689-48b7-bf78-a4bcd700861e	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:02.32+05:30	\N	0	2026-02-27 15:05:02.32+05:30	2026-02-27 15:05:02.32+05:30
+2126440e-bb2f-4d83-8f1b-a9a745e10b4c	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:02.334+05:30	\N	0	2026-02-27 15:05:02.334+05:30	2026-02-27 15:05:02.334+05:30
+799f7a85-9e14-4915-b8a2-1cc11adf08b5	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:02.37+05:30	\N	0	2026-02-27 15:05:02.37+05:30	2026-02-27 15:05:02.37+05:30
+bb15b8ad-6f16-4e55-9381-a10510beaaae	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:12.446+05:30	\N	0	2026-02-27 15:05:12.446+05:30	2026-02-27 15:05:12.446+05:30
+c90661c2-3c8c-41ec-9260-749f8caef2d0	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:12.461+05:30	\N	0	2026-02-27 15:05:12.461+05:30	2026-02-27 15:05:12.461+05:30
+83cb9694-22ac-4203-ae4c-844a7ad2d979	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:15.995+05:30	\N	0	2026-02-27 15:05:15.995+05:30	2026-02-27 15:05:15.995+05:30
+77617a8e-8587-4b06-adc6-f17a9e244da3	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:16.007+05:30	\N	0	2026-02-27 15:05:16.007+05:30	2026-02-27 15:05:16.007+05:30
+eb1b5591-0f64-43f0-a1df-91614c38844c	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:16.037+05:30	\N	0	2026-02-27 15:05:16.037+05:30	2026-02-27 15:05:16.037+05:30
+a5d0c3f9-3ee9-4008-94b3-07fc3bf7b212	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:25.697+05:30	\N	0	2026-02-27 15:05:25.697+05:30	2026-02-27 15:05:25.697+05:30
+f966356e-8bb4-433f-ad19-f8b778004236	437b03b0-9855-471d-8dd2-356a4b100d86	3	2026-02-27 15:05:25.711+05:30	\N	0	2026-02-27 15:05:25.712+05:30	2026-02-27 15:05:25.712+05:30
+b7d83c36-9b44-462f-bf46-05ee22266323	fac877e6-236c-46a4-8f41-0f3706219352	5	2026-02-27 15:20:05.267+05:30	\N	0	2026-02-27 15:20:05.268+05:30	2026-02-27 15:20:05.268+05:30
+e3df3b9b-a726-4850-a8f3-53b1f52ad51f	fac877e6-236c-46a4-8f41-0f3706219352	5	2026-02-27 15:20:05.276+05:30	\N	0	2026-02-27 15:20:05.276+05:30	2026-02-27 15:20:05.276+05:30
+1d3aafbd-193b-4f7a-918d-e06537969703	fac877e6-236c-46a4-8f41-0f3706219352	5	2026-02-27 15:20:05.317+05:30	\N	0	2026-02-27 15:20:05.317+05:30	2026-02-27 15:20:05.317+05:30
+5e12b52f-576f-4461-a801-389c6b90624a	fac877e6-236c-46a4-8f41-0f3706219352	5	2026-02-27 15:20:05.318+05:30	\N	0	2026-02-27 15:20:05.318+05:30	2026-02-27 15:20:05.318+05:30
+bde9ae1c-fa3e-4de8-a23c-c6f70133659e	fac877e6-236c-46a4-8f41-0f3706219352	5	2026-02-27 15:23:09.924+05:30	\N	0	2026-02-27 15:23:09.924+05:30	2026-02-27 15:23:09.924+05:30
+3d70323e-88cf-495b-97bb-8d968e438f86	fac877e6-236c-46a4-8f41-0f3706219352	5	2026-02-27 15:23:09.938+05:30	\N	0	2026-02-27 15:23:09.938+05:30	2026-02-27 15:23:09.938+05:30
+6c1a6b03-4434-4896-85db-14e0764b50fd	fac877e6-236c-46a4-8f41-0f3706219352	5	2026-02-27 15:24:30.68+05:30	\N	0	2026-02-27 15:24:30.68+05:30	2026-02-27 15:24:30.68+05:30
+d1619dfc-0c25-4bb7-9f86-8f989cd89d39	fac877e6-236c-46a4-8f41-0f3706219352	5	2026-02-27 15:24:30.698+05:30	\N	0	2026-02-27 15:24:30.698+05:30	2026-02-27 15:24:30.698+05:30
+072b76cf-01b3-4732-b10c-0758e7dce199	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:24.857+05:30	\N	0	2026-02-27 15:25:24.857+05:30	2026-02-27 15:25:24.857+05:30
+da11a971-de06-4c43-9940-f023afa81e01	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:24.87+05:30	\N	0	2026-02-27 15:25:24.87+05:30	2026-02-27 15:25:24.87+05:30
+d298119f-eeb6-4fe3-b390-7b178c518973	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:24.89+05:30	\N	0	2026-02-27 15:25:24.89+05:30	2026-02-27 15:25:24.89+05:30
+9a4566a9-a4f9-4909-8976-74b312248b4d	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:24.982+05:30	\N	0	2026-02-27 15:25:24.982+05:30	2026-02-27 15:25:24.982+05:30
+527795e7-8aef-4910-a7ae-40c3ff9a7634	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:40.178+05:30	\N	0	2026-02-27 15:25:40.178+05:30	2026-02-27 15:25:40.178+05:30
+76d8cee4-e8ae-4d51-b32f-89edeb012345	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:40.211+05:30	\N	0	2026-02-27 15:25:40.211+05:30	2026-02-27 15:25:40.211+05:30
+51f6d993-1e9a-4508-a7ac-e0e3560fd400	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:43.431+05:30	\N	0	2026-02-27 15:25:43.432+05:30	2026-02-27 15:25:43.432+05:30
+ede66fd9-258b-49c2-9493-d0cd4c447c9e	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:43.482+05:30	\N	0	2026-02-27 15:25:43.482+05:30	2026-02-27 15:25:43.482+05:30
+91305ad1-63ed-4f7e-ad70-ae4fe55e7640	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:47.21+05:30	\N	0	2026-02-27 15:25:47.21+05:30	2026-02-27 15:25:47.21+05:30
+1fe7edc3-0d59-4576-a353-c2f5e8f2103a	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:47.227+05:30	\N	0	2026-02-27 15:25:47.227+05:30	2026-02-27 15:25:47.227+05:30
+5d6a9df6-750b-495b-a9cf-805a3e686e12	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:49.615+05:30	\N	0	2026-02-27 15:25:49.615+05:30	2026-02-27 15:25:49.615+05:30
+64c1d03e-e626-48b8-b721-306797b960ea	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:25:49.638+05:30	\N	0	2026-02-27 15:25:49.638+05:30	2026-02-27 15:25:49.638+05:30
+238c7a3a-39f4-4f54-9a9e-6f1dc83be3ea	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:29:00.49+05:30	\N	0	2026-02-27 15:29:00.49+05:30	2026-02-27 15:29:00.49+05:30
+53bcce8a-e7b7-425c-9f09-e793cc51b857	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 15:29:00.552+05:30	\N	0	2026-02-27 15:29:00.552+05:30	2026-02-27 15:29:00.552+05:30
+9c9cbbc4-3808-49df-8d8c-d4b0b1ec7329	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:43:39.443+05:30	\N	0	2026-02-27 15:43:39.444+05:30	2026-02-27 15:43:39.444+05:30
+97e662a0-7378-4a28-8c4d-a25ff95ecc95	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:43:39.466+05:30	\N	0	2026-02-27 15:43:39.466+05:30	2026-02-27 15:43:39.466+05:30
+96556d32-c2f7-4450-a323-c3e81533862e	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:43:39.497+05:30	\N	0	2026-02-27 15:43:39.497+05:30	2026-02-27 15:43:39.497+05:30
+3d20eb29-690b-4db0-a245-7bfe8fb8df31	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:43:39.528+05:30	\N	0	2026-02-27 15:43:39.528+05:30	2026-02-27 15:43:39.528+05:30
+c7e32d48-298b-41a6-942f-13323b522ec5	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:43:40.882+05:30	\N	0	2026-02-27 15:43:40.882+05:30	2026-02-27 15:43:40.882+05:30
+ea14ab5c-1d65-4425-97f6-6d47e2c7926d	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:43:44.906+05:30	\N	0	2026-02-27 15:43:44.906+05:30	2026-02-27 15:43:44.906+05:30
+72f0b953-dc0a-4b5f-a6d1-db160de7343c	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:45:05.543+05:30	\N	0	2026-02-27 15:45:05.543+05:30	2026-02-27 15:45:05.543+05:30
+c2e54164-b67e-4031-ae64-21028fb08067	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:45:05.544+05:30	\N	0	2026-02-27 15:45:05.544+05:30	2026-02-27 15:45:05.544+05:30
+a4581482-c7be-4edc-a272-fb3b2cd76ee9	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:45:05.567+05:30	\N	0	2026-02-27 15:45:05.567+05:30	2026-02-27 15:45:05.567+05:30
+979e7d18-a1c6-43be-8d95-96e1506159d1	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:45:10.712+05:30	\N	0	2026-02-27 15:45:10.712+05:30	2026-02-27 15:45:10.712+05:30
+415cbedd-a530-4830-a6eb-23b615ecb958	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:00.41+05:30	\N	0	2026-02-27 15:54:00.41+05:30	2026-02-27 15:54:00.41+05:30
+3f81a117-7687-4ba5-a2a8-d4a706208a25	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:00.43+05:30	\N	0	2026-02-27 15:54:00.43+05:30	2026-02-27 15:54:00.43+05:30
+c9a8aea4-abb2-4ccc-8bb0-17f9076ca376	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:38.575+05:30	\N	0	2026-02-27 15:54:38.575+05:30	2026-02-27 15:54:38.575+05:30
+355e08ae-beb3-461a-a423-f75794a92ddb	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:38.584+05:30	\N	0	2026-02-27 15:54:38.584+05:30	2026-02-27 15:54:38.584+05:30
+3169f497-0e78-4b1c-b74d-4721130ef67a	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:38.593+05:30	\N	0	2026-02-27 15:54:38.593+05:30	2026-02-27 15:54:38.593+05:30
+bbcb3ddf-1c08-4fe6-9d4a-c466d97554a2	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:38.614+05:30	\N	0	2026-02-27 15:54:38.614+05:30	2026-02-27 15:54:38.614+05:30
+44b3f246-e7e1-4be7-b327-31a2f80fe1f0	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:53.483+05:30	\N	0	2026-02-27 15:54:53.483+05:30	2026-02-27 15:54:53.483+05:30
+872484c3-8e6e-44c3-849b-9754796ed61b	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:53.49+05:30	\N	0	2026-02-27 15:54:53.49+05:30	2026-02-27 15:54:53.49+05:30
+c514b827-c877-4fc6-ac54-a74fd425ef0e	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:53.51+05:30	\N	0	2026-02-27 15:54:53.51+05:30	2026-02-27 15:54:53.51+05:30
+c6f8b418-7baa-436d-af23-8384458463e9	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:54:53.517+05:30	\N	0	2026-02-27 15:54:53.517+05:30	2026-02-27 15:54:53.517+05:30
+37c1bce2-c3f3-41d4-b85a-412dd129c8aa	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:55:03.422+05:30	\N	0	2026-02-27 15:55:03.422+05:30	2026-02-27 15:55:03.422+05:30
+59659590-a1b1-494b-a604-b8a735bf730e	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:55:03.443+05:30	\N	0	2026-02-27 15:55:03.443+05:30	2026-02-27 15:55:03.443+05:30
+e2c2c8f2-be79-4848-93c6-d327a40c2c10	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:55:03.454+05:30	\N	0	2026-02-27 15:55:03.454+05:30	2026-02-27 15:55:03.454+05:30
+27581223-bf5d-4391-b012-8a5c8e287b05	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:55:10.423+05:30	\N	0	2026-02-27 15:55:10.423+05:30	2026-02-27 15:55:10.423+05:30
+abc61397-c072-4e53-81a9-fd01393973c8	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:55:10.438+05:30	\N	0	2026-02-27 15:55:10.438+05:30	2026-02-27 15:55:10.438+05:30
+d4527274-5f13-413f-b353-07ac91a88772	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:55:10.452+05:30	\N	0	2026-02-27 15:55:10.452+05:30	2026-02-27 15:55:10.452+05:30
+da9b57e3-1ccf-4d03-8cab-059e5c29420d	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:55:10.458+05:30	\N	0	2026-02-27 15:55:10.458+05:30	2026-02-27 15:55:10.458+05:30
+245a94c4-4a60-42d3-a799-46dee4ee1ad4	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:57:07.07+05:30	\N	0	2026-02-27 15:57:07.07+05:30	2026-02-27 15:57:07.07+05:30
+fe62f2b0-2b48-4326-93ce-c7b8ada007fd	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:57:07.071+05:30	\N	0	2026-02-27 15:57:07.071+05:30	2026-02-27 15:57:07.071+05:30
+070481d6-e020-46af-bac9-0595bf07d3fa	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:57:07.108+05:30	\N	0	2026-02-27 15:57:07.108+05:30	2026-02-27 15:57:07.108+05:30
+ffa15d80-a280-4459-a2d0-5c03e0d8232b	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:57:35.132+05:30	\N	0	2026-02-27 15:57:35.132+05:30	2026-02-27 15:57:35.132+05:30
+1b97bdbf-f2c1-4898-a343-29cc5de202d7	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:57:35.158+05:30	\N	0	2026-02-27 15:57:35.158+05:30	2026-02-27 15:57:35.158+05:30
+73be89f7-d75b-4fee-9073-e18d2cc5e738	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:57:35.245+05:30	\N	0	2026-02-27 15:57:35.245+05:30	2026-02-27 15:57:35.245+05:30
+dcab8182-a300-436f-93e4-eb5daaa5f9fe	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 15:57:57.617+05:30	\N	0	2026-02-27 15:57:57.617+05:30	2026-02-27 15:57:57.617+05:30
+61ee226b-1a59-46ff-9b30-e8d547d602a7	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 16:01:56.791+05:30	\N	0	2026-02-27 16:01:56.791+05:30	2026-02-27 16:01:56.791+05:30
+1f3f3d5c-07a6-4251-a734-c0af1f05908e	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 16:01:56.804+05:30	\N	0	2026-02-27 16:01:56.804+05:30	2026-02-27 16:01:56.804+05:30
+2d93758c-b6de-4917-aceb-ed6d5858fedb	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 16:01:56.816+05:30	\N	0	2026-02-27 16:01:56.816+05:30	2026-02-27 16:01:56.816+05:30
+2132ee5c-7989-431e-b339-8425564694e5	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 16:01:56.853+05:30	\N	0	2026-02-27 16:01:56.853+05:30	2026-02-27 16:01:56.853+05:30
+4f59accd-db9f-4300-a99b-edf202c5f4e3	fac877e6-236c-46a4-8f41-0f3706219352	3	2026-02-27 16:05:04.709+05:30	\N	0	2026-02-27 16:05:04.709+05:30	2026-02-27 16:05:04.709+05:30
+816e7f37-dcf3-4cee-ae50-dcd18b57ad4b	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 16:06:29.042+05:30	\N	0	2026-02-27 16:06:29.042+05:30	2026-02-27 16:06:29.042+05:30
+4dd27cfa-4a5b-4b40-852d-c87ea377637e	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 16:06:29.05+05:30	\N	0	2026-02-27 16:06:29.051+05:30	2026-02-27 16:06:29.051+05:30
+019182d0-da4e-4014-9ab5-f80ab925027f	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 16:06:29.066+05:30	\N	0	2026-02-27 16:06:29.066+05:30	2026-02-27 16:06:29.066+05:30
+b59ff243-f6b7-4219-b93d-bdde68ff8e00	fac877e6-236c-46a4-8f41-0f3706219352	2	2026-02-27 16:06:29.151+05:30	\N	0	2026-02-27 16:06:29.151+05:30	2026-02-27 16:06:29.151+05:30
+3fba2253-86e5-4052-96e9-8ed480eaa2f4	ef845ba0-62c7-4270-be15-cdac934674a1	3	2026-02-28 10:02:32.299+05:30	\N	0	2026-02-28 10:02:32.299+05:30	2026-02-28 10:02:32.299+05:30
+02203881-90ad-49af-ba28-da0bb613cb4b	ef845ba0-62c7-4270-be15-cdac934674a1	3	2026-02-28 10:02:32.315+05:30	\N	0	2026-02-28 10:02:32.315+05:30	2026-02-28 10:02:32.315+05:30
+d9f51e8c-dfd2-4974-a3bb-e94daf653131	ef845ba0-62c7-4270-be15-cdac934674a1	3	2026-02-28 10:02:32.359+05:30	\N	0	2026-02-28 10:02:32.359+05:30	2026-02-28 10:02:32.359+05:30
+132e44ab-7b3d-48d9-891a-139db386e36a	ef845ba0-62c7-4270-be15-cdac934674a1	3	2026-02-28 10:02:32.37+05:30	\N	0	2026-02-28 10:02:32.37+05:30	2026-02-28 10:02:32.37+05:30
+8ea22210-02b1-4ffd-87bf-a50ca2ceb103	ef845ba0-62c7-4270-be15-cdac934674a1	3	2026-02-28 10:02:32.372+05:30	\N	0	2026-02-28 10:02:32.372+05:30	2026-02-28 10:02:32.372+05:30
+bdb2226a-644f-4ae6-9f31-19475a45a95d	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:04:19.888+05:30	\N	0	2026-02-28 10:04:19.888+05:30	2026-02-28 10:04:19.888+05:30
+af8b2d2a-9b0e-4b1f-86aa-b2dd78c4785a	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:04:19.902+05:30	\N	0	2026-02-28 10:04:19.902+05:30	2026-02-28 10:04:19.902+05:30
+6f4cd367-a1a8-4798-b2eb-31e2d4542eb9	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:04:19.94+05:30	\N	0	2026-02-28 10:04:19.94+05:30	2026-02-28 10:04:19.94+05:30
+878bc889-9f26-42a2-9784-aa99d0d692bd	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:04:19.944+05:30	\N	0	2026-02-28 10:04:19.944+05:30	2026-02-28 10:04:19.944+05:30
+d05a979b-fcc9-481a-8712-37b52f3642d8	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:05:23.269+05:30	\N	0	2026-02-28 10:05:23.269+05:30	2026-02-28 10:05:23.269+05:30
+9b2da1b4-ceb0-4802-baa9-dcc63336d37b	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:05:36.804+05:30	\N	0	2026-02-28 10:05:36.804+05:30	2026-02-28 10:05:36.804+05:30
+3ed47e65-0119-49bd-8060-5fba4c793f9d	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:06:36.268+05:30	\N	0	2026-02-28 10:06:36.268+05:30	2026-02-28 10:06:36.268+05:30
+2e8dee75-7c2b-443d-86c9-13a8a9ddbfc3	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:06:36.286+05:30	\N	0	2026-02-28 10:06:36.286+05:30	2026-02-28 10:06:36.286+05:30
+fa8a6b6e-cb4d-435e-99a5-4c867c380c04	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:07:05.4+05:30	\N	0	2026-02-28 10:07:05.4+05:30	2026-02-28 10:07:05.4+05:30
+e4a8bf97-95d5-4790-afa3-3a56634e3945	9e205020-22a6-4c2d-8480-c06d886d8994	5	2026-02-28 10:13:39.913+05:30	\N	0	2026-02-28 10:13:39.913+05:30	2026-02-28 10:13:39.913+05:30
+93663fa1-cbb4-4442-924b-132d9d6bb289	64dae23e-fbe6-4937-8c99-378e7850b495	5	2026-02-28 10:21:36.327+05:30	\N	0	2026-02-28 10:21:36.327+05:30	2026-02-28 10:21:36.327+05:30
+36b1c05b-7305-48f3-a9d7-03b681c5cfff	64dae23e-fbe6-4937-8c99-378e7850b495	5	2026-02-28 10:21:36.343+05:30	\N	0	2026-02-28 10:21:36.343+05:30	2026-02-28 10:21:36.343+05:30
+37299dd8-a866-4fa0-8e24-4f38af3f65a8	64dae23e-fbe6-4937-8c99-378e7850b495	5	2026-02-28 10:21:36.413+05:30	\N	0	2026-02-28 10:21:36.413+05:30	2026-02-28 10:21:36.413+05:30
+e1f7aa0e-30a4-4367-8dd1-20d7ade87eb8	64dae23e-fbe6-4937-8c99-378e7850b495	5	2026-02-28 10:21:36.414+05:30	\N	0	2026-02-28 10:21:36.414+05:30	2026-02-28 10:21:36.414+05:30
+4fa0dfba-8425-4810-b759-4167debbfe19	64dae23e-fbe6-4937-8c99-378e7850b495	5	2026-02-28 10:21:51.615+05:30	\N	0	2026-02-28 10:21:51.615+05:30	2026-02-28 10:21:51.615+05:30
+9aeb18c5-5637-405b-8340-d65b0ea6adc2	64dae23e-fbe6-4937-8c99-378e7850b495	5	2026-02-28 10:22:11.838+05:30	\N	0	2026-02-28 10:22:11.838+05:30	2026-02-28 10:22:11.838+05:30
+dc66ac57-2279-4ece-9118-bb84a6384d72	64dae23e-fbe6-4937-8c99-378e7850b495	5	2026-02-28 10:24:26.069+05:30	\N	0	2026-02-28 10:24:26.069+05:30	2026-02-28 10:24:26.069+05:30
+64182a69-b55b-4680-9fad-523ed8ffb6ca	ea0ac943-45f1-49a1-90a8-c9e82ae63126	6	2026-02-28 10:30:25.139+05:30	\N	0	2026-02-28 10:30:25.139+05:30	2026-02-28 10:30:25.139+05:30
+473cfd98-f688-46db-9eea-9c0c94147f12	ea0ac943-45f1-49a1-90a8-c9e82ae63126	6	2026-02-28 10:30:25.155+05:30	\N	0	2026-02-28 10:30:25.155+05:30	2026-02-28 10:30:25.155+05:30
+b493f16f-8fce-450c-b1b9-f2c871a1c05e	ea0ac943-45f1-49a1-90a8-c9e82ae63126	6	2026-02-28 10:30:25.165+05:30	\N	0	2026-02-28 10:30:25.165+05:30	2026-02-28 10:30:25.165+05:30
+81987fe6-d4ce-434f-a935-ca617e73bb02	ea0ac943-45f1-49a1-90a8-c9e82ae63126	6	2026-02-28 10:30:25.191+05:30	\N	0	2026-02-28 10:30:25.191+05:30	2026-02-28 10:30:25.191+05:30
+05f9602b-ea71-45f6-a0eb-23cd74b19e0e	ea0ac943-45f1-49a1-90a8-c9e82ae63126	6	2026-02-28 10:30:25.203+05:30	\N	0	2026-02-28 10:30:25.203+05:30	2026-02-28 10:30:25.203+05:30
+ebc6e152-9bb1-446c-a0a5-43605190ef93	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:33:58.043+05:30	\N	0	2026-02-28 10:33:58.043+05:30	2026-02-28 10:33:58.043+05:30
+efe1377a-c902-4efa-bb04-fdd578272ab9	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:33:58.066+05:30	\N	0	2026-02-28 10:33:58.066+05:30	2026-02-28 10:33:58.066+05:30
+ad644fde-6931-47c2-9c0d-ab8666457c19	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:33:58.121+05:30	\N	0	2026-02-28 10:33:58.121+05:30	2026-02-28 10:33:58.121+05:30
+526f5071-fa28-4abc-9ad0-b06f731f32b3	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:33:58.122+05:30	\N	0	2026-02-28 10:33:58.122+05:30	2026-02-28 10:33:58.122+05:30
+c601f80c-3d84-4542-b707-f7dcfde45daa	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:34:12.345+05:30	\N	0	2026-02-28 10:34:12.345+05:30	2026-02-28 10:34:12.345+05:30
+0fce2a1f-be8d-496d-a2f3-3ee01d2f1a27	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:34:38.148+05:30	\N	0	2026-02-28 10:34:38.148+05:30	2026-02-28 10:34:38.148+05:30
+397d1327-2795-4f52-876d-d30b3f4dade2	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:35:00.828+05:30	\N	0	2026-02-28 10:35:00.828+05:30	2026-02-28 10:35:00.828+05:30
+b49d87da-2e47-4f0b-8ab9-ae02726f363f	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:35:33.447+05:30	\N	0	2026-02-28 10:35:33.447+05:30	2026-02-28 10:35:33.447+05:30
+7be33b02-26ab-4503-a1b2-d88800df4709	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:38:09.005+05:30	\N	0	2026-02-28 10:38:09.005+05:30	2026-02-28 10:38:09.005+05:30
+33c10b9d-4974-4d13-b5de-e21a087b1637	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:42:13.94+05:30	\N	0	2026-02-28 10:42:13.94+05:30	2026-02-28 10:42:13.94+05:30
+07ed6b89-a623-4de1-8a5b-114770324f2c	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:42:18.809+05:30	\N	0	2026-02-28 10:42:18.809+05:30	2026-02-28 10:42:18.809+05:30
+525e8984-c03f-44a7-8047-71380567ffa0	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:42:33.357+05:30	\N	0	2026-02-28 10:42:33.357+05:30	2026-02-28 10:42:33.357+05:30
+f6ce3087-c66b-44de-9fcf-5492f567f358	4e2088f6-c185-4d4c-a502-5c70b2ded6c2	5	2026-02-28 10:43:27.75+05:30	\N	0	2026-02-28 10:43:27.75+05:30	2026-02-28 10:43:27.75+05:30
+d978abe3-8475-46de-b5f3-4d6973578b11	e1a4c85c-9d79-4ce9-8540-2808a90211cb	6	2026-02-28 10:45:25.725+05:30	\N	0	2026-02-28 10:45:25.725+05:30	2026-02-28 10:45:25.725+05:30
+c6fadafc-e6ea-431c-b53f-f759bdd22d2d	e1a4c85c-9d79-4ce9-8540-2808a90211cb	6	2026-02-28 10:45:25.74+05:30	\N	0	2026-02-28 10:45:25.74+05:30	2026-02-28 10:45:25.74+05:30
+23face5a-e341-4db3-a192-7ebaaad91bde	e1a4c85c-9d79-4ce9-8540-2808a90211cb	6	2026-02-28 10:45:25.779+05:30	\N	0	2026-02-28 10:45:25.779+05:30	2026-02-28 10:45:25.779+05:30
+173a20ef-f4f4-46b1-9103-d616bb4623ae	e1a4c85c-9d79-4ce9-8540-2808a90211cb	6	2026-02-28 10:45:25.78+05:30	\N	0	2026-02-28 10:45:25.78+05:30	2026-02-28 10:45:25.78+05:30
+3fd77b9b-84b8-47b5-b80c-412ee7b7b03e	e1a4c85c-9d79-4ce9-8540-2808a90211cb	6	2026-02-28 10:45:25.783+05:30	\N	0	2026-02-28 10:45:25.783+05:30	2026-02-28 10:45:25.783+05:30
+cb40a747-43f8-41e1-9903-e93859d20c98	15d0b8fe-21aa-4b68-9bad-cd9e243ae9c5	2	2026-02-28 11:02:26.351+05:30	\N	0	2026-02-28 11:02:26.351+05:30	2026-02-28 11:02:26.351+05:30
+a1d688ec-c80f-402b-b92c-cfcf20922be7	15d0b8fe-21aa-4b68-9bad-cd9e243ae9c5	2	2026-02-28 11:02:26.38+05:30	\N	0	2026-02-28 11:02:26.38+05:30	2026-02-28 11:02:26.38+05:30
+c9d14a02-ef5b-4b5a-9500-327e2e60a247	15d0b8fe-21aa-4b68-9bad-cd9e243ae9c5	2	2026-02-28 11:02:26.547+05:30	\N	0	2026-02-28 11:02:26.547+05:30	2026-02-28 11:02:26.547+05:30
+d1e39340-65a1-47c9-b0ce-5812ef28f78a	15d0b8fe-21aa-4b68-9bad-cd9e243ae9c5	2	2026-02-28 11:02:26.555+05:30	\N	0	2026-02-28 11:02:26.555+05:30	2026-02-28 11:02:26.555+05:30
+2f6160af-86c4-43c8-bc85-63c37d7bedbf	09d43171-688b-43e5-9ad6-42d2f7af3755	5	2026-02-28 11:03:43.516+05:30	\N	0	2026-02-28 11:03:43.516+05:30	2026-02-28 11:03:43.516+05:30
+ada05ff8-115b-4761-afe3-9923fb5b0eb3	09d43171-688b-43e5-9ad6-42d2f7af3755	5	2026-02-28 11:03:43.569+05:30	\N	0	2026-02-28 11:03:43.569+05:30	2026-02-28 11:03:43.569+05:30
+d36addf5-9e8c-4dec-b97a-0ecbe1f05252	09d43171-688b-43e5-9ad6-42d2f7af3755	5	2026-02-28 11:03:43.583+05:30	\N	0	2026-02-28 11:03:43.583+05:30	2026-02-28 11:03:43.583+05:30
+87502534-96c5-4d06-9b1e-9a8895d30652	09d43171-688b-43e5-9ad6-42d2f7af3755	5	2026-02-28 11:03:43.613+05:30	\N	0	2026-02-28 11:03:43.613+05:30	2026-02-28 11:03:43.613+05:30
+d3027aa1-81b9-49cc-a860-a17c864c1ebb	09d43171-688b-43e5-9ad6-42d2f7af3755	5	2026-02-28 11:03:52.63+05:30	\N	0	2026-02-28 11:03:52.63+05:30	2026-02-28 11:03:52.63+05:30
+efb70a1a-dbcf-46b3-9c37-4e046b1070b7	09d43171-688b-43e5-9ad6-42d2f7af3755	5	2026-02-28 11:04:54.291+05:30	\N	0	2026-02-28 11:04:54.292+05:30	2026-02-28 11:04:54.292+05:30
+5ed8dc90-2068-418e-9ee8-004b87e0eec1	09d43171-688b-43e5-9ad6-42d2f7af3755	2	2026-02-28 11:17:44.895+05:30	\N	0	2026-02-28 11:17:44.895+05:30	2026-02-28 11:17:44.895+05:30
+74554330-0803-412b-afad-6383f8609bd5	09d43171-688b-43e5-9ad6-42d2f7af3755	2	2026-02-28 11:17:44.921+05:30	\N	0	2026-02-28 11:17:44.921+05:30	2026-02-28 11:17:44.921+05:30
+29428d84-5889-4e5e-8ef2-563c4e4ca529	09d43171-688b-43e5-9ad6-42d2f7af3755	2	2026-02-28 11:17:44.943+05:30	\N	0	2026-02-28 11:17:44.943+05:30	2026-02-28 11:17:44.943+05:30
+c7182c16-f1e3-4f58-a691-170c468f4d03	09d43171-688b-43e5-9ad6-42d2f7af3755	2	2026-02-28 11:17:45.149+05:30	\N	0	2026-02-28 11:17:45.15+05:30	2026-02-28 11:17:45.15+05:30
+2216cc7c-6daa-4533-b79f-c2520b54c38d	a5f756d4-ce57-420e-8505-24609cc60549	5	2026-02-28 11:18:29.061+05:30	\N	0	2026-02-28 11:18:29.061+05:30	2026-02-28 11:18:29.061+05:30
+00b44e6a-bcf6-4826-816b-e485a068f454	a5f756d4-ce57-420e-8505-24609cc60549	5	2026-02-28 11:18:29.08+05:30	\N	0	2026-02-28 11:18:29.08+05:30	2026-02-28 11:18:29.08+05:30
+c0672dfa-dabc-4c86-9e7c-80e6ac7cfd31	a5f756d4-ce57-420e-8505-24609cc60549	5	2026-02-28 11:18:29.157+05:30	\N	0	2026-02-28 11:18:29.157+05:30	2026-02-28 11:18:29.157+05:30
+52a7aa80-a7f8-4f21-a890-98e81bec5ccb	a5f756d4-ce57-420e-8505-24609cc60549	5	2026-02-28 11:18:29.171+05:30	\N	0	2026-02-28 11:18:29.171+05:30	2026-02-28 11:18:29.171+05:30
+c51aa0ce-6fb2-4783-84b3-1839d87a2d43	a5f756d4-ce57-420e-8505-24609cc60549	5	2026-02-28 11:18:36.279+05:30	\N	0	2026-02-28 11:18:36.279+05:30	2026-02-28 11:18:36.279+05:30
+6fd0f956-b369-4f6a-8342-90c54f2fcdb7	a5f756d4-ce57-420e-8505-24609cc60549	5	2026-02-28 11:19:55.902+05:30	\N	0	2026-02-28 11:19:55.902+05:30	2026-02-28 11:19:55.902+05:30
+3a017616-8d62-4a1a-a7aa-8b400d56a379	9007ba37-98d8-4f9f-8172-5d5ea740861d	5	2026-02-28 11:22:04.135+05:30	\N	0	2026-02-28 11:22:04.135+05:30	2026-02-28 11:22:04.135+05:30
+55316e78-4a76-4ca3-acfb-e3e794fefd65	9007ba37-98d8-4f9f-8172-5d5ea740861d	5	2026-02-28 11:22:04.162+05:30	\N	0	2026-02-28 11:22:04.162+05:30	2026-02-28 11:22:04.162+05:30
+84882d90-1bc8-4821-a32a-1d95d0cceaf0	9007ba37-98d8-4f9f-8172-5d5ea740861d	5	2026-02-28 11:22:04.22+05:30	\N	0	2026-02-28 11:22:04.22+05:30	2026-02-28 11:22:04.22+05:30
+f5c8c23f-aa2f-474e-8e43-0a4abd04da09	9007ba37-98d8-4f9f-8172-5d5ea740861d	5	2026-02-28 11:22:04.231+05:30	\N	0	2026-02-28 11:22:04.231+05:30	2026-02-28 11:22:04.231+05:30
+bf2db63e-0a0e-4371-be7a-6eba4a861d55	9007ba37-98d8-4f9f-8172-5d5ea740861d	5	2026-02-28 11:22:14.61+05:30	\N	0	2026-02-28 11:22:14.61+05:30	2026-02-28 11:22:14.61+05:30
+ded23d24-e20c-40d5-93e2-7b32e838143d	9007ba37-98d8-4f9f-8172-5d5ea740861d	5	2026-02-28 11:22:49.574+05:30	\N	0	2026-02-28 11:22:49.574+05:30	2026-02-28 11:22:49.574+05:30
+d3630849-8cf3-4ab5-92a8-2afea63d9b83	39d3e1c4-4d11-4c4f-b9a0-d9c10dcaa571	3	2026-03-02 08:44:20.379+05:30	\N	0	2026-03-02 08:44:20.38+05:30	2026-03-02 08:44:20.38+05:30
+ecb748f6-16a1-4b04-aef7-7a9e984c92d1	39d3e1c4-4d11-4c4f-b9a0-d9c10dcaa571	3	2026-03-02 08:44:20.408+05:30	\N	0	2026-03-02 08:44:20.408+05:30	2026-03-02 08:44:20.408+05:30
+629e624b-c2a8-4c7f-b0fe-61d4a7ab0a4b	39d3e1c4-4d11-4c4f-b9a0-d9c10dcaa571	3	2026-03-02 08:44:20.465+05:30	\N	0	2026-03-02 08:44:20.466+05:30	2026-03-02 08:44:20.466+05:30
+0e997c01-cb3a-4193-8806-a6d18d5d5a21	39d3e1c4-4d11-4c4f-b9a0-d9c10dcaa571	3	2026-03-02 08:44:20.477+05:30	\N	0	2026-03-02 08:44:20.477+05:30	2026-03-02 08:44:20.477+05:30
+a0d98daf-a135-49a6-b9da-b3295aaa58f6	39d3e1c4-4d11-4c4f-b9a0-d9c10dcaa571	3	2026-03-02 08:44:20.48+05:30	\N	0	2026-03-02 08:44:20.48+05:30	2026-03-02 08:44:20.48+05:30
+f102fd5c-9472-49f6-9b4f-930bbcaab8cd	2b84d0bc-99d8-485c-88f3-0249284c7c6c	3	2026-03-02 09:08:44.033+05:30	\N	0	2026-03-02 09:08:44.033+05:30	2026-03-02 09:08:44.033+05:30
+6f96334d-def6-4b47-b477-f907c5be0386	2b84d0bc-99d8-485c-88f3-0249284c7c6c	3	2026-03-02 09:08:44.048+05:30	\N	0	2026-03-02 09:08:44.048+05:30	2026-03-02 09:08:44.048+05:30
+662bd905-f725-4961-9271-5b7138fadd1d	2b84d0bc-99d8-485c-88f3-0249284c7c6c	3	2026-03-02 09:08:44.076+05:30	\N	0	2026-03-02 09:08:44.076+05:30	2026-03-02 09:08:44.076+05:30
+4539fd3b-33cd-494e-a69e-481ee87f1983	2b84d0bc-99d8-485c-88f3-0249284c7c6c	3	2026-03-02 09:08:44.095+05:30	\N	0	2026-03-02 09:08:44.095+05:30	2026-03-02 09:08:44.095+05:30
+eb4dd2a2-a1c2-46c3-bdee-737e31a07db0	2b84d0bc-99d8-485c-88f3-0249284c7c6c	3	2026-03-02 09:08:44.109+05:30	\N	0	2026-03-02 09:08:44.109+05:30	2026-03-02 09:08:44.109+05:30
+7d87ff5f-b22a-447e-86ed-7dc5d9cddb89	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:07.17+05:30	\N	0	2026-03-02 09:41:07.171+05:30	2026-03-02 09:41:07.171+05:30
+1f969de3-4997-4ce5-a797-855ca11c11c7	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:07.197+05:30	\N	0	2026-03-02 09:41:07.197+05:30	2026-03-02 09:41:07.197+05:30
+b821c4a2-d4b9-44a9-b5e6-c1db4f58e078	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:07.233+05:30	\N	0	2026-03-02 09:41:07.233+05:30	2026-03-02 09:41:07.233+05:30
+2bd16fcb-d5dd-4ef9-a865-9c47534b7b5a	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:07.237+05:30	\N	0	2026-03-02 09:41:07.238+05:30	2026-03-02 09:41:07.238+05:30
+5bbafdb1-9c22-4377-bf80-9c9f54ac662f	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:07.247+05:30	\N	0	2026-03-02 09:41:07.247+05:30	2026-03-02 09:41:07.247+05:30
+736cee5b-411a-4b7b-9ea5-170aa437614e	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:18.881+05:30	\N	0	2026-03-02 09:41:18.881+05:30	2026-03-02 09:41:18.881+05:30
+ad177d3d-b47d-47ac-8557-e607ee8723c4	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:18.896+05:30	\N	0	2026-03-02 09:41:18.896+05:30	2026-03-02 09:41:18.896+05:30
+7eb740bf-590e-49d7-84f4-762648864124	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:18.916+05:30	\N	0	2026-03-02 09:41:18.916+05:30	2026-03-02 09:41:18.916+05:30
+eca76b52-ef4c-4b5f-870d-c2358373917c	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:18.936+05:30	\N	0	2026-03-02 09:41:18.936+05:30	2026-03-02 09:41:18.936+05:30
+b5745879-b3fe-492d-9410-644a0ab1501d	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:18.942+05:30	\N	0	2026-03-02 09:41:18.942+05:30	2026-03-02 09:41:18.942+05:30
+7a99968d-cc21-4a28-8e64-bdfe285c24d9	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:40.088+05:30	\N	0	2026-03-02 09:41:40.088+05:30	2026-03-02 09:41:40.088+05:30
+ec78f9e6-1c64-4a62-99e7-75a6ed722140	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:40.115+05:30	\N	0	2026-03-02 09:41:40.115+05:30	2026-03-02 09:41:40.115+05:30
+0190e18e-13ec-435e-b6e0-7892901ddd48	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:40.154+05:30	\N	0	2026-03-02 09:41:40.154+05:30	2026-03-02 09:41:40.154+05:30
+dfc562b4-c538-4683-90ef-7636e08686c6	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:40.157+05:30	\N	0	2026-03-02 09:41:40.157+05:30	2026-03-02 09:41:40.157+05:30
+baf72b0a-a0be-4b4e-b0ae-468bb32556bd	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:41:40.166+05:30	\N	0	2026-03-02 09:41:40.166+05:30	2026-03-02 09:41:40.166+05:30
+1b6b3065-2a36-4899-ad87-cd5675c0f437	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:42:19.495+05:30	\N	0	2026-03-02 09:42:19.495+05:30	2026-03-02 09:42:19.495+05:30
+c1f2957d-180f-44cc-9d84-c7d3e5f3c74b	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:42:19.508+05:30	\N	0	2026-03-02 09:42:19.508+05:30	2026-03-02 09:42:19.508+05:30
+b5a4f6b6-6ee9-408a-b15a-c9864d278fcb	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:42:19.601+05:30	\N	0	2026-03-02 09:42:19.601+05:30	2026-03-02 09:42:19.601+05:30
+d09a4d6c-c821-4cd9-9990-afd9e0029674	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:42:19.614+05:30	\N	0	2026-03-02 09:42:19.614+05:30	2026-03-02 09:42:19.614+05:30
+d41ee592-3cf0-49cc-a5a0-288431399320	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:42:19.616+05:30	\N	0	2026-03-02 09:42:19.616+05:30	2026-03-02 09:42:19.616+05:30
+e2dafe2d-1ce6-4ba1-a00b-b65e077d36b9	bb02d558-ff56-407f-af08-f7c3f66c6b2b	3	2026-03-02 09:42:19.616+05:30	\N	0	2026-03-02 09:42:19.616+05:30	2026-03-02 09:42:19.616+05:30
+4db9e54a-214f-431e-bc4c-a4bf1fdc2afd	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:56:59.139+05:30	\N	0	2026-03-02 09:56:59.14+05:30	2026-03-02 09:56:59.14+05:30
+195b2ff5-8290-49fd-96a1-e0607a8a8a33	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:56:59.155+05:30	\N	0	2026-03-02 09:56:59.155+05:30	2026-03-02 09:56:59.155+05:30
+c503f199-a32b-4ce6-ba2f-590ca1c4def9	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:56:59.184+05:30	\N	0	2026-03-02 09:56:59.184+05:30	2026-03-02 09:56:59.184+05:30
+c0a34f2f-c0b9-4ebd-a05d-b8fc338cf260	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:56:59.195+05:30	\N	0	2026-03-02 09:56:59.195+05:30	2026-03-02 09:56:59.195+05:30
+09ab78d2-bc72-42f9-9a69-2be344b459dc	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:56:59.201+05:30	\N	0	2026-03-02 09:56:59.201+05:30	2026-03-02 09:56:59.201+05:30
+a40c2393-5767-4682-ab75-d3d497bfd19c	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:57:45.101+05:30	\N	0	2026-03-02 09:57:45.101+05:30	2026-03-02 09:57:45.101+05:30
+b2393be1-8ef5-446a-a763-79596c3590ba	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:57:45.118+05:30	\N	0	2026-03-02 09:57:45.118+05:30	2026-03-02 09:57:45.118+05:30
+f487cbff-a45a-4fe6-93c4-b95a1199d5a4	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:57:45.131+05:30	\N	0	2026-03-02 09:57:45.131+05:30	2026-03-02 09:57:45.131+05:30
+4f76cdd6-4177-471d-b1f8-c61ccdad606e	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:57:45.204+05:30	\N	0	2026-03-02 09:57:45.204+05:30	2026-03-02 09:57:45.204+05:30
+8ae8eb8f-bd9a-4b58-99b9-7eef1a53019c	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:57:45.215+05:30	\N	0	2026-03-02 09:57:45.216+05:30	2026-03-02 09:57:45.216+05:30
+f6af3a3b-c93b-484f-92cd-1521ef2cee27	85bf27e3-83b2-4027-8f6d-2bdb726b271f	3	2026-03-02 09:57:45.224+05:30	\N	0	2026-03-02 09:57:45.224+05:30	2026-03-02 09:57:45.224+05:30
+4f708218-ec65-48a4-bb36-a1fe8aceb878	2f3e99a0-d271-4e03-9698-242c7246d16b	3	2026-03-02 10:48:08.542+05:30	\N	0	2026-03-02 10:48:08.542+05:30	2026-03-02 10:48:08.542+05:30
+1f4b257c-759d-4a04-92e5-bfb88e4a1559	2f3e99a0-d271-4e03-9698-242c7246d16b	3	2026-03-02 10:48:08.545+05:30	\N	0	2026-03-02 10:48:08.545+05:30	2026-03-02 10:48:08.545+05:30
+896cf50e-6efc-42e8-9f01-63150c0f4a14	2f3e99a0-d271-4e03-9698-242c7246d16b	3	2026-03-02 10:48:08.58+05:30	\N	0	2026-03-02 10:48:08.58+05:30	2026-03-02 10:48:08.58+05:30
+6ded67e8-dc88-4473-ab87-23f9e6be4329	2f3e99a0-d271-4e03-9698-242c7246d16b	3	2026-03-02 10:48:08.641+05:30	\N	0	2026-03-02 10:48:08.641+05:30	2026-03-02 10:48:08.641+05:30
+8cb98bdb-7be4-4e34-b7ed-9d14e0c3c5c4	2f3e99a0-d271-4e03-9698-242c7246d16b	3	2026-03-02 10:48:08.652+05:30	\N	0	2026-03-02 10:48:08.652+05:30	2026-03-02 10:48:08.652+05:30
+7298fdeb-6a24-43bf-8a55-1235cf086492	d6554a01-65f9-49db-a0b7-f348c43b7f38	3	2026-03-02 11:17:18.393+05:30	\N	0	2026-03-02 11:17:18.393+05:30	2026-03-02 11:17:18.393+05:30
+c356f391-e50a-432e-9606-fc0ad2e38aeb	d6554a01-65f9-49db-a0b7-f348c43b7f38	3	2026-03-02 11:17:18.395+05:30	\N	0	2026-03-02 11:17:18.395+05:30	2026-03-02 11:17:18.395+05:30
+85437103-7b45-4307-9b4a-8a0a7e64ce78	d6554a01-65f9-49db-a0b7-f348c43b7f38	3	2026-03-02 11:17:18.422+05:30	\N	0	2026-03-02 11:17:18.422+05:30	2026-03-02 11:17:18.422+05:30
+545be66b-4ba7-459c-bfeb-a4225e1883b9	d6554a01-65f9-49db-a0b7-f348c43b7f38	3	2026-03-02 11:17:18.46+05:30	\N	0	2026-03-02 11:17:18.46+05:30	2026-03-02 11:17:18.46+05:30
+1a051cbb-5cc9-4d66-9b37-4fb7b86ff2f4	d6554a01-65f9-49db-a0b7-f348c43b7f38	3	2026-03-02 11:17:18.52+05:30	\N	0	2026-03-02 11:17:18.52+05:30	2026-03-02 11:17:18.52+05:30
+fbffcbbc-2f20-4f6c-af9c-cb4a172c278d	46556f12-bc99-4fe2-b17d-3e66cc0b8969	3	2026-03-02 11:39:52.031+05:30	\N	0	2026-03-02 11:39:52.031+05:30	2026-03-02 11:39:52.031+05:30
+dadb17a0-a79e-4c94-8f45-482b1266c9b0	46556f12-bc99-4fe2-b17d-3e66cc0b8969	3	2026-03-02 11:39:52.042+05:30	\N	0	2026-03-02 11:39:52.042+05:30	2026-03-02 11:39:52.042+05:30
+78110242-494f-420c-a542-8b21f6abed9d	46556f12-bc99-4fe2-b17d-3e66cc0b8969	3	2026-03-02 11:39:52.074+05:30	\N	0	2026-03-02 11:39:52.074+05:30	2026-03-02 11:39:52.074+05:30
+ad629658-f8ad-404d-9e6c-48fd579ba201	46556f12-bc99-4fe2-b17d-3e66cc0b8969	3	2026-03-02 11:39:52.091+05:30	\N	0	2026-03-02 11:39:52.091+05:30	2026-03-02 11:39:52.091+05:30
+b9382ee3-6677-4777-a3f6-11ff5d573881	46556f12-bc99-4fe2-b17d-3e66cc0b8969	3	2026-03-02 11:39:52.16+05:30	\N	0	2026-03-02 11:39:52.161+05:30	2026-03-02 11:39:52.161+05:30
+9831d6e8-f8ac-49c2-a982-6cb35d412a9b	46556f12-bc99-4fe2-b17d-3e66cc0b8969	5	2026-03-02 11:54:01.185+05:30	\N	0	2026-03-02 11:54:01.185+05:30	2026-03-02 11:54:01.185+05:30
+c82c4221-85af-4778-8277-a3c11e7c6f50	46556f12-bc99-4fe2-b17d-3e66cc0b8969	5	2026-03-02 11:54:01.196+05:30	\N	0	2026-03-02 11:54:01.196+05:30	2026-03-02 11:54:01.196+05:30
+34309b43-492d-4146-a586-3caab423e2d9	46556f12-bc99-4fe2-b17d-3e66cc0b8969	5	2026-03-02 11:54:01.213+05:30	\N	0	2026-03-02 11:54:01.213+05:30	2026-03-02 11:54:01.213+05:30
+6aa8697c-552d-4ae7-bc0a-799367df30f9	46556f12-bc99-4fe2-b17d-3e66cc0b8969	5	2026-03-02 11:54:01.298+05:30	\N	0	2026-03-02 11:54:01.298+05:30	2026-03-02 11:54:01.298+05:30
+1ed517e8-8bcf-43d7-853f-e6d980060f20	46556f12-bc99-4fe2-b17d-3e66cc0b8969	5	2026-03-02 11:54:13.118+05:30	\N	0	2026-03-02 11:54:13.118+05:30	2026-03-02 11:54:13.118+05:30
+ae49bb47-02e7-4030-bbcd-01feba0ab49c	8cf8f4f6-26ef-4da4-aac5-ddb781642ee9	5	2026-03-02 12:04:01.784+05:30	\N	0	2026-03-02 12:04:01.784+05:30	2026-03-02 12:04:01.784+05:30
+35a7155f-4ebf-45f0-9731-f48ad26d1532	8cf8f4f6-26ef-4da4-aac5-ddb781642ee9	5	2026-03-02 12:04:01.795+05:30	\N	0	2026-03-02 12:04:01.795+05:30	2026-03-02 12:04:01.795+05:30
+19105c8f-712a-4f64-b571-140bd324c2c1	8cf8f4f6-26ef-4da4-aac5-ddb781642ee9	5	2026-03-02 12:04:01.832+05:30	\N	0	2026-03-02 12:04:01.832+05:30	2026-03-02 12:04:01.832+05:30
+39224caf-eae7-49eb-b573-93f0e028ea47	8cf8f4f6-26ef-4da4-aac5-ddb781642ee9	5	2026-03-02 12:04:01.886+05:30	\N	0	2026-03-02 12:04:01.886+05:30	2026-03-02 12:04:01.886+05:30
+b25d95d5-6c47-45a9-a461-b00a345866e4	8cf8f4f6-26ef-4da4-aac5-ddb781642ee9	5	2026-03-02 12:04:47.72+05:30	\N	0	2026-03-02 12:04:47.72+05:30	2026-03-02 12:04:47.72+05:30
+4bc3ea6c-c5be-487c-8321-2520dc4a9909	8cf8f4f6-26ef-4da4-aac5-ddb781642ee9	5	2026-03-02 12:04:56.278+05:30	\N	0	2026-03-02 12:04:56.278+05:30	2026-03-02 12:04:56.278+05:30
+fc28ae9e-4556-4e06-acee-f0ea4b141de2	ad1b781c-76e0-4f95-a2cf-f17f35874781	9	2026-03-02 12:11:36.848+05:30	\N	0	2026-03-02 12:11:36.848+05:30	2026-03-02 12:11:36.848+05:30
+385b35e3-609c-4ea8-94ed-1f3f0934feac	ad1b781c-76e0-4f95-a2cf-f17f35874781	9	2026-03-02 12:11:36.88+05:30	\N	0	2026-03-02 12:11:36.88+05:30	2026-03-02 12:11:36.88+05:30
+5e05e69c-aed1-4676-9f31-585d63a98eb4	ad1b781c-76e0-4f95-a2cf-f17f35874781	9	2026-03-02 12:11:36.934+05:30	\N	0	2026-03-02 12:11:36.934+05:30	2026-03-02 12:11:36.934+05:30
+b0438cd2-b3ad-4c0c-9d2e-2be3a739b821	ad1b781c-76e0-4f95-a2cf-f17f35874781	9	2026-03-02 12:11:50.5+05:30	\N	0	2026-03-02 12:11:50.5+05:30	2026-03-02 12:11:50.5+05:30
+6e81a248-7c22-4fb6-9989-d3770a9cc67e	ad1b781c-76e0-4f95-a2cf-f17f35874781	9	2026-03-02 12:12:49.661+05:30	\N	0	2026-03-02 12:12:49.661+05:30	2026-03-02 12:12:49.661+05:30
+4480ed7b-82d5-4dde-aedd-88d6d7555134	ec9b82a6-87c9-454c-8206-0a50a547c06c	9	2026-03-02 12:20:13.036+05:30	\N	0	2026-03-02 12:20:13.036+05:30	2026-03-02 12:20:13.036+05:30
+959bd3d5-eba6-4c83-b08a-37c3c234bb6b	ec9b82a6-87c9-454c-8206-0a50a547c06c	9	2026-03-02 12:20:13.139+05:30	\N	0	2026-03-02 12:20:13.139+05:30	2026-03-02 12:20:13.139+05:30
+66bbfaa3-ad82-4e10-91e8-1550d0e71bc4	ec9b82a6-87c9-454c-8206-0a50a547c06c	9	2026-03-02 12:20:13.221+05:30	\N	0	2026-03-02 12:20:13.221+05:30	2026-03-02 12:20:13.221+05:30
+646a9c92-122b-4305-a34e-ffe9a083ffb0	ec9b82a6-87c9-454c-8206-0a50a547c06c	9	2026-03-02 12:20:38.363+05:30	\N	0	2026-03-02 12:20:38.363+05:30	2026-03-02 12:20:38.363+05:30
+ae0ceff1-7a3b-4039-8a35-84894db25b48	ec9b82a6-87c9-454c-8206-0a50a547c06c	9	2026-03-02 12:21:45.229+05:30	\N	0	2026-03-02 12:21:45.229+05:30	2026-03-02 12:21:45.229+05:30
+092f2de9-8013-4848-a7d8-935ff8725b7f	fd34f243-9d48-404c-a282-c961be3e55f5	9	2026-03-02 12:25:41.783+05:30	\N	0	2026-03-02 12:25:41.783+05:30	2026-03-02 12:25:41.783+05:30
+ede7de6a-728f-4189-84cd-852ed6ff935f	fd34f243-9d48-404c-a282-c961be3e55f5	9	2026-03-02 12:25:41.815+05:30	\N	0	2026-03-02 12:25:41.815+05:30	2026-03-02 12:25:41.815+05:30
+a2d9e3d8-48f5-4634-bc8b-4d7fa3e45f43	fd34f243-9d48-404c-a282-c961be3e55f5	9	2026-03-02 12:25:41.855+05:30	\N	0	2026-03-02 12:25:41.855+05:30	2026-03-02 12:25:41.855+05:30
+523e3dbf-4077-452d-aca7-db8c767cb4c0	fd34f243-9d48-404c-a282-c961be3e55f5	9	2026-03-02 12:25:55.052+05:30	\N	0	2026-03-02 12:25:55.052+05:30	2026-03-02 12:25:55.052+05:30
+c80651ea-66e2-4427-8611-fe58bdd1040e	fd34f243-9d48-404c-a282-c961be3e55f5	8	2026-03-02 12:27:57.041+05:30	\N	0	2026-03-02 12:27:57.041+05:30	2026-03-02 12:27:57.041+05:30
+eb910229-8ebc-4c5f-9c7e-10f2164c5475	fd34f243-9d48-404c-a282-c961be3e55f5	8	2026-03-02 12:27:57.059+05:30	\N	0	2026-03-02 12:27:57.059+05:30	2026-03-02 12:27:57.059+05:30
+1650ec4b-0be0-4738-8030-1704e873294b	fd34f243-9d48-404c-a282-c961be3e55f5	8	2026-03-02 12:27:57.129+05:30	\N	0	2026-03-02 12:27:57.129+05:30	2026-03-02 12:27:57.129+05:30
+b1e47824-2b15-4e40-b465-5ff7885d3930	fd34f243-9d48-404c-a282-c961be3e55f5	8	2026-03-02 12:27:57.137+05:30	\N	0	2026-03-02 12:27:57.137+05:30	2026-03-02 12:27:57.137+05:30
+f7084560-2fb7-4441-8ba9-23771b1a425a	fd34f243-9d48-404c-a282-c961be3e55f5	3	2026-03-02 12:28:46.013+05:30	\N	0	2026-03-02 12:28:46.013+05:30	2026-03-02 12:28:46.013+05:30
+55598e73-f344-4502-bd15-535eebfd7ad1	fd34f243-9d48-404c-a282-c961be3e55f5	3	2026-03-02 12:28:46.014+05:30	\N	0	2026-03-02 12:28:46.015+05:30	2026-03-02 12:28:46.015+05:30
+183070a4-34cd-45df-a358-36b5a686231e	fd34f243-9d48-404c-a282-c961be3e55f5	3	2026-03-02 12:28:46.039+05:30	\N	0	2026-03-02 12:28:46.039+05:30	2026-03-02 12:28:46.039+05:30
+dc01e5e9-c4b1-4feb-917c-651b5adbd84d	fd34f243-9d48-404c-a282-c961be3e55f5	3	2026-03-02 12:28:46.123+05:30	\N	0	2026-03-02 12:28:46.123+05:30	2026-03-02 12:28:46.123+05:30
+bd943bb9-bf9d-4d0c-ab37-935ff043e2ea	fd34f243-9d48-404c-a282-c961be3e55f5	8	2026-03-02 12:30:14.444+05:30	\N	0	2026-03-02 12:30:14.444+05:30	2026-03-02 12:30:14.444+05:30
+78ad5430-76f1-457b-a5f6-623cc233e3b9	fd34f243-9d48-404c-a282-c961be3e55f5	3	2026-03-02 12:30:16.015+05:30	\N	0	2026-03-02 12:30:16.015+05:30	2026-03-02 12:30:16.015+05:30
+ea1ee289-b002-47eb-8131-c0d61e6f6447	fd34f243-9d48-404c-a282-c961be3e55f5	8	2026-03-02 12:37:37.575+05:30	\N	0	2026-03-02 12:37:37.575+05:30	2026-03-02 12:37:37.575+05:30
+3e32b14a-1d11-4977-b875-94f4c82d1b1a	fd34f243-9d48-404c-a282-c961be3e55f5	5	2026-03-02 12:42:22.49+05:30	\N	0	2026-03-02 12:42:22.49+05:30	2026-03-02 12:42:22.49+05:30
+a2c33520-2c30-48ae-a4f9-b314a631a0db	fd34f243-9d48-404c-a282-c961be3e55f5	5	2026-03-02 12:42:22.603+05:30	\N	0	2026-03-02 12:42:22.603+05:30	2026-03-02 12:42:22.603+05:30
+7f72e32d-e820-4c2e-8b32-e5e67e54e3e8	fd34f243-9d48-404c-a282-c961be3e55f5	5	2026-03-02 12:42:22.608+05:30	\N	0	2026-03-02 12:42:22.608+05:30	2026-03-02 12:42:22.608+05:30
+77422ea1-9bb7-416f-89d6-c73a27b2cc30	fd34f243-9d48-404c-a282-c961be3e55f5	5	2026-03-02 12:42:22.687+05:30	\N	0	2026-03-02 12:42:22.687+05:30	2026-03-02 12:42:22.687+05:30
+3bee5d03-68dc-4a41-aa4a-6ca15f1e44c6	fd34f243-9d48-404c-a282-c961be3e55f5	5	2026-03-02 12:43:14.631+05:30	\N	0	2026-03-02 12:43:14.631+05:30	2026-03-02 12:43:14.631+05:30
+0117106d-fbff-441f-8fc8-f7cc151f00ed	fd34f243-9d48-404c-a282-c961be3e55f5	8	2026-03-02 12:43:49.813+05:30	\N	0	2026-03-02 12:43:49.813+05:30	2026-03-02 12:43:49.813+05:30
+418b55f0-d22a-457b-8ffa-6a21331d7f31	fd34f243-9d48-404c-a282-c961be3e55f5	3	2026-03-02 12:45:37.308+05:30	\N	0	2026-03-02 12:45:37.308+05:30	2026-03-02 12:45:37.308+05:30
+ca0553c1-67f2-47fd-9eb1-573212343ddd	fd34f243-9d48-404c-a282-c961be3e55f5	8	2026-03-02 12:47:10.523+05:30	\N	0	2026-03-02 12:47:10.523+05:30	2026-03-02 12:47:10.523+05:30
+cff68d3d-d1de-46e9-93a8-07c4f4aac86d	fd34f243-9d48-404c-a282-c961be3e55f5	9	2026-03-02 12:49:44.473+05:30	\N	0	2026-03-02 12:49:44.473+05:30	2026-03-02 12:49:44.473+05:30
+e02c31c0-1c92-49d6-994a-df7446ac90ed	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	3	2026-03-02 12:50:39.194+05:30	\N	0	2026-03-02 12:50:39.194+05:30	2026-03-02 12:50:39.194+05:30
+cbcb2293-1d7b-43d1-934f-94d971440492	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	3	2026-03-02 12:50:39.195+05:30	\N	0	2026-03-02 12:50:39.195+05:30	2026-03-02 12:50:39.195+05:30
+725e237b-be7d-4c8d-89b3-f357b71c55f5	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	3	2026-03-02 12:50:39.228+05:30	\N	0	2026-03-02 12:50:39.228+05:30	2026-03-02 12:50:39.228+05:30
+7b690daf-196c-4b12-a8dc-a8a2a8717536	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	3	2026-03-02 12:50:39.284+05:30	\N	0	2026-03-02 12:50:39.284+05:30	2026-03-02 12:50:39.284+05:30
+a3a923e9-a719-4623-bc67-7b432d49ab6c	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	6	2026-03-02 13:27:07.007+05:30	\N	0	2026-03-02 13:27:07.007+05:30	2026-03-02 13:27:07.007+05:30
+89afb31c-a081-4928-b490-912e054e26a0	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	6	2026-03-02 13:27:07.017+05:30	\N	0	2026-03-02 13:27:07.017+05:30	2026-03-02 13:27:07.017+05:30
+5f5a018f-2a8f-4d03-b6e0-e3e5130513f3	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	6	2026-03-02 13:27:07.036+05:30	\N	0	2026-03-02 13:27:07.036+05:30	2026-03-02 13:27:07.036+05:30
+46e5aec6-21c7-42ce-8d33-0299be014daf	c8c377ec-871e-4d3f-b01a-ab6fb54c452c	6	2026-03-02 13:27:07.078+05:30	\N	0	2026-03-02 13:27:07.078+05:30	2026-03-02 13:27:07.078+05:30
+1b719618-c615-4366-b567-4c2ca0b0b07c	757a4b7c-81b6-4613-9dfb-de900dae6823	9	2026-03-02 13:52:18.504+05:30	\N	0	2026-03-02 13:52:18.504+05:30	2026-03-02 13:52:18.504+05:30
+7e16212c-8708-442f-8e81-1c594af46139	757a4b7c-81b6-4613-9dfb-de900dae6823	9	2026-03-02 13:52:18.67+05:30	\N	0	2026-03-02 13:52:18.67+05:30	2026-03-02 13:52:18.67+05:30
+6335d03d-6d51-4e15-a9ce-1816712ca748	757a4b7c-81b6-4613-9dfb-de900dae6823	9	2026-03-02 13:52:18.84+05:30	\N	0	2026-03-02 13:52:18.84+05:30	2026-03-02 13:52:18.84+05:30
+87008a0f-b467-4424-9346-f18f00b8f7e6	757a4b7c-81b6-4613-9dfb-de900dae6823	9	2026-03-02 13:53:43.506+05:30	\N	0	2026-03-02 13:53:43.506+05:30	2026-03-02 13:53:43.506+05:30
+31819cc1-598c-4027-a013-7426bf45be5f	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:26:13.207+05:30	\N	0	2026-03-02 14:26:13.207+05:30	2026-03-02 14:26:13.207+05:30
+93cec9cf-7d99-4823-94b6-236bc11310d5	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:26:13.228+05:30	\N	0	2026-03-02 14:26:13.228+05:30	2026-03-02 14:26:13.228+05:30
+a1290f16-78d9-4d95-a0b8-c4d07749d87e	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:26:13.297+05:30	\N	0	2026-03-02 14:26:13.297+05:30	2026-03-02 14:26:13.297+05:30
+044fe4d9-e6a4-47e0-b743-9fd8496a8c95	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:26:13.991+05:30	\N	0	2026-03-02 14:26:13.991+05:30	2026-03-02 14:26:13.991+05:30
+bbbc0964-dd9a-42cf-bc4f-84c07811520e	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:26:16.845+05:30	\N	0	2026-03-02 14:26:16.845+05:30	2026-03-02 14:26:16.845+05:30
+e7ebbe7b-e316-40d0-a382-852171ba3ce4	fd34f243-9d48-404c-a282-c961be3e55f5	10	2026-03-02 14:26:23.982+05:30	\N	0	2026-03-02 14:26:23.982+05:30	2026-03-02 14:26:23.982+05:30
+f969f86e-d10e-43b1-9429-8c985551aacd	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:30:50.069+05:30	\N	0	2026-03-02 14:30:50.069+05:30	2026-03-02 14:30:50.069+05:30
+3bd3c008-94fa-4446-994c-01ef77ae43f8	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:30:50.086+05:30	\N	0	2026-03-02 14:30:50.086+05:30	2026-03-02 14:30:50.086+05:30
+46710bc4-716c-44f7-9f5a-15db1bb882fe	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:30:50.172+05:30	\N	0	2026-03-02 14:30:50.172+05:30	2026-03-02 14:30:50.172+05:30
+bd87480a-4e46-4073-92e4-dfa2f9ee6ce8	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:30:50.174+05:30	\N	0	2026-03-02 14:30:50.174+05:30	2026-03-02 14:30:50.174+05:30
+93e21399-dad7-4986-a4ec-1e65e91fdc01	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:31:04.324+05:30	\N	0	2026-03-02 14:31:04.324+05:30	2026-03-02 14:31:04.324+05:30
+89deab15-9a80-4706-bdcc-ed67eab9e348	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:31:26.112+05:30	\N	0	2026-03-02 14:31:26.112+05:30	2026-03-02 14:31:26.112+05:30
+2aea43b2-66f3-4de0-9857-d59a8813bb86	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:31:51.23+05:30	\N	0	2026-03-02 14:31:51.23+05:30	2026-03-02 14:31:51.23+05:30
+6a78bf93-1bb8-413c-af68-be2f70757255	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:31:55.848+05:30	\N	0	2026-03-02 14:31:55.848+05:30	2026-03-02 14:31:55.848+05:30
+d52f1b94-1105-4c4e-a268-9c966e6cf125	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:32:06.109+05:30	\N	0	2026-03-02 14:32:06.109+05:30	2026-03-02 14:32:06.109+05:30
+c9ce749e-7851-4dc4-b905-15105a1bbfdd	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:33:30.373+05:30	\N	0	2026-03-02 14:33:30.373+05:30	2026-03-02 14:33:30.373+05:30
+0ac26f61-8c08-40ca-a54e-b6bbfad40193	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:44:15.959+05:30	\N	0	2026-03-02 14:44:15.96+05:30	2026-03-02 14:44:15.96+05:30
+a150a22d-af29-4714-bfbb-96b281efe047	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:44:21.658+05:30	\N	0	2026-03-02 14:44:21.659+05:30	2026-03-02 14:44:21.659+05:30
+e2aa5925-01f3-4ad9-afd9-233e68dac627	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:44:25.883+05:30	\N	0	2026-03-02 14:44:25.883+05:30	2026-03-02 14:44:25.883+05:30
+aa42f604-45db-453c-9c5b-2317e09b2577	1f265282-3cf6-4e10-a004-bc8080e227d3	10	2026-03-02 14:44:35.154+05:30	\N	0	2026-03-02 14:44:35.154+05:30	2026-03-02 14:44:35.154+05:30
+e7abd70e-1030-45f6-b5e9-9c9512503691	e3ddf773-9ac6-4a3d-92b9-b0beef4de80d	5	2026-03-02 15:35:22.584+05:30	\N	0	2026-03-02 15:35:22.584+05:30	2026-03-02 15:35:22.584+05:30
+1c62ccdc-cb80-4c55-a359-d9852a9f562b	e3ddf773-9ac6-4a3d-92b9-b0beef4de80d	5	2026-03-02 15:35:22.599+05:30	\N	0	2026-03-02 15:35:22.599+05:30	2026-03-02 15:35:22.599+05:30
+c58af887-99b9-4d12-8cac-d51b89a04e46	e3ddf773-9ac6-4a3d-92b9-b0beef4de80d	5	2026-03-02 15:35:22.653+05:30	\N	0	2026-03-02 15:35:22.653+05:30	2026-03-02 15:35:22.653+05:30
+ce8e2e80-a7aa-4108-ab65-35e39f3af7c9	e3ddf773-9ac6-4a3d-92b9-b0beef4de80d	5	2026-03-02 15:35:22.653+05:30	\N	0	2026-03-02 15:35:22.653+05:30	2026-03-02 15:35:22.653+05:30
+71088d0a-a4e0-4efb-bed5-4a09ac35a55e	e3ddf773-9ac6-4a3d-92b9-b0beef4de80d	5	2026-03-02 15:35:42.318+05:30	\N	0	2026-03-02 15:35:42.318+05:30	2026-03-02 15:35:42.318+05:30
+\.
+
+
+--
 -- Data for Name: live_streams; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.live_streams (id, "userId", "streamKey", "ingestUrl", title, category, "thumbnailUrl", visibility, status, "startedAt", "endedAt", "peakViewers", "isRecordingEnabled", "recordingUrl", "createdAt", "updatedAt") FROM stdin;
+COPY public.live_streams (id, room_name, host_id, title, category, visibility, thumbnail_url, status, scheduled_at, started_at, ended_at, peak_viewers, total_viewers, created_at, updated_at, hashtags) FROM stdin;
+403c5ee8-01b9-477a-bf93-951602f5f6a7	room_361c3a320a2c4bd98a61afa6299b071dmm4e9ffh	3	practice	Social	public	\N	ended	\N	2026-02-27 10:00:40.733+05:30	2026-02-27 10:03:00.509+05:30	0	0	2026-02-27 10:00:40.734+05:30	2026-02-27 10:03:00.509+05:30	\N
+70ca5ce1-0098-4147-bc50-faa7964109b2	room_bdb792e44f3d47bfaf6b1ffe6b0cc32dmm4f85a4	3	testing	Social	public	\N	ended	\N	2026-02-27 10:27:40.54+05:30	2026-02-27 10:31:54.536+05:30	0	0	2026-02-27 10:27:40.54+05:30	2026-02-27 10:31:54.536+05:30	\N
+3c70b32b-030a-4d77-a9b3-8f1999a06cf2	room_7e41496e7dfb4f13824dd6434e5e1eefmm4fpfvs	3	practice	Social	public	\N	ended	\N	2026-02-27 10:41:07.432+05:30	2026-02-27 10:48:17.132+05:30	0	0	2026-02-27 10:41:07.432+05:30	2026-02-27 10:48:17.132+05:30	\N
+fdd06085-c778-4da4-ad76-a34f683932bc	room_0798ed524ad34a639c3666732a57686fmm4guyjw	3	f	Social	public	\N	ended	\N	2026-02-27 11:13:24.524+05:30	2026-02-27 11:13:34.181+05:30	0	0	2026-02-27 11:13:24.524+05:30	2026-02-27 11:13:34.181+05:30	\N
+6616e80a-16c6-480d-97c9-ac0b0cb57a75	room_ef716f77a8d34ff3a8205d4691bb057cmm4hfiaw	2	srtnjsrtn	Social	public	\N	ended	\N	2026-02-27 11:29:23.24+05:30	2026-02-27 11:30:04.146+05:30	0	0	2026-02-27 11:29:23.241+05:30	2026-02-27 11:30:04.146+05:30	\N
+a318736a-dcf4-4494-8d31-2d7ceeec420d	room_400893c226db4fc8b6cb790eac762c53mm4hl047	2	m,gtdm	Social	public	\N	ended	\N	2026-02-27 11:33:39.607+05:30	2026-02-27 11:34:52.296+05:30	0	0	2026-02-27 11:33:39.607+05:30	2026-02-27 11:34:52.296+05:30	\N
+dd1df18a-2012-47b8-9063-d19ca0b6c1b5	room_4cbcfc850b9c4695a40e9290fb2c35d8mm4icv5j	2	ezsdg n	Social	public	\N	ended	\N	2026-02-27 11:55:19.543+05:30	2026-02-27 11:56:30.896+05:30	0	0	2026-02-27 11:55:19.543+05:30	2026-02-27 11:56:30.896+05:30	\N
+6ee98bad-1118-42e8-8112-0514b22f5da3	room_83f21fa8d7c94830a42c81872e5d6559mm4k6d4g	2	akbar rathor	Social	public	\N	ended	\N	2026-02-27 12:46:15.472+05:30	2026-02-27 12:49:28.147+05:30	0	0	2026-02-27 12:46:15.472+05:30	2026-02-27 12:49:28.148+05:30	\N
+742e8759-fa0d-4392-a2cf-e69c61eb5f5e	room_ebbed4b8359f41e19149392f2e67b9b0mm4khsuh	2	jgf	Social	public	\N	ended	\N	2026-02-27 12:55:09.065+05:30	2026-02-27 12:58:48.278+05:30	0	0	2026-02-27 12:55:09.065+05:30	2026-02-27 12:58:48.278+05:30	\N
+09d43171-688b-43e5-9ad6-42d2f7af3755	room_0019e86563d7464b895aaddaa8cfb398mm5vxwhd	2	tf	Social	public	\N	ended	\N	2026-02-28 11:03:22.249+05:30	2026-02-28 11:17:49.335+05:30	10	10	2026-02-28 11:03:22.249+05:30	2026-02-28 11:17:49.335+05:30	\N
+e1a4c85c-9d79-4ce9-8540-2808a90211cb	room_037b56fde8184699a7eb280df931decdmm5usty2	6	k	Social	public	\N	ended	\N	2026-02-28 10:31:26.046+05:30	2026-02-28 10:45:28.027+05:30	3	3	2026-02-28 10:31:26.046+05:30	2026-02-28 10:45:28.027+05:30	\N
+4e2088f6-c185-4d4c-a502-5c70b2ded6c2	room_7b890149b6ea4c5996ecdad1073ad4c2mm5uuyv3	2	awtg4	Social	public	\N	ended	\N	2026-02-28 10:33:05.749+05:30	2026-02-28 10:46:25.587+05:30	12	12	2026-02-28 10:33:05.749+05:30	2026-02-28 10:46:25.587+05:30	\N
+ea0ac943-45f1-49a1-90a8-c9e82ae63126	room_a2b55136a17647ebac209c4f4a08fb98mm5uqqo7	6	kjui	Social	public	\N	ended	\N	2026-02-28 10:29:48.512+05:30	2026-02-28 10:30:51.597+05:30	5	5	2026-02-28 10:29:48.512+05:30	2026-02-28 10:30:51.597+05:30	\N
+ef845ba0-62c7-4270-be15-cdac934674a1	room_a7b4331c57144f95b7a194c5d627f64cmm5tpejt	3	a	Social	public	\N	ended	\N	2026-02-28 10:00:46.534+05:30	2026-02-28 10:02:38.622+05:30	4	4	2026-02-28 10:00:46.534+05:30	2026-02-28 10:02:38.622+05:30	\N
+d0804e13-6338-4b94-9ce4-ab086796b94b	room_3a2fdbde628f47bbbadfbac50552d7famm5usavn	6	kj	Social	public	\N	ended	\N	2026-02-28 10:31:01.333+05:30	2026-02-28 10:31:26.042+05:30	0	0	2026-02-28 10:31:01.333+05:30	2026-02-28 10:31:26.042+05:30	\N
+083ff537-04e8-4bad-96df-d91c0883f1b5	room_6b5570681e784d5c99ac8fd48a856e86mm5uuc4o	2	rtsdhj	Social	public	\N	ended	\N	2026-02-28 10:32:36.265+05:30	2026-02-28 10:32:54.001+05:30	0	0	2026-02-28 10:32:36.265+05:30	2026-02-28 10:32:54.001+05:30	\N
+1948d3f8-ba0a-4ed4-9766-cbcf5f560f04	room_2b79d56060dc40f58569185ca797756dmm5vc41e	2	drgb	Social	public	\N	ended	\N	2026-02-28 10:46:25.614+05:30	2026-02-28 10:55:56.314+05:30	0	0	2026-02-28 10:46:25.614+05:30	2026-02-28 10:55:56.314+05:30	\N
+6743adab-fef4-4420-928d-6f996afb3cf2	room_e5aa6ba7cf1c41cd9a4901fd5ac99f5emm5ys8ck	3	junaid 	Social	public	\N	ended	\N	2026-02-28 12:22:56.546+05:30	2026-02-28 12:23:56.494+05:30	0	0	2026-02-28 12:22:56.546+05:30	2026-02-28 12:23:56.494+05:30	\N
+9e205020-22a6-4c2d-8480-c06d886d8994	room_9a2f44d7a49d426b9903454fa322bc8fmm5ttb21	3	ab	Social	public	\N	ended	\N	2026-02-28 10:03:48.625+05:30	2026-02-28 10:13:53.038+05:30	9	9	2026-02-28 10:03:48.625+05:30	2026-02-28 10:13:53.038+05:30	\N
+bce33b1b-8630-41be-8e91-ca623f09cc86	room_99884bf0112d4fe7946422d41c03a93bmm4f3p6b	3	practice	Social	public	\N	ended	\N	2026-02-27 10:24:13.043+05:30	\N	0	0	2026-02-27 10:24:13.044+05:30	2026-02-27 10:24:13.044+05:30	\N
+6aa224d3-0d98-40da-b28e-294aaecb6155	room_e1b9b4e48a1c44f9ae88461f61d555d5mm4g0hu9	3	p	Social	public	\N	ended	\N	2026-02-27 10:49:43.185+05:30	\N	0	0	2026-02-27 10:49:43.185+05:30	2026-02-27 10:49:43.185+05:30	\N
+da027ee4-730b-4e10-b726-d740bb55b6a8	room_eb8667a57d874561af926bfe25b394ddmm4gi90c	3	a	Social	public	\N	ended	\N	2026-02-27 11:03:31.548+05:30	\N	1	1	2026-02-27 11:03:31.548+05:30	2026-02-27 13:21:02.879+05:30	\N
+437b03b0-9855-471d-8dd2-356a4b100d86	room_62a1b2a8ae8d4a108ff01e4c387490bamm4iadbg	2	dnedzb	Social	public	\N	ended	\N	2026-02-27 11:53:23.116+05:30	\N	15	15	2026-02-27 11:53:23.116+05:30	2026-02-27 15:05:25.713+05:30	\N
+0241076b-c6c1-43ee-a79d-28f42e14d797	room_8603cce197794bef83ecf5072e638fa7mm5ztipf	2	n 	Social	public	\N	ended	\N	2026-02-28 12:51:56.241+05:30	2026-02-28 12:52:13.799+05:30	0	0	2026-02-28 12:51:56.241+05:30	2026-02-28 12:52:13.799+05:30	\N
+15d0b8fe-21aa-4b68-9bad-cd9e243ae9c5	room_54104374499d4dd89431c55de698a649mm5vqlvi	2	ttt	Social	public	\N	ended	\N	2026-02-28 10:57:41.887+05:30	2026-02-28 11:02:32.82+05:30	4	4	2026-02-28 10:57:41.887+05:30	2026-02-28 11:02:32.82+05:30	\N
+f30c5d13-3435-4b95-9c10-60e983d65777	room_c5ebd773908d4bfb86dbc8fc57bbdb43mm64yuxj	3	hello	Social	public	\N	ended	\N	2026-02-28 15:16:08.702+05:30	2026-02-28 15:17:10.049+05:30	0	0	2026-02-28 15:16:03.447+05:30	2026-02-28 15:17:10.049+05:30	\N
+64dae23e-fbe6-4937-8c99-378e7850b495	room_70b4a6be64d2400ebaa276c41dff49f0mm5ufwqp	3	e	Social	public	\N	ended	\N	2026-02-28 10:21:23.161+05:30	2026-02-28 10:24:29.805+05:30	6	6	2026-02-28 10:21:23.162+05:30	2026-02-28 10:24:29.806+05:30	\N
+d0e138f4-9382-4a29-a572-5c81d0209ffb	room_e6872dce5ca34ce2919cdf2887af8492mm5ukb25	3	ab	Social	public	\N	ended	\N	2026-02-28 10:24:48.445+05:30	2026-02-28 10:25:09.129+05:30	0	0	2026-02-28 10:24:48.445+05:30	2026-02-28 10:25:09.129+05:30	\N
+a5f756d4-ce57-420e-8505-24609cc60549	room_442f813c9e3a47a6b65ae12fe6b8c427mm5wgrft	2	gcg	Social	public	\N	ended	\N	2026-02-28 11:18:02.175+05:30	2026-02-28 11:21:10.324+05:30	6	6	2026-02-28 11:18:02.176+05:30	2026-02-28 11:21:10.324+05:30	\N
+fac877e6-236c-46a4-8f41-0f3706219352	room_71e348245ba94985aa8be11cdcb4d87dmm4pnji2	3	a	Social	public	\N	ended	\N	2026-02-27 15:19:34.976+05:30	2026-02-27 16:07:56.671+05:30	61	61	2026-02-27 15:19:34.977+05:30	2026-02-27 16:07:56.672+05:30	\N
+a6b552ec-07cf-4daf-b13f-01bcb2d1387e	room_cb16e56ae8be4f409d97a75195cbe9a6mm650ach	3	afd	Social	public	\N	ended	\N	2026-02-28 15:17:26.314+05:30	2026-02-28 15:19:52.788+05:30	0	0	2026-02-28 15:17:10.081+05:30	2026-02-28 15:19:52.788+05:30	\N
+01b649b8-bbe0-464c-9874-2f50669bd720	room_7ea9b2420285498591f4cc0293f1868bmm653rx0	3	fd	Social	public	\N	ended	\N	2026-02-28 15:19:54.832+05:30	2026-02-28 15:22:45.783+05:30	0	0	2026-02-28 15:19:52.818+05:30	2026-02-28 15:22:45.783+05:30	\N
+9007ba37-98d8-4f9f-8172-5d5ea740861d	room_e56145f37dca4ca3b294de3773977270mm5wl5qj	2	edhb	Social	public	\N	ended	\N	2026-02-28 11:21:27.333+05:30	2026-02-28 11:46:42.724+05:30	6	6	2026-02-28 11:21:27.333+05:30	2026-02-28 11:46:42.724+05:30	\N
+bd35ca2c-c747-4987-8e1c-dbad8e19bae3	room_363aceb715904b3d859fa2bb15c69dd8mm5xs1mz	2	jmtyg	Social	public	\N	ended	\N	2026-02-28 11:54:48.226+05:30	2026-02-28 11:56:11.911+05:30	0	0	2026-02-28 11:54:48.226+05:30	2026-02-28 11:56:11.911+05:30	\N
+4604563d-6bb7-49e8-88c4-0b2db46ef661	room_f256f25b5ec74d13ab88f1001e443866mm657hef	3	ff	Social	public	\N	ended	\N	2026-02-28 15:22:52.122+05:30	2026-02-28 15:26:02.9+05:30	0	0	2026-02-28 15:22:45.814+05:30	2026-02-28 15:26:02.901+05:30	\N
+13c28aa0-0c5e-4b9d-a837-bfae2920a65b	room_407293006e1941fa862115665a59eddfmm65bphw	3	f	Social	public	\N	ended	\N	\N	2026-02-28 15:30:17.262+05:30	0	0	2026-02-28 15:26:02.941+05:30	2026-02-28 15:30:17.263+05:30	\N
+58f82f47-0c5c-4fca-a029-4add82006352	room_d1cf2d6edc9b4fe78a675a905e0cfaadmm65h5ri	3	gf	Social	public	\N	ended	\N	2026-02-28 15:30:22.698+05:30	2026-02-28 15:31:42.705+05:30	0	0	2026-02-28 15:30:17.297+05:30	2026-02-28 15:31:42.705+05:30	\N
+ed527cc1-d6c9-4436-a048-eb7eee48ae61	room_a32adbba95b24a23b51b0a93d150f0efmm65izox	3	fafdf	Social	public	\N	ended	\N	2026-02-28 15:31:46.075+05:30	2026-02-28 15:34:39.903+05:30	0	0	2026-02-28 15:31:42.736+05:30	2026-02-28 15:34:39.904+05:30	\N
+7e8ad122-5027-4a31-bffe-f1e7099ec9cf	room_103ee3ef11964785a3ba59271941846emm65msf3	3	ff	Social	public	\N	ended	\N	2026-02-28 15:34:42.285+05:30	2026-02-28 15:45:09.57+05:30	0	0	2026-02-28 15:34:39.94+05:30	2026-02-28 15:45:09.57+05:30	\N
+69b55866-9745-4c7e-b840-5ed9c0b370a3	room_b6a0d57b334e440fba844904d2e5698emm660a9u	3	gg	Social	public	\N	ended	\N	2026-02-28 15:45:23.718+05:30	2026-02-28 15:50:41.565+05:30	0	0	2026-02-28 15:45:09.6+05:30	2026-02-28 15:50:41.565+05:30	\N
+0b68092f-3fbb-4a57-b64e-4794e1d43d6f	room_0543430f8d1a44798c5e89429865cb18mm8m4tki	3	a	Social	public	\N	idle	\N	\N	\N	0	0	2026-03-02 08:52:07.418+05:30	2026-03-02 08:52:07.418+05:30	\N
+39d3e1c4-4d11-4c4f-b9a0-d9c10dcaa571	room_457814acec6c4352ba9fc598c8abd240mm667efx	3	ty	Social	public	\N	ended	\N	2026-02-28 15:50:46.71+05:30	2026-03-02 08:44:26.677+05:30	4	4	2026-02-28 15:50:41.596+05:30	2026-03-02 08:44:26.677+05:30	\N
+0d990fac-bdcc-4580-92c0-679f10452755	room_ca1be148fdb34f0ea3c5924ee93567c1mm8mo23z	3	a	Social	public	\N	ended	\N	2026-03-02 09:07:04.974+05:30	2026-03-02 09:08:20.579+05:30	0	0	2026-03-02 09:07:04.975+05:30	2026-03-02 09:08:20.579+05:30	\N
+2b84d0bc-99d8-485c-88f3-0249284c7c6c	room_3b68b7a085904b07a44dd1ca584eb293mm8mpogz	3	a	Social	public	\N	ended	2026-03-02 09:09:00+05:30	2026-03-02 09:08:23.014+05:30	2026-03-02 09:08:49.075+05:30	5	5	2026-03-02 09:08:20.606+05:30	2026-03-02 09:08:49.075+05:30	\N
+aea5d1b1-737d-4753-bc11-d365b094b7f4	room_439b59871de541f1aec968a8eeb8775bmm8mvjsd	3	s	Social	public	\N	ended	\N	2026-03-02 09:12:54.475+05:30	2026-03-02 09:16:34.667+05:30	0	0	2026-03-02 09:12:54.476+05:30	2026-03-02 09:16:34.667+05:30	\N
+bb02d558-ff56-407f-af08-f7c3f66c6b2b	room_4877c49059b1455aaf591ca1471eae67mm8n0xne	3	d	Social	public	\N	ended	\N	2026-03-02 09:17:05.72+05:30	2026-03-02 09:43:12.414+05:30	17	17	2026-03-02 09:17:05.72+05:30	2026-03-02 09:43:12.414+05:30	\N
+8cf8f4f6-26ef-4da4-aac5-ddb781642ee9	room_95999194e3074a33a29f1a2076ec7904mm8syqp9	8	g	Social	public	\N	ended	\N	2026-03-02 12:03:21.094+05:30	2026-03-02 12:05:39.741+05:30	6	6	2026-03-02 12:03:21.094+05:30	2026-03-02 12:05:39.741+05:30	\N
+85bf27e3-83b2-4027-8f6d-2bdb726b271f	room_499f5b180a7b4093bb3ae9914b136d01mm8nyxry	3	live	Social	public	\N	ended	\N	2026-03-02 09:43:32.184+05:30	2026-03-02 09:58:19.956+05:30	11	11	2026-03-02 09:43:32.184+05:30	2026-03-02 09:58:19.956+05:30	\N
+1d8cad24-0563-4766-9e31-841f3d8e21b9	room_5b60c18a433642389799ebe523bd796cmm8oisj0	3	d	Social	public	\N	ended	\N	2026-03-02 09:58:58.502+05:30	2026-03-02 10:31:05.277+05:30	0	0	2026-03-02 09:58:58.502+05:30	2026-03-02 10:31:05.278+05:30	\N
+ad1b781c-76e0-4f95-a2cf-f17f35874781	room_a2258683614641c8ae93b1551798c7damm8t8x5q	10	video game	Social	public	\N	ended	\N	2026-03-02 12:11:16+05:30	2026-03-02 12:13:18.238+05:30	5	5	2026-03-02 12:11:16+05:30	2026-03-02 12:13:18.238+05:30	gaming
+304af157-29e0-4bc0-a5f2-dcf51a51fe25	room_d7868ddb211446d18ceafa14aa7e00a5mm8td1ak	3	a	Social	public	\N	ended	\N	2026-03-02 12:14:28.007+05:30	2026-03-02 12:16:31.94+05:30	0	0	2026-03-02 12:14:28.007+05:30	2026-03-02 12:16:31.94+05:30	\N
+2f3e99a0-d271-4e03-9698-242c7246d16b	room_1ff4e36e7bdd4b9e8875677de8993828mm8po9ur	3	ss	Social	public	\N	ended	\N	2026-03-02 10:31:13.829+05:30	2026-03-02 10:48:15.053+05:30	4	4	2026-03-02 10:31:13.83+05:30	2026-03-02 10:48:15.053+05:30	\N
+e5dfdc46-ec1a-413f-80bf-3a3e84abf987	room_d18340e40f27474c82aff7bcc848ed39mm8qag6p	3	aa	Social	public	\N	ended	\N	2026-03-02 10:48:28.467+05:30	2026-03-02 10:48:40.021+05:30	0	0	2026-03-02 10:48:28.467+05:30	2026-03-02 10:48:40.021+05:30	\N
+a2647e1a-bb59-478c-b176-b2c770070629	room_4307e1e30ea24d1ba5dfcfa84303bb4cmm8qb90u	3	a	Social	public	\N	ended	\N	2026-03-02 10:49:05.969+05:30	2026-03-02 11:00:22.063+05:30	0	0	2026-03-02 10:49:05.969+05:30	2026-03-02 11:00:22.063+05:30	\N
+ec9b82a6-87c9-454c-8206-0a50a547c06c	room_ac9ea8064d5c487cbfbbe0d358a9f185mm8tk50b	10	fuirfhj	Social	public	\N	ended	\N	2026-03-02 12:19:59.414+05:30	2026-03-02 12:21:53.554+05:30	5	5	2026-03-02 12:19:59.415+05:30	2026-03-02 12:21:53.554+05:30	tg
+d6554a01-65f9-49db-a0b7-f348c43b7f38	room_8ef3e3dd73854a18b4d7248416f4e9e9mm8qpyy4	3	h	Social	public	\N	ended	\N	2026-03-02 11:00:32.622+05:30	2026-03-02 11:17:25.349+05:30	4	4	2026-03-02 11:00:32.622+05:30	2026-03-02 11:17:25.349+05:30	\N
+1f265282-3cf6-4e10-a004-bc8080e227d3	room_ca66dc8611c24cad87d51a870b59062cmm8y0gqf	3	fa	Social	public	\N	ended	\N	2026-03-02 14:24:39.545+05:30	2026-03-02 15:34:03.557+05:30	18	18	2026-03-02 14:24:39.545+05:30	2026-03-02 15:34:03.558+05:30	\N
+c8c377ec-871e-4d3f-b01a-ab6fb54c452c	room_004bd6d6a3004858b31797701229530dmm8uh8z9	3	a	Social	public	\N	ended	\N	2026-03-02 12:45:44.183+05:30	2026-03-02 13:32:23.044+05:30	6	6	2026-03-02 12:45:44.183+05:30	2026-03-02 13:32:23.044+05:30	\N
+46556f12-bc99-4fe2-b17d-3e66cc0b8969	room_39f647e3b74b40d480a58646570dd2f3mm8rby4j	3	f	Social	public	\N	ended	\N	2026-03-02 11:17:38.015+05:30	2026-03-02 11:55:10.328+05:30	10	10	2026-03-02 11:17:38.015+05:30	2026-03-02 11:55:10.328+05:30	\N
+757a4b7c-81b6-4613-9dfb-de900dae6823	room_7d0c4f7ad73b40daad2533450279d181mm8wulst	3	a	Social	public	\N	ended	\N	2026-03-02 13:52:06.587+05:30	2026-03-02 14:24:11.342+05:30	4	4	2026-03-02 13:52:06.587+05:30	2026-03-02 14:24:11.342+05:30	\N
+e3ddf773-9ac6-4a3d-92b9-b0beef4de80d	room_c0d305c644ce4e3aba150e6b4afcd22emm90hpph	3	a	Social	public	\N	ended	\N	2026-03-02 15:34:03.561+05:30	2026-03-02 15:37:51.471+05:30	4	4	2026-03-02 15:34:03.561+05:30	2026-03-02 15:37:51.471+05:30	\N
+fd34f243-9d48-404c-a282-c961be3e55f5	room_0beb0c0c1e84486ab685c5484187b92cmm8tqzvx	10	ggt	Social	public	\N	ended	\N	2026-03-02 12:25:19.365+05:30	2026-03-02 14:26:27.18+05:30	24	24	2026-03-02 12:25:19.365+05:30	2026-03-02 14:26:27.18+05:30	\N
+\.
+
+
+--
+-- Data for Name: live_supporters; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.live_supporters (id, stream_id, user_id, username, badge_level, amount_paid, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -6107,6 +7050,7 @@ COPY public.live_viewers (id, "streamId", "userId", "joinedAt", "leftAt", "creat
 --
 
 COPY public.muted_accounts (id, user_id, muted_user_id, created_at) FROM stdin;
+228c22b0-8194-438c-8348-52735d51c584	2	435	2026-03-02 10:12:49.6+05:30
 \.
 
 
@@ -6115,22 +7059,62 @@ COPY public.muted_accounts (id, user_id, muted_user_id, created_at) FROM stdin;
 --
 
 COPY public.notifications (id, user_id, type, from_user_id, from_username, from_user_avatar, title, message, link, is_read, created_at) FROM stdin;
-b66004d3-24ab-4362-aa05-b16b5a960319	2	message	1	Irfan	\N	New Message	Irfan: 📞 Voice call	/messages/1	t	2026-02-26 10:33:31.233+05:30
-928fdcd2-378f-4339-87af-c08393b4f134	2	message	1	Irfan	\N	New Message	Irfan: 📞 Voice call	/messages/1	t	2026-02-26 10:34:02.434+05:30
-86664def-e8f3-44ea-b331-3f80970d3c6d	2	message	1	Irfan	\N	New Message	Irfan: 📞 Voice call	/messages/1	t	2026-02-26 10:43:23.606+05:30
-29d3808d-9985-453f-8f19-efbf6829288e	5	follow	6	ashish	/api/v1/media/files/Jaadoe/posts/images/1772084806946-33478956_opt.webp	New Follower	ashish started following you	/profile/6	f	2026-02-26 11:19:16.833+05:30
-06bf4b73-9c37-4671-96b7-3696deb1a66b	2	like	2	must		New Like	must liked your post	/p/2084	t	2026-02-26 11:16:29.064+05:30
-c6f305f5-9cde-4547-9e16-e8d03ba5f50f	5	follow	7	sarfarz	/api/v1/media/files/Jaadoe/posts/images/1772085050435-53870855_opt.webp	New Follower	sarfarz started following you	/profile/7	f	2026-02-26 11:24:02.992+05:30
-c4f5e026-e6ec-4e3a-8899-c04e3e92faaa	5	follow	3	akbar	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	New Follower	akbar started following you	/profile/3	f	2026-02-26 12:15:58.249+05:30
+29d3808d-9985-453f-8f19-efbf6829288e	5	follow	6	ashish	/api/v1/media/files/Jaadoe/posts/images/1772084806946-33478956_opt.webp	New Follower	ashish started following you	/profile/6	t	2026-02-26 11:19:16.833+05:30
+c6f305f5-9cde-4547-9e16-e8d03ba5f50f	5	follow	7	sarfarz	/api/v1/media/files/Jaadoe/posts/images/1772085050435-53870855_opt.webp	New Follower	sarfarz started following you	/profile/7	t	2026-02-26 11:24:02.992+05:30
+c4f5e026-e6ec-4e3a-8899-c04e3e92faaa	5	follow	3	akbar	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	New Follower	akbar started following you	/profile/3	t	2026-02-26 12:15:58.249+05:30
+961cee2a-4d30-413c-bc70-f4a561f601fa	7	message	2	must	\N	New Message	must: https://jaadoe.app/post/2092	/messages/36	f	2026-02-27 15:39:08.264+05:30
+59e4ef3c-30df-4042-9d97-147fc1afbffb	7	message	2	must	\N	New Message	must: https://jaadoe.app/post/2092	/messages/36	f	2026-02-27 15:51:32.976+05:30
+fedbad88-19d6-4a8a-b4b9-76d06dda9856	3	message	2	must	\N	New Message	must: https://jaadoe.app/post/2092	/messages/33	f	2026-02-27 15:54:11.066+05:30
+f23e7fd3-4326-4101-8dd7-4ff9b937935c	3	follow	2	must		New Follower	must started following you	/profile/2	f	2026-02-27 15:54:33.357+05:30
+8febb586-5ae6-4940-994a-9d6c8dc27e70	7	message	2	must	\N	New Message	must: https://jaadoe.app/post/2082	/messages/36	f	2026-02-28 10:16:34.861+05:30
+9bcd56ff-f722-4ca8-b79c-5210bb853ce9	5	message	2	must	\N	New Message	must: hi	/messages/37	t	2026-02-28 10:46:10.496+05:30
+76e7c1a9-32fd-4b2b-b3d6-bb9cf8661eb6	5	message	2	must	\N	New Message	must: https://jaadoe.app/post/2092	/messages/37	t	2026-02-28 10:53:11.712+05:30
+9c4b3cf9-afb9-4147-a11f-97afb0230ccc	5	follow	2	must		New Follower	must started following you	/profile/2	t	2026-02-28 11:47:09.365+05:30
+598e412a-5681-47b3-b68b-aaf0c0289506	5	message	2	must	\N	New Message	must: hhii	/messages/37	t	2026-02-28 11:47:19.412+05:30
 d2b2fe17-3c02-4d4b-9c18-a53a5489d58e	7	follow	3	akbar	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	New Follower	akbar started following you	/profile/3	f	2026-02-26 12:15:59.415+05:30
 a5fe69aa-9c7b-4fb3-8956-38912606c44d	6	follow	3	akbar	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	New Follower	akbar started following you	/profile/3	f	2026-02-26 12:16:07.049+05:30
-c0aeff37-2dff-44cc-b7a7-4598654aa7a9	3	follow	6	ashish	/api/v1/media/files/Jaadoe/posts/images/1772084806946-33478956_opt.webp	New Follower	ashish started following you	/profile/6	t	2026-02-26 11:19:41.742+05:30
-2aca7b64-b841-4ee7-870c-d3bdb92acb78	3	follow	7	sarfarz	/api/v1/media/files/Jaadoe/posts/images/1772085050435-53870855_opt.webp	New Follower	sarfarz started following you	/profile/7	t	2026-02-26 11:23:56.018+05:30
-a9a23fc1-9d83-45d4-8b15-54ee84886405	3	follow	5	farhan	/api/v1/media/files/Jaadoe/posts/images/1772084049865-897626602_opt.webp	New Follower	farhan started following you	/profile/5	t	2026-02-26 11:15:56.931+05:30
-758c36d2-7e1d-4612-86d8-e9b9984f26a6	2	follow	1	Irfan		New Follower	Irfan started following you	/profile/1	t	2026-02-26 10:32:33.278+05:30
-33a46cab-42a3-4691-b904-3c3d17ef1ecd	3	follow	2	must		New Follower	must started following you	/profile/2	t	2026-02-26 14:44:22.564+05:30
-7930a02a-82d7-4e69-a11d-d3ceb0480319	3	message	2	must	\N	New Message	must: hu	/messages/33	t	2026-02-26 14:44:28.439+05:30
-c52a4ac9-ca60-44a0-82e5-e3100168c11e	2	like	2	must		New Like	must liked your post	/p/2080	t	2026-02-26 14:58:06.562+05:30
+e18be6e9-2bf7-44dd-bee4-1819f5d69207	5	message	2	must	\N	New Message	must: 📹 Video call	/messages/37	t	2026-02-28 11:48:57.198+05:30
+cf268c76-8944-441f-88d6-76569b435b2f	5	message	2	must	\N	New Message	must: hu	/messages/38	f	2026-02-28 11:50:36.631+05:30
+5414ab8b-50bf-460a-b161-d0a50804115e	5	message	2	must	\N	New Message	must: dhnbdz	/messages/38	f	2026-02-28 11:51:20.149+05:30
+5ff826a1-ebb4-43cc-9f15-768495c78e5b	5	message	2	must	\N	New Message	must: 🖼️ Sticker	/messages/38	f	2026-02-28 12:07:35.503+05:30
+f0aeab3a-c1a5-4a09-963e-0cb8a3df4aba	5	message	2	must	\N	New Message	must: 🖼️ Sticker	/messages/38	f	2026-02-28 12:09:16.301+05:30
+3d459afd-52d2-45ca-8a8b-05560e936988	5	message	2	must	\N	New Message	must: ❤️	/messages/38	f	2026-02-28 12:11:26.934+05:30
+a4b401e1-ef15-4e0c-a55b-7804e4c91228	2	follow	3	akbar	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	New Follower	akbar started following you	/profile/3	t	2026-02-27 16:07:14.624+05:30
+935b0b59-e69b-4c53-81d2-5974f911db53	7	follow	2	must		New Follower	must started following you	/profile/2	f	2026-02-28 15:37:27.261+05:30
+e0874d5e-4a3f-4b63-8b4a-e98c34dd3819	3	message	2	must	\N	New Message	must: https://jaadoe.app/reel/62	/messages/33	f	2026-02-28 15:39:32.366+05:30
+4a18e745-f088-48a7-a14c-e27845bb70f1	5	message	2	must	\N	New Message	must: https://jaadoe.app/reel/61	/messages/38	f	2026-02-28 15:40:03.649+05:30
+9efcc4c2-dd44-4d55-afd2-7d4e78f3c0b9	7	like	3	akbar	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	New Like	akbar liked your post	/p/2109	f	2026-02-27 09:09:32.383+05:30
+fc3cffae-a8fe-4daf-ace2-f870f9b4f6f1	7	like	3	akbar	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	New Like	akbar liked your post	/p/2108	f	2026-02-27 09:09:34.85+05:30
+4963a4ea-3a27-4b8f-8606-04f6ba3ce699	2	message	3	akbar	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	New Message	akbar: hello\\	/messages/33	t	2026-03-02 09:17:34.882+05:30
+7fd94e5d-b745-4898-b01f-a6ae98ee3505	2	follow	8	Anu1		New Follower	Anu1 started following you	/profile/8	f	2026-03-02 11:05:33.707+05:30
+14969058-35e0-47b6-b952-03451f12b379	3	follow	8	Anu1		New Follower	Anu1 started following you	/profile/8	f	2026-03-02 11:05:39.041+05:30
+89d515be-4b01-4daa-b962-24519c1f9def	5	follow	8	Anu1		New Follower	Anu1 started following you	/profile/8	f	2026-03-02 11:05:46.076+05:30
+3c7f4ec5-89a6-47f3-8ac4-fc7b2c62cf91	7	message	2	must	\N	New Message	must: hi	/messages/36	f	2026-03-02 11:17:13.992+05:30
+088fe220-27c9-405e-94a1-77945457b145	7	message	2	must	\N	New Message	must: hi	/messages/36	f	2026-03-02 11:23:00.541+05:30
+f0afd539-3272-410d-8540-50b87cd77acd	5	message	2	must	\N	New Message	must: hi	/messages/38	f	2026-03-02 11:23:05.942+05:30
+f913fab7-27e2-4f38-b2ff-d5e5528f180c	8	follow	2	must		New Follower	must started following you	/profile/2	t	2026-03-02 11:06:00.33+05:30
+8863d6a2-3370-4262-9a9c-aa053cfbd517	8	message	2	must	\N	New Message	must: [STORY_REACTION] 🔥	/messages/39	t	2026-03-02 11:16:54.337+05:30
+69ade14d-1123-4baf-a17f-de2cd69568ff	8	message	2	must	\N	New Message	must: [STORY_REACTION] ❤️	/messages/39	t	2026-03-02 11:22:37.732+05:30
+809c951b-c224-4ca8-8a09-0165b1c177a9	8	message	2	must	\N	New Message	must: [STORY_REACTION] 😢	/messages/39	t	2026-03-02 11:34:59.223+05:30
+8840a157-954d-44aa-b420-2ab1e6e5e3c3	8	message	2	must	\N	New Message	must: [STORY_REACTION] ❤️	/messages/39	t	2026-03-02 11:35:16.717+05:30
+5d0875ff-f505-4a64-b35d-b4e454710fc5	3	message	2	must	\N	New Message	must: lol	/messages/33	f	2026-03-02 14:07:06.77+05:30
+99c8c407-1b6c-45d8-943b-583c3e2644ad	10	follow	9	irfan1		New Follower	irfan1 started following you	/profile/9	t	2026-03-02 12:11:06.192+05:30
+6df8efb0-2c86-4013-b2b4-16a269d43ce0	2	follow	5	farhan	/api/v1/media/files/Jaadoe/posts/images/1772084049865-897626602_opt.webp	New Follower	farhan started following you	/profile/5	t	2026-03-02 12:02:27.948+05:30
+aff9242f-f3b4-4cf0-bb5f-0e97299cf689	435	message	2	must	\N	New Message	must: Check this out: https://jaadoe.app/post/2092	/messages/34	f	2026-02-27 13:35:35.182+05:30
+1ca080d0-ab9b-4250-8ce1-4f603ba1862c	435	message	2	must	\N	New Message	must: Check this out: https://jaadoe.app/post/2092	/messages/34	f	2026-02-27 13:37:03.035+05:30
+10d177ed-4927-42a9-9723-5cb2b39c7347	435	message	2	must	\N	New Message	must: https://jaadoe.app/post/2089	/messages/35	f	2026-02-27 13:45:33.483+05:30
+af6d7697-f5e3-4467-b41a-bf1bf653c160	3	like	2	must		New Like	must liked your post	/p/2092	t	2026-02-27 11:59:56.327+05:30
+03359e97-86e7-49db-8e1c-525123dd9aef	3	like	2	must		New Like	must liked your post	/p/2092	t	2026-02-27 12:38:51.17+05:30
+47c98fad-dba2-467b-bfd3-11480ddd5931	3	follow	2	must		New Follower	must started following you	/profile/2	t	2026-02-27 12:40:21.838+05:30
+c1d544cd-9a4d-4d94-a180-ab0226b53be8	3	like	2	must		New Like	must liked your post	/p/2092	t	2026-02-27 12:41:30.054+05:30
+eac5643a-40db-402f-aea7-f61d23a7565c	3	follow	2	must		New Follower	must started following you	/profile/2	t	2026-02-27 12:42:24.992+05:30
+36ec370e-f2f0-43dd-ad28-b5cc4c75e80a	3	message	2	must	\N	New Message	must: https://192.168.1.100:5175/feed	/messages/33	t	2026-02-27 12:47:11.792+05:30
+2590bcf2-7ece-434f-9cef-bf90a701cd88	3	follow	2	must		New Follower	must started following you	/profile/2	t	2026-02-27 12:50:56.394+05:30
+07587f33-b075-4832-8307-da902d8b0428	3	follow	2	must		New Follower	must started following you	/profile/2	t	2026-02-27 13:01:49.146+05:30
+8b825b66-5650-4086-8404-02e60541e30b	10	follow	8	Anu1		New Follower	Anu1 started following you	/profile/8	t	2026-03-02 12:27:51.456+05:30
+0b5a522b-2703-45a5-aff2-84a84504dad2	10	follow	3	akbar	/api/v1/media/files/Jaadoe/posts/images/1772082904087-159841012_opt.webp	New Follower	akbar started following you	/profile/3	t	2026-03-02 12:28:40.814+05:30
+1052e98c-8c83-44cb-b9d9-891cc74ecdbf	3	follow	10	shahbaazk		New Follower	shahbaazk started following you	/profile/10	f	2026-03-02 14:30:01.771+05:30
+e69ef4d2-d5fd-41b7-ac76-1545faf1428f	3	like	10	shahbaazk		New Like	shahbaazk liked your post	/p/2092	f	2026-03-02 14:44:55.745+05:30
 \.
 
 
@@ -6147,15 +7131,8 @@ COPY public.pending_tags (id, post_id, tagged_user_id, tagged_by_user_id, status
 --
 
 COPY public.push_subscriptions (id, user_id, endpoint, p256dh, auth, created_at) FROM stdin;
-b0dbd95c-fb3e-4dde-9e6f-a0afa825bf72	3	https://fcm.googleapis.com/fcm/send/dHW7pT6l-wk:APA91bHjmhR5EpJ0sL4Nwy5mjuMesWDxOyR5iMfAOWrO2g5FOfyOGPj6HzfXiLWM6PotbCmg93vxKT9ZEjoEA1pFzFgCkWZkfvtgExCwVHCG0Ck2Mf0y3OUoWFw9bjJa7eU_uPA4lAXy	BIMotvIMI7nSJ3iyoryTUI2Rwfqvi5lnfuGf-CghflF6oXLoT9OOPGigdZg0uacFc7HFLgN8wvAQwxmIgddOTcA	hdnSgsy4aU7Xav6hModPCw	2026-02-26 14:35:53.493+05:30
-4b24c92e-56a3-4038-b932-b295236a26b6	3	https://fcm.googleapis.com/fcm/send/ccgmqYkUwb8:APA91bEnpjZzdKLJvnCmjLLRiip5vEgnjMTjYG5eq5brg6k-eevLmV9hFcUH6QKurhgv5jT-76wMKJNBfznkRwwWVNnCBJu7lmC5WQJy7hGjQvIcN8nabMCHlU3gS0vd0oLIta_ITQUO	BPL1RZbVbggXkOUg6ri2mYJyPNqZAWoaksgJajpgLQyNcqeuB1XfdqRgrZ_ahIrY5gxFPJpKx-Taa8brJv7I424	vWuxjjxvIDsfXMWVuP41iA	2026-02-26 14:46:27.593+05:30
-67d556a0-fc0e-4595-b6d8-f8955260dbbb	3	https://fcm.googleapis.com/fcm/send/dmqD9ZjJVJA:APA91bFBbtlPe4q9qG1XiO2r9MXV_93HcQKkGH4gWSWb57S3hmWttw-W6HlDI6IhwHNFmmVXV12LQX6t73lGga7BsI5R0hgCqXcJsCyCM_Nnhqh_HpkoPzkRURUEQeWqxonDFqAP2pZA	BJNSDUKEvFKoFpuICz1n9CGMhRWtPUZr1L4qB4P1wh46EkrOgveRd0EeFHUuDqtnREAPTviAh3CUAxIwtpAZ6tc	BkOSOXQXYIpG-8c4tofB0w	2026-02-26 14:46:28.174+05:30
-555e2183-a47c-481c-997c-64e08737af6b	3	https://fcm.googleapis.com/fcm/send/f6_bRZPB_0s:APA91bF6qeg93QGJ1b0IYOc_iPpYxsUsqds9Egv7MltJrJzCTAa5EtdZZoKCBD7Yee-lLsrnzEHnJ2REBxfy0no2mKAcZGxKxJsjyOXcUdnCVl8h1V_uHVssT4toGg5ERjZZqr1n0frr	BF8gFjoHILE11Dc-lXUT6eEweXPsiLhmYWkdTK9YkdNL3Y61cT4UAp6AyMz_WJF8uBKa44xS0mcSGY_mEF5pQdE	tayW1KYOeuaVphcR0KBmtQ	2026-02-26 14:52:35.225+05:30
 7d776872-58c2-4a6a-8f3d-6e0956284139	3	https://fcm.googleapis.com/fcm/send/cx2C8OItS5g:APA91bHi33myaFZi_ufG_Y509ngaz6DI1QyFZvq6SZ-hWK-cRwvaNFKkOMHzOHgT3Z9dhLOxs0PgXfmdA9PcwmbcABWarIYoFIKoVrsVRz4iZkgwFnXmXxpJDblldqf15cpvGWRqRVum	BC3aasnzA6kOmlPDd7xMtGPS-F4nKx5R6-IUDGBJsMlPBKnr844_ncjRIIXfZVKlm0BUiUAz94mZ4iCtKUcIGJM	WZOBjURK-b1ixQJmYOOZTQ	2026-02-26 14:52:35.702+05:30
-f12ae8e6-8bb6-4297-ae3d-86aa94b21172	3	https://fcm.googleapis.com/fcm/send/d-Ydy31YNbc:APA91bHfLzJf60NGZDb6X0b6cV8O_qtUsLZ-cWqI_pHrXQDU4p5QU9QH--RGLaV4Gh6ASAGryzWHfefYU4RI6xu82QoHnfTU42Wel7z5N_P-wAx2vVOhTS7Xx4fYB4NFgNtv2ItRGkAH	BB-S8MhAeKRcwk_J10BLq1WU6zf-njsLb1EY5ABb1b60VChywvcaaJAcn2Ig8NTjTwY1ELbQYflagDWwz7EzwlY	zaThle-W8XdMXTZl5ash-A	2026-02-26 14:56:44.248+05:30
 ccf7d8ba-f8a2-4aba-af00-2661bf5ece30	3	https://fcm.googleapis.com/fcm/send/el3xErxTkpc:APA91bEl8vv3usCOVx-Hj4sE0_SAm2ftxI4D3zqm9HVTek0oHZiegc_vPleaFMeruXp8AAS9NYxu96meMs-mzZRZhzqxmkBCrY2MzaeWIPPgchNzB_yUHIYQXcVv2KlMMg8w1zps10QF	BDTuL0Dg7h2E9OT-3ZJfZjmYgo8szcVcoxLk7P4L4VsNb5koKTthBDNbkHzDvntVUZ6TlKxpeYlkHiz93UKtYzo	oOdNXuJoYLOsjEXsRXYIww	2026-02-26 14:56:52.723+05:30
-d29bc752-f51e-4ffe-a4bc-85896655617e	3	https://fcm.googleapis.com/fcm/send/eEPgUGxneCo:APA91bHEPM9TzMPMLqlp9Ms1bNomvk7BsNvJwZGPzAmD-Z2-ylCWzrfOIUtFlmvQwPf-ErSn_9sC79Vj_gcU9_Kb6iOzOrFliZ7TBt3Zi-lJotvJLR5JBXS118Acz-l0dnrF-l7V8mcm	BBJgGi2rMeg2bLhvCq8I5ENIqliqxDhCIaDPSoUQtq9celG7_qYgjTvm9GVyMrTlZTNPnh76GoCmoPum5RdmRl4	ORIek5ExNitRuTogY2rZnA	2026-02-26 14:56:53.368+05:30
-822055ce-12da-4773-96f7-4dca9e1508e1	3	https://fcm.googleapis.com/fcm/send/fM5M7kN_bRE:APA91bFJHw9LKQ5luNO_XdTFgaumoaqNyEpR3ltjvZxLzkOoYLD94T5eBvqhOjg0wySaSLrJiU3TXYecyKfHfJWYvLraaHhizFZp0K6IAkFnj_RzYlcEx0Bv73IpBFnaIU6OtFNfROFf	BESJInmnu5yTTIOKMcJM8NZgrO_NcBzdft7qeMZ_dyaXgYI_NsBF153ypEP0jlaezT5xpzmLVvkZaWZr5-JzERg	TAeVUfwaEcEtBncN7nxdBg	2026-02-26 14:57:15.292+05:30
 \.
 
 
@@ -6172,6 +7149,7 @@ COPY public.reports (id, reporter_id, reported_user_id, content_type, content_id
 --
 
 COPY public.restricted_accounts (id, user_id, restricted_user_id, created_at) FROM stdin;
+c1c60e8e-b84f-4191-b997-9fdfd8a26eb6	2	436	2026-03-02 10:11:31.706+05:30
 \.
 
 
@@ -6196,6 +7174,8 @@ COPY public.story_privacy (id, user_id, hidden_user_id, "createdAt", "updatedAt"
 --
 
 COPY public.story_reactions (id, "storyId", "reactorId", type, "createdAt", "updatedAt") FROM stdin;
+2	99	2	LIKE	2026-02-28 11:38:52.106+05:30	2026-02-28 11:38:52.107+05:30
+3	101	2	LIKE	2026-03-02 11:09:58.779+05:30	2026-03-02 11:09:58.779+05:30
 \.
 
 
@@ -6220,6 +7200,7 @@ COPY public.support_requests (id, user_id, category, status, description, create
 --
 
 COPY public.system_settings (id, maintenance_mode, allow_registrations, email_alerts, admin_theme, updated_at) FROM stdin;
+2	f	t	t	light	2026-02-28 12:24:18.673+05:30
 \.
 
 
@@ -6267,6 +7248,9 @@ COPY public.user_general_settings (user_id, save_story_to_archive, reduce_motion
 6	t	f	en	2026-02-26 11:16:36.912+05:30
 7	t	f	en	2026-02-26 11:20:42.862+05:30
 51	t	f	en	2026-02-26 11:40:43.174+05:30
+8	t	f	en	2026-03-02 11:05:14.776+05:30
+9	t	f	en	2026-03-02 12:09:13.073+05:30
+10	t	f	en	2026-03-02 12:10:33.823+05:30
 \.
 
 
@@ -6331,7 +7315,7 @@ COPY public.violations (id, user_id, type, description, created_at) FROM stdin;
 -- Name: AccountHistories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."AccountHistories_id_seq"', 7, true);
+SELECT pg_catalog.setval('public."AccountHistories_id_seq"', 10, true);
 
 
 --
@@ -6345,35 +7329,35 @@ SELECT pg_catalog.setval('public."AdminNotifications_id_seq"', 1, true);
 -- Name: CommentLikes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."CommentLikes_id_seq"', 22, true);
+SELECT pg_catalog.setval('public."CommentLikes_id_seq"', 24, true);
 
 
 --
 -- Name: Comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."Comments_id_seq"', 57, true);
+SELECT pg_catalog.setval('public."Comments_id_seq"', 58, true);
 
 
 --
 -- Name: Conversations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."Conversations_id_seq"', 33, true);
+SELECT pg_catalog.setval('public."Conversations_id_seq"', 39, true);
 
 
 --
 -- Name: Likes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."Likes_id_seq"', 73, true);
+SELECT pg_catalog.setval('public."Likes_id_seq"', 81, true);
 
 
 --
 -- Name: Messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."Messages_id_seq"', 146, true);
+SELECT pg_catalog.setval('public."Messages_id_seq"', 180, true);
 
 
 --
@@ -6401,7 +7385,7 @@ SELECT pg_catalog.setval('public."Posts_id_seq"', 2109, true);
 -- Name: ReelBookmarks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."ReelBookmarks_id_seq"', 8, true);
+SELECT pg_catalog.setval('public."ReelBookmarks_id_seq"', 9, true);
 
 
 --
@@ -6450,21 +7434,21 @@ SELECT pg_catalog.setval('public."Roles_id_seq"', 1, true);
 -- Name: SavedPosts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."SavedPosts_id_seq"', 19, true);
+SELECT pg_catalog.setval('public."SavedPosts_id_seq"', 26, true);
 
 
 --
 -- Name: SearchIndices_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."SearchIndices_id_seq"', 439, true);
+SELECT pg_catalog.setval('public."SearchIndices_id_seq"', 442, true);
 
 
 --
 -- Name: Stories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."Stories_id_seq"', 98, true);
+SELECT pg_catalog.setval('public."Stories_id_seq"', 101, true);
 
 
 --
@@ -6485,28 +7469,28 @@ SELECT pg_catalog.setval('public."StoryReports_id_seq"', 1, true);
 -- Name: StoryViews_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."StoryViews_id_seq"', 50, true);
+SELECT pg_catalog.setval('public."StoryViews_id_seq"', 60, true);
 
 
 --
 -- Name: UserProfiles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."UserProfiles_id_seq"', 7, true);
+SELECT pg_catalog.setval('public."UserProfiles_id_seq"', 10, true);
 
 
 --
 -- Name: Users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."Users_id_seq"', 7, true);
+SELECT pg_catalog.setval('public."Users_id_seq"', 10, true);
 
 
 --
 -- Name: account_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.account_history_id_seq', 124, true);
+SELECT pg_catalog.setval('public.account_history_id_seq', 133, true);
 
 
 --
@@ -6527,7 +7511,7 @@ SELECT pg_catalog.setval('public.ad_impressions_id_seq', 1, true);
 -- Name: admin_audit_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.admin_audit_logs_id_seq', 2, true);
+SELECT pg_catalog.setval('public.admin_audit_logs_id_seq', 3, true);
 
 
 --
@@ -6590,14 +7574,14 @@ SELECT pg_catalog.setval('public.highlight_stories_id_seq', 2, true);
 -- Name: impressions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.impressions_id_seq', 249, true);
+SELECT pg_catalog.setval('public.impressions_id_seq', 321, true);
 
 
 --
 -- Name: interactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.interactions_id_seq', 20, true);
+SELECT pg_catalog.setval('public.interactions_id_seq', 29, true);
 
 
 --
@@ -6618,14 +7602,14 @@ SELECT pg_catalog.setval('public.reports_id_seq', 1, false);
 -- Name: story_reactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.story_reactions_id_seq', 1, true);
+SELECT pg_catalog.setval('public.story_reactions_id_seq', 3, true);
 
 
 --
 -- Name: system_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.system_settings_id_seq', 1, true);
+SELECT pg_catalog.setval('public.system_settings_id_seq', 2, true);
 
 
 --
@@ -6859,11 +7843,99 @@ ALTER TABLE ONLY public."Roles"
 
 
 --
+-- Name: Roles Roles_name_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key18" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key19" UNIQUE (name);
+
+
+--
 -- Name: Roles Roles_name_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."Roles"
     ADD CONSTRAINT "Roles_name_key2" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key20" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key21" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key22" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key23" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key24; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key24" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key25; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key25" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key26; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key26" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key27; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key27" UNIQUE (name);
+
+
+--
+-- Name: Roles Roles_name_key28; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_name_key28" UNIQUE (name);
 
 
 --
@@ -7275,11 +8347,91 @@ ALTER TABLE ONLY public."UserProfiles"
 
 
 --
+-- Name: UserProfiles UserProfiles_userId_key41; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key41" UNIQUE ("userId");
+
+
+--
+-- Name: UserProfiles UserProfiles_userId_key42; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key42" UNIQUE ("userId");
+
+
+--
+-- Name: UserProfiles UserProfiles_userId_key43; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key43" UNIQUE ("userId");
+
+
+--
+-- Name: UserProfiles UserProfiles_userId_key44; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key44" UNIQUE ("userId");
+
+
+--
+-- Name: UserProfiles UserProfiles_userId_key45; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key45" UNIQUE ("userId");
+
+
+--
+-- Name: UserProfiles UserProfiles_userId_key46; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key46" UNIQUE ("userId");
+
+
+--
+-- Name: UserProfiles UserProfiles_userId_key47; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key47" UNIQUE ("userId");
+
+
+--
+-- Name: UserProfiles UserProfiles_userId_key48; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key48" UNIQUE ("userId");
+
+
+--
+-- Name: UserProfiles UserProfiles_userId_key49; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key49" UNIQUE ("userId");
+
+
+--
 -- Name: UserProfiles UserProfiles_userId_key5; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."UserProfiles"
     ADD CONSTRAINT "UserProfiles_userId_key5" UNIQUE ("userId");
+
+
+--
+-- Name: UserProfiles UserProfiles_userId_key50; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_userId_key50" UNIQUE ("userId");
 
 
 --
@@ -7603,11 +8755,91 @@ ALTER TABLE ONLY public."UserProfiles"
 
 
 --
+-- Name: UserProfiles UserProfiles_username_key41; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key41" UNIQUE (username);
+
+
+--
+-- Name: UserProfiles UserProfiles_username_key42; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key42" UNIQUE (username);
+
+
+--
+-- Name: UserProfiles UserProfiles_username_key43; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key43" UNIQUE (username);
+
+
+--
+-- Name: UserProfiles UserProfiles_username_key44; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key44" UNIQUE (username);
+
+
+--
+-- Name: UserProfiles UserProfiles_username_key45; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key45" UNIQUE (username);
+
+
+--
+-- Name: UserProfiles UserProfiles_username_key46; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key46" UNIQUE (username);
+
+
+--
+-- Name: UserProfiles UserProfiles_username_key47; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key47" UNIQUE (username);
+
+
+--
+-- Name: UserProfiles UserProfiles_username_key48; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key48" UNIQUE (username);
+
+
+--
+-- Name: UserProfiles UserProfiles_username_key49; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key49" UNIQUE (username);
+
+
+--
 -- Name: UserProfiles UserProfiles_username_key5; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."UserProfiles"
     ADD CONSTRAINT "UserProfiles_username_key5" UNIQUE (username);
+
+
+--
+-- Name: UserProfiles UserProfiles_username_key50; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."UserProfiles"
+    ADD CONSTRAINT "UserProfiles_username_key50" UNIQUE (username);
 
 
 --
@@ -7875,11 +9107,91 @@ ALTER TABLE ONLY public."Users"
 
 
 --
+-- Name: Users Users_email_key35; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key35" UNIQUE (email);
+
+
+--
+-- Name: Users Users_email_key36; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key36" UNIQUE (email);
+
+
+--
+-- Name: Users Users_email_key37; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key37" UNIQUE (email);
+
+
+--
+-- Name: Users Users_email_key38; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key38" UNIQUE (email);
+
+
+--
+-- Name: Users Users_email_key39; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key39" UNIQUE (email);
+
+
+--
 -- Name: Users Users_email_key4; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."Users"
     ADD CONSTRAINT "Users_email_key4" UNIQUE (email);
+
+
+--
+-- Name: Users Users_email_key40; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key40" UNIQUE (email);
+
+
+--
+-- Name: Users Users_email_key41; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key41" UNIQUE (email);
+
+
+--
+-- Name: Users Users_email_key42; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key42" UNIQUE (email);
+
+
+--
+-- Name: Users Users_email_key43; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key43" UNIQUE (email);
+
+
+--
+-- Name: Users Users_email_key44; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key44" UNIQUE (email);
 
 
 --
@@ -8163,11 +9475,91 @@ ALTER TABLE ONLY public."Users"
 
 
 --
+-- Name: Users Users_username_key35; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key35" UNIQUE (username);
+
+
+--
+-- Name: Users Users_username_key36; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key36" UNIQUE (username);
+
+
+--
+-- Name: Users Users_username_key37; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key37" UNIQUE (username);
+
+
+--
+-- Name: Users Users_username_key38; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key38" UNIQUE (username);
+
+
+--
+-- Name: Users Users_username_key39; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key39" UNIQUE (username);
+
+
+--
 -- Name: Users Users_username_key4; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."Users"
     ADD CONSTRAINT "Users_username_key4" UNIQUE (username);
+
+
+--
+-- Name: Users Users_username_key40; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key40" UNIQUE (username);
+
+
+--
+-- Name: Users Users_username_key41; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key41" UNIQUE (username);
+
+
+--
+-- Name: Users Users_username_key42; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key42" UNIQUE (username);
+
+
+--
+-- Name: Users Users_username_key43; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key43" UNIQUE (username);
+
+
+--
+-- Name: Users Users_username_key44; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_username_key44" UNIQUE (username);
 
 
 --
@@ -8395,11 +9787,99 @@ ALTER TABLE ONLY public.admins
 
 
 --
+-- Name: admins admins_email_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key18 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key19 UNIQUE (email);
+
+
+--
 -- Name: admins admins_email_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.admins
     ADD CONSTRAINT admins_email_key2 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key20 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key21 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key22 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key23 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key24; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key24 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key25; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key25 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key26; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key26 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key27; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key27 UNIQUE (email);
+
+
+--
+-- Name: admins admins_email_key28; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_email_key28 UNIQUE (email);
 
 
 --
@@ -8547,11 +10027,99 @@ ALTER TABLE ONLY public.admins
 
 
 --
+-- Name: admins admins_username_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key18 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key19 UNIQUE (username);
+
+
+--
 -- Name: admins admins_username_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.admins
     ADD CONSTRAINT admins_username_key2 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key20 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key21 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key22 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key23 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key24; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key24 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key25; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key25 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key26; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key26 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key27; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key27 UNIQUE (username);
+
+
+--
+-- Name: admins admins_username_key28; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admins
+    ADD CONSTRAINT admins_username_key28 UNIQUE (username);
 
 
 --
@@ -8795,11 +10363,99 @@ ALTER TABLE ONLY public.explore_trending_topics
 
 
 --
+-- Name: explore_trending_topics explore_trending_topics_topic_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key18 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key19 UNIQUE (topic);
+
+
+--
 -- Name: explore_trending_topics explore_trending_topics_topic_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.explore_trending_topics
     ADD CONSTRAINT explore_trending_topics_topic_key2 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key20 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key21 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key22 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key23 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key24; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key24 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key25; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key25 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key26; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key26 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key27; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key27 UNIQUE (topic);
+
+
+--
+-- Name: explore_trending_topics explore_trending_topics_topic_key28; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.explore_trending_topics
+    ADD CONSTRAINT explore_trending_topics_topic_key28 UNIQUE (topic);
 
 
 --
@@ -8979,11 +10635,99 @@ ALTER TABLE ONLY public.hashtags
 
 
 --
+-- Name: hashtags hashtags_name_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key18 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key19 UNIQUE (name);
+
+
+--
 -- Name: hashtags hashtags_name_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.hashtags
     ADD CONSTRAINT hashtags_name_key2 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key20 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key21 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key22 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key23 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key24; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key24 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key25; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key25 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key26; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key26 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key27; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key27 UNIQUE (name);
+
+
+--
+-- Name: hashtags hashtags_name_key28; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hashtags
+    ADD CONSTRAINT hashtags_name_key28 UNIQUE (name);
 
 
 --
@@ -9115,11 +10859,91 @@ ALTER TABLE ONLY public.help_articles
 
 
 --
+-- Name: help_articles help_articles_slug_key14; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key14 UNIQUE (slug);
+
+
+--
+-- Name: help_articles help_articles_slug_key15; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key15 UNIQUE (slug);
+
+
+--
+-- Name: help_articles help_articles_slug_key16; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key16 UNIQUE (slug);
+
+
+--
+-- Name: help_articles help_articles_slug_key17; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key17 UNIQUE (slug);
+
+
+--
+-- Name: help_articles help_articles_slug_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key18 UNIQUE (slug);
+
+
+--
+-- Name: help_articles help_articles_slug_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key19 UNIQUE (slug);
+
+
+--
 -- Name: help_articles help_articles_slug_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.help_articles
     ADD CONSTRAINT help_articles_slug_key2 UNIQUE (slug);
+
+
+--
+-- Name: help_articles help_articles_slug_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key20 UNIQUE (slug);
+
+
+--
+-- Name: help_articles help_articles_slug_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key21 UNIQUE (slug);
+
+
+--
+-- Name: help_articles help_articles_slug_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key22 UNIQUE (slug);
+
+
+--
+-- Name: help_articles help_articles_slug_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_articles
+    ADD CONSTRAINT help_articles_slug_key23 UNIQUE (slug);
 
 
 --
@@ -9235,11 +11059,91 @@ ALTER TABLE ONLY public.help_categories
 
 
 --
+-- Name: help_categories help_categories_slug_key14; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key14 UNIQUE (slug);
+
+
+--
+-- Name: help_categories help_categories_slug_key15; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key15 UNIQUE (slug);
+
+
+--
+-- Name: help_categories help_categories_slug_key16; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key16 UNIQUE (slug);
+
+
+--
+-- Name: help_categories help_categories_slug_key17; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key17 UNIQUE (slug);
+
+
+--
+-- Name: help_categories help_categories_slug_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key18 UNIQUE (slug);
+
+
+--
+-- Name: help_categories help_categories_slug_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key19 UNIQUE (slug);
+
+
+--
 -- Name: help_categories help_categories_slug_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.help_categories
     ADD CONSTRAINT help_categories_slug_key2 UNIQUE (slug);
+
+
+--
+-- Name: help_categories help_categories_slug_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key20 UNIQUE (slug);
+
+
+--
+-- Name: help_categories help_categories_slug_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key21 UNIQUE (slug);
+
+
+--
+-- Name: help_categories help_categories_slug_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key22 UNIQUE (slug);
+
+
+--
+-- Name: help_categories help_categories_slug_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_categories
+    ADD CONSTRAINT help_categories_slug_key23 UNIQUE (slug);
 
 
 --
@@ -9355,11 +11259,91 @@ ALTER TABLE ONLY public.help_tags
 
 
 --
+-- Name: help_tags help_tags_slug_key14; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key14 UNIQUE (slug);
+
+
+--
+-- Name: help_tags help_tags_slug_key15; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key15 UNIQUE (slug);
+
+
+--
+-- Name: help_tags help_tags_slug_key16; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key16 UNIQUE (slug);
+
+
+--
+-- Name: help_tags help_tags_slug_key17; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key17 UNIQUE (slug);
+
+
+--
+-- Name: help_tags help_tags_slug_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key18 UNIQUE (slug);
+
+
+--
+-- Name: help_tags help_tags_slug_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key19 UNIQUE (slug);
+
+
+--
 -- Name: help_tags help_tags_slug_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.help_tags
     ADD CONSTRAINT help_tags_slug_key2 UNIQUE (slug);
+
+
+--
+-- Name: help_tags help_tags_slug_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key20 UNIQUE (slug);
+
+
+--
+-- Name: help_tags help_tags_slug_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key21 UNIQUE (slug);
+
+
+--
+-- Name: help_tags help_tags_slug_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key22 UNIQUE (slug);
+
+
+--
+-- Name: help_tags help_tags_slug_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.help_tags
+    ADD CONSTRAINT help_tags_slug_key23 UNIQUE (slug);
 
 
 --
@@ -9531,11 +11515,99 @@ ALTER TABLE ONLY public.languages
 
 
 --
+-- Name: languages languages_code_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key18 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key19 UNIQUE (code);
+
+
+--
 -- Name: languages languages_code_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.languages
     ADD CONSTRAINT languages_code_key2 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key20 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key21 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key22 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key23 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key24; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key24 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key25; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key25 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key26; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key26 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key27; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key27 UNIQUE (code);
+
+
+--
+-- Name: languages languages_code_key28; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.languages
+    ADD CONSTRAINT languages_code_key28 UNIQUE (code);
 
 
 --
@@ -9611,11 +11683,43 @@ ALTER TABLE ONLY public.like_share_settings
 
 
 --
+-- Name: live_blocked_keywords live_blocked_keywords_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_blocked_keywords
+    ADD CONSTRAINT live_blocked_keywords_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_blocked_users live_blocked_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_blocked_users
+    ADD CONSTRAINT live_blocked_users_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: live_chat_messages live_chat_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.live_chat_messages
     ADD CONSTRAINT live_chat_messages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_donations live_donations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_donations
+    ADD CONSTRAINT live_donations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_guest_requests live_guest_requests_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_guest_requests
+    ADD CONSTRAINT live_guest_requests_pkey PRIMARY KEY (id);
 
 
 --
@@ -9627,6 +11731,70 @@ ALTER TABLE ONLY public.live_moderators
 
 
 --
+-- Name: live_muted_users live_muted_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_muted_users
+    ADD CONSTRAINT live_muted_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_poll_votes live_poll_votes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_poll_votes
+    ADD CONSTRAINT live_poll_votes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_polls live_polls_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_polls
+    ADD CONSTRAINT live_polls_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_products live_products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_products
+    ADD CONSTRAINT live_products_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_questions live_questions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_questions
+    ADD CONSTRAINT live_questions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_settings live_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_settings
+    ADD CONSTRAINT live_settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_stream_messages live_stream_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_stream_messages
+    ADD CONSTRAINT live_stream_messages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: live_stream_viewers live_stream_viewers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_stream_viewers
+    ADD CONSTRAINT live_stream_viewers_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: live_streams live_streams_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -9635,99 +11803,307 @@ ALTER TABLE ONLY public.live_streams
 
 
 --
--- Name: live_streams live_streams_streamKey_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: live_streams live_streams_room_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key" UNIQUE ("streamKey");
+    ADD CONSTRAINT live_streams_room_name_key UNIQUE (room_name);
 
 
 --
--- Name: live_streams live_streams_streamKey_key1; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key1" UNIQUE ("streamKey");
-
-
---
--- Name: live_streams live_streams_streamKey_key10; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: live_streams live_streams_room_name_key1; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key10" UNIQUE ("streamKey");
+    ADD CONSTRAINT live_streams_room_name_key1 UNIQUE (room_name);
 
 
 --
--- Name: live_streams live_streams_streamKey_key11; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key11" UNIQUE ("streamKey");
-
-
---
--- Name: live_streams live_streams_streamKey_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: live_streams live_streams_room_name_key10; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key2" UNIQUE ("streamKey");
+    ADD CONSTRAINT live_streams_room_name_key10 UNIQUE (room_name);
 
 
 --
--- Name: live_streams live_streams_streamKey_key3; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key3" UNIQUE ("streamKey");
-
-
---
--- Name: live_streams live_streams_streamKey_key4; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: live_streams live_streams_room_name_key11; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key4" UNIQUE ("streamKey");
+    ADD CONSTRAINT live_streams_room_name_key11 UNIQUE (room_name);
 
 
 --
--- Name: live_streams live_streams_streamKey_key5; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key5" UNIQUE ("streamKey");
-
-
---
--- Name: live_streams live_streams_streamKey_key6; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: live_streams live_streams_room_name_key12; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key6" UNIQUE ("streamKey");
+    ADD CONSTRAINT live_streams_room_name_key12 UNIQUE (room_name);
 
 
 --
--- Name: live_streams live_streams_streamKey_key7; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key7" UNIQUE ("streamKey");
-
-
---
--- Name: live_streams live_streams_streamKey_key8; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: live_streams live_streams_room_name_key13; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key8" UNIQUE ("streamKey");
+    ADD CONSTRAINT live_streams_room_name_key13 UNIQUE (room_name);
 
 
 --
--- Name: live_streams live_streams_streamKey_key9; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: live_streams live_streams_room_name_key14; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.live_streams
-    ADD CONSTRAINT "live_streams_streamKey_key9" UNIQUE ("streamKey");
+    ADD CONSTRAINT live_streams_room_name_key14 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key15; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key15 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key16; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key16 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key17; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key17 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key18 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key19 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key2 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key20 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key21 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key22 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key23 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key24; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key24 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key25; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key25 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key26; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key26 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key27; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key27 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key28; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key28 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key29; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key29 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key3; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key3 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key30; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key30 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key31; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key31 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key32; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key32 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key33; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key33 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key34; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key34 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key35; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key35 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key36; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key36 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key4; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key4 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key5; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key5 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key6; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key6 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key7; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key7 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key8; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key8 UNIQUE (room_name);
+
+
+--
+-- Name: live_streams live_streams_room_name_key9; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_streams
+    ADD CONSTRAINT live_streams_room_name_key9 UNIQUE (room_name);
+
+
+--
+-- Name: live_supporters live_supporters_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_supporters
+    ADD CONSTRAINT live_supporters_pkey PRIMARY KEY (id);
 
 
 --
@@ -10218,17 +12594,66 @@ CREATE UNIQUE INDEX live_moderators_stream_id_user_id ON public.live_moderators 
 
 
 --
+-- Name: live_poll_votes_poll_id_user_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX live_poll_votes_poll_id_user_id ON public.live_poll_votes USING btree (poll_id, user_id);
+
+
+--
+-- Name: live_stream_messages_created_at; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX live_stream_messages_created_at ON public.live_stream_messages USING btree (created_at);
+
+
+--
+-- Name: live_stream_messages_stream_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX live_stream_messages_stream_id ON public.live_stream_messages USING btree (stream_id);
+
+
+--
+-- Name: live_stream_viewers_left_at; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX live_stream_viewers_left_at ON public.live_stream_viewers USING btree (left_at);
+
+
+--
+-- Name: live_stream_viewers_stream_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX live_stream_viewers_stream_id ON public.live_stream_viewers USING btree (stream_id);
+
+
+--
+-- Name: live_stream_viewers_user_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX live_stream_viewers_user_id ON public.live_stream_viewers USING btree (user_id);
+
+
+--
+-- Name: live_streams_host_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX live_streams_host_id ON public.live_streams USING btree (host_id);
+
+
+--
+-- Name: live_streams_scheduled_at; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX live_streams_scheduled_at ON public.live_streams USING btree (scheduled_at);
+
+
+--
 -- Name: live_streams_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX live_streams_status ON public.live_streams USING btree (status);
-
-
---
--- Name: live_streams_user_id; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX live_streams_user_id ON public.live_streams USING btree ("userId");
 
 
 --
@@ -10539,11 +12964,35 @@ ALTER TABLE ONLY public.help_categories
 
 
 --
--- Name: live_chat_messages live_chat_messages_streamId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: live_blocked_keywords live_blocked_keywords_streamId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.live_chat_messages
-    ADD CONSTRAINT "live_chat_messages_streamId_fkey" FOREIGN KEY ("streamId") REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public.live_blocked_keywords
+    ADD CONSTRAINT "live_blocked_keywords_streamId_fkey" FOREIGN KEY ("streamId") REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_blocked_users live_blocked_users_streamId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_blocked_users
+    ADD CONSTRAINT "live_blocked_users_streamId_fkey" FOREIGN KEY ("streamId") REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_donations live_donations_stream_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_donations
+    ADD CONSTRAINT live_donations_stream_id_fkey FOREIGN KEY (stream_id) REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_guest_requests live_guest_requests_stream_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_guest_requests
+    ADD CONSTRAINT live_guest_requests_stream_id_fkey FOREIGN KEY (stream_id) REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -10555,16 +13004,80 @@ ALTER TABLE ONLY public.live_moderators
 
 
 --
--- Name: live_viewers live_viewers_streamId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: live_muted_users live_muted_users_streamId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.live_viewers
-    ADD CONSTRAINT "live_viewers_streamId_fkey" FOREIGN KEY ("streamId") REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public.live_muted_users
+    ADD CONSTRAINT "live_muted_users_streamId_fkey" FOREIGN KEY ("streamId") REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_poll_votes live_poll_votes_poll_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_poll_votes
+    ADD CONSTRAINT live_poll_votes_poll_id_fkey FOREIGN KEY (poll_id) REFERENCES public.live_polls(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_polls live_polls_stream_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_polls
+    ADD CONSTRAINT live_polls_stream_id_fkey FOREIGN KEY (stream_id) REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_products live_products_stream_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_products
+    ADD CONSTRAINT live_products_stream_id_fkey FOREIGN KEY (stream_id) REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_questions live_questions_stream_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_questions
+    ADD CONSTRAINT live_questions_stream_id_fkey FOREIGN KEY (stream_id) REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_settings live_settings_streamId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_settings
+    ADD CONSTRAINT "live_settings_streamId_fkey" FOREIGN KEY ("streamId") REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_stream_messages live_stream_messages_stream_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_stream_messages
+    ADD CONSTRAINT live_stream_messages_stream_id_fkey FOREIGN KEY (stream_id) REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_stream_viewers live_stream_viewers_stream_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_stream_viewers
+    ADD CONSTRAINT live_stream_viewers_stream_id_fkey FOREIGN KEY (stream_id) REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: live_supporters live_supporters_stream_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.live_supporters
+    ADD CONSTRAINT live_supporters_stream_id_fkey FOREIGN KEY (stream_id) REFERENCES public.live_streams(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict O3NqHW6ZsmCf2iKPcWCgbLXwUGcAsIf0c3H8GvcLHp1nYQ7pMzVK0ooa1caKgxp
+\unrestrict 3sGX8ARGLAFuZfqNHYD38BrYhh6ytZgEDxmtB5yBueoiMInWEqI1NOJOOS6Au2P
 
