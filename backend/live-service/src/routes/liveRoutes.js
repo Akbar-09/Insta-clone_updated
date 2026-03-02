@@ -23,4 +23,17 @@ router.get('/:id', liveController.getStreamDetails);
 // Interactions (Optional but good to keep for HTTP fallback, even though socket.io handles real-time)
 router.post('/:id/chat', liveController.addChatMessage);
 
+// Settings and Moderation
+router.get('/:id/settings', liveController.getSettings);
+router.patch('/:id/settings', liveController.updateSettings);
+
+router.post('/:id/keyword', liveController.addKeyword);
+router.delete('/:id/keyword/:keywordId', liveController.removeKeyword);
+
+router.post('/:id/moderator', liveController.addModerator);
+router.delete('/:id/moderator/:userId', liveController.removeModerator);
+
+router.post('/:id/mute/:userId', liveController.muteUser);
+router.post('/:id/block/:userId', liveController.blockUser);
+
 module.exports = router;

@@ -79,7 +79,7 @@ const initSocket = (server) => {
 
         socket.on('send_reaction', ({ streamId, emoji }) => {
             if (streamId) {
-                socket.to(`live_stream_${streamId}`).emit('new_reaction', { emoji });
+                io.to(`live_stream_${streamId}`).emit('new_reaction', { emoji });
             }
         });
 
@@ -95,6 +95,14 @@ const initSocket = (server) => {
                 console.log(`[Socket] Cohost request accepted for user ${userId} in stream ${streamId}`);
                 // Emit to specifically that user's private room
                 io.to(`user:${userId}`).emit('cohost_request_accepted', { streamId });
+            }
+        });
+
+        socket.on('remove_cohost', ({ streamId, userId }) => {
+            if (streamId) {
+                console.log(`[Socket] Cohost removed for user ${userId} in stream ${streamId}`);
+                // Emit to specifically that user's private room to demote them
+                io.to(`user:${userId}`).emit('cohost_removed', { streamId });
             }
         });
 
