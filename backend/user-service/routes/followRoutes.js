@@ -13,6 +13,11 @@ router.get('/:userId/follow/status', followController.checkFollowStatus);
 router.get('/:userId/followers', followController.getFollowers);
 router.get('/:userId/following', followController.getFollowing);
 
+// Backwards-compatible routes for older frontend caches
+router.post('/follow/:userId', followController.followUser);
+router.delete('/follow/:userId', followController.unfollowUser);
+router.delete('/followers/:userId', followController.unfollowUser);
+
 // Follow Requests
 router.get('/requests', followController.getFollowRequests);
 router.post('/requests/accept', followController.acceptRequest);

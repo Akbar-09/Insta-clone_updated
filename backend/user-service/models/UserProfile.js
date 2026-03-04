@@ -68,6 +68,31 @@ const UserProfile = sequelize.define('UserProfile', {
         type: DataTypes.STRING,
         defaultValue: 'active',
     },
+    // Onboarding tracking
+    birthDate: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+    },
+    isBirthdatePublic: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    onboardingCompleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    onboardingStep: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+    },
+    tutorialCompleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    notificationsEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    }
 });
 
 module.exports = UserProfile;

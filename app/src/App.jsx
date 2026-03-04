@@ -12,6 +12,7 @@ import Profile from './pages/profile/ProfilePage';
 import Layout from './components/Layout';
 import ProfessionalDashboard from './components/professional/ProfessionalDashboard';
 import PostPage from './pages/PostPage';
+import Onboarding from './pages/Onboarding';
 import ArchivePage from './pages/profile/ArchivePage';
 import LiveViewerPage from './pages/LiveViewerPage';
 import NotificationsPage from './pages/NotificationsPage';
@@ -117,6 +118,7 @@ function App() {
                         </Route>
 
                         <Route element={<ProtectedRoute />}>
+                          <Route path="/onboarding" element={<Onboarding />} />
                           <Route path="/live/:id" element={<LiveViewerPage />} />
                           <Route element={<Layout />}>
                             <Route path="/feed" element={<Feed />} />

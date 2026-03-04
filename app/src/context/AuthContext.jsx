@@ -38,13 +38,14 @@ export const AuthProvider = ({ children }) => {
                     if (data.status === 'success') {
                         const userData = data.data;
 
-                        // Fetch additional profile data from user-service
                         try {
                             const profileRes = await api.get(`/users/${userData.username}`);
                             if (profileRes.data.status === 'success') {
                                 // Merge data and ensure 'avatar' is set for the sidebar
                                 userData.avatar = profileRes.data.data.profilePicture;
                                 userData.fullName = profileRes.data.data.fullName;
+                                userData.onboardingCompleted = profileRes.data.data.onboardingCompleted;
+                                userData.onboardingStep = profileRes.data.data.onboardingStep;
                             }
                         } catch (profileErr) {
                             console.error("Failed to fetch profile supplemental data", profileErr);
@@ -104,11 +105,14 @@ export const AuthProvider = ({ children }) => {
                 const userData = data.data.user;
 
                 // Fetch additional profile data from user-service
+                // Fetch additional profile data from user-service
                 try {
                     const profileRes = await api.get(`/users/${userData.username}`);
                     if (profileRes.data.status === 'success') {
                         userData.avatar = profileRes.data.data.profilePicture;
                         userData.fullName = profileRes.data.data.fullName;
+                        userData.onboardingCompleted = profileRes.data.data.onboardingCompleted;
+                        userData.onboardingStep = profileRes.data.data.onboardingStep;
                     }
                 } catch (profileErr) {
                     console.error("Failed to fetch profile on login", profileErr);
@@ -159,6 +163,9 @@ export const AuthProvider = ({ children }) => {
                     const profileRes = await api.get(`/users/${userData.username}`);
                     if (profileRes.data.status === 'success') {
                         userData.avatar = profileRes.data.data.profilePicture;
+                        userData.fullName = profileRes.data.data.fullName;
+                        userData.onboardingCompleted = profileRes.data.data.onboardingCompleted;
+                        userData.onboardingStep = profileRes.data.data.onboardingStep;
                     }
                 } catch (e) { }
 

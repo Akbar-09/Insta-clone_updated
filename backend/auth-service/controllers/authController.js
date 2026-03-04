@@ -11,10 +11,16 @@ const register = async (req, res) => {
     try {
         const { username, email, password, fullName } = req.body;
 
-        // Check existing
-        const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) {
+        // Check existing email
+        const existingEmail = await User.findOne({ where: { email } });
+        if (existingEmail) {
             return res.status(400).json({ status: 'fail', message: 'Email already exists' });
+        }
+
+        // Check existing username (Auth DB Constraint)
+        const existingUsername = await User.findOne({ where: { username } });
+        if (existingUsername) {
+            return res.status(400).json({ status: 'fail', message: 'Username already taken' });
         }
 
         // Hash password
@@ -107,8 +113,51 @@ const login = async (req, res) => {
 const checkUsername = async (req, res) => {
     try {
         const { username } = req.query;
+        if (!username) return res.status(400).json({ status: 'error', message: 'Username is required' });
+
+        // Basic Constraints
+        if (username.length < 3 || username.length > 30) {
+            return res.json({ status: 'success', available: false, reason: 'Length must be 3-30 characters' });
+        }
+        if (username.startsWith('.')) {
+            return res.json({ status: 'success', available: false, reason: 'Cannot start with period' });
+        }
+        if (username.includes('..')) {
+            return res.json({ status: 'success', available: false, reason: 'Cannot contain consecutive periods' });
+        }
+        const regex = /^[a-zA-Z0-9._]+$/;
+        if (!regex.test(username)) {
+            return res.json({ status: 'success', available: false, reason: 'Only letters, numbers, periods, and underscores allowed' });
+        }
+
         const user = await User.findOne({ where: { username } });
-        res.json({ status: 'success', available: !user });
+
+        if (!user) {
+            return res.json({ status: 'success', available: true });
+        }
+
+        // Suggestions logic
+        const suggestions = [];
+        const base = username.replace(/[^a-zA-Z0-9._]/g, '');
+
+        let attempts = 0;
+        while (suggestions.length < 5 && attempts < 20) {
+            attempts++;
+            let sug = '';
+            if (attempts === 1) sug = `${base}_${Math.floor(Math.random() * 999)}`;
+            else if (attempts === 2) sug = `${base}.dev`;
+            else if (attempts === 3) sug = `${base}_official`;
+            else if (attempts === 4) sug = `${base}_live`;
+            else sug = `${base}${Math.floor(Math.random() * 9999)}`;
+
+            // Just simple random generation avoiding duplicates
+            if (!suggestions.includes(sug)) {
+                const sUser = await User.findOne({ where: { username: sug } });
+                if (!sUser) suggestions.push(sug);
+            }
+        }
+
+        res.json({ status: 'success', available: false, suggestions });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Server error' });
     }

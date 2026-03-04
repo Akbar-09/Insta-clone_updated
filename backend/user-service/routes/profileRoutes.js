@@ -110,6 +110,14 @@ router.get('/suggestions', profileController.getSuggestions);
 router.post('/batch', profileController.getBatchProfiles);
 router.get('/activity/account-history', profileController.getAccountHistory);
 
+const onboardingController = require('../controllers/onboardingController');
+// Onboarding specific
+router.put('/onboarding/profile', onboardingController.updateOnboardingProfile);
+router.get('/onboarding/interests', onboardingController.getInterests);
+router.post('/onboarding/interests', onboardingController.saveUserInterests);
+router.get('/onboarding/suggestions', onboardingController.getOnboardingSuggestions);
+router.post('/onboarding/event', onboardingController.saveOnboardingEvent);
+
 // Dynamic Routes LAST
 router.get('/:username', profileController.getUserProfile);
 router.get('/:userId/posts', profileController.getUserPosts);

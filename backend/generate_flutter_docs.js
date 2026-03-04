@@ -13,7 +13,7 @@ const options = {
             description: 'API Documentation for Flutter Developers',
         },
         servers: [
-            { url: 'http://192.168.1.4:5000/api/v1', description: 'Local Development Gateway' }
+            { url: 'http://192.168.1.100:5000/api/v1', description: 'Local Development Gateway' }
         ],
     },
     apis: ['./gateway/src/swagger/*.js'], // Adjusted path relative to backend root
@@ -36,7 +36,7 @@ function generateCurl(method, url, params, body) {
 
 // Generate Markdown
 let md = `# Instagram Clone API Documentation (Flutter)\n\n`;
-md += `**Base URL:** \`http://192.168.1.4:5000/api/v1\`\n\n`;
+md += `**Base URL:** \`http://192.168.1.100:5000/api/v1\`\n\n`;
 md += `**Authentication:** All endpoints (except Auth/Public) typically require a Bearer Token via \`Authorization\` header.\n\n`;
 
 // Tag Order
@@ -101,19 +101,19 @@ tagOrder.forEach(tag => {
                 bodyExample = { field1: "value1", field2: "value2" };
             }
 
-            md += `#### Request Body (Example)\n\`\`\`json\n${JSON.stringify(bodyExample, null, 2)}\n\`\`\`\n\n`;
+            md += `<h4> Request Body (Example)</h4>\n\`\`\`json\n${JSON.stringify(bodyExample, null, 2)}\n\`\`\`\n\n`;
         }
 
         // CURL Example
-        const fullUrl = `http://192.168.1.4:5000/api/v1${endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, '{$1}')}`;
+        const fullUrl = `http://192.168.1.100:5000${endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, '{$1}')}`;
         // Note: curl usually doesn't like {:id} syntax, but for documentation it's clear. 
         // Let's replace simple params with placeholders.
-        const curlUrl = `http://192.168.1.4:5000/api/v1${endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, '123')}`;
+        const curlUrl = `http://192.168.1.100:5000${endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, '123')}`;
 
-        md += `#### Sample Request (CURL)\n\`\`\`bash\n${generateCurl(endpoint.method, curlUrl, null, bodyExample)}\n\`\`\`\n\n`;
+        md += `<h4> Sample Request (CURL)</h4>\n\`\`\`bash\n${generateCurl(endpoint.method, curlUrl, null, bodyExample)}\n\`\`\`\n\n`;
 
         // Response Example
-        md += `#### Sample Response\n\`\`\`json\n{\n  "status": "success",\n  "data": { ... }\n}\n\`\`\`\n\n`;
+        md += `<h4> Sample Response</h4>\n\`\`\`json\n{\n  "status": "success",\n  "data": { ... }\n}\n\`\`\`\n\n`;
 
         md += `---\n\n`;
     });

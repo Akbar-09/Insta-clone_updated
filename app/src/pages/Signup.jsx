@@ -26,9 +26,20 @@ const Signup = () => {
         setIsSubmitting(true);
 
         try {
-            const result = await signup(formData);
+            // Generate a temporary username based on email and timestamp
+            const baseEmail = formData.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
+            const randomSuffix = Math.floor(Math.random() * 9999);
+            const generatedUsername = `${baseEmail}_${randomSuffix}`;
+
+            const dataToSubmit = {
+                ...formData,
+                username: generatedUsername,
+                fullname: '' // Full name will be collected in onboarding
+            };
+
+            const result = await signup(dataToSubmit);
             if (result.success) {
-                navigate('/feed');
+                navigate('/onboarding');
             } else {
                 setError(result.message);
             }
@@ -60,24 +71,6 @@ const Signup = () => {
                         className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-text-primary placeholder-text-secondary/70 focus:border-white/50 focus:bg-white/20 outline-none transition-all duration-300 shadow-inner backdrop-blur-md"
                         placeholder="Mobile Number or Email"
                         value={formData.email}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="text"
-                        name="fullname"
-                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-text-primary placeholder-text-secondary/70 focus:border-white/50 focus:bg-white/20 outline-none transition-all duration-300 shadow-inner backdrop-blur-md"
-                        placeholder="Full Name"
-                        value={formData.fullname}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="text"
-                        name="username"
-                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-text-primary placeholder-text-secondary/70 focus:border-white/50 focus:bg-white/20 outline-none transition-all duration-300 shadow-inner backdrop-blur-md"
-                        placeholder="Username"
-                        value={formData.username}
                         onChange={handleChange}
                         required
                     />

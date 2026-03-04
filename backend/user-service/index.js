@@ -6,6 +6,10 @@ const sequelize = require('./config/database');
 const UserProfile = require('./models/UserProfile');
 const Avatar = require('./models/Avatar');
 const Report = require('./models/Report'); // Ensure Report is synced
+const Interest = require('./models/Interest');
+const UserInterest = require('./models/UserInterest');
+const UserOnboardingEvent = require('./models/UserOnboardingEvent');
+const ContactMatch = require('./models/ContactMatch');
 
 require('dotenv').config();
 
@@ -84,7 +88,27 @@ app.put('/:id', async (req, res) => {
 // Basic Route to get profile by username (LAST - catch-all)
 app.get('/:username', async (req, res) => {
     try {
-        const user = await UserProfile.findOne({ where: { username: req.params.username } });
+        let user = await UserProfile.findOne({ where: { username: req.params.username } });
+
+        if (!user) {
+            // It's possible the user just signed up and RabbitMQ hasn't synced the username yet.
+            // Let's check by userId if it's passed in the headers by auth middleware.
+            const userId = req.headers['x-user-id'];
+            if (userId) {
+                user = await UserProfile.findOne({ where: { userId } });
+                if (!user) {
+                    // Force create them if completely missing
+                    user = await UserProfile.create({
+                        userId,
+                        username: req.params.username || `user_${userId}`,
+                        fullName: req.params.username || 'New User',
+                        onboardingStep: 1,
+                        onboardingCompleted: false
+                    });
+                }
+            }
+        }
+
         if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
         res.json({ status: 'success', data: user });
     } catch (err) {
