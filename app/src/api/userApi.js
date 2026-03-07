@@ -120,3 +120,21 @@ export const reportProblem = async (data) => {
         throw error;
     }
 };
+
+export const getAccountCategories = async (type) => {
+    try {
+        const response = await api.get(`/users/account/categories?type=${type}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateAccountProfile = async (data) => {
+    try {
+        const response = await api.post('/users/account/profile', data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

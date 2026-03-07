@@ -12,6 +12,13 @@ const ProfileGrid = ({ posts }) => {
 
     const getMediaUrl = (url) => getProxiedUrl(url);
 
+    // Sort pinned posts to the top
+    const sortedPosts = [...posts].sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return 0;
+    });
+
     if (posts.length === 0) {
         return (
             <div className="py-20 flex flex-col items-center text-center text-gray-400">
@@ -25,12 +32,12 @@ const ProfileGrid = ({ posts }) => {
 
     return (
         <div className="grid grid-cols-3 gap-1">
-            {posts.map((post, index) => (
+            {sortedPosts.map((post, index) => (
                 <div
                     key={`${post.id}-${index}`}
                     onClick={() => navigate(`/post/${post.id}`, {
                         state: {
-                            postIds: posts.map(p => p.id),
+                            postIds: sortedPosts.map(p => p.id),
                             currentIndex: index
                         }
                     })}
@@ -56,9 +63,16 @@ const ProfileGrid = ({ posts }) => {
                     )}
 
                     {/* Video Icon Indicator */}
-                    {(post.mediaType === 'VIDEO' || post.videoUrl) && (
+                    {(post.mediaType === 'VIDEO' || post.videoUrl) && !post.isPinned && (
                         <div className="absolute top-2 right-2 text-white drop-shadow-md z-10 transition-opacity group-hover:opacity-0">
                             <svg aria-label="Clip" className="fill-white" height="18" role="img" viewBox="0 0 24 24" width="18"><path d="m12.823 1 2.974 5.002h-2.58L10.007 1H12.823ZM17.584 1l-2.972 5.002h2.58L20.399 1h-2.815Zm-6.223 1H6.002l5.003 5.002h2.58L8.232 2Zm-5.344 0H1l5.002 5.002h2.58L3.064 1.341a.508.508 0 0 0 1.954-.341ZM23 10.002h-4.002l1.666-2.502h2.89L23 10.002Zm-5.467 0h-4.002l1.666-2.502h2.336L17.533 10.002ZM11 10.002H6.998l1.666-2.502h2.336L11 10.002Zm11.002-1.001h-2.128l-1.668-2.501h1.998l1.798 2.501ZM1.5 10.002h2.834L2.668 7.501H1.5v2.501Zm21.5 1.498H22V10.75h1v.75ZM1 22.25V11.503h22V22.25a.75.75 0 0 1-.75.75H1.75a.75.75 0 0 1-.75-.75ZM11 12.502H6.5v2.502H11v-2.502Zm-6 0H2.5v2.502H5v-2.502Zm6 4.002H6.5v2.501H11v-2.501Zm-6 0H2.5v2.501H5v-2.501Zm12-4.002h-4.5v2.502h4.5v-2.502Zm0 4.002h-4.5v2.501h4.5v-2.501Zm6-4.002h-4.5v2.502h4.5v-2.502Zm0 4.002h-4.5v2.501h4.5v-2.501Z"></path></svg>
+                        </div>
+                    )}
+
+                    {/* Pinned Icon Indicator */}
+                    {post.isPinned && (
+                        <div className="absolute top-2 right-2 text-white drop-shadow-md z-10 transition-opacity group-hover:opacity-0">
+                            <svg aria-label="Pinned post icon" className="fill-white" height="18" role="img" viewBox="0 0 24 24" width="18"><path d="M16.5 10.5V5.5c0-.8-.7-1.5-1.5-1.5h-6c-.8 0-1.5.7-1.5 1.5v5l-2.5 4.5v2h6v6l1.5 2 1.5-2v-6h6v-2l-2.5-4.5zm-5 4h-3L10 12V5.5c0-.3.2-.5.5-.5h3c.3 0 .5.2.5.5V12l1.5 2.5z"></path></svg>
                         </div>
                     )}
 

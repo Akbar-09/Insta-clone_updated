@@ -72,6 +72,7 @@ const authenticateToken = (req, res, next) => {
         '/api/v1/ads/active',
         '/api/v1/media/files',
         '/api/v1/ads/media',
+        '/api/v1/users/profile', // Need to allow embed code
         // Help Centre Public Routes
         '/api/v1/help/categories',
         '/api/v1/help/category',

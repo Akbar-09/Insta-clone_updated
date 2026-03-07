@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import {
     reportPost, deletePost, copyLink,
-    hideLikeCount, toggleComments, getEmbedCode
+    hideLikeCount, toggleComments, getEmbedCode,
+    pinPost, unpinPost
 } from '../api/postActionsApi';
 import { restrictUser, unrestrictUser } from '../api/userApi';
 import { blockUser, unblockUser } from '../api/privacyApi';
@@ -21,7 +22,8 @@ const PostOptionsMenu = ({
     onShare,
     onUpdatePost,
     onReport,
-    isFollowing = false
+    isFollowing = false,
+    isPinned = false
 }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -59,7 +61,7 @@ const PostOptionsMenu = ({
         if (loading) return;
 
         // Validations for actions requiring Auth or User ID
-        const authActions = ['block', 'unblock', 'restrict', 'report', 'hideLikes', 'toggleComments', 'delete'];
+        const authActions = ['block', 'unblock', 'restrict', 'report', 'hideLikes', 'toggleComments', 'delete', 'pin', 'unpin'];
         if (authActions.includes(action) && !user) {
             onClose();
             navigate('/login');
@@ -252,6 +254,26 @@ const PostOptionsMenu = ({
                     }
                     onClose();
                     break;
+                case 'pin':
+                    await pinPost(post.id);
+                    if (onUpdatePost) onUpdatePost({ ...post, isPinned: true });
+                    const pinMsg = document.createElement('div');
+                    pinMsg.textContent = 'Post pinned to your profile';
+                    pinMsg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
+                    document.body.appendChild(pinMsg);
+                    setTimeout(() => pinMsg.remove(), 2000);
+                    onClose();
+                    break;
+                case 'unpin':
+                    await unpinPost(post.id);
+                    if (onUpdatePost) onUpdatePost({ ...post, isPinned: false });
+                    const unpinMsg = document.createElement('div');
+                    unpinMsg.textContent = 'Post unpinned from your profile';
+                    unpinMsg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
+                    document.body.appendChild(unpinMsg);
+                    setTimeout(() => unpinMsg.remove(), 2000);
+                    onClose();
+                    break;
                 default:
                     console.warn('Unknown action', action);
                     onClose();
@@ -322,6 +344,7 @@ const PostOptionsMenu = ({
                             <>
                                 <ActionButton label="Delete" action="delete" color="text-[#ed4956]" isBold />
                                 <ActionButton label="Edit" action="edit" />
+                                <ActionButton label={isPinned ? "Unpin from profile" : "Pin to your profile"} action={isPinned ? "unpin" : "pin"} />
                                 <ActionButton label={post.hideLikes ? "Unhide like count" : "Hide like count"} action="hideLikes" />
                                 <ActionButton label={post.commentsDisabled ? "Turn on commenting" : "Turn off commenting"} action="toggleComments" />
                                 <ActionButton label="Go to post" action="goToPost" />

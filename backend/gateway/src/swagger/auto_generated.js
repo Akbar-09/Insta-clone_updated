@@ -17,6 +17,7 @@
  *   - name: Insights
  *   - name: Admin
  *   - name: Help
+ *   - name: Calls
  */
 
 /**
@@ -1972,6 +1973,50 @@
 
 /**
  * @swagger
+ * /api/v1/calls/end:
+ *   post:
+ *     tags: [Calls]
+ *     summary: POST /api/v1/calls/end (call.routes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/calls/reject:
+ *   post:
+ *     tags: [Calls]
+ *     summary: POST /api/v1/calls/reject (call.routes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/calls/accept:
+ *   post:
+ *     tags: [Calls]
+ *     summary: POST /api/v1/calls/accept (call.routes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/calls/start:
+ *   post:
+ *     tags: [Calls]
+ *     summary: POST /api/v1/calls/start (call.routes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
  * /api/v1/comments/internal/post/{postId}:
  *   get:
  *     tags: [Comments]
@@ -2419,10 +2464,21 @@
 
 /**
  * @swagger
- * /api/v1/live/webhook/done:
+ * /api/v1/live/{id}/block/{userId}:
  *   post:
  *     tags: [Live]
- *     summary: POST /api/v1/live/webhook/done (liveRoutes.js)
+ *     summary: POST /api/v1/live/:id/block/:userId (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: OK
@@ -2430,10 +2486,21 @@
 
 /**
  * @swagger
- * /api/v1/live/webhook/publish:
+ * /api/v1/live/{id}/mute/{userId}:
  *   post:
  *     tags: [Live]
- *     summary: POST /api/v1/live/webhook/publish (liveRoutes.js)
+ *     summary: POST /api/v1/live/:id/mute/:userId (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: OK
@@ -2441,10 +2508,32 @@
 
 /**
  * @swagger
- * /api/v1/live/{id}/chat:
+ * /api/v1/live/{id}/moderator/{userId}:
+ *   delete:
+ *     tags: [Live]
+ *     summary: DELETE /api/v1/live/:id/moderator/:userId (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/live/{id}/moderator:
  *   post:
  *     tags: [Live]
- *     summary: POST /api/v1/live/:id/chat (liveRoutes.js)
+ *     summary: POST /api/v1/live/:id/moderator (liveRoutes.js)
  *     parameters:
  *       - in: path
  *         name: id
@@ -2458,10 +2547,83 @@
 
 /**
  * @swagger
- * /api/v1/live/{id}/end:
+ * /api/v1/live/{id}/keyword/{keywordId}:
+ *   delete:
+ *     tags: [Live]
+ *     summary: DELETE /api/v1/live/:id/keyword/:keywordId (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: keywordId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/live/{id}/keyword:
  *   post:
  *     tags: [Live]
- *     summary: POST /api/v1/live/:id/end (liveRoutes.js)
+ *     summary: POST /api/v1/live/:id/keyword (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/live/{id}/settings:
+ *   patch:
+ *     tags: [Live]
+ *     summary: PATCH /api/v1/live/:id/settings (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/live/{id}/settings:
+ *   get:
+ *     tags: [Live]
+ *     summary: GET /api/v1/live/:id/settings (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/live/{id}/chat:
+ *   post:
+ *     tags: [Live]
+ *     summary: POST /api/v1/live/:id/chat (liveRoutes.js)
  *     parameters:
  *       - in: path
  *         name: id
@@ -2503,10 +2665,16 @@
 
 /**
  * @swagger
- * /api/v1/live/schedule:
+ * /api/v1/live/end/{id}:
  *   post:
  *     tags: [Live]
- *     summary: POST /api/v1/live/schedule (liveRoutes.js)
+ *     summary: POST /api/v1/live/end/:id (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: OK
@@ -2514,10 +2682,44 @@
 
 /**
  * @swagger
- * /api/v1/live/go-live:
+ * /api/v1/live/join/{id}:
  *   post:
  *     tags: [Live]
- *     summary: POST /api/v1/live/go-live (liveRoutes.js)
+ *     summary: POST /api/v1/live/join/:id (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/live/start/{id}:
+ *   post:
+ *     tags: [Live]
+ *     summary: POST /api/v1/live/start/:id (liveRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/live/create:
+ *   post:
+ *     tags: [Live]
+ *     summary: POST /api/v1/live/create (liveRoutes.js)
  *     responses:
  *       200:
  *         description: OK
@@ -2710,6 +2912,40 @@
 
 /**
  * @swagger
+ * /api/v1/messages/conversations/{conversationId}/messages:
+ *   post:
+ *     tags: [Messages]
+ *     summary: POST /api/v1/messages/conversations/:conversationId/messages (messageRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: conversationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/messages/conversations/{conversationId}/messages:
+ *   get:
+ *     tags: [Messages]
+ *     summary: GET /api/v1/messages/conversations/:conversationId/messages (messageRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: conversationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
  * /api/v1/messages/conversations/{conversationId}:
  *   get:
  *     tags: [Messages]
@@ -2731,6 +2967,17 @@
  *   get:
  *     tags: [Messages]
  *     summary: GET /api/v1/messages/conversations (messageRoutes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/messages/unread-count:
+ *   get:
+ *     tags: [Messages]
+ *     summary: GET /api/v1/messages/unread-count (messageRoutes.js)
  *     responses:
  *       200:
  *         description: OK
@@ -3225,6 +3472,23 @@
 
 /**
  * @swagger
+ * /api/v1/posts/hashtag/{hashtag}:
+ *   get:
+ *     tags: [Posts]
+ *     summary: GET /api/v1/posts/hashtag/:hashtag (postRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: hashtag
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
  * /api/v1/posts/explore:
  *   get:
  *     tags: [Posts]
@@ -3492,6 +3756,23 @@
  *   get:
  *     tags: [Reels]
  *     summary: GET /api/v1/reels/user (reelRoutes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/reels/{id}/report:
+ *   post:
+ *     tags: [Reels]
+ *     summary: POST /api/v1/reels/:id/report (reelRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: OK
@@ -3785,6 +4066,17 @@
 
 /**
  * @swagger
+ * /api/v1/search/hashtags:
+ *   get:
+ *     tags: [Search]
+ *     summary: GET /api/v1/search/hashtags (searchRoutes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
  * /api/v1/search/users:
  *   get:
  *     tags: [Search]
@@ -3896,6 +4188,23 @@
  *   get:
  *     tags: [Stories]
  *     summary: GET /api/v1/stories/activity/story-replies (storyRoutes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/stories/user/{targetUserId}:
+ *   get:
+ *     tags: [Stories]
+ *     summary: GET /api/v1/stories/user/:targetUserId (storyRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: targetUserId
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: OK
@@ -4205,6 +4514,61 @@
  *         required: true
  *         schema:
  *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/users/profile/onboarding/event:
+ *   post:
+ *     tags: [Users]
+ *     summary: POST /api/v1/users/profile/onboarding/event (profileRoutes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/users/profile/onboarding/suggestions:
+ *   get:
+ *     tags: [Users]
+ *     summary: GET /api/v1/users/profile/onboarding/suggestions (profileRoutes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/users/profile/onboarding/interests:
+ *   post:
+ *     tags: [Users]
+ *     summary: POST /api/v1/users/profile/onboarding/interests (profileRoutes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/users/profile/onboarding/interests:
+ *   get:
+ *     tags: [Users]
+ *     summary: GET /api/v1/users/profile/onboarding/interests (profileRoutes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/users/profile/onboarding/profile:
+ *   put:
+ *     tags: [Users]
+ *     summary: PUT /api/v1/users/profile/onboarding/profile (profileRoutes.js)
  *     responses:
  *       200:
  *         description: OK
@@ -5245,6 +5609,57 @@
  *   get:
  *     tags: [Users]
  *     summary: GET /api/v1/users/requests (followRoutes.js)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/users/followers/{userId}:
+ *   delete:
+ *     tags: [Users]
+ *     summary: DELETE /api/v1/users/followers/:userId (followRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/users/follow/{userId}:
+ *   delete:
+ *     tags: [Users]
+ *     summary: DELETE /api/v1/users/follow/:userId (followRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
+/**
+ * @swagger
+ * /api/v1/users/follow/{userId}:
+ *   post:
+ *     tags: [Users]
+ *     summary: POST /api/v1/users/follow/:userId (followRoutes.js)
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: OK

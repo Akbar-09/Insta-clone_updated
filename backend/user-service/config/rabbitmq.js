@@ -15,9 +15,10 @@ const connectRabbitMQ = async () => {
         // Create queue for User Service
         const q = await channel.assertQueue('user-service-queue', { durable: true });
 
-        // Bind queue to USER_CREATED and MEDIA.OPTIMIZED
+        // Bind queue to USER_CREATED, MEDIA.OPTIMIZED, and POST_CREATED
         await channel.bindQueue(q.queue, exchange, 'USER_CREATED');
         await channel.bindQueue(q.queue, exchange, 'MEDIA.OPTIMIZED');
+        await channel.bindQueue(q.queue, exchange, 'POST_CREATED');
 
         console.log('User Service listening for events...');
 
@@ -67,6 +68,33 @@ const connectRabbitMQ = async () => {
                         );
                         if (updatedCount > 0) {
                             console.log(`Updated ${updatedCount} user profiles with optimized pic.`);
+                        }
+                    } else if (routingKey === 'POST_CREATED') {
+                        const { id: postId, taggedUserIds, username: postAuthor } = data;
+                        if (taggedUserIds && taggedUserIds.length > 0) {
+                            const PostTag = require('../models/PostTag');
+                            console.log(`Creating tags for post ${postId} for users:`, taggedUserIds);
+                            
+                            for (const taggedUserId of taggedUserIds) {
+                                // Create the tag
+                                await PostTag.create({
+                                    postId,
+                                    taggedUserId,
+                                    approved: false // Default to unapproved until they accept (if settings say so)
+                                });
+
+                                // Send Notification
+                                await publishNotification({
+                                    userId: taggedUserId,
+                                    type: 'POST_TAG',
+                                    fromUserId: data.userId || data.authorId,
+                                    fromUsername: postAuthor || 'Someone',
+                                    title: 'Tagged in a post',
+                                    message: `${postAuthor || 'Someone'} tagged you in their post.`,
+                                    link: `/p/${postId}`,
+                                    metadata: { postId }
+                                });
+                            }
                         }
                     }
                 } catch (err) {

@@ -17,6 +17,7 @@ import ArchivePage from './pages/profile/ArchivePage';
 import LiveViewerPage from './pages/LiveViewerPage';
 import NotificationsPage from './pages/NotificationsPage';
 import HashtagPage from './pages/HashtagPage';
+import EmbedProfile from './pages/profile/EmbedProfile';
 
 import SettingsLayout from './pages/SettingsLayout';
 import EditProfile from './components/settings/EditProfile';
@@ -32,9 +33,11 @@ import AccountHistory from './components/activity/AccountHistory';
 
 import ProfessionalAccount from './components/settings/ProfessionalAccount';
 import CreatorTools from './components/settings/CreatorTools';
+import AdsPayments from './components/settings/AdsPayments';
 import AccountStatus from './components/settings/AccountStatus';
 import MetaVerified from './components/settings/MetaVerified';
 import About from './components/settings/About';
+import AccountTypeSelection from './components/settings/AccountTypeSelection';
 import CommentsSettings from './components/settings/CommentsSettings';
 import SharingSettings from './components/settings/SharingSettings';
 import RestrictedAccounts from './components/settings/RestrictedAccounts';
@@ -108,6 +111,7 @@ function App() {
                         <Route path="/signup" element={<Signup />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/embed/profile/:username" element={<EmbedProfile />} />
 
                         {/* Protected Routes */}
                         <Route path="/help" element={<HelpLayout />}>
@@ -146,8 +150,10 @@ function App() {
                               <Route path="notifications" element={<NotificationsSettings />} />
                               <Route path="notifications/push" element={<PushNotifications />} />
                               <Route path="notifications/email" element={<EmailNotifications />} />
-                              <Route path="professional_account" element={<ProfessionalAccount />} />
-                              <Route path="creator_tools" element={<CreatorTools />} />
+                              <Route path="account-type" element={<AccountTypeSelection />} />
+                              <Route path="professional-onboarding" element={<ProfessionalAccount />} />
+                              <Route path="creator-tools" element={<CreatorTools />} />
+                              <Route path="ads-payments" element={<AdsPayments />} />
                               <Route path="privacy" element={<PrivacySettings />} />
                               <Route path="close_friends" element={<CloseFriends />} />
                               <Route path="blocked" element={<BlockedAccounts />} />

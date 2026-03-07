@@ -5,11 +5,14 @@ import { updateMyProfile } from '../api/profileApi';
 
 const EditProfileModal = ({ profile, onClose, onUpdate }) => {
     const [formData, setFormData] = useState({
+        displayName: '',
         fullName: '',
         bio: '',
         website: '',
         gender: '',
-        profilePicture: ''
+        profilePicture: '',
+        pronouns: '',
+        pronounVisibility: 'Everyone'
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -17,11 +20,14 @@ const EditProfileModal = ({ profile, onClose, onUpdate }) => {
     useEffect(() => {
         if (profile) {
             setFormData({
+                displayName: profile.displayName || '',
                 fullName: profile.fullName || '',
                 bio: profile.bio || '',
                 website: profile.website || '',
                 gender: profile.gender || '',
-                profilePicture: profile.profilePicture || ''
+                profilePicture: profile.profilePicture || '',
+                pronouns: profile.pronouns || '',
+                pronounVisibility: profile.pronounVisibility || 'Everyone'
             });
         }
     }, [profile]);
@@ -120,16 +126,62 @@ const EditProfileModal = ({ profile, onClose, onUpdate }) => {
                     {/* Full Name */}
                     <div className="mb-4">
                         <label className="block text-white text-sm font-medium mb-1">
-                            Full Name
+                            Username
                         </label>
                         <input
                             type="text"
                             name="fullName"
                             value={formData.fullName}
+                            disabled
+                            className="w-full bg-[#1a1a1a] text-gray-400 px-3 py-2 rounded-lg border border-[#363636] focus:outline-none transition-colors cursor-not-allowed"
+                        />
+                    </div>
+
+                    {/* Display Name */}
+                    <div className="mb-4">
+                        <label className="block text-white text-sm font-medium mb-1">
+                            Display Name
+                        </label>
+                        <input
+                            type="text"
+                            name="displayName"
+                            value={formData.displayName}
                             onChange={handleChange}
-                            placeholder="Your full name"
+                            placeholder="Your display name (supports emoji)"
                             className="w-full bg-[#1a1a1a] text-white px-3 py-2 rounded-lg border border-[#363636] focus:border-[#0095F6] focus:outline-none transition-colors"
                         />
+                    </div>
+
+                    {/* Pronouns */}
+                    <div className="mb-4 flex gap-4">
+                        <div className="flex-1">
+                            <label className="block text-white text-sm font-medium mb-1">
+                                Pronouns
+                            </label>
+                            <input
+                                type="text"
+                                name="pronouns"
+                                value={formData.pronouns}
+                                onChange={handleChange}
+                                placeholder="he/him, she/her, they/them..."
+                                className="w-full bg-[#1a1a1a] text-white px-3 py-2 rounded-lg border border-[#363636] focus:border-[#0095F6] focus:outline-none transition-colors"
+                            />
+                        </div>
+                        <div className="w-1/3">
+                            <label className="block text-white text-sm font-medium mb-1">
+                                Visibility
+                            </label>
+                            <select
+                                name="pronounVisibility"
+                                value={formData.pronounVisibility}
+                                onChange={handleChange}
+                                className="w-full bg-[#1a1a1a] text-white px-3 py-2 rounded-lg border border-[#363636] focus:border-[#0095F6] focus:outline-none transition-colors"
+                            >
+                                <option value="Everyone">Everyone</option>
+                                <option value="Followers only">Followers only</option>
+                                <option value="Only me">Only me</option>
+                            </select>
+                        </div>
                     </div>
 
                     {/* Bio */}

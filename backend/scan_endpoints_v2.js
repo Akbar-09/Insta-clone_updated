@@ -17,7 +17,8 @@ const SERVICES_MAP = {
     'insight-service': '/api/v1/insights',
     'live-service': '/api/v1/live',
     'admin-service': '/api/v1/admin',
-    'help-service': '/api/v1/help'
+    'help-service': '/api/v1/help',
+    'call-service': '/api/v1/calls'
 };
 
 const BACKEND_DIR = process.cwd();

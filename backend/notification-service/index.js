@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
-const notificationRoutes = require('./notifications/notification.routes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const { startWorker } = require('./notifications/notification.worker');
 require('dotenv').config();
 

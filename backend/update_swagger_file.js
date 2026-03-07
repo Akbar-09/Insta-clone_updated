@@ -22,6 +22,7 @@ let swaggerMd = `/**
  *   - name: Insights
  *   - name: Admin
  *   - name: Help
+ *   - name: Calls
  */
 
 `;
@@ -42,7 +43,8 @@ const servicesToTags = {
     'insight-service': 'Insights',
     'live-service': 'Live',
     'admin-service': 'Admin',
-    'help-service': 'Help'
+    'help-service': 'Help',
+    'call-service': 'Calls'
 };
 
 endpoints.forEach(ep => {

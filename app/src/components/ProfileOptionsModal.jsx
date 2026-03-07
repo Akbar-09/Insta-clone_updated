@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/axios';
 import { restrictUser } from '../api/userApi';
 import { blockUser } from '../api/privacyApi';
 import { reportProblem } from '../api/reportApi';
+import { toggleFavorite } from '../api/postActionsApi';
 import BlockConfirmModal from './BlockConfirmModal';
 import { useAuth } from '../context/AuthContext';
 
-const ProfileOptionsModal = ({ onClose, profile }) => {
+const ProfileOptionsModal = ({ onClose, profile, isFavorite }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [showBlockConfirm, setShowBlockConfirm] = useState(false);
@@ -55,6 +57,43 @@ const ProfileOptionsModal = ({ onClose, profile }) => {
                     }
                 }
                 onClose();
+                return;
+            case 'favorite':
+                try {
+                    setLoading(true);
+                    await toggleFavorite(profile.userId);
+                    const isNowFavorite = !isFavorite;
+                    const favMsg = document.createElement('div');
+                    favMsg.textContent = isNowFavorite ? `Added @${profile.username} to favorites` : `Removed @${profile.username} from favorites`;
+                    favMsg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
+                    document.body.appendChild(favMsg);
+                    setTimeout(() => favMsg.remove(), 2000);
+                } catch (e) {
+                    console.error('Favorite failed', e);
+                    alert('Failed to update favorites');
+                } finally {
+                    setLoading(false);
+                    onClose();
+                }
+                return;
+            case 'embed':
+                try {
+                    setLoading(true);
+                    const res = await api.get(`/users/profile/${profile.username}/embed-code`);
+                    const embedHtml = res.data.data.embedHtml;
+                    await navigator.clipboard.writeText(embedHtml);
+                    const msg = document.createElement('div');
+                    msg.textContent = 'Embed code copied to clipboard';
+                    msg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#262626] text-white px-4 py-2 rounded-lg shadow-lg z-[200] animate-fade-in';
+                    document.body.appendChild(msg);
+                    setTimeout(() => msg.remove(), 2000);
+                } catch (e) {
+                    console.error('Embed failed', e);
+                    alert('Failed to get embed code');
+                } finally {
+                    setLoading(false);
+                    onClose();
+                }
                 return;
             case 'copyProfileUrl':
                 const profileUrl = `${window.location.origin}/profile/${profile.username}`;
@@ -104,7 +143,9 @@ const ProfileOptionsModal = ({ onClose, profile }) => {
         { label: 'Block', className: 'text-red-500 font-bold', action: () => handleAction('block') },
         { label: 'Restrict', className: 'text-red-500 font-bold', action: () => handleAction('restrict') },
         { label: 'Report', className: 'text-red-500 font-bold', action: () => handleAction('report') },
+        { label: isFavorite ? 'Remove from favorites' : 'Add to favorites', className: 'text-white font-bold', action: () => handleAction('favorite') },
         { label: 'About this account', className: 'text-white', action: () => handleAction('aboutAccount') },
+        { label: 'Embed profile', className: 'text-white', action: () => handleAction('embed') },
         { label: 'Copy profile URL', className: 'text-white', action: () => handleAction('copyProfileUrl') },
         { label: 'Cancel', className: 'text-white', action: onClose },
     ];

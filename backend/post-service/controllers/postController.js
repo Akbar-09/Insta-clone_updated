@@ -98,7 +98,7 @@ Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
 const createPost = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'] || req.body.userId;
-        const { username, caption, mediaUrl, mediaType } = req.body;
+        const { username, caption, mediaUrl, mediaType, taggedUserIds } = req.body;
 
         if (!userId) {
             return res.status(401).json({ message: 'Unauthorized' });
@@ -113,7 +113,10 @@ const createPost = async (req, res) => {
         });
 
         // Publish Event
-        await publishEvent('POST_CREATED', post.toJSON());
+        await publishEvent('POST_CREATED', {
+            ...post.toJSON(),
+            taggedUserIds: taggedUserIds || []
+        });
 
         res.status(201).json({ status: 'success', data: post });
     } catch (error) {
@@ -175,12 +178,20 @@ const getExplorePosts = async (req, res) => {
 
 const getPosts = async (req, res) => {
     try {
-        const { username, authorId } = req.query;
-        console.log(`[PostService] getPosts query: username=${username}, authorId=${authorId}`);
+        const { username, authorId, ids } = req.query;
+        console.log(`[PostService] getPosts query: username=${username}, authorId=${authorId}, ids=${ids}`);
         const userId = req.headers['x-user-id'] || req.query.userId;
         const whereClause = {};
         if (username) whereClause.username = username;
         if (authorId) whereClause.userId = parseInt(authorId);
+        if (ids) {
+            const idArray = ids.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+            if (idArray.length > 0) {
+                whereClause.id = {
+                    [Op.in]: idArray
+                };
+            }
+        }
 
         const posts = await Post.findAll({
             where: whereClause,

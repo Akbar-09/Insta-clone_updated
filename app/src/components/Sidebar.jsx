@@ -349,7 +349,9 @@ const Sidebar = () => {
                         label={t('Create')}
                         isCreateBtn={true}
                     />
-                    <NavItem to="/dashboard" path="/dashboard" icon={BarChart2} label={t('Dashboard')} />
+                    {user?.accountType !== 'personal' && (
+                        <NavItem to="/dashboard" path="/dashboard" icon={BarChart2} label={t('Professional dashboard')} />
+                    )}
 
                     <Link to={`/profile/${user?.username || 'me'}`} className="block mt-1 no-underline">
                         <div className={`flex items-center p-3 my-1 rounded-lg text-text-primary dark:text-white transition-colors cursor-pointer hover:bg-black/5 dark:hover:bg-white/10

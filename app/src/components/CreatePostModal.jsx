@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useContext } from 'react';
-import { Image as ImageIcon, X, ArrowLeft, Smile, Sticker as StickerIcon } from 'lucide-react';
+import { Image as ImageIcon, X, ArrowLeft, Smile, Sticker as StickerIcon, User as UserIcon } from 'lucide-react';
 import EmojiPicker from './messages/EmojiPicker';
 import StickerPicker from './messages/StickerPicker';
 import api from '../api/axios';
 import { uploadMedia } from '../api/mediaApi';
 import { AuthContext } from '../context/AuthContext';
+import { searchUsers } from '../api/postActionsApi';
 
 const CreatePostModal = ({ onClose }) => {
     const { user } = useContext(AuthContext);
@@ -16,6 +17,10 @@ const CreatePostModal = ({ onClose }) => {
     const [lastHashtag, setLastHashtag] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showStickerPicker, setShowStickerPicker] = useState(false);
+    const [taggedUsers, setTaggedUsers] = useState([]);
+    const [userSearchQuery, setUserSearchQuery] = useState('');
+    const [userSuggestions, setUserSuggestions] = useState([]);
+    const [showTagSearch, setShowTagSearch] = useState(false);
     const fileInputRef = useRef(null);
 
     const handleCaptionChange = async (e) => {
@@ -63,12 +68,37 @@ const CreatePostModal = ({ onClose }) => {
     };
 
     const handleStickerSelect = (sticker) => {
-        // Since it's a caption, we can either append a hashtag or just the word
-        // or a placeholder. Instagram doesn't support "stickers" in captions.
-        // We'll append it as a hashtag if it's descriptive, or just ignore.
-        // Given the request, we'll append its category as a hashtag.
         setCaption(prev => prev + `#${sticker.category} `);
         setShowStickerPicker(false);
+    };
+
+    const handleUserSearch = async (query) => {
+        setUserSearchQuery(query);
+        if (query.trim().length > 1) {
+            try {
+                const res = await searchUsers(query);
+                if (res.data.status === 'success') {
+                    setUserSuggestions(res.data.data.filter(u => u.userId !== user.id));
+                }
+            } catch (err) {
+                console.error('User search error:', err);
+            }
+        } else {
+            setUserSuggestions([]);
+        }
+    };
+
+    const addTag = (taggedUser) => {
+        if (!taggedUsers.find(u => u.userId === taggedUser.userId)) {
+            setTaggedUsers([...taggedUsers, taggedUser]);
+        }
+        setUserSearchQuery('');
+        setUserSuggestions([]);
+        setShowTagSearch(false);
+    };
+
+    const removeTag = (userId) => {
+        setTaggedUsers(taggedUsers.filter(u => u.userId !== userId));
     };
 
     // Prevent scrolling when modal is open
@@ -127,13 +157,14 @@ const CreatePostModal = ({ onClose }) => {
                 caption,
                 mediaUrl: media.url,
                 mediaType: selectedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
-                thumbnailUrl: media.thumbnailUrl // If backend generates/returns it
+                thumbnailUrl: media.thumbnailUrl,
+                taggedUserIds: taggedUsers.map(u => u.userId)
             });
 
             if (postRes.data.status === 'success') {
                 console.log('Post created successfully!');
                 onClose();
-                window.location.reload();
+                window.dispatchEvent(new Event('postCreated'));
             } else {
                 throw new Error('Post creation failed');
             }
@@ -236,11 +267,70 @@ const CreatePostModal = ({ onClose }) => {
                                 {isVideo ? (
                                     <video src={preview} className="max-w-full max-h-full object-contain" controls />
                                 ) : (
-                                    <img src={preview} alt="Preview" className="max-w-full max-h-full object-contain" />
+                                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
                                 )}
-                                <div className="absolute top-[15%] left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1.5 rounded-lg flex items-center shadow-lg">
-                                    Click photo to tag people
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-black/60"></div>
+                                
+                                {/* Tag Overlay */}
+                                <div className="absolute inset-0" onClick={() => !isVideo && setShowTagSearch(true)}>
+                                    {!showTagSearch && !isVideo && (
+                                        <div className="absolute top-[15%] left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1.5 rounded-lg flex items-center shadow-lg pointer-events-none">
+                                            Click photo to tag people
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-black/60"></div>
+                                        </div>
+                                    )}
+
+                                    {/* Tag Search Modal inside Image */}
+                                    {showTagSearch && (
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+                                            <div className="bg-white dark:bg-zinc-800 w-full max-w-[300px] rounded-lg shadow-2xl overflow-hidden flex flex-col">
+                                                <div className="p-3 border-b dark:border-white/10 flex items-center gap-2">
+                                                    <input 
+                                                        type="text" 
+                                                        autoFocus
+                                                        placeholder="Search for a person..."
+                                                        className="flex-grow bg-transparent outline-none text-sm text-text-primary"
+                                                        value={userSearchQuery}
+                                                        onChange={(e) => handleUserSearch(e.target.value)}
+                                                    />
+                                                    <button onClick={() => setShowTagSearch(false)} className="text-text-secondary hover:text-text-primary">
+                                                        <X size={16} />
+                                                    </button>
+                                                </div>
+                                                <div className="max-h-[200px] overflow-y-auto">
+                                                    {userSuggestions.map(u => (
+                                                        <div 
+                                                            key={u.userId}
+                                                            onClick={() => addTag(u)}
+                                                            className="p-3 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+                                                        >
+                                                            <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+                                                                <img src={u.profilePicture || `https://ui-avatars.com/api/?name=${u.username}`} className="w-full h-full object-cover" />
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-semibold text-text-primary">{u.username}</span>
+                                                                <span className="text-xs text-text-secondary">{u.fullName}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    {userSearchQuery.length > 1 && userSuggestions.length === 0 && !loading && (
+                                                        <div className="p-4 text-center text-sm text-text-secondary">No results found.</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Positioned Tags (Abstracted for now to just a list) */}
+                                    <div className="absolute bottom-4 left-4 flex flex-wrap gap-2 pointer-events-none">
+                                        {taggedUsers.map(u => (
+                                            <div key={u.userId} className="bg-black/70 text-white text-[10px] h-6 px-2 rounded flex items-center gap-1 shadow-md pointer-events-auto">
+                                                <span>{u.username}</span>
+                                                <button onClick={() => removeTag(u.userId)} className="hover:text-red-400">
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 

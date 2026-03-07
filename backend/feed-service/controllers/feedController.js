@@ -28,11 +28,48 @@ const getFeed = async (req, res) => {
                     console.warn(`[FeedService] Failed to fetch following: ${followingRes.status}`);
                 }
 
-                // Add current user to list
-                const userIds = [parseInt(userId), ...followingIds.map(id => parseInt(id))];
-                console.log(`[FeedService] User ${userId} is following ${followingIds.length} users. Total userIds to fetch: ${userIds.join(',')}`);
+                // B. Get Muted List
+                let mutedIds = [];
+                try {
+                    const mutedRes = await fetch(`${userServiceUrl}/muted`, {
+                        headers: { 'x-user-id': userId }
+                    });
+                    if (mutedRes.ok) {
+                        const mutedData = await mutedRes.json();
+                        if (mutedData.status === 'success') {
+                            mutedIds = mutedData.data.map(m => m.userId).filter(id => id);
+                        }
+                    }
+                } catch (e) {
+                    console.error('[FeedService] Failed to fetch muted accounts:', e.message);
+                }
 
-                // B. Fetch Posts from Post Service
+                // C. Get Blocked List
+                let blockedIds = [];
+                try {
+                    const blockedRes = await fetch(`${userServiceUrl}/blocked`, {
+                        headers: { 'x-user-id': userId }
+                    });
+                    if (blockedRes.ok) {
+                        const blockedData = await blockedRes.json();
+                        if (blockedData.status === 'success') {
+                            blockedIds = blockedData.data.map(b => b.userId).filter(id => id);
+                        }
+                    }
+                } catch (e) {
+                    console.error('[FeedService] Failed to fetch blocked accounts:', e.message);
+                }
+
+                // Filter out muted and blocked users from the following list
+                const filteredFollowingIds = followingIds.filter(id => 
+                    !mutedIds.includes(parseInt(id)) && !blockedIds.includes(parseInt(id))
+                );
+
+                // Add current user to list
+                const userIds = [parseInt(userId), ...filteredFollowingIds.map(id => parseInt(id))];
+                console.log(`[FeedService] User ${userId} is following ${followingIds.length} users. Filtered to ${filteredFollowingIds.length} users after muting/blocking. Total userIds to fetch: ${userIds.length}`);
+
+                // D. Fetch Posts from Post Service
                 const postServiceUrl = process.env.POST_SERVICE_URL || 'http://127.0.0.1:5003';
                 const postsRes = await fetch(`${postServiceUrl}/feed`, {
                     method: 'POST',

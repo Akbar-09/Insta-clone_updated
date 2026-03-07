@@ -16,6 +16,16 @@ const MutedAccount = sequelize.define('MutedAccount', {
         type: DataTypes.INTEGER,
         allowNull: false,
         field: 'muted_user_id'
+    },
+    mutePosts: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'mute_posts'
+    },
+    muteStories: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'mute_stories'
     }
 }, {
     tableName: 'muted_accounts',

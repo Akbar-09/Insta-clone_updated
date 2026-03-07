@@ -57,10 +57,15 @@ const startWorker = async () => {
         channel.consume('notification_queue', async (msg) => {
             if (msg !== null) {
                 const payload = JSON.parse(msg.content.toString());
-                let { userId, type, title, message, link, fromUserId, fromUsername, fromUserAvatar } = payload;
+                let { userId, type, title, message, body, link, fromUserId, senderId, fromUsername, senderUsername, fromUserAvatar } = payload;
+
+                // Aliases for compatibility
+                if (!message && body) message = body;
+                if (!fromUserId && senderId) fromUserId = senderId;
+                if (!fromUsername && senderUsername) fromUsername = senderUsername;
 
                 // Fallback for missing fromUsername if message has a colon (like "username: hello")
-                if (!fromUsername && message && message.includes(':')) {
+                if (!fromUsername && message && typeof message === 'string' && message.includes(':')) {
                     fromUsername = message.split(':')[0];
                 }
 
@@ -72,14 +77,29 @@ const startWorker = async () => {
                     if (details.profilePicture) fromUserAvatar = details.profilePicture;
                 }
 
+                // Ensure title and message are not null
+                if (!title) title = 'Notification';
+                if (!message) {
+                    // Create a default message based on type
+                    switch (type) {
+                        case 'like': message = 'liked your content'; break;
+                        case 'comment': message = 'commented on your post'; break;
+                        case 'follow': message = 'started following you'; break;
+                        case 'follow_request': message = 'requested to follow you'; break;
+                        case 'message': message = 'sent you a message'; break;
+                        default: message = 'sent you a notification';
+                    }
+                    if (fromUsername) message = `${fromUsername} ${message}`;
+                }
+
                 try {
                     // 1. Save to PostgreSQL
                     const notification = await Notification.create({
                         userId,
-                        type,
+                        type: type || 'system',
                         title,
                         message,
-                        link,
+                        link: link || '#',
                         fromUserId,
                         fromUsername,
                         fromUserAvatar
@@ -139,8 +159,9 @@ const startWorker = async () => {
                     console.log(`Notification processed for user ${userId}: ${type}`);
                 } catch (error) {
                     console.error('Error processing notification worker:', error.message);
+                    console.error('Failed Payload:', JSON.stringify(payload, null, 2));
                     // Optionally nack and requeue
-                    channel.nack(msg, false, true);
+                    channel.nack(msg, false, false); // Don't requeue if it's a validation error
                 }
             }
         });

@@ -1,4 +1,6 @@
 const express = require('express');
+const authenticateUser = require('../middleware/auth');
+const pushController = require('../push/push.controller');
 const {
     getNotifications,
     markRead,
@@ -10,15 +12,19 @@ const {
 
 const router = express.Router();
 
+// Push Routes
+router.get('/push/key', pushController.getPublicKey);
+router.post('/push/subscribe', authenticateUser, pushController.subscribe);
+
 // Notification preferences
-router.get('/settings', getSettings);
-router.patch('/settings', updateSettings);
+router.get('/settings', authenticateUser, getSettings);
+router.patch('/settings', authenticateUser, updateSettings);
 
 // Notifications interact
-router.get('/', getNotifications);
-router.get('/unread-count', getUnreadCount);
-router.patch('/:id/read', markRead);
-router.patch('/read-all', markAllRead);
+router.get('/', authenticateUser, getNotifications);
+router.get('/unread-count', authenticateUser, getUnreadCount);
+router.patch('/:id/read', authenticateUser, markRead);
+router.patch('/read-all', authenticateUser, markAllRead);
 
 // Admin Routes
 const { createBroadcast, getHistory, getStats } = require('../controllers/adminNotificationController');

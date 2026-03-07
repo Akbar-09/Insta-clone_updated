@@ -55,6 +55,21 @@ exports.followUser = async (followerId, followingId, followerUsername) => {
         // Publish event (optional notification)
         // await publishEvent('FOLLOW_REQUESTED', { ... });
 
+        // Publish notification for follow request
+        const { publishNotification } = require('../config/rabbitmq');
+        const followerProfile = await UserProfile.findOne({ where: { userId: followerId } });
+
+        await publishNotification({
+            userId: followingId,
+            fromUserId: followerId,
+            fromUsername: followerUsername || followerProfile?.username || 'Someone',
+            fromUserAvatar: followerProfile?.profilePicture || '',
+            type: 'follow_request',
+            title: 'Follow Request',
+            message: `${followerUsername || followerProfile?.username || 'Someone'} requested to follow you`,
+            link: '/follow-requests'
+        });
+
         return {
             status: 'requested',
             isFollowing: false,
@@ -249,6 +264,21 @@ exports.acceptRequest = async (currentUserId, requesterId) => {
             timestamp: new Date()
         });
 
+        // Trigger notification
+        const { publishNotification } = require('../config/rabbitmq');
+        const currentProfile = await UserProfile.findOne({ where: { userId: currentUserId } });
+
+        await publishNotification({
+            userId: requesterId,
+            fromUserId: currentUserId,
+            fromUsername: currentProfile?.username || 'Someone',
+            fromUserAvatar: currentProfile?.profilePicture || '',
+            type: 'follow_accept',
+            title: 'Request Accepted',
+            message: `${currentProfile?.username || 'Someone'} accepted your follow request`,
+            link: `/profile/${currentUserId}`
+        });
+
         return { success: true };
     } catch (err) {
         await transaction.rollback();
@@ -266,6 +296,23 @@ exports.rejectRequest = async (currentUserId, requesterId) => {
 
     if (request) {
         await request.update({ status: 'REJECTED' });
+    }
+
+    return { success: true };
+};
+
+/**
+ * Remove a follower (owner of profile removes a follower)
+ */
+exports.removeFollower = async (currentUserId, followerId) => {
+    const deleted = await Follow.destroy({
+        where: { followerId: followerId, followingId: currentUserId }
+    });
+
+    if (deleted) {
+        // Update counts
+        await UserProfile.decrement('followersCount', { where: { userId: currentUserId } });
+        await UserProfile.decrement('followingCount', { where: { userId: followerId } });
     }
 
     return { success: true };

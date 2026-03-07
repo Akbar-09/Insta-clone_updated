@@ -23,4 +23,34 @@ router.get('/requests', followController.getFollowRequests);
 router.post('/requests/accept', followController.acceptRequest);
 router.post('/requests/reject', followController.rejectRequest);
 
+// Remove Follower
+router.delete('/followers/:followerId/remove', followController.removeFollower);
+
+// Hashtag Follows
+const followHashtagController = require('../controllers/followHashtagController');
+router.get('/hashtags', followHashtagController.getFollowedHashtags);
+router.post('/hashtags/follow', followHashtagController.followHashtag);
+router.delete('/hashtags/:hashtag/unfollow', followHashtagController.unfollowHashtag);
+
+// Mute, Restrict, Block, Favorite
+const blockController = require('../controllers/blockController');
+const additionalSettingsController = require('../controllers/additionalSettingsController');
+const extendedSettingsController = require('../controllers/extendedSettingsController');
+
+router.post('/mute/:userId', additionalSettingsController.muteUser);
+router.delete('/mute/:userId', additionalSettingsController.unmuteUser);
+router.get('/muted', additionalSettingsController.getMutedAccounts);
+
+router.post('/restrict/:userId', extendedSettingsController.restrictUser);
+router.delete('/restrict/:userId', extendedSettingsController.unrestrictUser);
+router.get('/restricted', extendedSettingsController.getRestrictedAccounts);
+
+router.post('/block/:userId', blockController.blockUser);
+router.delete('/block/:userId', blockController.unblockUser);
+router.get('/blocked', blockController.getBlockedUsers);
+
+router.post('/favorites/:userId', additionalSettingsController.addFavoriteAccount);
+router.delete('/favorites/:userId', additionalSettingsController.removeFavoriteAccount);
+router.get('/favorites', additionalSettingsController.getFavoriteAccounts);
+
 module.exports = router;

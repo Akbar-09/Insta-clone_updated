@@ -72,6 +72,9 @@ const Stories = () => {
         };
 
         fetchStoriesAndProfiles();
+
+        window.addEventListener('storyCreated', fetchStoriesAndProfiles);
+        return () => window.removeEventListener('storyCreated', fetchStoriesAndProfiles);
     }, []);
 
     // Scroll Handlers

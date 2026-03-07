@@ -68,6 +68,46 @@ const UserProfile = sequelize.define('UserProfile', {
         type: DataTypes.STRING,
         defaultValue: 'active',
     },
+    accountType: {
+        type: DataTypes.STRING,
+        defaultValue: 'personal',
+    },
+    displayName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    pronouns: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    pronounVisibility: {
+        type: DataTypes.STRING,
+        defaultValue: 'Everyone',
+    },
+    categoryId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    contactEmail: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    contactPhone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    contactAddress: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    avatarType: {
+        type: DataTypes.STRING,
+        defaultValue: 'image', // 'image' or '3d'
+    },
+    avatarUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     // Onboarding tracking
     birthDate: {
         type: DataTypes.DATEONLY,
@@ -92,6 +132,10 @@ const UserProfile = sequelize.define('UserProfile', {
     notificationsEnabled: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+    },
+    followersVisibility: {
+        type: DataTypes.STRING,
+        defaultValue: 'Everyone', // 'Everyone', 'Followers', 'Only Me'
     }
 });
 

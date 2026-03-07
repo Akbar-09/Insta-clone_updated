@@ -1128,6 +1128,38 @@
     "body": []
   },
   {
+    "service": "call-service",
+    "file": "call.routes.js",
+    "method": "POST",
+    "path": "/api/v1/calls/end",
+    "originalPath": "/end",
+    "body": []
+  },
+  {
+    "service": "call-service",
+    "file": "call.routes.js",
+    "method": "POST",
+    "path": "/api/v1/calls/reject",
+    "originalPath": "/reject",
+    "body": []
+  },
+  {
+    "service": "call-service",
+    "file": "call.routes.js",
+    "method": "POST",
+    "path": "/api/v1/calls/accept",
+    "originalPath": "/accept",
+    "body": []
+  },
+  {
+    "service": "call-service",
+    "file": "call.routes.js",
+    "method": "POST",
+    "path": "/api/v1/calls/start",
+    "originalPath": "/start",
+    "body": []
+  },
+  {
     "service": "comment-service",
     "file": "internalRoutes.js",
     "method": "GET",
@@ -1395,16 +1427,64 @@
     "service": "live-service",
     "file": "liveRoutes.js",
     "method": "POST",
-    "path": "/api/v1/live/webhook/done",
-    "originalPath": "/webhook/done",
+    "path": "/api/v1/live/:id/block/:userId",
+    "originalPath": "/:id/block/:userId",
     "body": []
   },
   {
     "service": "live-service",
     "file": "liveRoutes.js",
     "method": "POST",
-    "path": "/api/v1/live/webhook/publish",
-    "originalPath": "/webhook/publish",
+    "path": "/api/v1/live/:id/mute/:userId",
+    "originalPath": "/:id/mute/:userId",
+    "body": []
+  },
+  {
+    "service": "live-service",
+    "file": "liveRoutes.js",
+    "method": "DELETE",
+    "path": "/api/v1/live/:id/moderator/:userId",
+    "originalPath": "/:id/moderator/:userId",
+    "body": []
+  },
+  {
+    "service": "live-service",
+    "file": "liveRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/live/:id/moderator",
+    "originalPath": "/:id/moderator",
+    "body": []
+  },
+  {
+    "service": "live-service",
+    "file": "liveRoutes.js",
+    "method": "DELETE",
+    "path": "/api/v1/live/:id/keyword/:keywordId",
+    "originalPath": "/:id/keyword/:keywordId",
+    "body": []
+  },
+  {
+    "service": "live-service",
+    "file": "liveRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/live/:id/keyword",
+    "originalPath": "/:id/keyword",
+    "body": []
+  },
+  {
+    "service": "live-service",
+    "file": "liveRoutes.js",
+    "method": "PATCH",
+    "path": "/api/v1/live/:id/settings",
+    "originalPath": "/:id/settings",
+    "body": []
+  },
+  {
+    "service": "live-service",
+    "file": "liveRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/live/:id/settings",
+    "originalPath": "/:id/settings",
     "body": []
   },
   {
@@ -1413,14 +1493,6 @@
     "method": "POST",
     "path": "/api/v1/live/:id/chat",
     "originalPath": "/:id/chat",
-    "body": []
-  },
-  {
-    "service": "live-service",
-    "file": "liveRoutes.js",
-    "method": "POST",
-    "path": "/api/v1/live/:id/end",
-    "originalPath": "/:id/end",
     "body": []
   },
   {
@@ -1443,16 +1515,32 @@
     "service": "live-service",
     "file": "liveRoutes.js",
     "method": "POST",
-    "path": "/api/v1/live/schedule",
-    "originalPath": "/schedule",
+    "path": "/api/v1/live/end/:id",
+    "originalPath": "/end/:id",
     "body": []
   },
   {
     "service": "live-service",
     "file": "liveRoutes.js",
     "method": "POST",
-    "path": "/api/v1/live/go-live",
-    "originalPath": "/go-live",
+    "path": "/api/v1/live/join/:id",
+    "originalPath": "/join/:id",
+    "body": []
+  },
+  {
+    "service": "live-service",
+    "file": "liveRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/live/start/:id",
+    "originalPath": "/start/:id",
+    "body": []
+  },
+  {
+    "service": "live-service",
+    "file": "liveRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/live/create",
+    "originalPath": "/create",
     "body": []
   },
   {
@@ -1562,6 +1650,22 @@
   {
     "service": "message-service",
     "file": "messageRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/messages/conversations/:conversationId/messages",
+    "originalPath": "/conversations/:conversationId/messages",
+    "body": []
+  },
+  {
+    "service": "message-service",
+    "file": "messageRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/messages/conversations/:conversationId/messages",
+    "originalPath": "/conversations/:conversationId/messages",
+    "body": []
+  },
+  {
+    "service": "message-service",
+    "file": "messageRoutes.js",
     "method": "GET",
     "path": "/api/v1/messages/conversations/:conversationId",
     "originalPath": "/conversations/:conversationId",
@@ -1573,6 +1677,14 @@
     "method": "GET",
     "path": "/api/v1/messages/conversations",
     "originalPath": "/conversations",
+    "body": []
+  },
+  {
+    "service": "message-service",
+    "file": "messageRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/messages/unread-count",
+    "originalPath": "/unread-count",
     "body": []
   },
   {
@@ -1859,6 +1971,14 @@
     "service": "post-service",
     "file": "postRoutes.js",
     "method": "GET",
+    "path": "/api/v1/posts/hashtag/:hashtag",
+    "originalPath": "/hashtag/:hashtag",
+    "body": []
+  },
+  {
+    "service": "post-service",
+    "file": "postRoutes.js",
+    "method": "GET",
     "path": "/api/v1/posts/explore",
     "originalPath": "/explore",
     "body": []
@@ -2013,6 +2133,14 @@
     "method": "GET",
     "path": "/api/v1/reels/user",
     "originalPath": "/user",
+    "body": []
+  },
+  {
+    "service": "reel-service",
+    "file": "reelRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/reels/:id/report",
+    "originalPath": "/:id/report",
     "body": []
   },
   {
@@ -2179,6 +2307,14 @@
     "service": "search-service",
     "file": "searchRoutes.js",
     "method": "GET",
+    "path": "/api/v1/search/hashtags",
+    "originalPath": "/hashtags",
+    "body": []
+  },
+  {
+    "service": "search-service",
+    "file": "searchRoutes.js",
+    "method": "GET",
     "path": "/api/v1/search/users",
     "originalPath": "/users",
     "body": []
@@ -2237,6 +2373,14 @@
     "method": "GET",
     "path": "/api/v1/stories/activity/story-replies",
     "originalPath": "/activity/story-replies",
+    "body": []
+  },
+  {
+    "service": "story-service",
+    "file": "storyRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/stories/user/:targetUserId",
+    "originalPath": "/user/:targetUserId",
     "body": []
   },
   {
@@ -2405,6 +2549,46 @@
     "method": "GET",
     "path": "/api/v1/users/profile/:username",
     "originalPath": "/:username",
+    "body": []
+  },
+  {
+    "service": "user-service",
+    "file": "profileRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/users/profile/onboarding/event",
+    "originalPath": "/onboarding/event",
+    "body": []
+  },
+  {
+    "service": "user-service",
+    "file": "profileRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/users/profile/onboarding/suggestions",
+    "originalPath": "/onboarding/suggestions",
+    "body": []
+  },
+  {
+    "service": "user-service",
+    "file": "profileRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/users/profile/onboarding/interests",
+    "originalPath": "/onboarding/interests",
+    "body": []
+  },
+  {
+    "service": "user-service",
+    "file": "profileRoutes.js",
+    "method": "GET",
+    "path": "/api/v1/users/profile/onboarding/interests",
+    "originalPath": "/onboarding/interests",
+    "body": []
+  },
+  {
+    "service": "user-service",
+    "file": "profileRoutes.js",
+    "method": "PUT",
+    "path": "/api/v1/users/profile/onboarding/profile",
+    "originalPath": "/onboarding/profile",
     "body": []
   },
   {
@@ -3061,6 +3245,30 @@
     "method": "GET",
     "path": "/api/v1/users/requests",
     "originalPath": "/requests",
+    "body": []
+  },
+  {
+    "service": "user-service",
+    "file": "followRoutes.js",
+    "method": "DELETE",
+    "path": "/api/v1/users/followers/:userId",
+    "originalPath": "/followers/:userId",
+    "body": []
+  },
+  {
+    "service": "user-service",
+    "file": "followRoutes.js",
+    "method": "DELETE",
+    "path": "/api/v1/users/follow/:userId",
+    "originalPath": "/follow/:userId",
+    "body": []
+  },
+  {
+    "service": "user-service",
+    "file": "followRoutes.js",
+    "method": "POST",
+    "path": "/api/v1/users/follow/:userId",
+    "originalPath": "/follow/:userId",
     "body": []
   },
   {

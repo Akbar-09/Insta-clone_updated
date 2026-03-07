@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Settings, MoreHorizontal } from 'lucide-react';
+import { Settings, MoreHorizontal, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import FollowersFollowingModal from '../../components/FollowersFollowingModal';
 import ProfileOptionsModal from '../../components/ProfileOptionsModal';
 import ChangeProfilePhotoModal from '../../components/ChangeProfilePhotoModal';
 
-const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollowToggle, onProfileUpdate, hasStories, allSeen }) => {
+const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, isFavorite, onFollowToggle, onProfileUpdate, hasStories, allSeen }) => {
     const navigate = useNavigate();
     const [showFollowersModal, setShowFollowersModal] = useState(false);
     const [showFollowingModal, setShowFollowingModal] = useState(false);
@@ -152,8 +152,9 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollo
                                         </button>
                                         <button
                                             onClick={() => setShowOptionsModal(true)}
-                                            className="p-2 hover:opacity-70"
+                                            className="p-2 hover:opacity-70 flex items-center gap-2"
                                         >
+                                            {isFavorite && <Star size={20} fill="#FFD700" color="#FFD700" className="drop-shadow-sm" />}
                                             <MoreHorizontal size={24} className="text-white" />
                                         </button>
                                     </>
@@ -183,21 +184,153 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollo
 
                     {/* Bottom Row: Bio */}
                     <div className="text-sm leading-5 text-text-primary">
-                        {profile.fullName && (
-                            <span className="font-semibold block mb-1">{profile.fullName}</span>
+                        <div className="flex items-center gap-2 mb-1">
+                            {profile.displayName && (
+                                <span className="font-semibold block">{profile.displayName}</span>
+                            )}
+                            {!profile.displayName && profile.fullName && (
+                                <span className="font-semibold block">{profile.fullName}</span>
+                            )}
+                            {profile.pronouns && (
+                                <span className="text-xs text-text-secondary pr-2">/{profile.pronouns}</span>
+                            )}
+                        </div>
+                        
+                        {(profile.accountType === 'creator' || profile.accountType === 'business') && profile.category && (
+                            <span className="text-sm text-text-secondary block mb-1">{profile.category}</span>
                         )}
+                        {(profile.accountType === 'creator' || profile.accountType === 'business') && profile.categoryId && !profile.category && (
+                            <span className="text-sm text-text-secondary block mb-1">Professional</span>
+                        )}
+                        {/* Old category logic as fallback */}
+                        {(profile.accountType === 'creator' || profile.accountType === 'business') && profile.accountProfile?.category && profile.accountProfile?.display_category !== false && !profile.categoryId && (
+                            <span className="text-sm text-text-secondary block mb-1">{profile.accountProfile.category}</span>
+                        )}
+
                         {profile.bio && (
                             <div className="whitespace-pre-wrap">{profile.bio}</div>
                         )}
-                        {profile.website && (
+                        
+                        {/* Links section */}
+                        {profile.links && profile.links.length > 0 ? (
+                            <div className="mt-2 flex flex-col gap-1">
+                                {profile.links.map(link => (
+                                    <a
+                                        key={link.id}
+                                        href={link.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center text-[#00376b] dark:text-[#e0f1ff] hover:underline"
+                                    >
+                                        <span className="truncate max-w-[200px] font-semibold">{link.title || link.url}</span>
+                                    </a>
+                                ))}
+                            </div>
+                        ) : profile.website && (
                             <a
                                 href={profile.website}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#00376b] dark:text-[#e0f1ff] hover:underline mt-1 block"
+                                className="text-[#00376b] dark:text-[#e0f1ff] hover:underline mt-1 block font-semibold"
                             >
                                 {profile.website}
                             </a>
+                        )}
+
+                        {/* Mutual Followers section */}
+                        {profile.mutualFollowers && profile.mutualFollowers.count > 0 && (
+                            <div 
+                                className="mt-4 flex items-center text-xs text-text-secondary cursor-pointer hover:opacity-70 group"
+                                onClick={() => setShowFollowersModal(true)}
+                            >
+                                <div className="flex -space-x-1 mr-3 relative">
+                                    {profile.mutualFollowers.users.slice(0, 3).map((u, i) => (
+                                        <div key={i} className={`w-6 h-6 rounded-full overflow-hidden border-2 border-white dark:border-black z-${30-i*10}`}>
+                                            <img 
+                                                src={u.profilePicture || 'https://ui-avatars.com/api/?name=' + u.username + '&background=f3f4f6'} 
+                                                alt={u.username} 
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="group-hover:underline">
+                                    Followed by {profile.mutualFollowers.users.slice(0, 2).map(u => <span key={u.username} className="font-semibold text-text-primary">{u.username}</span>).reduce((prev, curr) => [prev, ', ', curr])}
+                                    {profile.mutualFollowers.count > 2 ? ` and ${profile.mutualFollowers.count - 2} others` : ''}
+                                </div>
+                            </div>
+                        )}
+                        {profile.accountType === 'business' && profile.accountProfile?.business_address && profile.accountProfile?.display_contact !== false && (
+                            <span className="text-sm text-text-secondary block mt-1">{profile.accountProfile.business_address}</span>
+                        )}
+
+                        {/* Professional Dashboard (Own Profile) */}
+                        {isOwnProfile && (profile.accountType === 'creator' || profile.accountType === 'business') && (
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="mt-4 w-full bg-[#efefef] dark:bg-[#363636] hover:bg-[#dbdbdb] dark:hover:bg-[#262626] text-text-primary px-4 py-1.5 rounded-lg font-semibold text-sm transition-colors"
+                            >
+                                Professional dashboard
+                            </button>
+                        )}
+
+                        {/* Public Business Buttons */}
+                        {!isOwnProfile && (profile.accountType === 'creator' || profile.accountType === 'business') && profile.accountProfile?.display_contact !== false && (
+                            <div className="flex gap-2 mt-4 flex-wrap">
+                                {profile.contactEmail && (
+                                    <button
+                                        onClick={() => window.location.href = `mailto:${profile.contactEmail}`}
+                                        className="flex-1 bg-[#efefef] dark:bg-[#363636] hover:bg-[#dbdbdb] dark:hover:bg-[#262626] text-text-primary px-4 py-1.5 rounded-lg font-semibold text-sm transition-colors"
+                                    >
+                                        Email
+                                    </button>
+                                )}
+                                {profile.contactPhone && (
+                                    <button
+                                        onClick={() => window.location.href = `tel:${profile.contactPhone}`}
+                                        className="flex-1 bg-[#efefef] dark:bg-[#363636] hover:bg-[#dbdbdb] dark:hover:bg-[#262626] text-text-primary px-4 py-1.5 rounded-lg font-semibold text-sm transition-colors"
+                                    >
+                                        Call
+                                    </button>
+                                )}
+                                {profile.contactAddress && (
+                                    <button
+                                        onClick={() => window.open(`https://maps.google.com/?q=${profile.contactAddress}`, '_blank')}
+                                        className="flex-1 bg-[#efefef] dark:bg-[#363636] hover:bg-[#dbdbdb] dark:hover:bg-[#262626] text-text-primary px-4 py-1.5 rounded-lg font-semibold text-sm transition-colors"
+                                    >
+                                        Directions
+                                    </button>
+                                )}
+                                {/* Fallback contact info */}
+                                {!profile.contactEmail && profile.accountProfile?.business_email && (
+                                    <button
+                                        onClick={() => window.location.href = `mailto:${profile.accountProfile.business_email}`}
+                                        className="flex-1 bg-[#efefef] dark:bg-[#363636] hover:bg-[#dbdbdb] dark:hover:bg-[#262626] text-text-primary px-4 py-1.5 rounded-lg font-semibold text-sm transition-colors"
+                                    >
+                                        Email
+                                    </button>
+                                )}
+                                {!profile.contactPhone && (profile.accountProfile?.business_phone || profile.accountProfile?.whatsapp_number) && (
+                                    <button
+                                        onClick={() => {
+                                            const phone = profile.accountProfile.business_phone || profile.accountProfile.whatsapp_number;
+                                            window.location.href = `tel:${phone}`;
+                                        }}
+                                        className="flex-1 bg-[#efefef] dark:bg-[#363636] hover:bg-[#dbdbdb] dark:hover:bg-[#262626] text-text-primary px-4 py-1.5 rounded-lg font-semibold text-sm transition-colors"
+                                    >
+                                        Call
+                                    </button>
+                                )}
+                                {profile.actions && profile.actions.map(action => (
+                                    <button
+                                        key={action.id}
+                                        onClick={() => window.open(action.url, '_blank')}
+                                        className="flex-1 bg-[#efefef] dark:bg-[#363636] hover:bg-[#dbdbdb] dark:hover:bg-[#262626] text-text-primary px-4 py-1.5 rounded-lg font-semibold text-sm transition-colors"
+                                    >
+                                        {action.type}
+                                    </button>
+                                ))}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -225,6 +358,7 @@ const ProfileHeader = ({ profile, postsCount, isOwnProfile, isFollowing, onFollo
                 <ProfileOptionsModal
                     onClose={() => setShowOptionsModal(false)}
                     profile={profile}
+                    isFavorite={isFavorite}
                 />
             )}
 

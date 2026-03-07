@@ -48,3 +48,7 @@ Desktop.ini
 brain/
 
 backend/media-service/uploads/
+# Database dumps
+*.sql
+!backend/init.sql
+!backend/updated_database_dump.sql

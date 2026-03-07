@@ -45,6 +45,32 @@ export const removeProfilePhoto = async () => {
 };
 
 /**
+ * Upload Avatar to R2 via User Service
+ */
+export const uploadAvatarDirect = async (formData) => {
+    const response = await api.post('/users/profile/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+};
+
+/**
+ * Add a Profile Link
+ */
+export const addProfileLink = async (data) => {
+    const response = await api.post('/users/profile/link', data);
+    return response.data;
+};
+
+/**
+ * Pin a Post to Profile
+ */
+export const pinProfilePost = async (data) => {
+    const response = await api.post('/users/profile/pin-post', data);
+    return response.data;
+};
+
+/**
  * Get user's posts
  */
 export const getUserPosts = async (userId) => {
@@ -57,6 +83,14 @@ export const getUserPosts = async (userId) => {
  */
 export const getUserReels = async (userId) => {
     const response = await api.get(`/users/profile/${userId}/reels`);
+    return response.data;
+};
+
+/**
+ * Get user's tagged posts
+ */
+export const getUserTaggedPosts = async (userId) => {
+    const response = await api.get(`/users/profile/${userId}/tagged`);
     return response.data;
 };
 
@@ -89,6 +123,14 @@ export const getFollowersList = async (userId) => {
  */
 export const getFollowingList = async (userId) => {
     const response = await api.get(`/users/profile/${userId}/following`);
+    return response.data;
+};
+
+/**
+ * Get embed code for a profile
+ */
+export const getProfileEmbedCode = async (username) => {
+    const response = await api.get(`/users/profile/${username}/embed-code`);
     return response.data;
 };
 
@@ -130,9 +172,11 @@ export default {
     updateMyProfile,
     getUserPosts,
     getUserReels,
+    getUserTaggedPosts,
     getMySavedPosts,
     getFollowersList,
     getFollowingList,
+    getProfileEmbedCode,
     removeFollower,
     followUser,
     unfollowUser,

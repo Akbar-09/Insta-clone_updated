@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Clapperboard } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
-import { getUserProfile, getMyProfile, getUserPosts, getUserReels, followUser, unfollowUser } from '../../api/profileApi';
+import { getUserProfile, getMyProfile, getUserPosts, getUserReels, getUserTaggedPosts, followUser, unfollowUser } from '../../api/profileApi';
 import { getUserStories } from '../../api/storyApi';
 import ProfileHeader from './ProfileHeader';
 import HighlightsRow from './HighlightsRow';
@@ -22,6 +22,9 @@ const ProfilePage = ({ section }) => {
             ...updatedProfile
         }));
 
+        if (updatedProfile.isFollowing !== undefined) setIsFollowing(updatedProfile.isFollowing);
+        if (updatedProfile.isFavorite !== undefined) setIsFavorite(updatedProfile.isFavorite);
+
         // Update global user state if it's the current user
         if (currentUser && (
             currentUser.id === updatedProfile.userId ||
@@ -37,10 +40,12 @@ const ProfilePage = ({ section }) => {
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
     const [reels, setReels] = useState([]);
+    const [taggedPosts, setTaggedPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     // Prioritize 'section' prop if passed (from Routes), else use URL search param
     const [activeTab, setActiveTab] = useState(section || initialTab);
     const [isFollowing, setIsFollowing] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(false);
     const [userStories, setUserStories] = useState([]);
     const [allSeen, setAllSeen] = useState(true);
 
@@ -86,22 +91,33 @@ const ProfilePage = ({ section }) => {
                 if (response.status === 'success') {
                     profileData = response.data;
                     setIsFollowing(response.data.isFollowing || false);
+                    setIsFavorite(response.data.isFavorite || false);
                 }
             }
 
             if (profileData) {
                 setProfile(profileData);
 
-                // Fetch posts and reels in parallel
+                // Fetch posts, reels, stories, and tagged posts in parallel
                 try {
-                    const [postsResponse, reelsResponse, storiesResponse] = await Promise.all([
+                    const [postsResponse, reelsResponse, storiesResponse, taggedResponse] = await Promise.all([
                         getUserPosts(profileData.userId),
                         getUserReels(profileData.userId),
-                        getUserStories(profileData.userId)
+                        getUserStories(profileData.userId),
+                        getUserTaggedPosts(profileData.userId)
                     ]);
 
                     if (postsResponse.status === 'success') {
-                        setPosts(postsResponse.data);
+                        let fetchedPosts = postsResponse.data;
+                        if (profileData.pinnedPosts && profileData.pinnedPosts.length > 0) {
+                            const pinnedIds = profileData.pinnedPosts.map(p => String(p.postId));
+                            const pinnedPostsList = fetchedPosts.filter(p => pinnedIds.includes(String(p.id)));
+                            const unpinnedPostsList = fetchedPosts.filter(p => !pinnedIds.includes(String(p.id)));
+                            pinnedPostsList.forEach(p => p.isPinned = true);
+                            
+                            fetchedPosts = [...pinnedPostsList, ...unpinnedPostsList];
+                        }
+                        setPosts(fetchedPosts);
                     }
                     if (reelsResponse.status === 'success') {
                         setReels(reelsResponse.data);
@@ -109,6 +125,9 @@ const ProfilePage = ({ section }) => {
                     if (storiesResponse.status === 'success') {
                         setUserStories(storiesResponse.data);
                         setAllSeen(storiesResponse.data.length > 0 && storiesResponse.data.every(s => s.seen));
+                    }
+                    if (taggedResponse.status === 'success') {
+                        setTaggedPosts(taggedResponse.data);
                     }
                 } catch (fetchError) {
                     console.error("Failed to load user content", fetchError);
@@ -186,6 +205,7 @@ const ProfilePage = ({ section }) => {
                     postsCount={posts.length + reels.length}
                     isOwnProfile={isOwnProfile}
                     isFollowing={isFollowing}
+                    isFavorite={isFavorite}
                     onFollowToggle={handleFollowToggle}
                     onProfileUpdate={handleProfileUpdate}
                     hasStories={userStories.length > 0}
@@ -241,19 +261,25 @@ const ProfilePage = ({ section }) => {
                     </div>
                 )}
                 {activeTab === 'tagged' && (
-                    <div className="py-20 text-center text-text-secondary">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-16 h-16 rounded-full border-2 border-gray-600 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                </svg>
+                    <>
+                        {taggedPosts.length > 0 ? (
+                            <ProfileGrid posts={taggedPosts} />
+                        ) : (
+                            <div className="py-20 text-center text-text-secondary">
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="w-16 h-16 rounded-full border-2 border-gray-600 flex items-center justify-center">
+                                        <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-semibold mb-1">No tagged posts yet</h3>
+                                        <p className="text-sm">Photos and videos you're tagged in will appear here.</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-xl font-semibold mb-1">No tagged posts yet</h3>
-                                <p className="text-sm">Photos and videos you're tagged in will appear here.</p>
-                            </div>
-                        </div>
-                    </div>
+                        )}
+                    </>
                 )}
 
                 {/* Footer Meta Style */}

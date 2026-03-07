@@ -130,3 +130,16 @@ export const getEmbedCode = async (postId) => {
     return response.data;
 };
 
+export const pinPost = async (postId) => {
+    return api.post('/users/profile/pin-post', { postId });
+};
+
+export const unpinPost = async (postId) => {
+    // Assuming we might need a separate endpoint or just a delete on pin-post
+    // For now, let's look at what profileController expects
+    return api.post('/users/profile/pin-post', { postId, unpin: true });
+};
+
+export const toggleFavorite = async (userId) => {
+    return api.post(`/users/favorites/${userId}`);
+};

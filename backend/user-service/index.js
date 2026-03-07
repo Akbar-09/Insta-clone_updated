@@ -10,6 +10,18 @@ const Interest = require('./models/Interest');
 const UserInterest = require('./models/UserInterest');
 const UserOnboardingEvent = require('./models/UserOnboardingEvent');
 const ContactMatch = require('./models/ContactMatch');
+const ProfileLink = require('./models/ProfileLink');
+const ProfileAction = require('./models/ProfileAction');
+const PinnedPost = require('./models/PinnedPost');
+const PostTag = require('./models/PostTag');
+const Follow = require('./models/Follow');
+const FollowRequest = require('./models/FollowRequest');
+const BlockedUser = require('./models/BlockedUser');
+const MutedAccount = require('./models/MutedAccount');
+const RestrictedAccount = require('./models/RestrictedAccount');
+const CloseFriend = require('./models/CloseFriend');
+const HashtagFollow = require('./models/HashtagFollow');
+const FavoriteAccount = require('./models/FavoriteAccount');
 
 require('dotenv').config();
 
@@ -22,11 +34,15 @@ app.use(express.json());
 const { publishEvent } = require('./config/rabbitmq');
 const followRoutes = require('./routes/followRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const accountRoutes = require('./routes/accountRoutes');
+const startAnalyticsJob = require('./jobs/analyticsJob');
 
 // Health check
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', service: 'User Service' });
 });
+
+app.use('/account', accountRoutes);
 
 
 // Use Profile Routes FIRST (most specific)
@@ -44,7 +60,19 @@ app.get('/users/:id', async (req, res) => {
     try {
         const user = await UserProfile.findOne({ where: { userId: req.params.id } });
         if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
-        res.json({ status: 'success', data: user });
+
+        let accountProfile = null;
+        if (user.accountType === 'creator' || user.accountType === 'business') {
+            const AccountProfile = require('./models/AccountProfile');
+            accountProfile = await AccountProfile.findOne({ where: { userId: user.userId } });
+        }
+
+        const userData = user.toJSON ? user.toJSON() : user;
+        if (accountProfile) {
+            userData.accountProfile = accountProfile;
+        }
+
+        res.json({ status: 'success', data: userData });
     } catch (err) {
         res.status(500).json({ status: 'error', message: err.message });
     }
@@ -110,7 +138,19 @@ app.get('/:username', async (req, res) => {
         }
 
         if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
-        res.json({ status: 'success', data: user });
+
+        let accountProfile = null;
+        if (user.accountType === 'creator' || user.accountType === 'business') {
+            const AccountProfile = require('./models/AccountProfile');
+            accountProfile = await AccountProfile.findOne({ where: { userId: user.userId } });
+        }
+
+        const userData = user.toJSON ? user.toJSON() : user;
+        if (accountProfile) {
+            userData.accountProfile = accountProfile;
+        }
+
+        res.json({ status: 'success', data: userData });
     } catch (err) {
         res.status(500).json({ status: 'error', message: err.message });
     }
@@ -122,6 +162,7 @@ const startServer = async () => {
     try {
         await sequelize.sync({ alter: true });
         await connectRabbitMQ();
+        startAnalyticsJob(); // Start CRON Jobs
         app.listen(PORT, () => {
             console.log(`User Service running on port ${PORT}`);
         });

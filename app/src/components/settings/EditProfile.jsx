@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { updateUserProfile, getUserById, uploadMedia, updateProfilePhoto, removeProfilePhoto } from '../../api/userApi';
+import { updateUserProfile, getUserById, uploadMedia, updateProfilePhoto, removeProfilePhoto, getAccountCategories, updateAccountProfile } from '../../api/userApi';
 import { X, Loader2 } from 'lucide-react';
 
 const EditProfile = () => {
@@ -19,8 +19,18 @@ const EditProfile = () => {
         bio: '',
         gender: 'Male',
         showAccountSuggestions: true,
-        profilePicture: ''
+        profilePicture: '',
+        accountType: 'personal',
+        accountProfile: {
+            category: '',
+            business_email: '',
+            business_phone: '',
+            business_address: '',
+            website: ''
+        }
     });
+
+    const [categories, setCategories] = useState([]);
 
     const [bioCount, setBioCount] = useState(0);
 
@@ -39,9 +49,24 @@ const EditProfile = () => {
                             bio: data.bio || '',
                             gender: data.gender || 'Male',
                             showAccountSuggestions: data.showAccountSuggestions !== undefined ? data.showAccountSuggestions : true,
-                            profilePicture: (data.profilePicture && data.profilePicture.startsWith('blob:')) ? '' : (data.profilePicture || '')
+                            profilePicture: (data.profilePicture && data.profilePicture.startsWith('blob:')) ? '' : (data.profilePicture || ''),
+                            accountType: data.accountType || 'personal',
+                            accountProfile: data.accountProfile || {
+                                category: '',
+                                business_email: '',
+                                business_phone: '',
+                                business_address: '',
+                                website: ''
+                            }
                         });
                         setBioCount(data.bio ? data.bio.length : 0);
+
+                        if (data.accountType === 'creator' || data.accountType === 'business') {
+                            const catRes = await getAccountCategories(data.accountType);
+                            if (catRes.status === 'success') {
+                                setCategories(catRes.data);
+                            }
+                        }
                     }
                 } catch (err) {
                     console.error("Failed to fetch profile", err);
@@ -60,6 +85,18 @@ const EditProfile = () => {
 
         if (name === 'bio' && value.length > 150) return;
 
+        if (name.startsWith('ap_')) {
+            const field = name.replace('ap_', '');
+            setFormData(prev => ({
+                ...prev,
+                accountProfile: {
+                    ...prev.accountProfile,
+                    [field]: value
+                }
+            }));
+            return;
+        }
+
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
@@ -76,6 +113,11 @@ const EditProfile = () => {
         try {
             const userId = user.id || user.userId;
             const res = await updateUserProfile(userId, formData);
+
+            if (formData.accountType !== 'personal') {
+                await updateAccountProfile(formData.accountProfile);
+            }
+
             if (res.status === 'success') {
                 setMessage({ type: 'success', text: 'Profile saved.' });
                 // Optionally update global user context if critical fields changed
@@ -312,7 +354,68 @@ const EditProfile = () => {
                 </div>
             </div>
 
-            <div className="flex justify-end mb-10">
+            {(formData.accountType === 'creator' || formData.accountType === 'business') && (
+                <div className="mt-8 pt-8 border-t border-[#dbdbdb] dark:border-[#363636]">
+                    <h2 className="text-xl font-bold mb-6">Professional information</h2>
+
+                    <div className="mb-6">
+                        <h3 className="font-bold text-base mb-2">Category</h3>
+                        <div className="relative">
+                            <select
+                                name="ap_category"
+                                value={formData.accountProfile?.category || ''}
+                                onChange={handleChange}
+                                className="w-full border border-[#dbdbdb] dark:border-[#363636] rounded-[12px] px-4 py-3 text-base text-text-primary focus:outline-none focus:border-[#a8a8a8] appearance-none cursor-pointer bg-transparent"
+                            >
+                                <option value="">Select a category</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                                <svg className="w-4 h-4 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mb-6">
+                        <h3 className="font-bold text-base mb-2">Public business email</h3>
+                        <input
+                            type="email"
+                            name="ap_business_email"
+                            value={formData.accountProfile?.business_email || ''}
+                            onChange={handleChange}
+                            placeholder="Business email"
+                            className="w-full border border-[#dbdbdb] dark:border-[#363636] rounded-[12px] px-4 py-3 text-base text-text-primary focus:outline-none focus:border-[#a8a8a8] bg-transparent"
+                        />
+                    </div>
+
+                    <div className="mb-6">
+                        <h3 className="font-bold text-base mb-2">Public business phone</h3>
+                        <input
+                            type="text"
+                            name="ap_business_phone"
+                            value={formData.accountProfile?.business_phone || ''}
+                            onChange={handleChange}
+                            placeholder="Business phone"
+                            className="w-full border border-[#dbdbdb] dark:border-[#363636] rounded-[12px] px-4 py-3 text-base text-text-primary focus:outline-none focus:border-[#a8a8a8] bg-transparent"
+                        />
+                    </div>
+
+                    <div className="mb-6">
+                        <h3 className="font-bold text-base mb-2">Public business address</h3>
+                        <textarea
+                            name="ap_business_address"
+                            value={formData.accountProfile?.business_address || ''}
+                            onChange={handleChange}
+                            placeholder="Business address"
+                            className="w-full border border-[#dbdbdb] dark:border-[#363636] rounded-[12px] px-4 py-2 text-base text-text-primary focus:outline-none focus:border-[#a8a8a8] min-h-[84px] resize-none bg-transparent block"
+                        />
+                    </div>
+                </div>
+            )}
+
+            <div className="flex justify-end mb-10 mt-10">
                 <button
                     onClick={handleSubmit}
                     className={`px-10 py-3 rounded-[8px] font-semibold text-white text-sm transition-all ${isSaving ? 'bg-[#0095f6]/70 cursor-wait' : 'bg-[#0095f6] hover:bg-[#1877f2] active:opacity-70'}`}

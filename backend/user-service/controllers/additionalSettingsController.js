@@ -3,14 +3,14 @@ const ContentPreferences = require('../models/ContentPreferences');
 const LikeShareSettings = require('../models/LikeShareSettings');
 const Subscription = require('../models/Subscription');
 const UserProfile = require('../models/UserProfile');
+const FavoriteAccount = require('../models/FavoriteAccount');
 
 // --- Muted Accounts ---
 exports.getMutedAccounts = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'];
         const muted = await MutedAccount.findAll({
-            where: { userId },
-            attributes: ['mutedUserId']
+            where: { userId }
         });
 
         const ids = muted.map(m => m.mutedUserId);
@@ -19,7 +19,17 @@ exports.getMutedAccounts = async (req, res) => {
             attributes: ['userId', 'username', 'fullName', 'profilePicture']
         });
 
-        res.json({ status: 'success', data: profiles });
+        // Enrich with mute settings
+        const results = profiles.map(p => {
+            const m = muted.find(item => item.mutedUserId === p.userId);
+            return {
+                ...p.toJSON(),
+                mutePosts: m.mutePosts,
+                muteStories: m.muteStories
+            };
+        });
+
+        res.json({ status: 'success', data: results });
     } catch (err) {
         res.status(500).json({ status: 'error', message: err.message });
     }
@@ -29,11 +39,22 @@ exports.muteUser = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'];
         const { userId: mutedUserId } = req.params;
+        const { mutePosts = true, muteStories = true } = req.body;
 
         if (parseInt(userId) === parseInt(mutedUserId)) return res.status(400).json({ status: 'error', message: 'Cannot mute yourself' });
 
-        await MutedAccount.findOrCreate({ where: { userId, mutedUserId } });
-        res.json({ status: 'success', message: 'Account muted' });
+        const [m, created] = await MutedAccount.findOrCreate({ 
+            where: { userId, mutedUserId },
+            defaults: { mutePosts, muteStories }
+        });
+
+        if (!created) {
+            m.mutePosts = mutePosts;
+            m.muteStories = muteStories;
+            await m.save();
+        }
+
+        res.json({ status: 'success', message: 'Account muted', data: m });
     } catch (err) {
         res.status(500).json({ status: 'error', message: err.message });
     }
@@ -46,6 +67,53 @@ exports.unmuteUser = async (req, res) => {
 
         await MutedAccount.destroy({ where: { userId, mutedUserId } });
         res.json({ status: 'success', message: 'Account unmuted' });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+};
+
+// --- Favorite Accounts ---
+exports.getFavoriteAccounts = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const favorites = await FavoriteAccount.findAll({
+            where: { userId },
+            attributes: ['favoriteUserId']
+        });
+
+        const ids = favorites.map(f => f.favoriteUserId);
+        const profiles = await UserProfile.findAll({
+            where: { userId: ids },
+            attributes: ['userId', 'username', 'fullName', 'profilePicture']
+        });
+
+        res.json({ status: 'success', data: profiles });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+};
+
+exports.addFavoriteAccount = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { userId: favoriteUserId } = req.params;
+
+        if (parseInt(userId) === parseInt(favoriteUserId)) return res.status(400).json({ status: 'error', message: 'Cannot favorite yourself' });
+
+        await FavoriteAccount.findOrCreate({ where: { userId, favoriteUserId } });
+        res.json({ status: 'success', message: 'Added to favorites' });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+};
+
+exports.removeFavoriteAccount = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { userId: favoriteUserId } = req.params;
+
+        await FavoriteAccount.destroy({ where: { userId, favoriteUserId } });
+        res.json({ status: 'success', message: 'Removed from favorites' });
     } catch (err) {
         res.status(500).json({ status: 'error', message: err.message });
     }

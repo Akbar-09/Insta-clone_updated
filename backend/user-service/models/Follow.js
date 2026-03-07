@@ -24,6 +24,12 @@ const Follow = sequelize.define('Follow', {
         {
             unique: true,
             fields: ['follower_id', 'following_id']
+        },
+        {
+            fields: ['follower_id']
+        },
+        {
+            fields: ['following_id']
         }
     ]
 });

@@ -3,7 +3,7 @@ import { Grid, Bookmark, UserSquare2, Clapperboard } from 'lucide-react';
 const ProfileTabs = ({ activeTab, setActiveTab, isOwnProfile }) => {
     const tabs = [
         { id: 'posts', label: 'POSTS', icon: Grid },
-        ...(!isOwnProfile ? [{ id: 'reels', label: 'REELS', icon: Clapperboard }] : []),
+        { id: 'reels', label: 'REELS', icon: Clapperboard },
         ...(isOwnProfile ? [{ id: 'saved', label: 'SAVED', icon: Bookmark }] : []),
         { id: 'tagged', label: 'TAGGED', icon: UserSquare2 },
     ];

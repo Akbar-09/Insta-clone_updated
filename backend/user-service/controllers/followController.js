@@ -120,3 +120,18 @@ exports.rejectRequest = async (req, res) => {
         res.status(500).json({ status: 'error', message: err.message });
     }
 };
+
+exports.removeFollower = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { followerId } = req.params;
+
+        if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+
+        await followService.removeFollower(userId, followerId);
+        res.json({ status: 'success', message: 'Follower removed' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+};

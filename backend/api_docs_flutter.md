@@ -750,6 +750,147 @@ curl -X GET "http://192.168.1.100:5000/api/v1/users/profile/{username}" \
 
 ---
 
+### POST /api/v1/users/profile/onboarding/event (profileRoutes.js)
+
+**Endpoint:** `POST /api/v1/users/profile/onboarding/event`
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X POST "http://192.168.1.100:5000/api/v1/users/profile/onboarding/event" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### GET /api/v1/users/profile/onboarding/suggestions (profileRoutes.js)
+
+**Endpoint:** `GET /api/v1/users/profile/onboarding/suggestions`
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X GET "http://192.168.1.100:5000/api/v1/users/profile/onboarding/suggestions" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### POST /api/v1/users/profile/onboarding/interests (profileRoutes.js)
+
+**Endpoint:** `POST /api/v1/users/profile/onboarding/interests`
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X POST "http://192.168.1.100:5000/api/v1/users/profile/onboarding/interests" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### GET /api/v1/users/profile/onboarding/interests (profileRoutes.js)
+
+**Endpoint:** `GET /api/v1/users/profile/onboarding/interests`
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X GET "http://192.168.1.100:5000/api/v1/users/profile/onboarding/interests" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### PUT /api/v1/users/profile/onboarding/profile (profileRoutes.js)
+
+**Endpoint:** `PUT /api/v1/users/profile/onboarding/profile`
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X PUT "http://192.168.1.100:5000/api/v1/users/profile/onboarding/profile" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
 ### GET /api/v1/users/profile/activity/account-history (profileRoutes.js)
 
 **Endpoint:** `GET /api/v1/users/profile/activity/account-history`
@@ -2971,6 +3112,96 @@ curl -X GET "http://192.168.1.100:5000/api/v1/users/requests" \
 
 ---
 
+### DELETE /api/v1/users/followers/:userId (followRoutes.js)
+
+**Endpoint:** `DELETE /api/v1/users/followers/{userId}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `userId` | path | string | ✅ | - |
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X DELETE "http://192.168.1.100:5000/api/v1/users/followers/{userId}" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### DELETE /api/v1/users/follow/:userId (followRoutes.js)
+
+**Endpoint:** `DELETE /api/v1/users/follow/{userId}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `userId` | path | string | ✅ | - |
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X DELETE "http://192.168.1.100:5000/api/v1/users/follow/{userId}" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### POST /api/v1/users/follow/:userId (followRoutes.js)
+
+**Endpoint:** `POST /api/v1/users/follow/{userId}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `userId` | path | string | ✅ | - |
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X POST "http://192.168.1.100:5000/api/v1/users/follow/{userId}" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
 ### GET /api/v1/users/:userId/following (followRoutes.js)
 
 **Endpoint:** `GET /api/v1/users/{userId}/following`
@@ -3870,6 +4101,32 @@ curl -X POST "http://192.168.1.100:5000/api/v1/posts/" \
 
 ---
 
+### GET /api/v1/posts/hashtag/:hashtag (postRoutes.js)
+
+**Endpoint:** `GET /api/v1/posts/hashtag/{hashtag}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `hashtag` | path | string | ✅ | - |
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X GET "http://192.168.1.100:5000/api/v1/posts/hashtag/{hashtag}" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
 ### GET /api/v1/posts/explore (postRoutes.js)
 
 **Endpoint:** `GET /api/v1/posts/explore`
@@ -4698,6 +4955,32 @@ curl -X GET "http://192.168.1.100:5000/api/v1/stories/activity/story-replies" \
 
 ---
 
+### GET /api/v1/stories/user/:targetUserId (storyRoutes.js)
+
+**Endpoint:** `GET /api/v1/stories/user/{targetUserId}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `targetUserId` | path | string | ✅ | - |
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X GET "http://192.168.1.100:5000/api/v1/stories/user/{targetUserId}" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
 ### GET /api/v1/stories/archive (storyRoutes.js)
 
 **Endpoint:** `GET /api/v1/stories/archive`
@@ -5314,6 +5597,44 @@ curl -X GET "http://192.168.1.100:5000/api/v1/reels/{id}" \
 curl -X GET "http://192.168.1.100:5000/api/v1/reels/user" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### POST /api/v1/reels/:id/report (reelRoutes.js)
+
+**Endpoint:** `POST /api/v1/reels/{id}/report`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X POST "http://192.168.1.100:5000/api/v1/reels/{id}/report" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
 ```
 
 <h4> Sample Response</h4>
@@ -6913,6 +7234,70 @@ curl -X GET "http://192.168.1.100:5000/api/v1/messages/conversations/{conversati
 
 ---
 
+### POST /api/v1/messages/conversations/:conversationId/messages (messageRoutes.js)
+
+**Endpoint:** `POST /api/v1/messages/conversations/{conversationId}/messages`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `conversationId` | path | string | ✅ | - |
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X POST "http://192.168.1.100:5000/api/v1/messages/conversations/{conversationId}/messages" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### GET /api/v1/messages/conversations/:conversationId/messages (messageRoutes.js)
+
+**Endpoint:** `GET /api/v1/messages/conversations/{conversationId}/messages`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `conversationId` | path | string | ✅ | - |
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X GET "http://192.168.1.100:5000/api/v1/messages/conversations/{conversationId}/messages" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
 ### GET /api/v1/messages/conversations (messageRoutes.js)
 
 **Endpoint:** `GET /api/v1/messages/conversations`
@@ -6920,6 +7305,27 @@ curl -X GET "http://192.168.1.100:5000/api/v1/messages/conversations/{conversati
 <h4> Sample Request (CURL)</h4>
 ```bash
 curl -X GET "http://192.168.1.100:5000/api/v1/messages/conversations" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### GET /api/v1/messages/unread-count (messageRoutes.js)
+
+**Endpoint:** `GET /api/v1/messages/unread-count`
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X GET "http://192.168.1.100:5000/api/v1/messages/unread-count" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <YOUR_TOKEN>"
 ```
@@ -7476,6 +7882,27 @@ curl -X PATCH "http://192.168.1.100:5000/notifications/{id}/read" \
 ---
 
 ## Search
+
+### GET /api/v1/search/hashtags (searchRoutes.js)
+
+**Endpoint:** `GET /api/v1/search/hashtags`
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X GET "http://192.168.1.100:5000/api/v1/search/hashtags" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
 
 ### GET /api/v1/search/users (searchRoutes.js)
 
@@ -8432,9 +8859,15 @@ curl -X POST "http://192.168.1.100:5000/api/v1/ads/draft" \
 
 ## Live
 
-### POST /api/v1/live/webhook/done (liveRoutes.js)
+### POST /api/v1/live/:id/block/:userId (liveRoutes.js)
 
-**Endpoint:** `POST /api/v1/live/webhook/done`
+**Endpoint:** `POST /api/v1/live/{id}/block/{userId}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+| `userId` | path | string | ✅ | - |
 
 <h4> Request Body (Example)</h4>
 ```json
@@ -8446,7 +8879,7 @@ curl -X POST "http://192.168.1.100:5000/api/v1/ads/draft" \
 
 <h4> Sample Request (CURL)</h4>
 ```bash
-curl -X POST "http://192.168.1.100:5000/api/v1/live/webhook/done" \
+curl -X POST "http://192.168.1.100:5000/api/v1/live/{id}/block/{userId}" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <YOUR_TOKEN>" \
   -d '{
@@ -8465,9 +8898,15 @@ curl -X POST "http://192.168.1.100:5000/api/v1/live/webhook/done" \
 
 ---
 
-### POST /api/v1/live/webhook/publish (liveRoutes.js)
+### POST /api/v1/live/:id/mute/:userId (liveRoutes.js)
 
-**Endpoint:** `POST /api/v1/live/webhook/publish`
+**Endpoint:** `POST /api/v1/live/{id}/mute/{userId}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+| `userId` | path | string | ✅ | - |
 
 <h4> Request Body (Example)</h4>
 ```json
@@ -8479,13 +8918,207 @@ curl -X POST "http://192.168.1.100:5000/api/v1/live/webhook/done" \
 
 <h4> Sample Request (CURL)</h4>
 ```bash
-curl -X POST "http://192.168.1.100:5000/api/v1/live/webhook/publish" \
+curl -X POST "http://192.168.1.100:5000/api/v1/live/{id}/mute/{userId}" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <YOUR_TOKEN>" \
   -d '{
   "field1": "value1",
   "field2": "value2"
 }'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### DELETE /api/v1/live/:id/moderator/:userId (liveRoutes.js)
+
+**Endpoint:** `DELETE /api/v1/live/{id}/moderator/{userId}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+| `userId` | path | string | ✅ | - |
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X DELETE "http://192.168.1.100:5000/api/v1/live/{id}/moderator/{userId}" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### POST /api/v1/live/:id/moderator (liveRoutes.js)
+
+**Endpoint:** `POST /api/v1/live/{id}/moderator`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X POST "http://192.168.1.100:5000/api/v1/live/{id}/moderator" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### DELETE /api/v1/live/:id/keyword/:keywordId (liveRoutes.js)
+
+**Endpoint:** `DELETE /api/v1/live/{id}/keyword/{keywordId}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+| `keywordId` | path | string | ✅ | - |
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X DELETE "http://192.168.1.100:5000/api/v1/live/{id}/keyword/{keywordId}" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### POST /api/v1/live/:id/keyword (liveRoutes.js)
+
+**Endpoint:** `POST /api/v1/live/{id}/keyword`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X POST "http://192.168.1.100:5000/api/v1/live/{id}/keyword" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### PATCH /api/v1/live/:id/settings (liveRoutes.js)
+
+**Endpoint:** `PATCH /api/v1/live/{id}/settings`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X PATCH "http://192.168.1.100:5000/api/v1/live/{id}/settings" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### GET /api/v1/live/:id/settings (liveRoutes.js)
+
+**Endpoint:** `GET /api/v1/live/{id}/settings`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X GET "http://192.168.1.100:5000/api/v1/live/{id}/settings" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>"
 ```
 
 <h4> Sample Response</h4>
@@ -8518,44 +9151,6 @@ curl -X POST "http://192.168.1.100:5000/api/v1/live/webhook/publish" \
 <h4> Sample Request (CURL)</h4>
 ```bash
 curl -X POST "http://192.168.1.100:5000/api/v1/live/{id}/chat" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <YOUR_TOKEN>" \
-  -d '{
-  "field1": "value1",
-  "field2": "value2"
-}'
-```
-
-<h4> Sample Response</h4>
-```json
-{
-  "status": "success",
-  "data": { ... }
-}
-```
-
----
-
-### POST /api/v1/live/:id/end (liveRoutes.js)
-
-**Endpoint:** `POST /api/v1/live/{id}/end`
-
-#### Parameters
-| Name | In | Type | Required | Description |
-|---|---|---|---|---|
-| `id` | path | string | ✅ | - |
-
-<h4> Request Body (Example)</h4>
-```json
-{
-  "field1": "value1",
-  "field2": "value2"
-}
-```
-
-<h4> Sample Request (CURL)</h4>
-```bash
-curl -X POST "http://192.168.1.100:5000/api/v1/live/{id}/end" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <YOUR_TOKEN>" \
   -d '{
@@ -8621,9 +9216,14 @@ curl -X GET "http://192.168.1.100:5000/api/v1/live/feed" \
 
 ---
 
-### POST /api/v1/live/schedule (liveRoutes.js)
+### POST /api/v1/live/end/:id (liveRoutes.js)
 
-**Endpoint:** `POST /api/v1/live/schedule`
+**Endpoint:** `POST /api/v1/live/end/{id}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
 
 <h4> Request Body (Example)</h4>
 ```json
@@ -8635,7 +9235,7 @@ curl -X GET "http://192.168.1.100:5000/api/v1/live/feed" \
 
 <h4> Sample Request (CURL)</h4>
 ```bash
-curl -X POST "http://192.168.1.100:5000/api/v1/live/schedule" \
+curl -X POST "http://192.168.1.100:5000/api/v1/live/end/{id}" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <YOUR_TOKEN>" \
   -d '{
@@ -8654,9 +9254,14 @@ curl -X POST "http://192.168.1.100:5000/api/v1/live/schedule" \
 
 ---
 
-### POST /api/v1/live/go-live (liveRoutes.js)
+### POST /api/v1/live/join/:id (liveRoutes.js)
 
-**Endpoint:** `POST /api/v1/live/go-live`
+**Endpoint:** `POST /api/v1/live/join/{id}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
 
 <h4> Request Body (Example)</h4>
 ```json
@@ -8668,7 +9273,78 @@ curl -X POST "http://192.168.1.100:5000/api/v1/live/schedule" \
 
 <h4> Sample Request (CURL)</h4>
 ```bash
-curl -X POST "http://192.168.1.100:5000/api/v1/live/go-live" \
+curl -X POST "http://192.168.1.100:5000/api/v1/live/join/{id}" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### POST /api/v1/live/start/:id (liveRoutes.js)
+
+**Endpoint:** `POST /api/v1/live/start/{id}`
+
+#### Parameters
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string | ✅ | - |
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X POST "http://192.168.1.100:5000/api/v1/live/start/{id}" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+  "field1": "value1",
+  "field2": "value2"
+}'
+```
+
+<h4> Sample Response</h4>
+```json
+{
+  "status": "success",
+  "data": { ... }
+}
+```
+
+---
+
+### POST /api/v1/live/create (liveRoutes.js)
+
+**Endpoint:** `POST /api/v1/live/create`
+
+<h4> Request Body (Example)</h4>
+```json
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+<h4> Sample Request (CURL)</h4>
+```bash
+curl -X POST "http://192.168.1.100:5000/api/v1/live/create" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <YOUR_TOKEN>" \
   -d '{

@@ -1,9 +1,18 @@
 import PostCard from '../components/PostCard';
 import Stories from '../components/Stories';
 import useFeed from '../hooks/useFeed';
+import { useEffect } from 'react';
 
 const Feed = () => {
-    const { posts, loading, error, syncPostLike } = useFeed();
+    const { posts, loading, error, syncPostLike, refresh } = useFeed();
+
+    useEffect(() => {
+        const handlePostCreated = () => {
+            refresh();
+        };
+        window.addEventListener('postCreated', handlePostCreated);
+        return () => window.removeEventListener('postCreated', handlePostCreated);
+    }, [refresh]);
 
     if (loading) {
         return (

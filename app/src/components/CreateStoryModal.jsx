@@ -67,7 +67,7 @@ const CreateStoryModal = ({ onClose }) => {
             if (storyRes.data.status === 'success') {
                 console.log('Story created successfully!');
                 onClose();
-                window.location.reload();
+                window.dispatchEvent(new Event('storyCreated'));
             } else {
                 throw new Error('Story creation failed');
             }

@@ -4,15 +4,18 @@ import {
     AtSign, MessageSquare, Repeat, Shield, VolumeX, EyeOff,
     Heart, CreditCard, Monitor, Type, Globe, MousePointerClick,
     Users, HelpCircle, HardDrive, Share2, Info, BookOpen,
-    LayoutGrid, UserPlus, FileText, Ban, ChevronDown, Menu, X
+    LayoutGrid, UserPlus, FileText, Ban, ChevronDown, Menu, X,
+    BarChart3
 } from 'lucide-react';
 import jaadoeLogo from '../assets/jaadoe_logo.svg';
 
 import { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 const SettingsLayout = () => {
     const { t } = useLanguage();
+    const { user } = useAuth();
     const location = useLocation();
     const isActive = (path) => location.pathname.includes(path);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -22,8 +25,10 @@ const SettingsLayout = () => {
     const getPageTitle = () => {
         if (pathname.includes('edit-profile')) return 'Edit profile';
         if (pathname.includes('notifications')) return 'Notifications';
-        if (pathname.includes('professional_account')) return 'Professional Account';
-        if (pathname.includes('creator_tools')) return 'Creator tools';
+        if (pathname.includes('account-type')) return 'Account type and tools';
+        if (pathname.includes('professional-onboarding')) return 'Professional Account';
+        if (pathname.includes('creator-tools')) return user?.accountType === 'business' ? 'Business tools and controls' : 'Creator tools and controls';
+        if (pathname.includes('ads-payments')) return 'Ads payments';
         if (pathname.includes('privacy')) return 'Account privacy';
         if (pathname.includes('close_friends')) return 'Close Friends';
         if (pathname.includes('blocked')) return 'Blocked';
@@ -127,8 +132,22 @@ const SettingsLayout = () => {
                 <SidebarSection title={t('How you use Jaadoe')}>
                     <SidebarItem icon={User} label={t('Edit profile')} path="/settings/edit-profile" />
                     <SidebarItem icon={Bell} label={t('Notifications')} path="/settings/notifications" />
-                    <SidebarItem icon={Monitor} label={t('Professional Account')} path="/settings/professional_account" />
-                    <SidebarItem icon={LayoutGrid} label={t('Creator tools and controls')} path="/settings/creator_tools" />
+
+                    {user?.accountType === 'personal' ? (
+                        <SidebarItem icon={User} label={t('Account type and tools')} path="/settings/account-type" />
+                    ) : (
+                        <>
+                            <SidebarItem icon={Monitor} label={t('Professional account')} path="/settings/professional-onboarding" />
+                            <SidebarItem
+                                icon={user?.accountType === 'business' ? BarChart3 : LayoutGrid}
+                                label={user?.accountType === 'business' ? t('Business tools and controls') : t('Creator tools and controls')}
+                                path="/settings/creator-tools"
+                            />
+                            {user?.accountType === 'business' && (
+                                <SidebarItem icon={CreditCard} label={t('Ads payments')} path="/settings/ads-payments" />
+                            )}
+                        </>
+                    )}
                 </SidebarSection>
 
                 {/* WHO CAN SEE YOUR CONTENT */}
@@ -215,8 +234,26 @@ const SettingsLayout = () => {
                         <SidebarSection title={t('How you use Jaadoe')}>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={User} label={t('Edit profile')} path="/settings/edit-profile" /></div>
                             <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Bell} label={t('Notifications')} path="/settings/notifications" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Monitor} label={t('Professional Account')} path="/settings/professional_account" /></div>
-                            <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={LayoutGrid} label={t('Creator tools and controls')} path="/settings/creator_tools" /></div>
+
+                            {user?.accountType === 'personal' ? (
+                                <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={User} label={t('Account type and tools')} path="/settings/account-type" /></div>
+                            ) : (
+                                <>
+                                    <div onClick={() => setIsMobileMenuOpen(false)}><SidebarItem icon={Monitor} label={t('Professional account')} path="/settings/professional-onboarding" /></div>
+                                    <div onClick={() => setIsMobileMenuOpen(false)}>
+                                        <SidebarItem
+                                            icon={user?.accountType === 'business' ? BarChart3 : LayoutGrid}
+                                            label={user?.accountType === 'business' ? t('Business tools and controls') : t('Creator tools and controls')}
+                                            path="/settings/creator-tools"
+                                        />
+                                    </div>
+                                    {user?.accountType === 'business' && (
+                                        <div onClick={() => setIsMobileMenuOpen(false)}>
+                                            <SidebarItem icon={CreditCard} label={t('Ads payments')} path="/settings/ads-payments" />
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </SidebarSection>
 
                         <SidebarSection title={t('Who can see your content')}>

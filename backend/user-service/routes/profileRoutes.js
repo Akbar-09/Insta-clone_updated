@@ -4,6 +4,7 @@ const profileController = require('../controllers/profileController');
 const closeFriendController = require('../controllers/closeFriendController');
 const blockController = require('../controllers/blockController');
 const reportController = require('../controllers/reportController');
+const avatarController = require('../controllers/avatarController');
 
 // Static Routes FIRST (to avoid matching dynamic :username)
 router.post('/report-problem', reportController.submitReport);
@@ -103,8 +104,12 @@ router.post('/help/feedback', helpController.submitFeedback);
 // Profile specific static routes
 router.get('/me', profileController.getMyProfile);
 router.put('/me', profileController.updateMyProfile);
+router.put('/bio', profileController.updateBio);
 router.post('/profile-photo', profileController.updateProfilePhoto);
 router.delete('/profile-photo', profileController.removeProfilePhoto);
+router.post('/avatar', avatarController.uploadMiddleware, avatarController.uploadAvatar);
+router.post('/link', profileController.addLink);
+router.post('/pin-post', profileController.pinPost);
 router.get('/me/saved', profileController.getMySavedPosts);
 router.get('/suggestions', profileController.getSuggestions);
 router.post('/batch', profileController.getBatchProfiles);
@@ -120,10 +125,17 @@ router.post('/onboarding/event', onboardingController.saveOnboardingEvent);
 
 // Dynamic Routes LAST
 router.get('/:username', profileController.getUserProfile);
+router.get('/:username/embed-code', profileController.getProfileEmbedCode);
 router.get('/:userId/posts', profileController.getUserPosts);
 router.get('/:userId/reels', profileController.getUserReels);
+router.get('/:userId/tagged', profileController.getUserTaggedPosts);
+router.get('/:userId/similar', profileController.getSimilarAccounts);
+
+// Follow lists (consider moving to followRoutes if they overlap)
 router.get('/:userId/followers', profileController.getFollowersList);
 router.get('/:userId/following', profileController.getFollowingList);
-router.delete('/followers/:followerId', profileController.removeFollower);
+
+const followController = require('../controllers/followController');
+router.delete('/followers/:followerId', followController.removeFollower);
 
 module.exports = router;

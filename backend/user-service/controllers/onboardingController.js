@@ -98,18 +98,67 @@ exports.getOnboardingSuggestions = async (req, res) => {
         const userInterests = await UserInterest.findAll({ where: { userId } });
         const interestIds = userInterests.map(ui => ui.interestId);
 
-        // 2. Fetch active users EXCEPT the current user
-        let suggestQuery = {
-            where: {
-                userId: { [Op.ne]: userId }
-            },
-            order: [['followersCount', 'DESC']],
-            limit: 20
-        };
+        // 2. Fetch users who have same interests
+        let matchedUserIds = [];
+        if (interestIds.length > 0) {
+            const similarInterests = await UserInterest.findAll({
+                where: { 
+                    interestId: { [Op.in]: interestIds },
+                    userId: { [Op.ne]: userId }
+                },
+                limit: 100
+            });
+            matchedUserIds = [...new Set(similarInterests.map(si => si.userId))];
+        }
 
-        const profiles = await UserProfile.findAll(suggestQuery);
+        // 3. Fetch followers of people user follows (if any)
+        const Follow = require('../models/Follow');
+        const following = await Follow.findAll({ where: { followerId: userId }, attributes: ['followingId'] });
+        const followingIds = following.map(f => f.followingId);
+
+        let friendOfFriendIds = [];
+        if (followingIds.length > 0) {
+            const fof = await Follow.findAll({
+                where: { 
+                    followerId: { [Op.in]: followingIds },
+                    followingId: { [Op.notIn]: [...followingIds, userId] }
+                },
+                limit: 50
+            });
+            friendOfFriendIds = [...new Set(fof.map(f => f.followingId))];
+        }
+
+        // 4. Combine and fetch profiles
+        const suggestionPool = [...new Set([...matchedUserIds, ...friendOfFriendIds])];
+
+        let profiles;
+        if (suggestionPool.length > 0) {
+            profiles = await UserProfile.findAll({
+                where: { 
+                    userId: { [Op.in]: suggestionPool }
+                },
+                order: [['followersCount', 'DESC']],
+                limit: 20
+            });
+        }
+
+        // 5. Fill with popular users if not enough suggestions
+        if (!profiles || profiles.length < 10) {
+            const existingIds = profiles ? profiles.map(p => p.userId) : [];
+            const popular = await UserProfile.findAll({
+                where: {
+                    userId: { [Op.notIn]: [...existingIds, userId] },
+                    accountStatus: 'active'
+                },
+                order: [['followersCount', 'DESC']],
+                limit: 20 - existingIds.length
+            });
+            profiles = [...(profiles || []), ...popular];
+        }
+
         res.json({ status: 'success', data: profiles });
     } catch (error) {
+        console.error('getOnboardingSuggestions error:', error);
         res.status(500).json({ status: 'error', message: error.message });
     }
 };
