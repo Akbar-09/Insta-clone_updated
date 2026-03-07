@@ -70,27 +70,46 @@ const connectRabbitMQ = async () => {
                             console.log(`Updated ${updatedCount} user profiles with optimized pic.`);
                         }
                     } else if (routingKey === 'POST_CREATED') {
-                        const { id: postId, taggedUserIds, username: postAuthor } = data;
-                        if (taggedUserIds && taggedUserIds.length > 0) {
+                        const { id: postId, taggedUserIds: initialTaggedIds, username: postAuthor, caption, userId: authorId } = data;
+                        
+                        let combinedTaggedUserIds = [...(initialTaggedIds || [])];
+
+                        // Auto-tag users mentioned in caption (@username)
+                        if (caption) {
+                            const mentionRegex = /@([a-zA-Z0-9._]+)/g;
+                            const matches = [...caption.matchAll(mentionRegex)];
+                            const mentionedUsernames = matches.map(match => match[1]);
+
+                            if (mentionedUsernames.length > 0) {
+                                const mentionedUsers = await UserProfile.findAll({
+                                    where: { username: { [Op.in]: mentionedUsernames } },
+                                    attributes: ['userId']
+                                });
+                                const mentionedUserIds = mentionedUsers.map(u => u.userId);
+                                combinedTaggedUserIds = [...new Set([...combinedTaggedUserIds, ...mentionedUserIds])];
+                            }
+                        }
+
+                        if (combinedTaggedUserIds.length > 0) {
                             const PostTag = require('../models/PostTag');
-                            console.log(`Creating tags for post ${postId} for users:`, taggedUserIds);
+                            console.log(`Creating tags for post ${postId} for users:`, combinedTaggedUserIds);
                             
-                            for (const taggedUserId of taggedUserIds) {
-                                // Create the tag
-                                await PostTag.create({
+                            for (const taggedUserId of combinedTaggedUserIds) {
+                                // Create or Update the tag to be approved
+                                await PostTag.upsert({
                                     postId,
                                     taggedUserId,
-                                    approved: false // Default to unapproved until they accept (if settings say so)
+                                    approved: true 
                                 });
 
                                 // Send Notification
                                 await publishNotification({
                                     userId: taggedUserId,
                                     type: 'POST_TAG',
-                                    fromUserId: data.userId || data.authorId,
-                                    fromUsername: postAuthor || 'Someone',
+                                    fromUserId: authorId,
+                                    fromUsername: postAuthor,
                                     title: 'Tagged in a post',
-                                    message: `${postAuthor || 'Someone'} tagged you in their post.`,
+                                    message: `${postAuthor} tagged you in their post.`,
                                     link: `/p/${postId}`,
                                     metadata: { postId }
                                 });

@@ -549,11 +549,14 @@ exports.getUserReels = async (req, res) => {
 exports.getUserTaggedPosts = async (req, res) => {
     try {
         const { userId } = req.params;
+        const targetUserId = parseInt(userId);
+        console.log(`[UserService] getUserTaggedPosts for userId: ${userId} (parsed: ${targetUserId})`);
+        
         const currentUserId = req.headers['x-user-id'] || req.query.currentUserId;
         const PostTag = require('../models/PostTag');
 
         // Privacy Check
-        const profile = await UserProfile.findOne({ where: { userId } });
+        const profile = await UserProfile.findOne({ where: { userId: targetUserId } });
         if (!profile) {
             return res.status(404).json({ status: 'error', message: 'User not found' });
         }
@@ -573,11 +576,12 @@ exports.getUserTaggedPosts = async (req, res) => {
 
         // Only show approved tags
         const tags = await PostTag.findAll({
-            where: { taggedUserId: userId, approved: true },
+            where: { taggedUserId: targetUserId, approved: true },
             attributes: ['postId']
         });
 
         const postIds = tags.map(t => t.postId);
+        console.log(`[UserService] Found ${postIds.length} tag entries for user ${targetUserId}:`, postIds);
 
         if (postIds.length === 0) {
             return res.json({ status: 'success', data: [] });
