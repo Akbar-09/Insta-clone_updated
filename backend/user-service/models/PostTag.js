@@ -22,12 +22,18 @@ const PostTag = sequelize.define('PostTag', {
     },
     approved: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false
+        defaultValue: true
     }
 }, {
     tableName: 'post_tags',
     timestamps: true,
-    updatedAt: false
+    updatedAt: false,
+    indexes: [
+        {
+            unique: true,
+            fields: ['postId', 'taggedUserId']
+        }
+    ]
 });
 
 module.exports = PostTag;
